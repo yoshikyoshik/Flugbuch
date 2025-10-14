@@ -1011,6 +1011,7 @@
 
         /**
          * Initialisiert die gesamte App, nachdem der Benutzer eingeloggt ist.
+         * Baut die Karte auf und registriert alle Event-Listener für die App-Funktionalität.
          */
         async function initializeApp() {
             // 1. Auth-Container verstecken, App-Container zeigen
@@ -1037,10 +1038,11 @@
                 routeLayer = L.layerGroup().addTo(map);
             }
             
-            // 5. Event-Listener für die App-Funktionalität registrieren
+            // 5. ALLE Event-Listener für die App-Funktionalität hier registrieren
             document.getElementById('theme-toggle').addEventListener('click', toggleDarkMode);
             document.getElementById('chart-view-year').addEventListener('click', () => setChartTimeframe('year'));
             document.getElementById('chart-view-month').addEventListener('click', () => setChartTimeframe('month'));
+            
             document.getElementById('flightPhoto').addEventListener('change', (event) => {
                 const files = event.target.files;
                 const previewContainer = document.getElementById('photo-preview-container');
@@ -1052,6 +1054,16 @@
                     previewContainer.classList.add('hidden');
                 }
             });
+
+            document.getElementById("departure").addEventListener("input", () => {
+                updateAutocompleteList("departure", "departure-list");
+                updateFlightDetails();
+            });
+            document.getElementById("arrival").addEventListener("input", () => {
+                updateAutocompleteList("arrival", "arrival-list");
+                updateFlightDetails();
+            });
+            // ... (Hier könnten noch weitere Listener für 'focus' etc. hin, falls benötigt)
 
             // 6. Initiales Rendern der App-Daten
             updateThemeIcon();
@@ -2808,7 +2820,6 @@
         mapInfo.textContent = `Visualisierung: ${depName} (${depCode}) → ${arrName} (${arrCode}).`;
       };
 
-      // Event Listener für Eingabefelder und Initialisierung
         document.addEventListener('DOMContentLoaded', async function () {
             // Event-Listener NUR für die Auth-Formulare
             document.getElementById('login-form').addEventListener('submit', async (e) => {
