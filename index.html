@@ -1009,32 +1009,55 @@
         }
       }
 
-      async function showApp() {
-        // Hole den aktuellen Benutzer, um seine E-Mail anzuzeigen
-        const {
-          data: { user },
-        } = await supabaseClient.auth.getUser();
-        if (user) {
-          document.getElementById("user-display").textContent = user.email;
+        /**
+         * Initialisiert die gesamte App, nachdem der Benutzer eingeloggt ist.
+         */
+        async function initializeApp() {
+            // 1. Auth-Container verstecken, App-Container zeigen
+            document.getElementById('auth-container').classList.add('hidden');
+            document.getElementById('app-container').classList.remove('hidden');
+
+            // 2. Benutzer-E-Mail anzeigen
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (user) {
+                document.getElementById('user-display').textContent = user.email;
+            }
+            
+            // 3. Einmalige Migrationen ausführen (falls nötig)
+            await migrateDataToSupabase();
+            await migrateAndLoadAirports();
+            await claimExistingFlights();
+
+            // 4. Karteninitialisierung (nur einmal)
+            if (!map) {
+                map = L.map('flight-map-container').setView([20, 0], 2);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                }).addTo(map);
+                routeLayer = L.layerGroup().addTo(map);
+            }
+            
+            // 5. Event-Listener für die App-Funktionalität registrieren
+            document.getElementById('theme-toggle').addEventListener('click', toggleDarkMode);
+            document.getElementById('chart-view-year').addEventListener('click', () => setChartTimeframe('year'));
+            document.getElementById('chart-view-month').addEventListener('click', () => setChartTimeframe('month'));
+            document.getElementById('flightPhoto').addEventListener('change', (event) => {
+                 const files = event.target.files;
+                const previewContainer = document.getElementById('photo-preview-container');
+                const previewText = document.getElementById('photo-preview-text');
+                if (files && files.length > 0) {
+                    previewText.textContent = `${files.length} Foto(s) ausgewählt.`;
+                    previewContainer.classList.remove('hidden');
+                } else {
+                    previewContainer.classList.add('hidden');
+                }
+            });
+
+            // 6. Initiales Rendern der App-Daten
+            updateThemeIcon();
+            showTab('stats');
+            renderFlights();
         }
-
-        document.getElementById("auth-container").classList.add("hidden");
-        document.getElementById("app-container").classList.remove("hidden");
-
-        // Lade die Flüge, sobald die App angezeigt wird (wichtig!)
-        // Dies war vorher im DOMContentLoaded, gehört aber logisch hierher.
-        if (!map) {
-          // Initialisiere die Karte nur einmal
-          map = L.map("flight-map-container").setView([20, 0], 2);
-          L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-            attribution:
-              '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-          }).addTo(map);
-          routeLayer = L.layerGroup().addTo(map);
-        }
-
-        renderFlights(); // Lade die Flüge, sobald die App angezeigt wird
-      }
 
       function showAuth() {
         document.getElementById("auth-container").classList.remove("hidden");
@@ -2786,105 +2809,42 @@
       };
 
       // Event Listener für Eingabefelder und Initialisierung
-      document.addEventListener("DOMContentLoaded", async function () {
-        document
-          .getElementById("login-form")
-          .addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const email = document.getElementById("login-email").value;
-            const password = document.getElementById("login-password").value;
-            const { error } = await supabaseClient.auth.signInWithPassword({
-              email,
-              password,
+        document.addEventListener('DOMContentLoaded', async function () {
+            // Event-Listener NUR für die Auth-Formulare
+            document.getElementById('login-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('login-email').value;
+                const password = document.getElementById('login-password').value;
+                const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+                if (error) {
+                    document.getElementById('auth-error').textContent = error.message;
+                } else {
+                    window.location.reload(); // Seite nach Login neu laden für sauberen Zustand
+                }
             });
-            if (error) {
-              document.getElementById("auth-error").textContent = error.message;
-            } else {
-              showApp();
-            }
-          });
 
-        document
-          .getElementById("register-form")
-          .addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const email = document.getElementById("register-email").value;
-            const password = document.getElementById("register-password").value;
-            const { error } = await supabaseClient.auth.signUp({
-              email,
-              password,
+            document.getElementById('register-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('register-email').value;
+                const password = document.getElementById('register-password').value;
+                const { error } = await supabaseClient.auth.signUp({ email, password });
+                if (error) {
+                    document.getElementById('auth-error').textContent = error.message;
+                } else {
+                    showMessage('Registrierung erfolgreich!', 'Bitte bestätige deine E-Mail-Adresse, um dich einzuloggen.', 'success');
+                }
             });
-            if (error) {
-              document.getElementById("auth-error").textContent = error.message;
+
+            // Haupt-Logik: Prüfe, ob der Benutzer eingeloggt ist
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session) {
+                // Wenn ja, starte die komplette App-Logik
+                awaitinitializeApp();
             } else {
-              showMessage(
-                "Registrierung erfolgreich!",
-                "Bitte bestätige deine E-Mail-Adresse.",
-                "success"
-              );
+                // Wenn nein, zeige nur die Login-Maske
+                showAuth();
             }
-          });
-
-        // Überprüfe, ob der Benutzer bereits eingeloggt ist
-        const {
-          data: { session },
-        } = await supabaseClient.auth.getSession();
-        if (session) {
-          await showApp();
-          await migrateDataToSupabase();
-          await migrateAndLoadAirports();
-          await claimExistingFlights(); // << Für Migration Flüge auf User_ID
-        } else {
-          showAuth();
-        }
-
-        var departureInput = document.getElementById("departure");
-        var arrivalInput = document.getElementById("arrival");
-        var flightDateInput = document.getElementById("flightDate");
-
-        departureInput.addEventListener("input", function () {
-          updateAutocompleteList("departure", "departure-list");
-          updateFlightDetails();
         });
-        arrivalInput.addEventListener("input", function () {
-          updateAutocompleteList("arrival", "arrival-list");
-          updateFlightDetails();
-        });
-        departureInput.addEventListener("focus", function () {
-          updateAutocompleteList("departure", "departure-list");
-        });
-        arrivalInput.addEventListener("focus", function () {
-          updateAutocompleteList("arrival", "arrival-list");
-        });
-
-        flightDateInput.addEventListener("change", updateFlightDetails);
-
-        document.addEventListener("click", function (e) {
-          if (!e.target.closest(".autocomplete-container")) {
-            hideAllAutocompleteLists();
-          }
-        });
-        document
-          .getElementById("theme-toggle")
-          .addEventListener("click", toggleDarkMode);
-
-        // Event-Listener für die Foto-Vorschau
-        document
-          .getElementById("flightPhoto")
-          .addEventListener("change", (event) => {
-            const files = event.target.files;
-            const previewContainer = document.getElementById(
-              "photo-preview-container"
-            );
-            const previewText = document.getElementById("photo-preview-text");
-
-            if (files && files.length > 0) {
-              previewText.textContent = `${files.length} Foto(s) ausgewählt.`;
-              previewContainer.classList.remove("hidden");
-            } else {
-              previewContainer.classList.add("hidden");
-            }
-          });
 
         renderFlights();
         updateThemeIcon();
