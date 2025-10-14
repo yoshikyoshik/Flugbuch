@@ -2886,18 +2886,6 @@
             }
           });
 
-        // NEU: Leaflet-Karte initialisieren
-        map = L.map("flight-map-container").setView([20, 0], 2); // Startansicht: Zentrum, Zoomstufe
-
-        // Eine Kartenebene von OpenStreetMap hinzufügen (das ist die hochauflösende Karte)
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-          attribution:
-            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        }).addTo(map);
-
-        // Die Ebene für unsere Routen initialisieren und zur Karte hinzufügen
-        routeLayer = L.layerGroup().addTo(map);
-
         renderFlights();
         updateThemeIcon();
         showTab("stats");
