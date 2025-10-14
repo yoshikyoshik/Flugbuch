@@ -1,0 +1,3015 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+
+    <script>
+      if (
+        localStorage.theme === "dark" ||
+        (!("theme" in localStorage) &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches)
+      ) {
+        document.documentElement.classList.add("dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+      }
+    </script>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mein Digitales Flugbuch (Final Stabilisiert)</title>
+
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap");
+      body {
+        font-family: "Inter", sans-serif;
+        background-color: #f7f7f7;
+      }
+      .autocomplete-container {
+        position: relative;
+      }
+      .autocomplete-list {
+        position: absolute;
+        z-index: 10;
+        max-height: 200px;
+        overflow-y: auto;
+        border: 1px solid #ccc;
+        border-top: none;
+        background: white;
+        width: 100%;
+        border-radius: 0 0 8px 8px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+          0 2px 4px -2px rgba(0, 0, 0, 0.1);
+      }
+      .autocomplete-item:hover,
+      .autocomplete-item.active {
+        background-color: #e0e7ff;
+      }
+      #flight-log-list:not(:empty) > .log-placeholder {
+        display: none !important;
+      }
+
+      /* NEU: Eigener Stil für die Flugnummer-Labels auf der Karte */
+      .flight-number-label {
+        background-color: transparent;
+        border: none;
+        box-shadow: none;
+        color: #1e293b; /* Dunkles Schiefergrau */
+        font-weight: bold;
+        font-size: 10px;
+        /* Ein kleiner Schlagschatten hilft bei der Lesbarkeit auf der Karte */
+        text-shadow: 0 0 2px white, 0 0 3px white;
+      }
+
+      /* KARTEN-STIL: Fügt das statische Bild als Hintergrund ein */
+      #flight-map-container {
+        height: 300px;
+        border-radius: 8px;
+        margin-bottom: 24px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        position: relative;
+        overflow: hidden;
+        border: 1px solid #ccc;
+      }
+      /* Bild als Basisebene */
+      #static-world-map {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        z-index: 1;
+      }
+      /* SVG liegt über dem statischen Bild */
+      #route-svg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 10;
+      }
+
+      .sort-btn.active {
+        background-color: #4338ca; /* Indigo-700 */
+        color: white;
+      }
+      /* NEU: Styling für Toast-Benachrichtigungen */
+      .toast {
+        padding: 1rem;
+        border-radius: 0.5rem;
+        color: white;
+        font-size: 0.875rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+          0 2px 4px -2px rgba(0, 0, 0, 0.1);
+        opacity: 0; /* Startet unsichtbar */
+        transform: translateX(100%);
+        animation: slideInFadeIn 0.5s forwards,
+          slideOutFadeOut 0.5s 4.5s forwards;
+      }
+
+      .toast-success {
+        background-color: #10b981; /* Ein sattes Grün */
+      }
+      .toast-error {
+        background-color: #ef4444; /* Ein warnendes Rot */
+      }
+      .toast-info {
+        background-color: #3b82f6; /* Ein neutrales Blau */
+      }
+
+      .chart-view-btn.active {
+        background-color: #4338ca; /* Indigo-700 */
+        color: white;
+      }
+
+      /* NEU: Dark Mode Stile */
+      .dark body {
+        background-color: #111827;
+        color: #d1d5db;
+      }
+      .dark .bg-white {
+        background-color: #1f2937;
+        border-color: #374151;
+      }
+      .dark .bg-gray-100 {
+        background-color: #111827;
+      }
+      .dark .bg-gray-50 {
+        background-color: #1f2937;
+      }
+      .dark .bg-gray-200 {
+        background-color: #374151;
+      }
+      .dark .bg-gray-200:hover {
+        background-color: #4b5563;
+      }
+      .dark .bg-indigo-50 {
+        background-color: #1f2937;
+      }
+      .dark .bg-indigo-100 {
+        background-color: #374151;
+      }
+      .dark .border-gray-100 {
+        border-color: #374151;
+      }
+      .dark .border-gray-200 {
+        border-color: #4b5563;
+      }
+      .dark .border-indigo-200 {
+        border-color: #4f46e5;
+      }
+      .dark .text-gray-500 {
+        color: #9ca3af;
+      }
+      .dark .text-gray-600 {
+        color: #d1d5db;
+      }
+      .dark .text-gray-700 {
+        color: #e5e7eb;
+      }
+      .dark .text-gray-800 {
+        color: #f9fafb;
+      }
+      .dark .text-indigo-600 {
+        color: #818cf8;
+      }
+      .dark .text-indigo-700 {
+        color: #a5b4fc;
+      }
+      .dark .text-indigo-800 {
+        color: #c7d2fe;
+      }
+      .dark input,
+      .dark select,
+      .dark textarea {
+        background-color: #374151;
+        border-color: #4b5563;
+        color: #f9fafb;
+      }
+      .dark .autocomplete-list {
+        background: #1f2937;
+        border-color: #4b5563;
+      }
+      .dark .autocomplete-item:hover,
+      .dark .autocomplete-item.active {
+        background-color: #312e81;
+      }
+
+      .auth-tab {
+        color: #6b7280;
+      }
+      .dark .auth-tab {
+        color: #9ca3af;
+      }
+      .auth-tab.active-tab {
+        color: #4f46e5;
+        border-bottom: 2px solid #4f46e5;
+      }
+      .dark .auth-tab.active-tab {
+        color: #818cf8;
+        border-color: #818cf8;
+      }
+
+      @keyframes slideInFadeIn {
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+
+      @keyframes slideOutFadeOut {
+        from {
+          opacity: 1;
+          transform: translateX(0);
+        }
+        to {
+          opacity: 0;
+          transform: translateX(100%);
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-gray-100 dark:bg-gray-900">
+    <div
+      id="auth-container"
+      class="min-h-screen flex items-center justify-center p-4"
+    >
+      <div
+        class="w-full max-w-md bg-white dark:bg-gray-800 shadow-2xl rounded-xl p-8"
+      >
+        <h1
+          class="text-3xl font-extrabold text-indigo-700 dark:text-indigo-400 mb-6 text-center"
+        >
+          ✈️ Digitales Flugbuch
+        </h1>
+        <div id="auth-tabs" class="flex justify-center border-b mb-6">
+          <button
+            onclick="switchAuthTab('login')"
+            id="login-tab"
+            class="auth-tab active-tab px-4 py-2 font-semibold"
+          >
+            Login
+          </button>
+          <button
+            onclick="switchAuthTab('register')"
+            id="register-tab"
+            class="auth-tab px-4 py-2 font-semibold"
+          >
+            Registrieren
+          </button>
+        </div>
+
+        <form id="login-form" class="space-y-4">
+          <input
+            type="email"
+            id="login-email"
+            placeholder="E-Mail"
+            required
+            class="w-full p-3 rounded-lg border-gray-300 dark:bg-gray-700 dark:border-gray-600"
+          />
+          <input
+            type="password"
+            id="login-password"
+            placeholder="Passwort"
+            required
+            class="w-full p-3 rounded-lg border-gray-300 dark:bg-gray-700 dark:border-gray-600"
+          />
+          <button
+            type="submit"
+            class="w-full py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+          >
+            Einloggen
+          </button>
+        </form>
+
+        <form id="register-form" class="space-y-4 hidden">
+          <input
+            type="email"
+            id="register-email"
+            placeholder="E-Mail"
+            required
+            class="w-full p-3 rounded-lg border-gray-300 dark:bg-gray-700 dark:border-gray-600"
+          />
+          <input
+            type="password"
+            id="register-password"
+            placeholder="Passwort"
+            required
+            class="w-full p-3 rounded-lg border-gray-300 dark:bg-gray-700 dark:border-gray-600"
+          />
+          <button
+            type="submit"
+            class="w-full py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
+          >
+            Registrieren
+          </button>
+        </form>
+        <p id="auth-error" class="text-red-500 text-sm mt-4 text-center"></p>
+      </div>
+    </div>
+
+    <div
+      id="app-container"
+      class="hidden min-h-screen p-4 md:p-8 flex items-center justify-center"
+    >
+      <div
+        class="w-full max-w-4xl bg-white dark:bg-gray-800 shadow-2xl rounded-xl p-6 md:p-10 border border-gray-100 dark:border-gray-700"
+      >
+        <div class="flex justify-between items-center mb-2">
+          <h1
+            class="text-3xl md:text-4xl font-extrabold text-indigo-700 dark:text-indigo-400"
+          >
+            ✈️ Digitales Flugbuch
+          </h1>
+
+          <div class="flex items-center gap-4">
+            <span
+              id="user-display"
+              class="text-sm text-gray-500 dark:text-gray-400 hidden md:inline"
+            ></span>
+            <button
+              id="logout-btn"
+              onclick="logout()"
+              class="text-sm font-medium text-indigo-600 hover:text-indigo-800 p-2 rounded-lg bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 transition"
+            >
+              Logout
+            </button>
+
+            <button
+              id="theme-toggle"
+              type="button"
+              class="text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-lg text-sm p-2.5"
+            >
+              <svg
+                id="theme-toggle-dark-icon"
+                class="hidden w-5 h-5"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"
+                ></path>
+              </svg>
+              <svg
+                id="theme-toggle-light-icon"
+                class="hidden w-5 h-5"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm-.707 8.486a1 1 0 011.414 0l.707.707a1 1 0 11-1.414 1.414l-.707-.707a1 1 0 010-1.414zM4 11a1 1 0 100-2H3a1 1 0 100 2h1z"
+                  fill-rule="evenodd"
+                  clip-rule="evenodd"
+                ></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <p class="text-gray-500 dark:text-gray-400 mb-8">
+          Wählen Sie einen Flughafen aus der Liste oder geben Sie einen
+          Code/Namen manuell ein.
+        </p>
+
+        <h2
+          class="text-2xl font-bold text-gray-800 dark:text-white mb-4 border-b pb-2 border-gray-200 dark:border-gray-700"
+        >
+          Zuletzt geloggter/bearbeiteter Flug
+        </h2>
+        <div class="mb-6">
+          <p
+            id="map-info"
+            class="text-center text-sm text-gray-700 dark:text-gray-300 mb-2 italic"
+          >
+            Flugroute wird visualisiert.
+          </p>
+          <div
+            id="flight-map-container"
+            class="h-[300px] rounded-lg mb-6 shadow-lg z-0"
+          ></div>
+        </div>
+
+        <div>
+          <div class="border-b border-gray-200 dark:border-gray-700">
+            <nav class="flex -mb-px space-x-6" aria-label="Tabs">
+              <button
+                onclick="showTab('stats')"
+                id="tab-btn-stats"
+                class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm"
+              >
+                Statistiken
+              </button>
+              <button
+                onclick="showTab('charts')"
+                id="tab-btn-charts"
+                class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm"
+              >
+                Charts
+              </button>
+            </nav>
+          </div>
+          <div class="py-6">
+            <div id="tab-content-stats">
+              <div
+                id="statistics-panel"
+                class="grid grid-cols-2 md:grid-cols-4 gap-4 bg-gray-100 dark:bg-gray-900 p-4 rounded-lg text-center"
+              >
+                <div class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm">
+                  <p
+                    class="text-xs font-medium text-gray-700 dark:text-gray-400"
+                  >
+                    Gesamte Flüge
+                  </p>
+                  <p
+                    id="stat-count"
+                    class="text-xl font-bold text-indigo-800 dark:text-indigo-400"
+                  >
+                    0
+                  </p>
+                </div>
+                <div class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm">
+                  <p
+                    class="text-xs font-medium text-gray-700 dark:text-gray-400"
+                  >
+                    Gesamtdistanz
+                  </p>
+                  <p
+                    id="stat-distance"
+                    class="text-xl font-bold text-indigo-800 dark:text-indigo-400"
+                  >
+                    0 km
+                  </p>
+                </div>
+                <div class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm">
+                  <p
+                    class="text-xs font-medium text-gray-700 dark:text-gray-400"
+                  >
+                    Häufigster Flughafen
+                  </p>
+                  <p
+                    id="stat-frequent"
+                    class="text-sm font-bold text-indigo-800 dark:text-indigo-400"
+                  >
+                    -
+                  </p>
+                </div>
+                <div class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm">
+                  <p
+                    class="text-xs font-medium text-gray-700 dark:text-gray-400"
+                  >
+                    Daten-Export
+                  </p>
+                  <div class="flex space-x-2 mt-1 justify-center">
+                    <button
+                      onclick="exportData('csv')"
+                      class="text-xs py-1 px-2 bg-green-500 text-white rounded hover:bg-green-600 transition"
+                    >
+                      CSV</button
+                    ><button
+                      onclick="exportData('json')"
+                      class="text-xs py-1 px-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+                    >
+                      JSON
+                    </button>
+                  </div>
+                </div>
+                <div class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm">
+                  <p
+                    class="text-xs font-medium text-gray-700 dark:text-gray-400"
+                  >
+                    Längster Flug
+                  </p>
+                  <p
+                    id="stat-longest-flight"
+                    class="text-sm font-bold text-indigo-800 dark:text-indigo-400"
+                  >
+                    -
+                  </p>
+                </div>
+                <div class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm">
+                  <p
+                    class="text-xs font-medium text-gray-700 dark:text-gray-400"
+                  >
+                    Kürzester Flug
+                  </p>
+                  <p
+                    id="stat-shortest-flight"
+                    class="text-sm font-bold text-indigo-800 dark:text-indigo-400"
+                  >
+                    -
+                  </p>
+                </div>
+                <div class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm">
+                  <p
+                    class="text-xs font-medium text-gray-700 dark:text-gray-400"
+                  >
+                    Ø Flugdistanz
+                  </p>
+                  <p
+                    id="stat-avg-distance"
+                    class="text-xl font-bold text-indigo-800 dark:text-indigo-400"
+                  >
+                    0 km
+                  </p>
+                </div>
+                <div class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm">
+                  <p
+                    class="text-xs font-medium text-gray-700 dark:text-gray-400"
+                  >
+                    Häufigster Flugzeugtyp
+                  </p>
+                  <p
+                    id="stat-frequent-aircraft"
+                    class="text-sm font-bold text-indigo-800 dark:text-indigo-400"
+                  >
+                    -
+                  </p>
+                </div>
+                <div
+                  class="col-span-2 md:col-span-4 p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm"
+                >
+                  <div class="flex items-center justify-between">
+                    <p
+                      class="text-xs font-medium text-gray-700 dark:text-gray-400"
+                    >
+                      Jahreszusammenfassung
+                    </p>
+                    <select
+                      id="stat-year-select"
+                      class="text-xs p-1 rounded border-gray-300 dark:bg-gray-700 dark:border-gray-600"
+                    ></select>
+                  </div>
+                  <p
+                    id="stat-yearly-summary"
+                    class="text-lg font-bold text-indigo-800 dark:text-indigo-400 mt-2"
+                  >
+                    -
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div id="tab-content-charts" class="hidden">
+              <div
+                class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700"
+              >
+                <div
+                  class="flex justify-between items-center mb-4 border-b border-gray-200 dark:border-gray-600 pb-2"
+                >
+                  <h2
+                    class="text-2xl font-bold text-gray-800 dark:text-gray-100"
+                  >
+                    Visuelle Auswertungen
+                  </h2>
+                  <div class="flex items-center gap-2 text-sm">
+                    <button
+                      id="chart-view-year"
+                      onclick="setChartTimeframe('year')"
+                      class="chart-view-btn active px-3 py-1 rounded-md transition"
+                    >
+                      Pro Jahr
+                    </button>
+                    <button
+                      id="chart-view-month"
+                      onclick="setChartTimeframe('month')"
+                      class="chart-view-btn px-3 py-1 rounded-md transition"
+                    >
+                      Pro Monat
+                    </button>
+                  </div>
+                </div>
+                <div class="grid grid-cols-1 gap-8 mt-4">
+                  <div>
+                    <h3
+                      class="font-semibold text-center text-gray-700 dark:text-gray-300 mb-2"
+                    >
+                      Flüge pro Zeitraum
+                    </h3>
+                    <canvas id="flightsChart"></canvas>
+                  </div>
+                  <div>
+                    <h3
+                      class="font-semibold text-center text-gray-700 dark:text-gray-300 mb-2"
+                    >
+                      Distanz pro Zeitraum (km)
+                    </h3>
+                    <canvas id="distanceChart"></canvas>
+                  </div>
+                  <div>
+                    <h3
+                      class="font-semibold text-center text-gray-700 dark:text-gray-300 mb-2"
+                    >
+                      Flugzeit pro Zeitraum
+                    </h3>
+                    <canvas id="timeChart"></canvas>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="bg-indigo-50 dark:bg-gray-900 p-5 rounded-lg mb-6 shadow-inner"
+        >
+          <h2
+            class="text-xl font-semibold text-indigo-600 dark:text-indigo-400 mb-4"
+          >
+            Neuen Flug loggen
+          </h2>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div class="autocomplete-container">
+              <label
+                for="departure"
+                class="block text-sm font-medium text-gray-700"
+                >Abflugort (IATA/Name)</label
+              >
+              <input
+                type="text"
+                id="departure"
+                placeholder="z.B. FRA"
+                class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150"
+              />
+              <div
+                id="departure-list"
+                class="autocomplete-list hidden rounded-lg"
+              ></div>
+            </div>
+
+            <div class="autocomplete-container">
+              <label
+                for="arrival"
+                class="block text-sm font-medium text-gray-700"
+                >Zielort (IATA/Name)</label
+              >
+              <input
+                type="text"
+                id="arrival"
+                placeholder="z.B. JFK"
+                class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150"
+              />
+              <div
+                id="arrival-list"
+                class="autocomplete-list hidden rounded-lg"
+              ></div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+            <div>
+              <label
+                for="flightDate"
+                class="block text-sm font-medium text-gray-700"
+                >Flugdatum (Optional)</label
+              >
+              <input
+                type="date"
+                id="flightDate"
+                class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3"
+              />
+            </div>
+            <div>
+              <label
+                for="flightClass"
+                class="block text-sm font-medium text-gray-700"
+                >Klasse/Zweck (Optional)</label
+              >
+              <select
+                id="flightClass"
+                class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 bg-white"
+              >
+                <option value="Economy">Economy</option>
+                <option value="Business">Business</option>
+                <option value="First">First</option>
+                <option value="Privat">Privat</option>
+                <option value="Cargo">Cargo</option>
+              </select>
+            </div>
+            <div>
+              <label
+                for="flightNumber"
+                class="block text-sm font-medium text-gray-700"
+                >Flugnummer (Optional)</label
+              >
+              <input
+                type="text"
+                id="flightNumber"
+                placeholder="z.B. LH400"
+                class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3"
+              />
+            </div>
+            <div>
+              <label
+                for="aircraftType"
+                class="block text-sm font-medium text-gray-700"
+                >Flugzeugtyp (Optional)</label
+              >
+              <input
+                type="text"
+                id="aircraftType"
+                placeholder="z.B. B747-8"
+                class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3"
+              />
+            </div>
+          </div>
+
+          <div class="mb-6">
+            <label
+              for="flightPhoto"
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >Foto (Optional)</label
+            >
+            <input
+              type="file"
+              id="flightPhoto"
+              accept="image/*"
+              class="mt-1 block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+              multiple
+            />
+            <div id="photo-preview-container" class="hidden mt-2">
+              <p
+                id="photo-preview-text"
+                class="text-sm text-gray-600 dark:text-gray-400"
+              ></p>
+            </div>
+          </div>
+
+          <div class="mb-6">
+            <label for="notes" class="block text-sm font-medium text-gray-700"
+              >Bemerkungen (Optional)</label
+            >
+            <textarea
+              id="notes"
+              rows="2"
+              placeholder="Besondere Vorkommnisse oder persönliche Notizen..."
+              class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3"
+            ></textarea>
+          </div>
+
+          <div
+            class="grid grid-cols-2 gap-4 bg-indigo-100 p-4 rounded-lg border border-indigo-200 mb-4"
+          >
+            <div>
+              <p class="text-xs font-medium text-indigo-700">
+                Geschätzte Entfernung
+              </p>
+              <p
+                id="distance-display"
+                class="text-xl font-bold text-indigo-800"
+              >
+                -
+              </p>
+            </div>
+            <div>
+              <p class="text-xs font-medium text-indigo-700">
+                Geschätzte Flugzeit
+              </p>
+              <p id="time-display" class="text-xl font-bold text-indigo-800">
+                -
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-4">
+            <button
+              onclick="logFlight()"
+              id="log-button"
+              disabled
+              class="w-full py-3 px-4 border border-transparent rounded-lg shadow-lg text-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition duration-200 disabled:opacity-50"
+            >
+              Flug loggen und speichern
+            </button>
+            <button
+              onclick="resetForm()"
+              id="cancel-edit-button"
+              class="hidden w-1/3 py-3 px-4 border border-gray-300 rounded-lg shadow-lg text-lg font-medium text-gray-700 bg-white hover:bg-gray-100 transition duration-200"
+            >
+              Abbrechen
+            </button>
+          </div>
+        </div>
+
+        <div
+          class="flex items-center justify-between mb-4 border-b pb-2 border-gray-200 dark:border-gray-700"
+        >
+          <h2 class="text-2xl font-bold text-gray-800 dark:text-white">
+            Gespeicherte Flüge
+          </h2>
+          <div class="flex items-center space-x-4">
+            <button
+              id="toggle-map-view-btn"
+              onclick="toggleAllRoutesView()"
+              class="text-sm font-medium text-indigo-600 hover:text-indigo-800 p-2 rounded-lg bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 transition"
+            >
+              Alle Routen zeigen
+            </button>
+            <button
+              onclick="renderFlights()"
+              class="text-sm font-medium text-indigo-600 hover:text-indigo-800 flex items-center p-2 rounded-lg bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 transition"
+            >
+              Aktualisieren
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-gray-50 p-4 rounded-lg mb-4 border border-gray-200">
+          <h3 class="text-lg font-semibold text-gray-800 mb-3">
+            Flüge filtern
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+            <div>
+              <label
+                for="filter-departure"
+                class="block text-sm font-medium text-gray-700"
+                >Abflugort (IATA)</label
+              >
+              <input
+                type="text"
+                id="filter-departure"
+                placeholder="z.B. FRA"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2"
+              />
+            </div>
+
+            <div>
+              <label
+                for="filter-arrival"
+                class="block text-sm font-medium text-gray-700"
+                >Zielort (IATA)</label
+              >
+              <input
+                type="text"
+                id="filter-arrival"
+                placeholder="z.B. JFK"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2"
+              />
+            </div>
+
+            <div>
+              <label
+                for="filter-date-from"
+                class="block text-sm font-medium text-gray-700"
+                >Datum (von)</label
+              >
+              <input
+                type="date"
+                id="filter-date-from"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2"
+              />
+            </div>
+
+            <div>
+              <label
+                for="filter-date-to"
+                class="block text-sm font-medium text-gray-700"
+                >Datum (bis)</label
+              >
+              <input
+                type="date"
+                id="filter-date-to"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2"
+              />
+            </div>
+
+            <div class="flex space-x-2">
+              <button
+                onclick="applyFilters()"
+                class="w-full py-2 px-4 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition"
+              >
+                Filtern
+              </button>
+              <button
+                onclick="resetFilters()"
+                class="w-full py-2 px-4 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition"
+              >
+                Reset
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div
+          id="sort-bar"
+          class="flex items-center gap-2 mb-2 p-2 bg-gray-100 rounded-md text-sm font-semibold"
+        >
+          <span class="text-gray-600 mr-2">Sortieren nach:</span>
+          <button
+            id="sort-btn-flightLogNumber"
+            onclick="setSortOrder('flightLogNumber')"
+            class="sort-btn flex-shrink-0 px-3 py-1 rounded-md transition hover:bg-gray-300"
+          >
+            #
+          </button>
+          <button
+            id="sort-btn-date"
+            onclick="setSortOrder('date')"
+            class="sort-btn flex-shrink-0 px-3 py-1 rounded-md transition hover:bg-gray-300"
+          >
+            Datum
+          </button>
+          <button
+            id="sort-btn-departure"
+            onclick="setSortOrder('departure')"
+            class="sort-btn flex-grow px-3 py-1 rounded-md transition hover:bg-gray-300 text-left"
+          >
+            Route
+          </button>
+          <button
+            id="sort-btn-distance"
+            onclick="setSortOrder('distance')"
+            class="sort-btn flex-shrink-0 px-3 py-1 rounded-md transition hover:bg-gray-300"
+          >
+            Distanz
+          </button>
+        </div>
+
+        <div
+          id="flight-log-list"
+          class="space-y-3 max-h-96 overflow-y-auto pr-2"
+        ></div>
+
+        <div
+          id="pagination-controls"
+          class="flex justify-between items-center mt-4 text-sm text-gray-600 dark:text-gray-400"
+        >
+          <button
+            id="prev-page-btn"
+            onclick="prevPage()"
+            class="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            ‹ Zurück
+          </button>
+          <span id="page-info" class="font-semibold"></span>
+          <button
+            id="next-page-btn"
+            onclick="nextPage()"
+            class="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Weiter ›
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="toast-container" class="fixed top-5 right-5 z-50 space-y-2"></div>
+
+    <script src="api_service.js"></script>
+
+    <script>
+      // NEU: Supabase Client initialisieren
+      const SUPABASE_URL = "https://sbmjdwktxsnmukbooycu.supabase.co"; // <-- Hier URL einfügen
+      const SUPABASE_ANON_KEY =
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNibWpkd2t0eHNubXVrYm9veWN1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAyOTczNDgsImV4cCI6MjA3NTg3MzM0OH0.NN9EHfS7iyAZvFm_UYs3PxEWj2pMbYmMduUeVA70rpo"; // <-- Hier Key einfügen
+
+      const { createClient } = supabase;
+      const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+      /**
+       * Logon
+       *
+       */
+
+      function switchAuthTab(tab) {
+        const loginTab = document.getElementById("login-tab");
+        const registerTab = document.getElementById("register-tab");
+        const loginForm = document.getElementById("login-form");
+        const registerForm = document.getElementById("register-form");
+        document.getElementById("auth-error").textContent = "";
+
+        if (tab === "login") {
+          loginTab.classList.add("active-tab");
+          registerTab.classList.remove("active-tab");
+          loginForm.classList.remove("hidden");
+          registerForm.classList.add("hidden");
+        } else {
+          loginTab.classList.remove("active-tab");
+          registerTab.classList.add("active-tab");
+          loginForm.classList.add("hidden");
+          registerForm.classList.remove("hidden");
+        }
+      }
+
+      async function showApp() {
+        // Hole den aktuellen Benutzer, um seine E-Mail anzuzeigen
+        const {
+          data: { user },
+        } = await supabaseClient.auth.getUser();
+        if (user) {
+          document.getElementById("user-display").textContent = user.email;
+        }
+
+        document.getElementById("auth-container").classList.add("hidden");
+        document.getElementById("app-container").classList.remove("hidden");
+
+        // Lade die Flüge, sobald die App angezeigt wird (wichtig!)
+        // Dies war vorher im DOMContentLoaded, gehört aber logisch hierher.
+        if (!map) {
+          // Initialisiere die Karte nur einmal
+          map = L.map("flight-map-container").setView([20, 0], 2);
+          L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            attribution:
+              '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+          }).addTo(map);
+          routeLayer = L.layerGroup().addTo(map);
+        }
+
+        renderFlights(); // Lade die Flüge, sobald die App angezeigt wird
+      }
+
+      function showAuth() {
+        document.getElementById("auth-container").classList.remove("hidden");
+        document.getElementById("app-container").classList.add("hidden");
+        // Hier könnten wir noch einen Logout-Button hinzufügen
+      }
+
+      /**
+       * Loggt den aktuellen Benutzer aus und lädt die Seite neu.
+       */
+      async function logout() {
+        const { error } = await supabaseClient.auth.signOut();
+        if (error) {
+          console.error("Error logging out:", error);
+          showMessage("Logout-Fehler", error.message, "error");
+        } else {
+          // Lade die Seite neu, um den Zustand komplett zurückzusetzen.
+          // Die Seite wird dann automatisch die Login-Maske anzeigen.
+          window.location.reload();
+        }
+      }
+
+      /**
+       * Führt ein einmaliges Update durch, um alle "herrenlosen" Flüge
+       * dem aktuell eingeloggten Benutzer zuzuordnen.
+       */
+      async function claimExistingFlights() {
+        if (localStorage.getItem("flights_claimed") === "true") {
+          return; // Wurde bereits ausgeführt
+        }
+
+        const {
+          data: { user },
+        } = await supabaseClient.auth.getUser();
+
+        if (user) {
+          console.log(
+            `Beanspruche bestehende Flüge für Benutzer ${user.id}...`
+          );
+
+          const { error } = await supabaseClient
+            .from("flights")
+            .update({ user_id: user.id }) // Setze die user_id des aktuellen Benutzers
+            .is("user_id", null); // ... aber nur für die Zeilen, wo sie bisher NULL ist
+
+          if (error) {
+            console.error("Fehler beim Beanspruchen der Flüge:", error);
+          } else {
+            console.log("Flüge erfolgreich beansprucht!");
+            localStorage.setItem("flights_claimed", "true"); // Merken, dass es erledigt ist
+          }
+        }
+      }
+
+      /**
+       * Migriert alte Flughafendaten aus dem localStorage nach Supabase (falls nötig)
+       * und lädt anschließend alle Flughäfen aus der Supabase-Tabelle in das 'airportData'-Objekt.
+       */
+      async function migrateAndLoadAirports() {
+        // Schritt A: Einmalige Migration durchführen
+        if (localStorage.getItem("airports_migrated") !== "true") {
+          console.log(
+            "Starte einmalige Migration der Flughäfen von localStorage nach Supabase..."
+          );
+          const cachedAirportsJSON = localStorage.getItem("cachedAirports");
+          const cachedAirports = cachedAirportsJSON
+            ? JSON.parse(cachedAirportsJSON)
+            : {};
+
+          const airportsToInsert = Object.keys(cachedAirports).map((iata) => ({
+            iata: iata,
+            name: cachedAirports[iata].name,
+            lat: cachedAirports[iata].lat,
+            lon: cachedAirports[iata].lon,
+          }));
+
+          if (airportsToInsert.length > 0) {
+            const { error } = await supabaseClient
+              .from("airports")
+              .insert(airportsToInsert);
+            if (error) {
+              console.error("Fehler bei der Flughafen-Migration:", error);
+            } else {
+              console.log("Flughafen-Migration erfolgreich!");
+              localStorage.setItem("airports_migrated", "true");
+              localStorage.removeItem("cachedAirports"); // Alte Daten aufräumen
+            }
+          } else {
+            localStorage.setItem("airports_migrated", "true"); // Auch als erledigt markieren, wenn nichts zu tun war
+          }
+        }
+
+        // Schritt B: Alle Flughäfen aus Supabase laden und in 'airportData' mergen
+        const { data, error } = await supabaseClient
+          .from("airports")
+          .select("*");
+        if (error) {
+          console.error("Fehler beim Laden der Flughäfen aus Supabase:", error);
+          return;
+        }
+
+        // Wandle die geladenen Daten in das Format um, das 'airportData' erwartet
+        data.forEach((airport) => {
+          airportData[airport.iata] = {
+            name: airport.name,
+            lat: airport.lat,
+            lon: airport.lon,
+          };
+        });
+        console.log(`${data.length} Flughäfen aus der Datenbank geladen.`);
+      }
+
+      /**
+       * Führt eine einmalige Migration der Daten von localStorage nach Supabase durch.
+       */
+      async function migrateDataToSupabase() {
+        if (localStorage.getItem("supabase_migrated") === "true") {
+          return; // Migration wurde bereits durchgeführt
+        }
+
+        console.log(
+          "Starte einmalige Datenmigration von localStorage nach Supabase..."
+        );
+        const oldFlightsJson = localStorage.getItem("flightLog");
+        const oldFlights = oldFlightsJson ? JSON.parse(oldFlightsJson) : [];
+
+        if (oldFlights.length > 0) {
+          // Die alte ID muss in 'flight_id' umbenannt werden, da 'id' für Supabase reserviert ist
+          const flightsToInsert = oldFlights.map((flight) => {
+            return {
+              flight_id: flight.id, // ID umbenennen
+              date: flight.date,
+              departure: flight.departure,
+              arrival: flight.arrival,
+              distance: flight.distance,
+              time: flight.time,
+              class: flight.class,
+              flightNumber: flight.flightNumber,
+              aircraftType: flight.aircraftType,
+              notes: flight.notes,
+              depLat: flight.depLat,
+              depLon: flight.depLon,
+              arrLat: flight.arrLat,
+              arrLon: flight.arrLon,
+              depName: flight.depName,
+              arrName: flight.arrName,
+              flightLogNumber: flight.flightLogNumber,
+            };
+          });
+
+          const { error } = await supabaseClient
+            .from("flights")
+            .insert(flightsToInsert);
+
+          if (error) {
+            console.error("Fehler bei der Migration:", error);
+            showMessage(
+              "Migrations-Fehler",
+              "Daten konnten nicht zu Supabase migriert werden.",
+              "error"
+            );
+          } else {
+            console.log("Migration erfolgreich!");
+            localStorage.setItem("supabase_migrated", "true");
+            // Optional: Alte Daten löschen
+            // localStorage.removeItem('flightLog');
+          }
+        } else {
+          // Keine alten Daten vorhanden, Migration als erledigt markieren
+          localStorage.setItem("supabase_migrated", "true");
+        }
+      }
+
+      /**
+       * Steuert die Tab-Navigation zwischen Statistiken und Charts.
+       * @param {'stats' | 'charts'} tabName - Der Name des zu aktivierenden Tabs.
+       */
+      function showTab(tabName) {
+        // Alle Inhalte verstecken
+        document.getElementById("tab-content-stats").classList.add("hidden");
+        document.getElementById("tab-content-charts").classList.add("hidden");
+
+        // Alle Buttons als inaktiv markieren
+        document
+          .getElementById("tab-btn-stats")
+          .classList.remove("border-indigo-500", "text-indigo-600");
+        document
+          .getElementById("tab-btn-stats")
+          .classList.add(
+            "border-transparent",
+            "text-gray-500",
+            "hover:text-gray-700",
+            "hover:border-gray-300"
+          );
+        document
+          .getElementById("tab-btn-charts")
+          .classList.remove("border-indigo-500", "text-indigo-600");
+        document
+          .getElementById("tab-btn-charts")
+          .classList.add(
+            "border-transparent",
+            "text-gray-500",
+            "hover:text-gray-700",
+            "hover:border-gray-300"
+          );
+
+        // Den ausgewählten Tab und Button aktivieren
+        if (tabName === "stats") {
+          document
+            .getElementById("tab-content-stats")
+            .classList.remove("hidden");
+          document
+            .getElementById("tab-btn-stats")
+            .classList.add("border-indigo-500", "text-indigo-600");
+          document
+            .getElementById("tab-btn-stats")
+            .classList.remove(
+              "border-transparent",
+              "text-gray-500",
+              "hover:text-gray-700",
+              "hover:border-gray-300"
+            );
+        } else if (tabName === "charts") {
+          document
+            .getElementById("tab-content-charts")
+            .classList.remove("hidden");
+          document
+            .getElementById("tab-btn-charts")
+            .classList.add("border-indigo-500", "text-indigo-600");
+          document
+            .getElementById("tab-btn-charts")
+            .classList.remove(
+              "border-transparent",
+              "text-gray-500",
+              "hover:text-gray-700",
+              "hover:border-gray-300"
+            );
+        }
+      }
+
+      /**
+       * Aktualisiert das Sonnen-/Mond-Icon basierend auf dem aktuellen Theme.
+       */
+      function updateThemeIcon() {
+        const isDarkMode = document.documentElement.classList.contains("dark");
+        document
+          .getElementById("theme-toggle-dark-icon")
+          .classList.toggle("hidden", !isDarkMode);
+        document
+          .getElementById("theme-toggle-light-icon")
+          .classList.toggle("hidden", isDarkMode);
+      }
+
+      /**
+       * Schaltet den Dark Mode um, speichert die Einstellung und aktualisiert das Icon.
+       */
+      function toggleDarkMode() {
+        document.documentElement.classList.toggle("dark");
+        if (document.documentElement.classList.contains("dark")) {
+          localStorage.setItem("theme", "dark");
+        } else {
+          localStorage.setItem("theme", "light");
+        }
+        updateThemeIcon();
+      }
+
+      let map; // Globale Variable für das Leaflet-Kartenobjekt
+      let routeLayer; // Eine Ebene, um Marker und Linien zu gruppieren und einfach zu löschen
+      let currentlyEditingFlightData = null; // Speichert die ID des Flugs, der gerade bearbeitet wird
+      let isAllRoutesViewActive = false; // Steuert ob alle Routen angezeigt werden
+      let currentSort = { key: "flightLogNumber", direction: "asc" }; // Steuert die Sortierung
+      // Paginierungs-Variablen
+      let currentPage = 1;
+      const ITEMS_PER_PAGE = 5;
+      // Globale Variablen für die Chart-Instanzen
+      let flightsChartInstance, distanceChartInstance, timeChartInstance;
+      let currentChartTimeframe = "year";
+
+      // --- Mock Airport Data (MASSIV ERWEITERT AUF TOP 100+ HUBS) ---
+      var airportData = {
+        FRA: { name: "Frankfurt", lat: 50.0333, lon: 8.5706 },
+        MUC: { name: "München", lat: 48.3538, lon: 11.7861 },
+        BER: { name: "Berlin Brandenburg", lat: 52.3667, lon: 13.5033 },
+        HAM: { name: "Hamburg", lat: 53.6304, lon: 9.9882 },
+        DUS: { name: "Düsseldorf", lat: 51.2895, lon: 6.7667 },
+        VIE: { name: "Wien", lat: 48.1103, lon: 16.5697 },
+        ZRH: { name: "Zürich", lat: 47.4647, lon: 8.5492 },
+        AMS: { name: "Amsterdam Schiphol", lat: 52.3086, lon: 4.7638 },
+        LHR: { name: "London Heathrow", lat: 51.47, lon: -0.4543 },
+        CDG: { name: "Paris Charles de Gaulle", lat: 49.0097, lon: 2.5479 },
+        IST: { name: "Istanbul", lat: 41.2619, lon: 28.7361 },
+        JFK: { name: "New York JFK", lat: 40.6413, lon: -73.7781 },
+        LAX: { name: "Los Angeles Intl", lat: 33.9416, lon: -118.4085 },
+        ATL: { name: "Atlanta Intl", lat: 33.6407, lon: -84.4277 },
+        DXB: { name: "Dubai Intl", lat: 25.2532, lon: 55.3653 },
+        SIN: { name: "Singapur Changi", lat: 1.3644, lon: 103.9915 },
+        NRT: { name: "Tokio Narita", lat: 35.7647, lon: 140.3864 },
+        SYD: { name: "Sydney Intl", lat: -33.9461, lon: 151.1772 },
+        HND: { name: "Tokio Haneda", lat: 35.5523, lon: 139.7797 },
+        ICN: { name: "Seoul Incheon", lat: 37.4692, lon: 126.4505 },
+        PEK: { name: "Peking Capital", lat: 40.0799, lon: 116.6031 },
+        PVG: { name: "Shanghai Pudong", lat: 31.1434, lon: 121.7876 },
+        DFW: { name: "Dallas/Fort Worth", lat: 32.8998, lon: -97.0403 },
+        ORD: { name: "Chicago O'Hare", lat: 41.9742, lon: -87.9073 },
+        MAD: { name: "Madrid Barajas", lat: 40.4839, lon: -3.5679 },
+        BCN: { name: "Barcelona-El Prat", lat: 41.2974, lon: 2.0787 },
+        FCO: { name: "Rom Fiumicino", lat: 41.8003, lon: 12.2389 },
+        DOH: { name: "Doha Hamad Intl", lat: 25.273, lon: 51.608 },
+        GRU: { name: "São Paulo Guarulhos", lat: -23.4356, lon: -46.4731 },
+        CPT: { name: "Kapstadt", lat: -33.9692, lon: 18.6017 },
+        JNB: { name: "Johannesburg OR Tambo", lat: -26.1367, lon: 28.2435 },
+        SFO: { name: "San Francisco Intl", lat: 37.6213, lon: -122.379 },
+        // Füllen Sie diese Liste bei Bedarf weiter auf
+      };
+
+      // *** Find Airport (SYNCHRON und STABIL) ***
+      var findAirport = function (input) {
+        const normalizedInput = input.trim().toUpperCase();
+        if (normalizedInput.length === 3 && airportData[normalizedInput]) {
+          return { code: normalizedInput, ...airportData[normalizedInput] };
+        }
+        for (const code in airportData) {
+          if (airportData[code].name.toUpperCase().includes(normalizedInput)) {
+            return { code: code, ...airportData[code] };
+          }
+        }
+        return null;
+      };
+
+      // --- HILFSFUNKTIONEN (Distanz/Zeit/etc.) ---
+      var calculateDistance = function (lat1, lon1, lat2, lon2) {
+        var R = 6371;
+        var toRad = (degree) => degree * (Math.PI / 180);
+        var dLat = toRad(lat2 - lat1);
+        var dLon = toRad(lon2 - lon1);
+        var a =
+          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+          Math.cos(toRad(lat1)) *
+            Math.cos(toRad(lat2)) *
+            Math.sin(dLon / 2) *
+            Math.sin(dLon / 2);
+        var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+      };
+      var estimateFlightTime = function (distanceKm) {
+        var averageSpeedKmh = 850;
+        var extraMinutes = 30;
+        var flightHours = distanceKm / averageSpeedKmh;
+        var totalMinutes = flightHours * 60 + extraMinutes;
+        var hours = Math.floor(totalMinutes / 60);
+        var minutes = Math.round(totalMinutes % 60);
+        if (distanceKm < 100) return "Kurzflug (< 30 Min.)";
+        return `${hours} Std. ${minutes} Min.`;
+      };
+
+      /**
+       * Lädt eine Liste von Dateien zu Supabase Storage hoch.
+       * @param {FileList} files - Die Liste der Dateien aus dem <input type="file">.
+       * @returns {Promise<Array<string>>} Ein Promise, das zu einem Array der öffentlichen Foto-URLs auflöst.
+       */
+      async function uploadFlightPhotos(files) {
+        if (!files || files.length === 0) {
+          return []; // Gib ein leeres Array zurück, wenn keine Dateien da sind
+        }
+
+        const photoUrls = [];
+
+        for (const file of files) {
+          const filePath = `public/${Date.now()}-${file.name}`; // Eindeutiger Dateipfad
+
+          const { error: uploadError } = await supabaseClient.storage
+            .from("flight-photos")
+            .upload(filePath, file);
+
+          if (uploadError) {
+            console.error("Fehler beim Hochladen der Datei:", uploadError);
+            showMessage(
+              "Upload-Fehler",
+              `Foto ${file.name} konnte nicht hochgeladen werden.`,
+              "error"
+            );
+            continue; // Mache mit der nächsten Datei weiter
+          }
+
+          // Öffentliche URL der gerade hochgeladenen Datei abrufen
+          const { data } = supabaseClient.storage
+            .from("flight-photos")
+            .getPublicUrl(filePath);
+
+          if (data.publicUrl) {
+            photoUrls.push(data.publicUrl);
+          }
+        }
+        return photoUrls;
+      }
+
+      const cacheAndSaveAirport = async (airport) => {
+        if (airport && !airportData[airport.code]) {
+          // Zum In-Memory-Objekt für die aktuelle Sitzung hinzufügen
+          airportData[airport.code] = {
+            name: airport.name,
+            lat: airport.lat,
+            lon: airport.lon,
+          };
+
+          // Persistent in der Supabase-Tabelle speichern/aktualisieren
+          const { error } = await supabaseClient.from("airports").upsert({
+            iata: airport.code,
+            name: airport.name,
+            lat: airport.lat,
+            lon: airport.lon,
+          });
+
+          if (error) {
+            console.error(
+              "Fehler beim Speichern des neuen Flughafens in Supabase:",
+              error
+            );
+          }
+        }
+      };
+
+      var showMessage = function (title, message, type = "info") {
+        // Neuer 'type' Parameter
+        const container = document.getElementById("toast-container");
+        if (!container) return;
+
+        const toast = document.createElement("div");
+
+        // Bestimme die CSS-Klasse basierend auf dem Typ
+        let typeClass = "toast-info";
+        if (type === "success") typeClass = "toast-success";
+        if (type === "error") typeClass = "toast-error";
+
+        toast.className = `toast ${typeClass}`;
+        toast.innerHTML = `<strong class="block">${title}</strong> ${message}`;
+
+        container.appendChild(toast);
+
+        // Entferne das Toast-Element nach 5 Sekunden aus dem DOM
+        setTimeout(() => {
+          toast.remove();
+        }, 5000);
+      };
+
+      async function getFlights() {
+        const { data, error } = await supabaseClient
+          .from("flights")
+          .select("*");
+        if (error) {
+          console.error("Fehler beim Laden der Flüge:", error);
+          return [];
+        }
+        // Wandel die Daten zurück in das Format, das deine App erwartet (id statt flight_id)
+        return data.map((flight) => ({ ...flight, id: flight.flight_id }));
+      }
+
+      var calculateStatistics = function (flights) {
+        var stats = {
+          totalCount: flights.length,
+          totalDistance: 0,
+          airportUsage: {},
+          frequentAirport: "-",
+          // Neue Statistik-Properties
+          longestFlight: null,
+          shortestFlight: null,
+          averageDistance: 0,
+          aircraftUsage: {},
+          frequentAircraft: "-",
+          yearlyData: {},
+        };
+
+        if (flights.length === 0) return stats;
+
+        flights.forEach(function (flight) {
+          stats.totalDistance += flight.distance;
+
+          // 1. Längsten/kürzesten Flug finden
+          if (
+            !stats.longestFlight ||
+            flight.distance > stats.longestFlight.distance
+          ) {
+            stats.longestFlight = flight;
+          }
+          if (
+            !stats.shortestFlight ||
+            flight.distance < stats.shortestFlight.distance
+          ) {
+            stats.shortestFlight = flight;
+          }
+
+          // 2. Flugzeugtyp-Nutzung zählen
+          if (flight.aircraftType && flight.aircraftType.trim() !== "") {
+            const type = flight.aircraftType.trim().toUpperCase();
+            stats.aircraftUsage[type] = (stats.aircraftUsage[type] || 0) + 1;
+          }
+
+          // 3. Jahresdaten sammeln
+          const year = flight.date.substring(0, 4);
+          if (!stats.yearlyData[year]) {
+            stats.yearlyData[year] = { count: 0, distance: 0 };
+          }
+          stats.yearlyData[year].count++;
+          stats.yearlyData[year].distance += flight.distance;
+
+          // Bestehende Logik
+          stats.airportUsage[flight.departure] =
+            (stats.airportUsage[flight.departure] || 0) + 1;
+          stats.airportUsage[flight.arrival] =
+            (stats.airportUsage[flight.arrival] || 0) + 1;
+        });
+
+        // Berechnungen nach der Schleife
+        stats.averageDistance = Math.round(
+          stats.totalDistance / stats.totalCount
+        );
+
+        // Häufigsten Flughafen finden
+        let maxCount = 0;
+        for (var code in stats.airportUsage) {
+          if (stats.airportUsage[code] > maxCount) {
+            maxCount = stats.airportUsage[code];
+            stats.frequentAirport = airportData[code]
+              ? `${airportData[code].name} (${code})`
+              : code;
+          }
+        }
+
+        // Häufigsten Flugzeugtyp finden
+        let maxAircraftCount = 0;
+        for (var type in stats.aircraftUsage) {
+          if (stats.aircraftUsage[type] > maxAircraftCount) {
+            maxAircraftCount = stats.aircraftUsage[type];
+            stats.frequentAircraft = `${type} (${maxAircraftCount}x)`;
+          }
+        }
+
+        return stats;
+      };
+      var updateStatisticsDisplay = function (flights) {
+        var stats = calculateStatistics(flights);
+
+        // Bestehende Statistiken
+        document.getElementById("stat-count").textContent =
+          stats.totalCount.toLocaleString("de-DE");
+        document.getElementById(
+          "stat-distance"
+        ).textContent = `${stats.totalDistance.toLocaleString("de-DE")} km`;
+        document.getElementById("stat-frequent").textContent =
+          stats.frequentAirport;
+
+        // Neue Statistiken
+        document.getElementById(
+          "stat-avg-distance"
+        ).textContent = `${stats.averageDistance.toLocaleString("de-DE")} km`;
+        document.getElementById("stat-frequent-aircraft").textContent =
+          stats.frequentAircraft;
+
+        if (stats.longestFlight) {
+          document.getElementById("stat-longest-flight").textContent = `${
+            stats.longestFlight.departure
+          } → ${
+            stats.longestFlight.arrival
+          } (${stats.longestFlight.distance.toLocaleString("de-DE")} km)`;
+        } else {
+          document.getElementById("stat-longest-flight").textContent = "-";
+        }
+
+        if (stats.shortestFlight) {
+          document.getElementById("stat-shortest-flight").textContent = `${
+            stats.shortestFlight.departure
+          } → ${
+            stats.shortestFlight.arrival
+          } (${stats.shortestFlight.distance.toLocaleString("de-DE")} km)`;
+        } else {
+          document.getElementById("stat-shortest-flight").textContent = "-";
+        }
+
+        // Logik für die Jahreszusammenfassung
+        const yearSelect = document.getElementById("stat-year-select");
+        const yearlySummary = document.getElementById("stat-yearly-summary");
+        yearSelect.innerHTML = ""; // Dropdown leeren
+
+        const years = Object.keys(stats.yearlyData).sort((a, b) => b - a); // Jahre absteigend sortieren
+
+        if (years.length > 0) {
+          years.forEach((year) => {
+            const option = document.createElement("option");
+            option.value = year;
+            option.textContent = year;
+            yearSelect.appendChild(option);
+          });
+
+          const updateYearlyDisplay = (year) => {
+            const data = stats.yearlyData[year];
+            yearlySummary.textContent = `${
+              data.count
+            } Flüge | ${data.distance.toLocaleString("de-DE")} km`;
+          };
+
+          yearSelect.onchange = (event) => {
+            updateYearlyDisplay(event.target.value);
+          };
+
+          // Initialen Wert für das aktuellste Jahr anzeigen
+          updateYearlyDisplay(years[0]);
+          yearSelect.style.display = "inline-block";
+        } else {
+          yearlySummary.textContent = "Keine Jahresdaten verfügbar.";
+          yearSelect.style.display = "none";
+        }
+      };
+
+      /**
+       * Eine Hilfsfunktion, die einen Flugzeit-String (z.B. "3 Std. 45 Min.") in Minuten umwandelt.
+       * @param {string} timeString - Der Flugzeit-String.
+       * @returns {number} Die Gesamtflugzeit in Minuten.
+       */
+      function parseFlightTimeToMinutes(timeString) {
+        if (!timeString || !timeString.includes("Std.")) return 0;
+        const parts = timeString.match(/(\d+)\s*Std\.\s*(\d+)\s*Min\./);
+        if (parts && parts.length === 3) {
+          return parseInt(parts[1]) * 60 + parseInt(parts[2]);
+        }
+        return 0;
+      }
+
+      /**
+       * Setzt den Zeitraum für die Charts und löst eine Aktualisierung aus.
+       * @param {'year' | 'month'} timeframe
+       */
+      async function setChartTimeframe(timeframe) {
+        currentChartTimeframe = timeframe; // Neuen Zeitraum speichern
+        const flights = await getFlights(); // Immer die kompletten, aktuellen Daten laden
+        updateCharts(flights, currentChartTimeframe); // Charts mit den neuen Daten und dem neuen Zeitraum aktualisieren
+      }
+
+      /**
+       * Zeichnet alle Diagramme basierend auf den aufbereiteten Daten.
+       * Zerstört alte Diagramme, bevor neue gezeichnet werden.
+       * @param {Array<string>} labels - Die Labels für die X-Achse (z.B. ['2024', '2025']).
+       * @param {Array<number>} flightsData - Die Daten für die Anzahl der Flüge.
+       * @param {Array<number>} distanceData - Die Daten für die Distanz.
+       * @param {Array<number>} timeData - Die Daten für die Flugzeit in Minuten.
+       */
+      function renderAllCharts(labels, flightsData, distanceData, timeData) {
+        // Alte Chart-Instanzen zerstören, falls vorhanden
+        if (flightsChartInstance) flightsChartInstance.destroy();
+        if (distanceChartInstance) distanceChartInstance.destroy();
+        if (timeChartInstance) timeChartInstance.destroy();
+
+        const isDarkMode = document.documentElement.classList.contains("dark");
+        const gridColor = isDarkMode
+          ? "rgba(255, 255, 255, 0.1)"
+          : "rgba(0, 0, 0, 0.1)";
+        const labelColor = isDarkMode ? "#d1d5db" : "#374151";
+
+        // 1. Flüge pro Zeitraum (Balkendiagramm)
+        flightsChartInstance = new Chart(
+          document.getElementById("flightsChart"),
+          {
+            type: "bar",
+            data: {
+              labels: labels,
+              datasets: [
+                {
+                  label: "Anzahl der Flüge",
+                  data: flightsData,
+                  backgroundColor: "rgba(79, 70, 229, 0.8)",
+                  borderColor: "rgba(79, 70, 229, 1)",
+                  borderWidth: 1,
+                },
+              ],
+            },
+            options: {
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  ticks: { color: labelColor },
+                  grid: { color: gridColor },
+                },
+                x: { ticks: { color: labelColor }, grid: { color: gridColor } },
+              },
+            },
+          }
+        );
+
+        // 2. Distanz pro Zeitraum (Liniendiagramm)
+        distanceChartInstance = new Chart(
+          document.getElementById("distanceChart"),
+          {
+            type: "line",
+            data: {
+              labels: labels,
+              datasets: [
+                {
+                  label: "Gesamtdistanz (km)",
+                  data: distanceData,
+                  fill: false,
+                  borderColor: "rgba(22, 163, 74, 1)",
+                  tension: 0.1,
+                },
+              ],
+            },
+            options: {
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  ticks: { color: labelColor },
+                  grid: { color: gridColor },
+                },
+                x: { ticks: { color: labelColor }, grid: { color: gridColor } },
+              },
+            },
+          }
+        );
+
+        // 3. Flugzeit pro Zeitraum (Liniendiagramm)
+        timeChartInstance = new Chart(document.getElementById("timeChart"), {
+          type: "line",
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                label: "Gesamtflugzeit",
+                data: timeData,
+                fill: false,
+                borderColor: "rgba(219, 39, 119, 1)",
+                tension: 0.1,
+              },
+            ],
+          },
+          options: {
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: { color: labelColor },
+                grid: { color: gridColor },
+              },
+              x: { ticks: { color: labelColor }, grid: { color: gridColor } },
+            },
+            plugins: {
+              tooltip: {
+                callbacks: {
+                  label: function (context) {
+                    let label = context.dataset.label || "";
+                    if (label) label += ": ";
+                    const totalMinutes = context.parsed.y;
+                    const hours = Math.floor(totalMinutes / 60);
+                    const minutes = totalMinutes % 60;
+                    return `${label}${hours} Std. ${minutes} Min.`;
+                  },
+                },
+              },
+            },
+          },
+        });
+      }
+
+      /**
+       * Hauptfunktion zum Aufbereiten der Flugdaten und Aktualisieren der Charts.
+       * @param {Array<Object>} allFlights - Das Array mit allen Flug-Objekten.
+       * @param {string} timeframe - Entweder 'year' oder 'month'.
+       */
+      function updateCharts(allFlights, timeframe = "year") {
+        // Zeile entfernt: const allFlights = getFlights();
+
+        if (!allFlights || allFlights.length === 0) {
+          // Optional: Verstecke oder leere die Charts, wenn keine Daten da sind
+          if (flightsChartInstance) flightsChartInstance.destroy();
+          if (distanceChartInstance) distanceChartInstance.destroy();
+          if (timeChartInstance) timeChartInstance.destroy();
+          return;
+        }
+
+        const aggregatedData = {};
+
+        allFlights.forEach((flight) => {
+          const key =
+            timeframe === "year"
+              ? flight.date.substring(0, 4)
+              : flight.date.substring(0, 7);
+          if (!aggregatedData[key]) {
+            aggregatedData[key] = { count: 0, distance: 0, time: 0 };
+          }
+          aggregatedData[key].count++;
+          aggregatedData[key].distance += flight.distance;
+          aggregatedData[key].time += parseFlightTimeToMinutes(flight.time);
+        });
+
+        const sortedLabels = Object.keys(aggregatedData).sort();
+
+        const flightsData = sortedLabels.map(
+          (label) => aggregatedData[label].count
+        );
+        const distanceData = sortedLabels.map(
+          (label) => aggregatedData[label].distance
+        );
+        const timeData = sortedLabels.map(
+          (label) => aggregatedData[label].time
+        );
+
+        renderAllCharts(sortedLabels, flightsData, distanceData, timeData);
+
+        document
+          .getElementById("chart-view-year")
+          .classList.toggle("active", timeframe === "year");
+        document
+          .getElementById("chart-view-month")
+          .classList.toggle("active", timeframe === "month");
+      }
+
+      window.exportData = function (format) {
+        var flights = getFlights();
+        var stats = calculateStatistics(flights);
+        var filename = `flugbuch_export_${new Date()
+          .toISOString()
+          .slice(0, 10)}`;
+        var data, mimeType;
+        if (flights.length === 0) {
+          showMessage(
+            "Export Fehler",
+            "Keine Daten zum Exportieren vorhanden.",
+            "error"
+          );
+          return;
+        }
+        if (format === "json") {
+          var exportObj = {
+            metadata: {
+              totalFlights: stats.totalCount,
+              totalDistanceKm: stats.totalDistance,
+              totalFlightTime: stats.totalTimeString,
+              frequentAirport: stats.frequentAirport,
+            },
+            flights: flights,
+          };
+          data = JSON.stringify(exportObj, null, 2);
+          mimeType = "application/json";
+          filename += ".json";
+        } else if (format === "csv") {
+          var separator = ";";
+          var statsRows = [
+            ["Statistik", "Wert"],
+            ["Gesamte Flüge", stats.totalCount],
+            ["Gesamtdistanz (km)", stats.totalDistance],
+            ["Gesch. Gesamtflugzeit", stats.totalTimeString],
+            ["Häufigster Flughafen", stats.frequentAirport],
+          ]
+            .map(function (row) {
+              return row.join(separator);
+            })
+            .join("\n");
+          statsRows += "\n\n";
+          var flightKeys = [
+            "id",
+            "date",
+            "departure",
+            "arrival",
+            "distance",
+            "time",
+            "class",
+            "flightNumber",
+            "aircraftType",
+            "notes",
+          ];
+          var headers = flightKeys.join(separator);
+          var csvRows = flights
+            .map(function (flight) {
+              return flightKeys
+                .map(function (key) {
+                  var value =
+                    flight[key] !== undefined && flight[key] !== null
+                      ? "" + flight[key]
+                      : "";
+                  if (key === "id") {
+                    value = "'" + value.replace(/\..*/, "");
+                  }
+                  return '"' + value.replace(/"/g, '""') + '"';
+                })
+                .join(separator);
+            })
+            .join("\n");
+          data = "\uFEFF" + statsRows + headers + "\n" + csvRows;
+          mimeType = "text/csv;charset=utf-8;";
+          filename += ".csv";
+        } else {
+          return;
+        }
+
+        var blob = new Blob([data], { type: mimeType });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showMessage(
+          "Export erfolgreich",
+          `Daten wurden als "${filename}" exportiert.`,
+          "success"
+        );
+      };
+      // *** Ende HILFSFUNKTIONEN ***
+
+      // *** Autocomplete-Logik ***
+      var updateAutocompleteList = function (inputId, listId) {
+        const input = document.getElementById(inputId);
+        const list = document.getElementById(listId);
+        const value = input.value.trim().toUpperCase();
+        list.innerHTML = "";
+        if (value.length < 2) {
+          list.classList.add("hidden");
+          return;
+        }
+        let matches = [];
+        for (const code in airportData) {
+          const airport = airportData[code];
+          if (
+            code.includes(value) ||
+            airport.name.toUpperCase().includes(value)
+          ) {
+            matches.push({ code: code, name: airport.name });
+          }
+          if (matches.length >= 10) break;
+        }
+        if (matches.length > 0) {
+          matches.forEach((match) => {
+            const item = document.createElement("div");
+            item.classList.add(
+              "p-2",
+              "cursor-pointer",
+              "text-gray-700",
+              "autocomplete-item"
+            );
+            item.textContent = `${match.name} (${match.code})`;
+            item.addEventListener("click", () => {
+              selectAutocompleteItem(input, list, item, match.code, match.name);
+            });
+            list.appendChild(item);
+          });
+          list.classList.remove("hidden");
+        } else {
+          list.classList.add("hidden");
+        }
+      };
+
+      var hideAllAutocompleteLists = function () {
+        document.getElementById("departure-list").classList.add("hidden");
+        document.getElementById("arrival-list").classList.add("hidden");
+      };
+
+      var selectAutocompleteItem = function (input, list, item, code, name) {
+        input.value = code; // IATA-Code in das Feld eintragen
+        list.classList.add("hidden");
+        updateFlightDetails();
+        input.focus(); // Behält den Fokus auf dem Feld
+      };
+
+      var updateFlightDetails = function () {
+        var departureInput = document.getElementById("departure").value;
+        var arrivalInput = document.getElementById("arrival").value;
+        var departureAirport = findAirport(departureInput);
+        var arrivalAirport = findAirport(arrivalInput);
+        var distanceDisplay = document.getElementById("distance-display");
+        var timeDisplay = document.getElementById("time-display");
+        var logButton = document.getElementById("log-button");
+        distanceDisplay.textContent = "-";
+        timeDisplay.textContent = "-";
+        logButton.disabled = true;
+        if (departureAirport && arrivalAirport) {
+          var distance = calculateDistance(
+            departureAirport.lat,
+            departureAirport.lon,
+            arrivalAirport.lat,
+            arrivalAirport.lon
+          );
+          var formattedDistance = `${Math.round(distance).toLocaleString(
+            "de-DE"
+          )} km`;
+          var estimatedTime = estimateFlightTime(distance);
+          distanceDisplay.textContent = formattedDistance;
+          timeDisplay.textContent = estimatedTime;
+          logButton.disabled = false;
+        } else {
+          // Ermöglicht das Loggen, wenn es sich um einen 3-stelligen Code handelt (für API-Fallback)
+          if (
+            departureInput.trim().length === 3 &&
+            arrivalInput.trim().length === 3
+          ) {
+            logButton.disabled = false;
+            distanceDisplay.textContent = "Berechnung nach API-Abruf";
+            timeDisplay.textContent = "Beim Loggen...";
+          }
+        }
+      };
+
+      /**
+       * Setzt das Formular zurück und beendet den Bearbeitungsmodus.
+       */
+      window.resetForm = function () {
+        // Formularfelder leeren
+        document.getElementById("departure").value = "";
+        document.getElementById("arrival").value = "";
+        document.getElementById("flightDate").value = "";
+        document.getElementById("flightNumber").value = "";
+        document.getElementById("aircraftType").value = "";
+        document.getElementById("notes").value = "";
+
+        // Foto-Feld und Vorschau zurücksetzen
+        document.getElementById("flightPhoto").value = null;
+        document
+          .getElementById("photo-preview-container")
+          .classList.add("hidden");
+        document.getElementById("photo-preview-text").textContent = "";
+
+        // Zustand zurücksetzen
+        currentlyEditingFlightData = null;
+
+        // UI zurücksetzen
+        const logButton = document.getElementById("log-button");
+        logButton.textContent = "Flug loggen und speichern";
+        document.getElementById("cancel-edit-button").classList.add("hidden");
+
+        updateFlightDetails(); // Setzt Distanz etc. zurück und deaktiviert den Button
+      };
+
+      /**
+       * Startet den Bearbeitungsmodus für einen bestimmten Flug.
+       * @param {number} id - Die ID des zu bearbeitenden Flugs.
+       */
+      window.editFlight = async function (id) {
+        // Wenn die Gesamtansicht aktiv ist, schalte sie zuerst aus
+        if (isAllRoutesViewActive) {
+          toggleAllRoutesView();
+        }
+        const flights = await getFlights();
+        const flightToEdit = flights.find((flight) => flight.id === id);
+
+        if (!flightToEdit) {
+          showMessage(
+            "Fehler",
+            "Der zu bearbeitende Flug wurde nicht gefunden.",
+            "error"
+          );
+          return;
+        }
+
+        const previewContainer = document.getElementById(
+          "photo-preview-container"
+        );
+        const previewText = document.getElementById("photo-preview-text");
+        if (flightToEdit.photo_url && flightToEdit.photo_url.length > 0) {
+          previewText.textContent = `Bereits ${flightToEdit.photo_url.length} Foto(s) zu diesem Flug gespeichert.`;
+          previewContainer.classList.remove("hidden");
+        } else {
+          previewContainer.classList.add("hidden");
+        }
+
+        // Zeichne die Route des aktuell ausgewählten Flugs auf der Karte
+        window.drawRouteOnMap(
+          flightToEdit.depLat,
+          flightToEdit.depLon,
+          flightToEdit.arrLat,
+          flightToEdit.arrLon,
+          flightToEdit.departure,
+          flightToEdit.arrival,
+          flightToEdit.depName,
+          flightToEdit.arrName
+        );
+
+        // Formular mit den Flugdaten füllen
+        document.getElementById("departure").value = flightToEdit.departure;
+        document.getElementById("arrival").value = flightToEdit.arrival;
+        document.getElementById("flightDate").value = flightToEdit.date;
+        document.getElementById("flightClass").value = flightToEdit.class;
+        document.getElementById("flightNumber").value =
+          flightToEdit.flightNumber;
+        document.getElementById("aircraftType").value =
+          flightToEdit.aircraftType;
+        document.getElementById("notes").value = flightToEdit.notes;
+
+        // Bearbeitungszustand setzen
+        currentlyEditingFlightData = flightToEdit;
+
+        // UI für den Bearbeitungsmodus anpassen
+        const logButton = document.getElementById("log-button");
+        logButton.textContent = "Änderungen speichern";
+        document
+          .getElementById("cancel-edit-button")
+          .classList.remove("hidden");
+
+        updateFlightDetails(); // Berechnet Distanz/Zeit für die geladenen Flughäfen
+
+        // Zum Formular scrollen für eine bessere User Experience
+        document
+          .getElementById("log-button")
+          .scrollIntoView({ behavior: "smooth", block: "center" });
+      };
+
+      /**
+       * Schaltet die Kartenansicht zwischen dem letzten Flug und allen Flügen um.
+       */
+      window.toggleAllRoutesView = async function () {
+        isAllRoutesViewActive = !isAllRoutesViewActive; // Zustand umkehren
+        const btn = document.getElementById("toggle-map-view-btn");
+
+        if (isAllRoutesViewActive) {
+          // Zur Gesamtansicht wechseln
+          let allFlights = await getFlights();
+		  allFlights = resequenceAndAssignNumbers(allFlights);
+
+          drawAllRoutesOnMap(allFlights);
+          btn.textContent = "Einzelansicht zeigen";
+        } else {
+          // Zurück zur Einzelansicht wechseln
+          renderFlights(); // Stellt den Standardzustand wieder her
+          btn.textContent = "Alle Routen zeigen";
+        }
+      };
+
+      /**
+       * Zeichnet alle Flugrouten UND Flughafen-Marker auf die Karte,
+       * und gruppiert dabei identische Routen.
+       * @param {Array<Object>} flights - Ein Array mit allen Flug-Objekten.
+       */
+      window.drawAllRoutesOnMap = function (flights) {
+        const mapInfo = document.getElementById("map-info");
+        routeLayer.clearLayers();
+
+        if (!flights || flights.length === 0) {
+          mapInfo.textContent =
+            "Keine Flüge vorhanden, um eine Gesamtübersicht zu zeigen.";
+          map.setView([20, 0], 2);
+          return;
+        }
+
+        const routeGroups = {};
+        // NEU: Ein Objekt, um alle einzigartigen Flughäfen zu sammeln
+        const uniqueAirports = {};
+
+        // Alle Flüge durchgehen, um Routen zu gruppieren UND Flughäfen zu sammeln
+        flights.forEach((flight) => {
+          if (flight.depLat && flight.arrLat) {
+            // --- Routen gruppieren (wie bisher) ---
+            const routeKey = [flight.departure, flight.arrival]
+              .sort()
+              .join("-");
+            if (!routeGroups[routeKey]) {
+              routeGroups[routeKey] = {
+                latLngs: [
+                  [flight.depLat, flight.depLon],
+                  [flight.arrLat, flight.arrLon],
+                ],
+                flightNumbers: [],
+              };
+            }
+            routeGroups[routeKey].flightNumbers.push(flight.flightLogNumber);
+
+            // --- NEU: Einzigartige Flughäfen sammeln ---
+            if (!uniqueAirports[flight.departure]) {
+              uniqueAirports[flight.departure] = {
+                name: flight.depName,
+                lat: flight.depLat,
+                lon: flight.depLon,
+              };
+            }
+            if (!uniqueAirports[flight.arrival]) {
+              uniqueAirports[flight.arrival] = {
+                name: flight.arrName,
+                lat: flight.arrLat,
+                lon: flight.arrLon,
+              };
+            }
+          }
+        });
+
+        const bounds = [];
+
+        // 1. Linien für die gruppierten Routen zeichnen
+        Object.values(routeGroups).forEach((group) => {
+          const flightPath = L.polyline(group.latLngs, {
+            color: "#312E81",
+            weight: 1.5,
+            opacity: 0.7,
+          });
+          const labelText = group.flightNumbers
+            .sort((a, b) => a - b)
+            .map((n) => `#${n}`)
+            .join(", ");
+          flightPath.bindTooltip(labelText, {
+            permanent: true,
+            direction: "center",
+            className: "flight-number-label",
+          });
+          flightPath.addTo(routeLayer);
+          bounds.push(group.latLngs[0]);
+          bounds.push(group.latLngs[1]);
+        });
+
+        // 2. NEU: Marker für alle einzigartigen Flughäfen zeichnen
+        Object.keys(uniqueAirports).forEach((iataCode) => {
+          const airport = uniqueAirports[iataCode];
+          const marker = L.marker([airport.lat, airport.lon]);
+          marker.bindPopup(`<b>${airport.name}</b> (${iataCode})`);
+          marker.addTo(routeLayer);
+        });
+
+        if (bounds.length > 0) {
+          map.fitBounds(bounds, { padding: [40, 40] });
+        }
+
+        mapInfo.textContent = `Gesamtübersicht: ${
+          Object.keys(routeGroups).length
+        } einzigartige Routen werden angezeigt.`;
+      };
+
+      // *** Hauptfunktion (jetzt für Loggen & Aktualisieren) ***
+      window.logFlight = async function () {
+        if (currentlyEditingFlightData !== null) {
+          await updateFlight();
+          return;
+        }
+
+        const logButton = document.getElementById("log-button");
+        logButton.textContent = "Speichere...";
+        logButton.disabled = true;
+
+        // Hole den aktuellen Benutzer
+        const {
+          data: { user },
+        } = await supabaseClient.auth.getUser();
+        if (!user) {
+          showMessage("Fehler", "Nicht eingeloggt. Bitte neu laden.", "error");
+          return;
+        }
+
+        // 1. Fotos holen und hochladen
+        const photoFiles = document.getElementById("flightPhoto").files;
+        const photoUrls = await uploadFlightPhotos(photoFiles);
+
+        // 2. Restliche Flugdaten sammeln
+        const depCodeInput = document
+          .getElementById("departure")
+          .value.trim()
+          .toUpperCase();
+        const arrCodeInput = document
+          .getElementById("arrival")
+          .value.trim()
+          .toUpperCase();
+
+        let departureAirport =
+          findAirport(depCodeInput) ||
+          (await window.fetchExternalAirport(depCodeInput));
+        let arrivalAirport =
+          findAirport(arrCodeInput) ||
+          (await window.fetchExternalAirport(arrCodeInput));
+
+        if (!departureAirport || !arrivalAirport) {
+          showMessage(
+            "Fehler",
+            "Mindestens ein Flughafen-Code wurde nicht gefunden.",
+            "error"
+          );
+          logButton.textContent = "Flug loggen und speichern";
+          logButton.disabled = false;
+          return;
+        }
+
+        // NEU: Ruft jetzt die neue, globale Funktion auf
+        await cacheAndSaveAirport(departureAirport);
+        await cacheAndSaveAirport(arrivalAirport);
+
+        const distance = calculateDistance(
+          departureAirport.lat,
+          departureAirport.lon,
+          arrivalAirport.lat,
+          arrivalAirport.lon
+        );
+        const newFlightId = new Date().getTime();
+
+        // 3. Flug-Objekt für Supabase erstellen
+        const newFlightForSupabase = {
+          flight_id: newFlightId,
+          user_id: user.id,
+          date:
+            document.getElementById("flightDate").value ||
+            new Date().toISOString().slice(0, 10),
+          departure: departureAirport.code,
+          arrival: arrivalAirport.code,
+          distance: Math.round(distance),
+          time: estimateFlightTime(distance),
+          class: document.getElementById("flightClass").value,
+          flightNumber: document.getElementById("flightNumber").value.trim(),
+          aircraftType: document.getElementById("aircraftType").value.trim(),
+          notes: document.getElementById("notes").value.trim(),
+          depLat: departureAirport.lat,
+          depLon: departureAirport.lon,
+          arrLat: arrivalAirport.lat,
+          arrLon: arrivalAirport.lon,
+          depName: departureAirport.name,
+          arrName: arrivalAirport.name,
+          photo_url: photoUrls,
+        };
+
+        // 4. In die Datenbank einfügen
+        const { error } = await supabaseClient
+          .from("flights")
+          .insert(newFlightForSupabase);
+
+        if (error) {
+          showMessage(
+            "Speicherfehler",
+            "Der Flug konnte nicht in der Datenbank gespeichert werden.",
+            "error"
+          );
+          console.error("Supabase Insert Error:", error);
+        } else {
+          showMessage(
+            "Erfolg!",
+            `Flug von ${departureAirport.name} nach ${arrivalAirport.name} erfolgreich geloggt.`,
+            "success"
+          );
+          resetForm();
+          renderFlights(null, newFlightId);
+        }
+
+        logButton.textContent = "Flug loggen und speichern";
+        logButton.disabled = true;
+      };
+
+      /**
+       * Aktualisiert die Paginierungs-UI (Button-Zustände, Seitenzahlanzeige).
+       * @param {Array<Object>} allFlights - Das komplette, ungefilterte Array aller Flüge.
+       */
+      function updatePaginationUI(allFlights) {
+        const pageInfo = document.getElementById("page-info");
+        const prevBtn = document.getElementById("prev-page-btn");
+        const nextBtn = document.getElementById("next-page-btn");
+        const paginationControls = document.getElementById(
+          "pagination-controls"
+        );
+
+        const totalPages = Math.ceil(allFlights.length / ITEMS_PER_PAGE);
+
+        if (totalPages <= 1) {
+          paginationControls.style.display = "none"; // Verstecke Steuerung, wenn nicht benötigt
+          return;
+        }
+
+        paginationControls.style.display = "flex";
+        pageInfo.textContent = `Seite ${currentPage} von ${totalPages}`;
+        prevBtn.disabled = currentPage === 1;
+        nextBtn.disabled = currentPage === totalPages;
+      }
+
+      /**
+       * Wechselt zur nächsten Seite.
+       */
+      function nextPage() {
+        renderFlights(null, null, currentPage + 1);
+      }
+
+      /**
+       * Wechselt zur vorherigen Seite.
+       */
+      function prevPage() {
+        renderFlights(null, null, currentPage - 1);
+      }
+
+      /**
+       * Speichert die Änderungen eines bestehenden Fluges in Supabase.
+       */
+      async function updateFlight() {
+        const logButton = document.getElementById("log-button");
+        logButton.textContent = "Aktualisiere...";
+        logButton.disabled = true;
+
+        let photoUrls = currentlyEditingFlightData.photo_url || []; // Behalte alte Fotos als Standard
+        const newPhotoFiles = document.getElementById("flightPhoto").files;
+
+        // Wenn neue Fotos ausgewählt wurden, ersetze die alten
+        if (newPhotoFiles.length > 0) {
+          // 1. Lösche alte Fotos aus dem Storage (falls vorhanden)
+          if (photoUrls.length > 0) {
+            const oldFilePaths = photoUrls.map((url) =>
+              url.substring(url.lastIndexOf("public/") + 7)
+            );
+            await supabaseClient.storage
+              .from("flight-photos")
+              .remove(oldFilePaths);
+          }
+          // 2. Lade neue Fotos hoch
+          photoUrls = await uploadFlightPhotos(newPhotoFiles);
+        }
+
+        const depCodeInput = document
+          .getElementById("departure")
+          .value.trim()
+          .toUpperCase();
+        const arrCodeInput = document
+          .getElementById("arrival")
+          .value.trim()
+          .toUpperCase();
+
+        let departureAirport =
+          findAirport(depCodeInput) ||
+          (await window.fetchExternalAirport(depCodeInput));
+        let arrivalAirport =
+          findAirport(arrCodeInput) ||
+          (await window.fetchExternalAirport(arrCodeInput));
+
+        if (!departureAirport || !arrivalAirport) {
+          showMessage(
+            "Flug nicht speicherbar",
+            "Mindestens ein Flughafen-Code wurde nicht gefunden.",
+            "error"
+          );
+          resetForm();
+          return;
+        }
+
+        const distance = calculateDistance(
+          departureAirport.lat,
+          departureAirport.lon,
+          arrivalAirport.lat,
+          arrivalAirport.lon
+        );
+
+        // Teil 1: Das "WAS" - die neuen Daten, die gespeichert werden sollen.
+        // Wichtig: Die 'flight_id' selbst ist hier NICHT enthalten!
+        const updatedFlightForSupabase = {
+          date: document.getElementById("flightDate").value,
+          departure: departureAirport.code,
+          arrival: arrivalAirport.code,
+          distance: Math.round(distance),
+          time: estimateFlightTime(distance),
+          class: document.getElementById("flightClass").value,
+          flightNumber: document.getElementById("flightNumber").value.trim(),
+          aircraftType: document.getElementById("aircraftType").value.trim(),
+          notes: document.getElementById("notes").value.trim(),
+          depLat: departureAirport.lat,
+          depLon: departureAirport.lon,
+          arrLat: arrivalAirport.lat,
+          arrLon: arrivalAirport.lon,
+          depName: departureAirport.name,
+          arrName: arrivalAirport.name,
+          photo_url: photoUrls,
+        };
+
+        // Teil 2: Das "WO" - der Befehl zum Aktualisieren und der Filter.
+        // .eq('flight_id', currentlyEditingFlightId) sagt: "Finde die Zeile, deren flight_id mit unserer übereinstimmt".
+        const { error } = await supabaseClient
+          .from("flights")
+          .update(updatedFlightForSupabase)
+          .eq("flight_id", currentlyEditingFlightData.id);
+
+        if (error) {
+          showMessage(
+            "Update-Fehler",
+            "Die Änderungen konnten nicht gespeichert werden.",
+            "error"
+          );
+          console.error("Supabase Update Error:", error);
+        } else {
+          showMessage(
+            "Erfolg!",
+            "Die Flugdaten wurden erfolgreich aktualisiert.",
+            "success"
+          );
+        }
+
+        const flightIdToFocus = currentlyEditingFlightData.id;
+        resetForm();
+        renderFlights(null, flightIdToFocus); // Lade Liste neu mit Fokus auf dem bearbeiteten Flug
+      }
+
+      // *** Rendern und Löschen ***
+      window.deleteFlight = async function (id) {
+        // Eine Bestätigung ist bei Löschaktionen immer eine gute Idee
+        if (
+          !confirm(
+            "Sind Sie sicher, dass Sie diesen Flug endgültig löschen möchten?"
+          )
+        ) {
+          return;
+        }
+
+        const { error } = await supabaseClient
+          .from("flights")
+          .delete()
+          .eq("flight_id", id);
+
+        if (error) {
+          showMessage(
+            "Löschfehler",
+            "Der Flug konnte nicht gelöscht werden.",
+            "error"
+          );
+          console.error("Supabase Delete Error:", error);
+        } else {
+          showMessage("Erfolg!", "Der Flug wurde gelöscht.", "success");
+          renderFlights(); // Lade die Liste einfach neu
+        }
+      };
+
+      window.renderFlights = async function (
+        flightsToRender,
+        flightIdToFocus,
+        page = 1
+      ) {
+        currentPage = page;
+
+        isAllRoutesViewActive = false;
+        document.getElementById("toggle-map-view-btn").textContent =
+          "Alle Routen zeigen";
+
+        let allFlights = flightsToRender || (await getFlights());
+
+        // NEU: Nummerierung nach dem Laden der Daten anwenden
+        allFlights = resequenceAndAssignNumbers(allFlights);
+
+        if (allFlights.length > 0) {
+          const sortKey = currentSort.key;
+          const direction = currentSort.direction === "asc" ? 1 : -1;
+
+          allFlights.sort((a, b) => {
+            const valA = a[sortKey];
+            const valB = b[sortKey];
+            let comparison = 0;
+
+            if (typeof valA === "number") {
+              comparison = valA - valB;
+            } else if (sortKey === "date") {
+              // KORREKTUR: Hier stand fälschlicherweise b[sortKey]
+              comparison = new Date(valA) - new Date(valB);
+            } else {
+              comparison = (valA || "").localeCompare(valB || "");
+            }
+            return comparison * direction;
+          });
+        }
+        updateCharts(allFlights); // Ruft die Charts mit der Standard-Jahresansicht auf
+        updatePaginationUI(allFlights);
+        updateStatisticsDisplay(allFlights);
+
+        const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+        const endIndex = startIndex + ITEMS_PER_PAGE;
+        const paginatedFlights = allFlights.slice(startIndex, endIndex);
+
+        let flightForMap = null;
+        if (flightIdToFocus) {
+          flightForMap = allFlights.find((f) => f.id === flightIdToFocus);
+        }
+        if (!flightForMap && allFlights.length > 0) {
+          flightForMap = paginatedFlights[0] || allFlights[0]; // Nimm den ersten der aktuellen Seite
+        }
+
+        if (flightForMap) {
+          window.drawRouteOnMap(
+            flightForMap.depLat,
+            flightForMap.depLon,
+            flightForMap.arrLat,
+            flightForMap.arrLon,
+            flightForMap.departure,
+            flightForMap.arrival,
+            flightForMap.depName,
+            flightForMap.arrName
+          );
+        } else {
+          window.drawRouteOnMap();
+        }
+
+        const flightList = document.getElementById("flight-log-list");
+        flightList.innerHTML = "";
+
+        if (paginatedFlights.length === 0 && currentPage === 1) {
+          flightList.innerHTML =
+            '<p id="no-flights-message" class="log-placeholder text-gray-500 italic text-center py-4">Noch keine Flüge geloggt.</p>';
+        } else {
+          paginatedFlights.forEach((flight) => {
+            const depName = airportData[flight.departure]
+              ? airportData[flight.departure].name
+              : flight.departure;
+            const arrName = airportData[flight.arrival]
+              ? airportData[flight.arrival].name
+              : flight.arrival;
+            const flightElement = document.createElement("div");
+            flightElement.className =
+              "bg-white dark:bg-gray-800 p-3 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 hover:shadow-lg transition flex justify-between items-start";
+            flightElement.innerHTML = `
+                <div class="flex items-start gap-4 flex-grow">
+                    <div class="flex-shrink-0 bg-indigo-600 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm" title="Flugbuch-Nummer">
+                        #${flight.flightLogNumber || "-"}
+                    </div>
+                    <div class="flex-grow">
+                        <p class="text-lg font-bold text-indigo-700 dark:text-indigo-400">
+                            ${depName} (${flight.departure}) ➔ ${arrName} (${
+              flight.arrival
+            })
+                        </p>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                            📅 ${flight.date} | ⏱️ ${
+              flight.time
+            } | 📏 ${flight.distance.toLocaleString("de-DE")} km
+                        </p>
+                        ${
+                          flight.flightNumber ||
+                          flight.aircraftType ||
+                          flight.class
+                            ? `<p class="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                                Flug: ${flight.flightNumber || "-"} | Typ: ${
+                                flight.aircraftType || "-"
+                              } | Klasse: ${flight.class}
+                            </p>`
+                            : ""
+                        }
+						
+						${
+              flight.photo_url && flight.photo_url.length > 0
+                ? `<div class="mt-2 flex gap-2">
+								${flight.photo_url
+                  .map(
+                    (url) => `
+									<a href="${url}" target="_blank">
+										<img src="${url}" alt="Flugfoto" class="h-12 w-12 rounded-md object-cover shadow-sm hover:scale-110 transition">
+									</a>
+								`
+                  )
+                  .join("")}
+							</div>`
+                : ""
+            }
+						
+                        ${
+                          flight.notes
+                            ? `<p class="text-xs text-gray-700 dark:text-gray-300 italic mt-2 border-l-2 border-indigo-400 pl-2">
+                                ${flight.notes}
+                            </p>`
+                            : ""
+                        }
+                    </div>
+                </div>
+                <div class="flex flex-col md:flex-row items-center ml-2">
+                    <button onclick="editFlight(${
+                      flight.id
+                    })" class="p-2 text-blue-500 hover:text-blue-700 transition" title="Flug bearbeiten">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" /><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" /></svg>
+                    </button>
+                    <button onclick="deleteFlight(${
+                      flight.id
+                    })" class="p-2 text-red-500 hover:text-red-700 transition" title="Flug löschen">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
+                    </button>
+                </div>
+            `;
+            flightList.appendChild(flightElement);
+          });
+        }
+
+        updateSortButtonUI();
+      };
+
+      /**
+       * Sortiert Flüge chronologisch nach Datum und weist sequenzielle Flugbuch-Nummern zu.
+       * @param {Array<Object>} flights - Das Array der Flug-Objekte.
+       * @returns {Array<Object>} Das sortierte und neu nummerierte Array.
+       */
+      function resequenceAndAssignNumbers(flights) {
+        // 1. Sortiere die Flüge. Primäres Kriterium ist das Datum (aufsteigend).
+        // Als zweites Kriterium dient die technische ID, um eine stabile Reihenfolge
+        // bei Flügen am selben Tag zu gewährleisten.
+        const sortedFlights = flights.sort((a, b) => {
+          const dateComparison = new Date(a.date) - new Date(b.date);
+          if (dateComparison !== 0) {
+            return dateComparison;
+          }
+          return a.id - b.id; // Fallback-Sortierung für Flüge am gleichen Tag
+        });
+
+        // 2. Weise die neuen, sequenziellen Flugbuch-Nummern zu.
+        sortedFlights.forEach((flight, index) => {
+          flight.flightLogNumber = index + 1;
+        });
+
+        return sortedFlights;
+      }
+
+      /**
+       * Zeichnet die Flugroute mit Markern auf die interaktive Leaflet-Karte.
+       */
+      window.drawRouteOnMap = function (
+        depLat,
+        depLon,
+        arrLat,
+        arrLon,
+        depCode,
+        arrCode,
+        depName,
+        arrName
+      ) {
+        var mapInfo = document.getElementById("map-info");
+
+        // 1. Alte Route von der Karte entfernen
+        routeLayer.clearLayers();
+
+        if (!depLat || !arrLat) {
+          mapInfo.textContent = "Kein Flug geloggt oder Koordinaten fehlen.";
+          // Karte auf Standardansicht zurücksetzen, falls kein Flug angezeigt wird
+          map.setView([20, 0], 2);
+          return;
+        }
+
+        // 2. Neue Marker für Start und Ziel erstellen
+        const depMarker = L.marker([depLat, depLon]).bindPopup(
+          `<b>Abflug:</b> ${depName} (${depCode})`
+        );
+        const arrMarker = L.marker([arrLat, arrLon]).bindPopup(
+          `<b>Ankunft:</b> ${arrName} (${arrCode})`
+        );
+
+        // 3. Eine Linie zwischen den Punkten zeichnen
+        // Leaflet kümmert sich um die korrekte Projektion auf der Karte
+        const flightPath = L.polyline(
+          [
+            [depLat, depLon],
+            [arrLat, arrLon],
+          ],
+          { color: "#10B981", weight: 3 }
+        );
+
+        // 4. Alle Elemente zur Routenebene hinzufügen
+        routeLayer.addLayer(depMarker);
+        routeLayer.addLayer(arrMarker);
+        routeLayer.addLayer(flightPath);
+
+        // 5. Kartenausschnitt automatisch an die Route anpassen
+        map.fitBounds(
+          [
+            [depLat, depLon],
+            [arrLat, arrLon],
+          ],
+          { padding: [50, 50] }
+        ); // Ein kleiner Rand um die Route
+
+        mapInfo.textContent = `Visualisierung: ${depName} (${depCode}) → ${arrName} (${arrCode}).`;
+      };
+
+      // Event Listener für Eingabefelder und Initialisierung
+      document.addEventListener("DOMContentLoaded", async function () {
+        document
+          .getElementById("login-form")
+          .addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const email = document.getElementById("login-email").value;
+            const password = document.getElementById("login-password").value;
+            const { error } = await supabaseClient.auth.signInWithPassword({
+              email,
+              password,
+            });
+            if (error) {
+              document.getElementById("auth-error").textContent = error.message;
+            } else {
+              showApp();
+            }
+          });
+
+        document
+          .getElementById("register-form")
+          .addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const email = document.getElementById("register-email").value;
+            const password = document.getElementById("register-password").value;
+            const { error } = await supabaseClient.auth.signUp({
+              email,
+              password,
+            });
+            if (error) {
+              document.getElementById("auth-error").textContent = error.message;
+            } else {
+              showMessage(
+                "Registrierung erfolgreich!",
+                "Bitte bestätige deine E-Mail-Adresse.",
+                "success"
+              );
+            }
+          });
+
+        // Überprüfe, ob der Benutzer bereits eingeloggt ist
+        const {
+          data: { session },
+        } = await supabaseClient.auth.getSession();
+        if (session) {
+          await showApp();
+          await migrateDataToSupabase();
+          await migrateAndLoadAirports();
+          await claimExistingFlights(); // << Für Migration Flüge auf User_ID
+        } else {
+          showAuth();
+        }
+
+        var departureInput = document.getElementById("departure");
+        var arrivalInput = document.getElementById("arrival");
+        var flightDateInput = document.getElementById("flightDate");
+
+        departureInput.addEventListener("input", function () {
+          updateAutocompleteList("departure", "departure-list");
+          updateFlightDetails();
+        });
+        arrivalInput.addEventListener("input", function () {
+          updateAutocompleteList("arrival", "arrival-list");
+          updateFlightDetails();
+        });
+        departureInput.addEventListener("focus", function () {
+          updateAutocompleteList("departure", "departure-list");
+        });
+        arrivalInput.addEventListener("focus", function () {
+          updateAutocompleteList("arrival", "arrival-list");
+        });
+
+        flightDateInput.addEventListener("change", updateFlightDetails);
+
+        document.addEventListener("click", function (e) {
+          if (!e.target.closest(".autocomplete-container")) {
+            hideAllAutocompleteLists();
+          }
+        });
+        document
+          .getElementById("theme-toggle")
+          .addEventListener("click", toggleDarkMode);
+
+        // Event-Listener für die Foto-Vorschau
+        document
+          .getElementById("flightPhoto")
+          .addEventListener("change", (event) => {
+            const files = event.target.files;
+            const previewContainer = document.getElementById(
+              "photo-preview-container"
+            );
+            const previewText = document.getElementById("photo-preview-text");
+
+            if (files && files.length > 0) {
+              previewText.textContent = `${files.length} Foto(s) ausgewählt.`;
+              previewContainer.classList.remove("hidden");
+            } else {
+              previewContainer.classList.add("hidden");
+            }
+          });
+
+        // NEU: Leaflet-Karte initialisieren
+        map = L.map("flight-map-container").setView([20, 0], 2); // Startansicht: Zentrum, Zoomstufe
+
+        // Eine Kartenebene von OpenStreetMap hinzufügen (das ist die hochauflösende Karte)
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          attribution:
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        }).addTo(map);
+
+        // Die Ebene für unsere Routen initialisieren und zur Karte hinzufügen
+        routeLayer = L.layerGroup().addTo(map);
+
+        renderFlights();
+        updateThemeIcon();
+        showTab("stats");
+      });
+
+      /**
+       * Wendet die in der Filterleiste eingegebenen Kriterien an und rendert die Ergebnisliste neu.
+       */
+      window.applyFilters = function () {
+        currentPage = 1; // Zurück zu Seite 1
+        const allFlights = getFlights();
+
+        // 1. Hole alle Filterwerte aus den Input-Feldern
+        const depFilter = document
+          .getElementById("filter-departure")
+          .value.trim()
+          .toUpperCase();
+        const arrFilter = document
+          .getElementById("filter-arrival")
+          .value.trim()
+          .toUpperCase();
+        const dateFrom = document.getElementById("filter-date-from").value;
+        const dateTo = document.getElementById("filter-date-to").value;
+
+        // 2. Wende die Filter schrittweise an
+        let filteredFlights = allFlights;
+
+        if (depFilter) {
+          filteredFlights = filteredFlights.filter((flight) =>
+            flight.departure.toUpperCase().includes(depFilter)
+          );
+        }
+
+        if (arrFilter) {
+          filteredFlights = filteredFlights.filter((flight) =>
+            flight.arrival.toUpperCase().includes(arrFilter)
+          );
+        }
+
+        if (dateFrom) {
+          // Filtere alle Flüge heraus, die VOR dem Startdatum liegen
+          filteredFlights = filteredFlights.filter(
+            (flight) => flight.date >= dateFrom
+          );
+        }
+
+        if (dateTo) {
+          // Filtere alle Flüge heraus, die NACH dem Enddatum liegen
+          filteredFlights = filteredFlights.filter(
+            (flight) => flight.date <= dateTo
+          );
+        }
+
+        // 3. Zeige das gefilterte Ergebnis an
+        renderFlights(filteredFlights);
+      };
+
+      /**
+       * Setzt alle Filterfelder zurück und zeigt wieder die vollständige Flugliste an.
+       */
+      window.resetFilters = function () {
+        currentPage = 1; // Zurück zu Seite 1
+        // Setze die Werte der Input-Felder zurück
+        document.getElementById("filter-departure").value = "";
+        document.getElementById("filter-arrival").value = "";
+        document.getElementById("filter-date-from").value = "";
+        document.getElementById("filter-date-to").value = "";
+
+        // Rufe renderFlights ohne Argument auf, um alle Flüge anzuzeigen
+        renderFlights();
+      };
+
+      /**
+       * Aktualisiert die UI der Sortier-Buttons, um den aktiven Zustand anzuzeigen.
+       */
+      function updateSortButtonUI() {
+        // Entferne zuerst alle aktiven Zustände und Pfeile
+        document.querySelectorAll(".sort-btn").forEach((btn) => {
+          btn.classList.remove("active");
+          btn.textContent = btn.textContent.replace(/ [▲▼]/, "");
+        });
+
+        // Setze den aktiven Zustand und Pfeil für den aktuellen Sortier-Button
+        const activeButton = document.getElementById(
+          `sort-btn-${currentSort.key}`
+        );
+        if (activeButton) {
+          activeButton.classList.add("active");
+          activeButton.textContent +=
+            currentSort.direction === "asc" ? " ▲" : " ▼";
+        }
+      }
+
+      /**
+       * Setzt den Sortierschlüssel und die Richtung und rendert die Liste neu.
+       * @param {string} sortKey - Die Eigenschaft, nach der sortiert werden soll (z.B. 'date').
+       */
+      window.setSortOrder = function (sortKey) {
+        currentPage = 1; // Zurück zu Seite 1
+        if (currentSort.key === sortKey) {
+          // Wenn derselbe Button geklickt wird, kehre die Richtung um
+          currentSort.direction =
+            currentSort.direction === "asc" ? "desc" : "asc";
+        } else {
+          // Bei einem neuen Button, setze den Schlüssel und starte mit aufsteigender Sortierung
+          currentSort.key = sortKey;
+          currentSort.direction = "asc";
+        }
+        // Rendere die Flugliste mit der neuen Sortierung neu
+        renderFlights();
+      };
+    </script>
+    <div id="toast-container" class="fixed top-5 right-5 z-50 space-y-2"></div>
+  </body>
+</html>
