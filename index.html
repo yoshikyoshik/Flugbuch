@@ -1042,7 +1042,7 @@
             document.getElementById('chart-view-year').addEventListener('click', () => setChartTimeframe('year'));
             document.getElementById('chart-view-month').addEventListener('click', () => setChartTimeframe('month'));
             document.getElementById('flightPhoto').addEventListener('change', (event) => {
-                 const files = event.target.files;
+                const files = event.target.files;
                 const previewContainer = document.getElementById('photo-preview-container');
                 const previewText = document.getElementById('photo-preview-text');
                 if (files && files.length > 0) {
@@ -2839,7 +2839,7 @@
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (session) {
                 // Wenn ja, starte die komplette App-Logik
-                awaitinitializeApp();
+                await initializeApp();
             } else {
                 // Wenn nein, zeige nur die Login-Maske
                 showAuth();
