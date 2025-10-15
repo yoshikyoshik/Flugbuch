@@ -1102,20 +1102,24 @@
          * Baut die Karte auf und registriert alle Event-Listener für die App-Funktionalität.
          */
         async function initializeApp() {
+console.log("Startpunkt 1: initializeApp beginnt.");
             // 1. Auth-Container verstecken, App-Container zeigen
             document.getElementById('auth-container').classList.add('hidden');
             document.getElementById('app-container').classList.remove('hidden');
+console.log("Startpunkt 2: App-Container sichtbar.");
 
             // 2. Benutzer-E-Mail anzeigen
             const { data: { user } } = await supabaseClient.auth.getUser();
             if (user) {
                 document.getElementById('user-display').textContent = user.email;
             }
+console.log("Startpunkt 3: Benutzerdaten geladen.");
             
             // 3. Einmalige Migrationen ausführen (falls nötig)
             await migrateDataToSupabase();
             await migrateAndLoadAirports();
             await claimExistingFlights();
+console.log("Startpunkt 4: Migrationen abgeschlossen.");
 
             // 4. Karteninitialisierung (nur einmal)
             if (!map) {
@@ -1125,12 +1129,15 @@
                 }).addTo(map);
                 routeLayer = L.layerGroup().addTo(map);
             }
+console.log("Startpunkt 5: Karte initialisiert.");
             
             // 5. ALLE Event-Listener für die App-Funktionalität hier registrieren
             document.getElementById('logout-btn').addEventListener('click', logout);
+console.log("Startpunkt 6: Theme-Listener registriert.");
 			document.getElementById('theme-toggle').addEventListener('click', toggleDarkMode);
             document.getElementById('chart-view-year').addEventListener('click', () => setChartTimeframe('year'));
             document.getElementById('chart-view-month').addEventListener('click', () => setChartTimeframe('month'));
+console.log("Startpunkt 8: Chart-Listener registriert.");
             
             document.getElementById('flightPhoto').addEventListener('change', (event) => {
                 const files = event.target.files;
@@ -1143,6 +1150,7 @@
                     previewContainer.classList.add('hidden');
                 }
             });
+ console.log("Startpunkt 9: Foto-Listener registriert.");
 
             document.getElementById("departure").addEventListener("input", () => {
                 updateAutocompleteList("departure", "departure-list");
@@ -1152,12 +1160,15 @@
                 updateAutocompleteList("arrival", "arrival-list");
                 updateFlightDetails();
             });
+console.log("Startpunkt 10: Autocomplete-Listener registriert.");
             // ... (Hier könnten noch weitere Listener für 'focus' etc. hin, falls benötigt)
 
             // 6. Initiales Rendern der App-Daten
             updateThemeIcon();
             showTab('stats');
+console.log("Startpunkt 11: Rendern wird aufgerufen...");
             renderFlights();
+console.log("Startpunkt 12: initializeApp erfolgreich beendet.");
         }
 
       function showAuth() {
