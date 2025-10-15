@@ -2011,56 +2011,76 @@ window.exportData = async function (format) { // 'async' hinzugefügt
         // DER EINZIGE DOMContentLoaded-LISTENER GANZ AM ENDE
         // =================================================================
 
-document.getElementById('login-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const email = document.getElementById('login-email').value;
-    const password = document.getElementById('login-password').value;
-    const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
-    if (error) { 
-        document.getElementById('auth-error').textContent = error.message; 
-    }
-    // Nichts mehr im 'else'-Block. onAuthStateChange übernimmt.
-});
+        document.addEventListener('DOMContentLoaded', function () {
+            // Event-Listener NUR für die Auth-Formulare
+            document.getElementById('login-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('login-email').value;
+                const password = document.getElementById('login-password').value;
+                const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+                if (error) {
+                    document.getElementById('auth-error').textContent = error.message;
+                }
+                // KEIN 'else' Block hier. onAuthStateChange kümmert sich um den Erfolg.
+            });
 
             document.getElementById('register-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const { error } = await supabaseClient.auth.signUp({ email: document.getElementById('register-email').value, password: document.getElementById('register-password').value });
-                if (error) { document.getElementById('auth-error').textContent = error.message; }
-                else { showMessage('Registrierung erfolgreich!', 'Bitte bestätige deine E-Mail-Adresse, um dich einzuloggen.', 'success'); }
+                const email = document.getElementById('register-email').value;
+                const password = document.getElementById('register-password').value;
+                const { error } = await supabaseClient.auth.signUp({ email, password });
+                if (error) {
+                    document.getElementById('auth-error').textContent = error.message;
+                } else {
+                    showMessage('Registrierung erfolgreich!', 'Bitte bestätige deine E-Mail-Adresse, um dich einzuloggen.', 'success');
+                }
             });
 
             document.getElementById('request-reset-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const { error } = await supabaseClient.auth.resetPasswordForEmail(document.getElementById('reset-email').value, { redirectTo: window.location.origin });
-                if (error) { showMessage('Fehler', error.message, 'error'); }
-                else { showMessage('E-Mail gesendet', 'Wenn ein Benutzer mit dieser E-Mail existiert, wurde ein Link zum Zurücksetzen gesendet.', 'success'); }
+                const email = document.getElementById('reset-email').value;
+                const { error } = await supabaseClient.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin });
+                if (error) {
+                    showMessage('Fehler', error.message, 'error');
+                } else {
+                    showMessage('E-Mail gesendet', 'Wenn ein Benutzer mit dieser E-Mail existiert, wurde ein Link zum Zurücksetzen gesendet.', 'success');
+                }
             });
 
             document.getElementById('update-password-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const newPassword = document.getElementById('update-password-input').value;
-                if (newPassword.length < 6) { showMessage('Fehler', 'Das Passwort muss mindestens 6 Zeichen lang sein.', 'error'); return; }
+                if (newPassword.length < 6) {
+                    showMessage('Fehler', 'Das Passwort muss mindestens 6 Zeichen lang sein.', 'error');
+                    return;
+                }
                 const { error } = await supabaseClient.auth.updateUser({ password: newPassword });
-                if (error) { showMessage('Fehler', 'Passwort konnte nicht aktualisiert werden: ' + error.message, 'error'); }
-                else { showMessage('Erfolg!', 'Dein Passwort wurde geändert. Du kannst dich jetzt einloggen.', 'success'); backToLogin(); }
+                if (error) {
+                    showMessage('Fehler', 'Passwort konnte nicht aktualisiert werden: ' + error.message, 'error');
+                } else {
+                    showMessage('Erfolg!', 'Dein Passwort wurde geändert. Du kannst dich jetzt einloggen.', 'success');
+                    backToLogin();
+                }
             });
 
+            // Haupt-Logik: Reagiere auf Änderungen des Login-Status
             supabaseClient.auth.onAuthStateChange(async (event, session) => {
-    if (event === 'PASSWORD_RECOVERY') {
-        // ... (dein bestehender Code für Passwort-Reset)
-    } else if (event === 'SIGNED_IN') {
-        // NUR wenn sich der Benutzer GERADE EINGELOGGT hat, die App neu laden/initialisieren.
-        window.location.reload(); 
-    } else if (session && !document.getElementById('app-container').classList.contains('hidden')) {
-        // Wenn der Nutzer bereits eingeloggt ist und die App sichtbar ist, nichts tun oder nur kleine Updates.
-    } else if (session) {
-        // Dieser Fall fängt den allerersten Ladevorgang der Seite ab
-        await initializeApp();
-    } else {
-        // Nutzer ist nicht eingeloggt
-        showAuth();
-    }
-});
+                if (event === 'PASSWORD_RECOVERY') {
+                    showAuth();
+                    showPasswordResetForm();
+                    document.getElementById('request-reset-form').classList.add('hidden');
+                    document.getElementById('update-password-form').classList.remove('hidden');
+                    showMessage('Willkommen zurück!', 'Bitte gib jetzt dein neues Passwort ein.', 'info');
+                } else if (session) {
+                    // Dieser Block wird bei INITIAL_SESSION (Seitenaufruf im eingeloggten Zustand)
+                    // UND bei SIGNED_IN (direkt nach dem Login) ausgeführt.
+                    await initializeApp();
+                } else {
+                    // Dieser Block wird bei SIGNED_OUT ausgeführt.
+                    showAuth();
+                }
+            });
+        });
         
 		
     </script>
