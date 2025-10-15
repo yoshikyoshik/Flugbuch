@@ -434,7 +434,36 @@
         // DATA MIGRATION & LOADING FUNCTIONS
         // =================================================================
 		
-
+		async function migrateDataToSupabase() {
+            if (localStorage.getItem("supabase_migrated") === "true") {
+                return;
+            }
+            console.log("Starte einmalige Datenmigration von localStorage nach Supabase...");
+            const oldFlightsJson = localStorage.getItem("flightLog");
+            const oldFlights = oldFlightsJson ? JSON.parse(oldFlightsJson) : [];
+            if (oldFlights.length > 0) {
+                const flightsToInsert = oldFlights.map((flight) => {
+                    return {
+                        flight_id: flight.id, date: flight.date, departure: flight.departure,
+                        arrival: flight.arrival, distance: flight.distance, time: flight.time,
+                        class: flight.class, flightNumber: flight.flightNumber, aircraftType: flight.aircraftType,
+                        notes: flight.notes, depLat: flight.depLat, depLon: flight.depLon,
+                        arrLat: flight.arrLat, arrLon: flight.arrLon, depName: flight.depName,
+                        arrName: flight.arrName, flightLogNumber: flight.flightLogNumber,
+                    };
+                });
+                const { error } = await supabaseClient.from("flights").insert(flightsToInsert);
+                if (error) {
+                    console.error("Fehler bei der Migration:", error);
+                    showMessage("Migrations-Fehler", "Daten konnten nicht zu Supabase migriert werden.", "error");
+                } else {
+                    console.log("Migration erfolgreich!");
+                    localStorage.setItem("supabase_migrated", "true");
+                }
+            } else {
+                localStorage.setItem("supabase_migrated", "true");
+            }
+        }
 
         async function migrateAndLoadAirports() {
             if (localStorage.getItem("airports_migrated") !== "true") {
