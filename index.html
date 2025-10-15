@@ -1,20 +1,26 @@
 <!DOCTYPE html>
 <html lang="de">
-
-<head>
+  <head>
     <meta charset="UTF-8" />
     <script>
-        // Initiales Laden des Themes, um Flackern zu verhindern
-        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-        }
+      // Initiales Laden des Themes, um Flackern zu verhindern
+      if (
+        localStorage.theme === "dark" ||
+        (!("theme" in localStorage) &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches)
+      ) {
+        document.documentElement.classList.add("dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+      }
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Mein Digitales Flugbuch</title>
 
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -22,643 +28,1651 @@
     <script src="api_service.js"></script>
 
     <style>
-        @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap");
-        body { font-family: 'Inter', sans-serif; }
-        .autocomplete-container { position: relative; }
-        .autocomplete-list { position: absolute; z-index: 1000; max-height: 200px; overflow-y: auto; border: 1px solid #ccc; border-top: none; background: white; width: 100%; border-radius: 0 0 8px 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1); }
-        .autocomplete-item:hover, .autocomplete-item.active { background-color: #e0e7ff; }
-        .flight-number-label { background-color: transparent; border: none; box-shadow: none; color: #1e293b; font-weight: bold; font-size: 10px; text-shadow: 0 0 2px white, 0 0 3px white; }
-        .sort-btn.active, .chart-view-btn.active { background-color: #4338ca; color: white; }
-        .logbook-view-btn.active { background-color: #4338CA; color: white; }
-		.toast { padding: 1rem; border-radius: 0.5rem; color: white; font-size: 0.875rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1); opacity: 0; transform: translateX(100%); animation: slideInFadeIn 0.5s forwards, slideOutFadeOut 0.5s 4.5s forwards; }
-        .toast-success { background-color: #10b981; } .toast-error { background-color: #ef4444; } .toast-info { background-color: #3b82f6; }
-        .dark body { background-color: #111827; color: #d1d5db; }
-        .dark .bg-white { background-color: #1f2937; border-color: #374151; }
-        .dark .bg-gray-100 { background-color: #111827; }
-        .dark .bg-gray-50 { background-color: #1f2937; }
-        .dark .bg-gray-200 { background-color: #374151; }
-        .dark .bg-gray-200:hover { background-color: #4b5563; }
-        .dark .bg-indigo-50 { background-color: #1f2937; }
-        .dark .border-gray-200 { border-color: #4b5563; }
-        .dark .text-gray-500 { color: #9ca3af; } .dark .text-gray-700 { color: #e5e7eb; } .dark .text-gray-800 { color: #f9fafb; }
-        .dark .text-indigo-600 { color: #818cf8; } .dark .text-indigo-700 { color: #a5b4fc; }
-        .dark input, .dark select, .dark textarea { background-color: #374151; border-color: #4b5563; color: #f9fafb; }
-        .dark .autocomplete-list { background: #1f2937; border-color: #4b5563; }
-        .dark .autocomplete-item:hover, .dark .autocomplete-item.active { background-color: #312e81; }
-        .auth-tab { color: #6b7280; } .dark .auth-tab { color: #9ca3af; }
-        .auth-tab.active-tab { color: #4f46e5; border-bottom: 2px solid #4f46e5; }
-        .dark .auth-tab.active-tab { color: #818cf8; border-color: #818cf8; }
-        @keyframes slideInFadeIn { to { opacity: 1; transform: translateX(0); } }
-        @keyframes slideOutFadeOut { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(100%); } }
+      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap");
+      body {
+        font-family: "Inter", sans-serif;
+      }
+      .autocomplete-container {
+        position: relative;
+      }
+      .autocomplete-list {
+        position: absolute;
+        z-index: 1000;
+        max-height: 200px;
+        overflow-y: auto;
+        border: 1px solid #ccc;
+        border-top: none;
+        background: white;
+        width: 100%;
+        border-radius: 0 0 8px 8px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+          0 2px 4px -2px rgba(0, 0, 0, 0.1);
+      }
+      .autocomplete-item:hover,
+      .autocomplete-item.active {
+        background-color: #e0e7ff;
+      }
+      .flight-number-label {
+        background-color: transparent;
+        border: none;
+        box-shadow: none;
+        color: #1e293b;
+        font-weight: bold;
+        font-size: 10px;
+        text-shadow: 0 0 2px white, 0 0 3px white;
+      }
+      .sort-btn.active,
+      .chart-view-btn.active {
+        background-color: #4338ca;
+        color: white;
+      }
+      .logbook-view-btn.active {
+        background-color: #4338ca;
+        color: white;
+      }
+      .toast {
+        padding: 1rem;
+        border-radius: 0.5rem;
+        color: white;
+        font-size: 0.875rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+          0 2px 4px -2px rgba(0, 0, 0, 0.1);
+        opacity: 0;
+        transform: translateX(100%);
+        animation: slideInFadeIn 0.5s forwards,
+          slideOutFadeOut 0.5s 4.5s forwards;
+      }
+      .toast-success {
+        background-color: #10b981;
+      }
+      .toast-error {
+        background-color: #ef4444;
+      }
+      .toast-info {
+        background-color: #3b82f6;
+      }
+      .dark body {
+        background-color: #111827;
+        color: #d1d5db;
+      }
+      .dark .bg-white {
+        background-color: #1f2937;
+        border-color: #374151;
+      }
+      .dark .bg-gray-100 {
+        background-color: #111827;
+      }
+      .dark .bg-gray-50 {
+        background-color: #1f2937;
+      }
+      .dark .bg-gray-200 {
+        background-color: #374151;
+      }
+      .dark .bg-gray-200:hover {
+        background-color: #4b5563;
+      }
+      .dark .bg-indigo-50 {
+        background-color: #1f2937;
+      }
+      .dark .border-gray-200 {
+        border-color: #4b5563;
+      }
+      .dark .text-gray-500 {
+        color: #9ca3af;
+      }
+      .dark .text-gray-700 {
+        color: #e5e7eb;
+      }
+      .dark .text-gray-800 {
+        color: #f9fafb;
+      }
+      .dark .text-indigo-600 {
+        color: #818cf8;
+      }
+      .dark .text-indigo-700 {
+        color: #a5b4fc;
+      }
+      .dark input,
+      .dark select,
+      .dark textarea {
+        background-color: #374151;
+        border-color: #4b5563;
+        color: #f9fafb;
+      }
+      .dark .autocomplete-list {
+        background: #1f2937;
+        border-color: #4b5563;
+      }
+      .dark .autocomplete-item:hover,
+      .dark .autocomplete-item.active {
+        background-color: #312e81;
+      }
+      .auth-tab {
+        color: #6b7280;
+      }
+      .dark .auth-tab {
+        color: #9ca3af;
+      }
+      .auth-tab.active-tab {
+        color: #4f46e5;
+        border-bottom: 2px solid #4f46e5;
+      }
+      .dark .auth-tab.active-tab {
+        color: #818cf8;
+        border-color: #818cf8;
+      }
+      @keyframes slideInFadeIn {
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+      @keyframes slideOutFadeOut {
+        from {
+          opacity: 1;
+          transform: translateX(0);
+        }
+        to {
+          opacity: 0;
+          transform: translateX(100%);
+        }
+      }
     </style>
-</head>
+  </head>
 
-<body class="bg-gray-100 dark:bg-gray-900">
-
-    <div id="auth-container" class="min-h-screen flex items-center justify-center p-4">
-        <div class="w-full max-w-md bg-white dark:bg-gray-800 shadow-2xl rounded-xl p-8">
-            <h1 class="text-3xl font-extrabold text-indigo-700 dark:text-indigo-400 mb-6 text-center">✈️ Digitales Flugbuch</h1>
-            <div id="auth-tabs" class="flex justify-center border-b mb-6">
-                <button onclick="switchAuthTab('login')" id="login-tab" class="auth-tab active-tab px-4 py-2 font-semibold">Login</button>
-                <button onclick="switchAuthTab('register')" id="register-tab" class="auth-tab px-4 py-2 font-semibold">Registrieren</button>
-            </div>
-            <form id="login-form" class="space-y-4">
-                <input type="email" id="login-email" placeholder="E-Mail" required class="w-full p-3 rounded-lg border-gray-300 dark:bg-gray-700 dark:border-gray-600">
-                <input type="password" id="login-password" placeholder="Passwort" required class="w-full p-3 rounded-lg border-gray-300 dark:bg-gray-700 dark:border-gray-600">
-                <div class="text-right"><a href="#" onclick="event.preventDefault(); showPasswordResetForm();" class="text-sm font-medium text-indigo-600 hover:underline dark:text-indigo-400">Passwort vergessen?</a></div>
-                <button type="submit" class="w-full py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">Einloggen</button>
-            </form>
-            <form id="register-form" class="space-y-4 hidden">
-                <input type="email" id="register-email" placeholder="E-Mail" required class="w-full p-3 rounded-lg border-gray-300 dark:bg-gray-700 dark:border-gray-600">
-                <input type="password" id="register-password" placeholder="Passwort" required class="w-full p-3 rounded-lg border-gray-300 dark:bg-gray-700 dark:border-gray-600">
-                <button type="submit" class="w-full py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition">Registrieren</button>
-            </form>
-            <div id="password-reset-container" class="hidden">
-                <form id="request-reset-form" class="space-y-4">
-                    <p class="text-sm text-center text-gray-600 dark:text-gray-400">Gib deine E-Mail-Adresse ein, um einen Link zum Zurücksetzen deines Passworts zu erhalten.</p>
-                    <input type="email" id="reset-email" placeholder="E-Mail" required class="w-full p-3 rounded-lg border-gray-300 dark:bg-gray-700 dark:border-gray-600">
-                    <button type="submit" class="w-full py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">Reset-Link anfordern</button>
-                </form>
-                <form id="update-password-form" class="space-y-4 hidden">
-                     <p class="text-sm text-center text-gray-600 dark:text-gray-400">Gib dein neues Passwort ein.</p>
-                    <input type="password" id="update-password-input" placeholder="Neues Passwort (mind. 6 Zeichen)" required class="w-full p-3 rounded-lg border-gray-300 dark:bg-gray-700 dark:border-gray-600">
-                    <button type="submit" class="w-full py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition">Neues Passwort speichern</button>
-                </form>
-                 <div class="text-center mt-4"><a href="#" onclick="event.preventDefault(); backToLogin();" class="text-sm font-medium text-indigo-600 hover:underline dark:text-indigo-400">Zurück zum Login</a></div>
-            </div>
-            <p id="auth-error" class="text-red-500 text-sm mt-4 text-center"></p>
+  <body class="bg-gray-100 dark:bg-gray-900">
+    <div
+      id="auth-container"
+      class="min-h-screen flex items-center justify-center p-4"
+    >
+      <div
+        class="w-full max-w-md bg-white dark:bg-gray-800 shadow-2xl rounded-xl p-8"
+      >
+        <h1
+          class="text-3xl font-extrabold text-indigo-700 dark:text-indigo-400 mb-6 text-center"
+        >
+          ✈️ Digitales Flugbuch
+        </h1>
+        <div id="auth-tabs" class="flex justify-center border-b mb-6">
+          <button
+            onclick="switchAuthTab('login')"
+            id="login-tab"
+            class="auth-tab active-tab px-4 py-2 font-semibold"
+          >
+            Login
+          </button>
+          <button
+            onclick="switchAuthTab('register')"
+            id="register-tab"
+            class="auth-tab px-4 py-2 font-semibold"
+          >
+            Registrieren
+          </button>
         </div>
+        <form id="login-form" class="space-y-4">
+          <input
+            type="email"
+            id="login-email"
+            placeholder="E-Mail"
+            required
+            class="w-full p-3 rounded-lg border-gray-300 dark:bg-gray-700 dark:border-gray-600"
+          />
+          <input
+            type="password"
+            id="login-password"
+            placeholder="Passwort"
+            required
+            class="w-full p-3 rounded-lg border-gray-300 dark:bg-gray-700 dark:border-gray-600"
+          />
+          <div class="text-right">
+            <a
+              href="#"
+              onclick="event.preventDefault(); showPasswordResetForm();"
+              class="text-sm font-medium text-indigo-600 hover:underline dark:text-indigo-400"
+              >Passwort vergessen?</a
+            >
+          </div>
+          <button
+            type="submit"
+            class="w-full py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+          >
+            Einloggen
+          </button>
+        </form>
+        <form id="register-form" class="space-y-4 hidden">
+          <input
+            type="email"
+            id="register-email"
+            placeholder="E-Mail"
+            required
+            class="w-full p-3 rounded-lg border-gray-300 dark:bg-gray-700 dark:border-gray-600"
+          />
+          <input
+            type="password"
+            id="register-password"
+            placeholder="Passwort"
+            required
+            class="w-full p-3 rounded-lg border-gray-300 dark:bg-gray-700 dark:border-gray-600"
+          />
+          <button
+            type="submit"
+            class="w-full py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
+          >
+            Registrieren
+          </button>
+        </form>
+        <div id="password-reset-container" class="hidden">
+          <form id="request-reset-form" class="space-y-4">
+            <p class="text-sm text-center text-gray-600 dark:text-gray-400">
+              Gib deine E-Mail-Adresse ein, um einen Link zum Zurücksetzen
+              deines Passworts zu erhalten.
+            </p>
+            <input
+              type="email"
+              id="reset-email"
+              placeholder="E-Mail"
+              required
+              class="w-full p-3 rounded-lg border-gray-300 dark:bg-gray-700 dark:border-gray-600"
+            />
+            <button
+              type="submit"
+              class="w-full py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+            >
+              Reset-Link anfordern
+            </button>
+          </form>
+          <form id="update-password-form" class="space-y-4 hidden">
+            <p class="text-sm text-center text-gray-600 dark:text-gray-400">
+              Gib dein neues Passwort ein.
+            </p>
+            <input
+              type="password"
+              id="update-password-input"
+              placeholder="Neues Passwort (mind. 6 Zeichen)"
+              required
+              class="w-full p-3 rounded-lg border-gray-300 dark:bg-gray-700 dark:border-gray-600"
+            />
+            <button
+              type="submit"
+              class="w-full py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
+            >
+              Neues Passwort speichern
+            </button>
+          </form>
+          <div class="text-center mt-4">
+            <a
+              href="#"
+              onclick="event.preventDefault(); backToLogin();"
+              class="text-sm font-medium text-indigo-600 hover:underline dark:text-indigo-400"
+              >Zurück zum Login</a
+            >
+          </div>
+        </div>
+        <p id="auth-error" class="text-red-500 text-sm mt-4 text-center"></p>
+      </div>
     </div>
 
-    <div id="app-container" class="hidden min-h-screen p-4 md:p-8 flex items-center justify-center">
-        <div class="w-full max-w-4xl bg-white dark:bg-gray-800 shadow-2xl rounded-xl p-6 md:p-10 border border-gray-100 dark:border-gray-700">
-            <div class="flex justify-between items-center mb-2">
-                <h1 class="text-3xl md:text-4xl font-extrabold text-indigo-700 dark:text-indigo-400">✈️ Digitales Flugbuch</h1>
-                <div class="flex items-center gap-4">
-                    <span id="user-display" class="text-sm text-gray-500 dark:text-gray-400 hidden md:inline"></span>
-                    <button onclick="showPasswordChangeModal()" class="text-sm font-medium text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white transition">Passwort ändern</button>
-                    <button id="logout-btn" class="text-sm font-medium text-indigo-600 hover:text-indigo-800 p-2 rounded-lg bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 transition">Logout</button>
-                    <button id="theme-toggle" type="button" class="text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-sm p-2.5">
-                        <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
-                        <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm-.707 8.486a1 1 0 011.414 0l.707.707a1 1 0 11-1.414 1.414l-.707-.707a1 1 0 010-1.414zM4 11a1 1 0 100-2H3a1 1 0 100 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path></svg>
-                    </button>
+    <div
+      id="app-container"
+      class="hidden min-h-screen p-4 md:p-8 flex items-center justify-center"
+    >
+      <div
+        class="w-full max-w-4xl bg-white dark:bg-gray-800 shadow-2xl rounded-xl p-6 md:p-10 border border-gray-100 dark:border-gray-700"
+      >
+        <div class="flex justify-between items-center mb-2">
+          <h1
+            class="text-3xl md:text-4xl font-extrabold text-indigo-700 dark:text-indigo-400"
+          >
+            ✈️ Digitales Flugbuch
+          </h1>
+          <div class="flex items-center gap-4">
+            <span
+              id="user-display"
+              class="text-sm text-gray-500 dark:text-gray-400 hidden md:inline"
+            ></span>
+            <button
+              onclick="showPasswordChangeModal()"
+              class="text-sm font-medium text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white transition"
+            >
+              Passwort ändern
+            </button>
+            <button
+              id="logout-btn"
+              class="text-sm font-medium text-indigo-600 hover:text-indigo-800 p-2 rounded-lg bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 transition"
+            >
+              Logout
+            </button>
+            <button
+              id="theme-toggle"
+              type="button"
+              class="text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-sm p-2.5"
+            >
+              <svg
+                id="theme-toggle-dark-icon"
+                class="hidden w-5 h-5"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"
+                ></path>
+              </svg>
+              <svg
+                id="theme-toggle-light-icon"
+                class="hidden w-5 h-5"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm-.707 8.486a1 1 0 011.414 0l.707.707a1 1 0 11-1.414 1.414l-.707-.707a1 1 0 010-1.414zM4 11a1 1 0 100-2H3a1 1 0 100 2h1z"
+                  fill-rule="evenodd"
+                  clip-rule="evenodd"
+                ></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <p class="text-gray-500 dark:text-gray-400 mb-8">
+          Wählen Sie einen Flughafen aus der Liste oder geben Sie einen
+          Code/Namen manuell ein.
+        </p>
+        <h2
+          class="text-2xl font-bold text-gray-800 dark:text-white mb-4 border-b pb-2 border-gray-200 dark:border-gray-700"
+        >
+          Zuletzt geloggter/bearbeiteter Flug
+        </h2>
+        <div class="mb-6">
+          <p
+            id="map-info"
+            class="text-center text-sm text-gray-700 dark:text-gray-300 mb-2 italic"
+          >
+            Flugroute wird visualisiert.
+          </p>
+          <div
+            id="flight-map-container"
+            class="h-[300px] rounded-lg mb-6 shadow-lg z-0"
+          ></div>
+        </div>
+        <div>
+          <div class="border-b border-gray-200 dark:border-gray-700">
+            <nav class="flex -mb-px space-x-6" aria-label="Tabs">
+              <button
+                onclick="showTab('stats')"
+                id="tab-btn-stats"
+                class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm"
+              >
+                Statistiken
+              </button>
+              <button
+                onclick="showTab('charts')"
+                id="tab-btn-charts"
+                class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm"
+              >
+                Charts
+              </button>
+              <button
+                onclick="showTab('logbook')"
+                id="tab-btn-logbook"
+                class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              >
+                Logbuch
+              </button>
+            </nav>
+          </div>
+          <div class="py-6">
+            <div id="tab-content-stats">
+              <div
+                id="statistics-panel"
+                class="grid grid-cols-2 md:grid-cols-4 gap-4 bg-gray-100 dark:bg-gray-900 p-4 rounded-lg text-center"
+              >
+                <div class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm">
+                  <p
+                    class="text-xs font-medium text-gray-700 dark:text-gray-400"
+                  >
+                    Gesamte Flüge
+                  </p>
+                  <p
+                    id="stat-count"
+                    class="text-xl font-bold text-indigo-800 dark:text-indigo-400"
+                  >
+                    0
+                  </p>
                 </div>
+                <div class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm">
+                  <p
+                    class="text-xs font-medium text-gray-700 dark:text-gray-400"
+                  >
+                    Gesamtdistanz
+                  </p>
+                  <p
+                    id="stat-distance"
+                    class="text-xl font-bold text-indigo-800 dark:text-indigo-400"
+                  >
+                    0 km
+                  </p>
+                </div>
+                <div class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm">
+                  <p
+                    class="text-xs font-medium text-gray-700 dark:text-gray-400"
+                  >
+                    Häufigster Flughafen
+                  </p>
+                  <p
+                    id="stat-frequent"
+                    class="text-sm font-bold text-indigo-800 dark:text-indigo-400"
+                  >
+                    -
+                  </p>
+                </div>
+                <div class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm">
+                  <p
+                    class="text-xs font-medium text-gray-700 dark:text-gray-400"
+                  >
+                    Daten-Export
+                  </p>
+                  <div class="flex space-x-2 mt-1 justify-center">
+                    <button
+                      onclick="exportData('csv')"
+                      class="text-xs py-1 px-2 bg-green-500 text-white rounded hover:bg-green-600 transition"
+                    >
+                      CSV</button
+                    ><button
+                      onclick="exportData('json')"
+                      class="text-xs py-1 px-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+                    >
+                      JSON
+                    </button>
+                  </div>
+                </div>
+
+                <div
+                  class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm col-span-2"
+                >
+                  <p
+                    class="text-xs font-medium text-gray-700 dark:text-gray-400"
+                  >
+                    Gesamtausgaben
+                  </p>
+                  <p
+                    id="stat-total-spending"
+                    class="text-xl font-bold text-indigo-800 dark:text-indigo-400"
+                  >
+                    -
+                  </p>
+                </div>
+                <div class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm">
+                  <p
+                    class="text-xs font-medium text-gray-700 dark:text-gray-400"
+                  >
+                    Teuerster Flug
+                  </p>
+                  <p
+                    id="stat-most-expensive"
+                    class="text-sm font-bold text-indigo-800 dark:text-indigo-400"
+                  >
+                    -
+                  </p>
+                </div>
+                <div class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm">
+                  <p
+                    class="text-xs font-medium text-gray-700 dark:text-gray-400"
+                  >
+                    Günstigster Flug
+                  </p>
+                  <p
+                    id="stat-least-expensive"
+                    class="text-sm font-bold text-indigo-800 dark:text-indigo-400"
+                  >
+                    -
+                  </p>
+                </div>
+
+                <div class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm">
+                  <p
+                    class="text-xs font-medium text-gray-700 dark:text-gray-400"
+                  >
+                    Längster Flug
+                  </p>
+                  <p
+                    id="stat-longest-flight"
+                    class="text-sm font-bold text-indigo-800 dark:text-indigo-400"
+                  >
+                    -
+                  </p>
+                </div>
+                <div class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm">
+                  <p
+                    class="text-xs font-medium text-gray-700 dark:text-gray-400"
+                  >
+                    Kürzester Flug
+                  </p>
+                  <p
+                    id="stat-shortest-flight"
+                    class="text-sm font-bold text-indigo-800 dark:text-indigo-400"
+                  >
+                    -
+                  </p>
+                </div>
+                <div class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm">
+                  <p
+                    class="text-xs font-medium text-gray-700 dark:text-gray-400"
+                  >
+                    Ø Flugdistanz
+                  </p>
+                  <p
+                    id="stat-avg-distance"
+                    class="text-xl font-bold text-indigo-800 dark:text-indigo-400"
+                  >
+                    0 km
+                  </p>
+                </div>
+                <div class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm">
+                  <p
+                    class="text-xs font-medium text-gray-700 dark:text-gray-400"
+                  >
+                    Häufigster Flugzeugtyp
+                  </p>
+                  <p
+                    id="stat-frequent-aircraft"
+                    class="text-sm font-bold text-indigo-800 dark:text-indigo-400"
+                  >
+                    -
+                  </p>
+                </div>
+                <div
+                  class="col-span-2 md:col-span-4 p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm"
+                >
+                  <div class="flex items-center justify-between">
+                    <p
+                      class="text-xs font-medium text-gray-700 dark:text-gray-400"
+                    >
+                      Jahreszusammenfassung
+                    </p>
+                    <select
+                      id="stat-year-select"
+                      class="text-xs p-1 rounded border-gray-300 dark:bg-gray-700 dark:border-gray-600"
+                    ></select>
+                  </div>
+                  <p
+                    id="stat-yearly-summary"
+                    class="text-lg font-bold text-indigo-800 dark:text-indigo-400 mt-2"
+                  >
+                    -
+                  </p>
+                </div>
+              </div>
             </div>
-            <p class="text-gray-500 dark:text-gray-400 mb-8">Wählen Sie einen Flughafen aus der Liste oder geben Sie einen Code/Namen manuell ein.</p>
-            <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-4 border-b pb-2 border-gray-200 dark:border-gray-700">Zuletzt geloggter/bearbeiteter Flug</h2>
-            <div class="mb-6">
-                <p id="map-info" class="text-center text-sm text-gray-700 dark:text-gray-300 mb-2 italic">Flugroute wird visualisiert.</p>
-                <div id="flight-map-container" class="h-[300px] rounded-lg mb-6 shadow-lg z-0"></div>
+            <div id="tab-content-charts" class="hidden">
+              <div
+                class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700"
+              >
+                <div
+                  class="flex justify-between items-center mb-4 border-b border-gray-200 dark:border-gray-600 pb-2"
+                >
+                  <h2
+                    class="text-2xl font-bold text-gray-800 dark:text-gray-100"
+                  >
+                    Visuelle Auswertungen
+                  </h2>
+                  <div class="flex items-center gap-2 text-sm">
+                    <button
+                      id="chart-view-year"
+                      class="chart-view-btn active px-3 py-1 rounded-md transition"
+                    >
+                      Pro Jahr
+                    </button>
+                    <button
+                      id="chart-view-month"
+                      class="chart-view-btn px-3 py-1 rounded-md transition"
+                    >
+                      Pro Monat
+                    </button>
+                  </div>
+                </div>
+                <div class="grid grid-cols-1 gap-8 mt-4">
+                  <div>
+                    <h3
+                      class="font-semibold text-center text-gray-700 dark:text-gray-300 mb-2"
+                    >
+                      Flüge pro Zeitraum
+                    </h3>
+                    <canvas id="flightsChart"></canvas>
+                  </div>
+                  <div>
+                    <h3
+                      class="font-semibold text-center text-gray-700 dark:text-gray-300 mb-2"
+                    >
+                      Distanz pro Zeitraum (km)
+                    </h3>
+                    <canvas id="distanceChart"></canvas>
+                  </div>
+                  <div>
+                    <h3
+                      class="font-semibold text-center text-gray-700 dark:text-gray-300 mb-2"
+                    >
+                      Flugzeit pro Zeitraum
+                    </h3>
+                    <canvas id="timeChart"></canvas>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div id="tab-content-logbook" class="hidden">
+              <div
+                class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700"
+              >
+                <div
+                  class="flex justify-between items-center mb-4 border-b border-gray-200 dark:border-gray-600 pb-2"
+                >
+                  <h2
+                    class="text-2xl font-bold text-gray-800 dark:text-gray-100"
+                  >
+                    Logbuch-Ansichten
+                  </h2>
+                  <div id="logbook-nav" class="flex items-center gap-2 text-sm">
+                    <button
+                      id="logbook-view-aircraft"
+                      class="logbook-view-btn active px-3 py-1 rounded-md transition"
+                    >
+                      Nach Flugzeugtyp
+                    </button>
+                    <button
+                      id="logbook-view-airline"
+                      class="logbook-view-btn px-3 py-1 rounded-md transition"
+                    >
+                      Nach Airline
+                    </button>
+                    <button
+                      id="logbook-view-airport"
+                      class="logbook-view-btn px-3 py-1 rounded-md transition"
+                    >
+                      Nach Flughafen
+                    </button>
+                  </div>
+                </div>
+                <div id="logbook-content" class="mt-4 space-y-4"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          class="bg-indigo-50 dark:bg-gray-900 p-5 rounded-lg mb-6 shadow-inner"
+        >
+          <h2
+            class="text-xl font-semibold text-indigo-600 dark:text-indigo-400 mb-4"
+          >
+            Neuen Flug loggen
+          </h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div class="autocomplete-container">
+              <label
+                for="departure"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >Abflugort (IATA/Name)</label
+              >
+              <input
+                type="text"
+                id="departure"
+                placeholder="z.B. FRA"
+                class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150"
+              />
+              <div
+                id="departure-list"
+                class="autocomplete-list hidden rounded-lg"
+              ></div>
+            </div>
+            <div class="autocomplete-container">
+              <label
+                for="arrival"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >Zielort (IATA/Name)</label
+              >
+              <input
+                type="text"
+                id="arrival"
+                placeholder="z.B. JFK"
+                class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150"
+              />
+              <div
+                id="arrival-list"
+                class="autocomplete-list hidden rounded-lg"
+              ></div>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+            <div>
+              <label
+                for="flightDate"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >Flugdatum (Optional)</label
+              ><input
+                type="date"
+                id="flightDate"
+                class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3"
+              />
             </div>
             <div>
-                <div class="border-b border-gray-200 dark:border-gray-700">
-                    <nav class="flex -mb-px space-x-6" aria-label="Tabs">
-                        <button onclick="showTab('stats')" id="tab-btn-stats" class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Statistiken</button>
-                        <button onclick="showTab('charts')" id="tab-btn-charts" class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Charts</button>
-						<button onclick="showTab('logbook')" id="tab-btn-logbook" class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">Logbuch</button>
-                    </nav>
-                </div>
-                <div class="py-6">
-                    <div id="tab-content-stats">
-                        <div id="statistics-panel" class="grid grid-cols-2 md:grid-cols-4 gap-4 bg-gray-100 dark:bg-gray-900 p-4 rounded-lg text-center">
-                            <div class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm"><p class="text-xs font-medium text-gray-700 dark:text-gray-400">Gesamte Flüge</p><p id="stat-count" class="text-xl font-bold text-indigo-800 dark:text-indigo-400">0</p></div>
-                            <div class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm"><p class="text-xs font-medium text-gray-700 dark:text-gray-400">Gesamtdistanz</p><p id="stat-distance" class="text-xl font-bold text-indigo-800 dark:text-indigo-400">0 km</p></div>
-                            <div class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm"><p class="text-xs font-medium text-gray-700 dark:text-gray-400">Häufigster Flughafen</p><p id="stat-frequent" class="text-sm font-bold text-indigo-800 dark:text-indigo-400">-</p></div>
-                            <div class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm"><p class="text-xs font-medium text-gray-700 dark:text-gray-400">Daten-Export</p><div class="flex space-x-2 mt-1 justify-center"><button onclick="exportData('csv')" class="text-xs py-1 px-2 bg-green-500 text-white rounded hover:bg-green-600 transition">CSV</button><button onclick="exportData('json')" class="text-xs py-1 px-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition">JSON</button></div></div>
-                            <div class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm"><p class="text-xs font-medium text-gray-700 dark:text-gray-400">Längster Flug</p><p id="stat-longest-flight" class="text-sm font-bold text-indigo-800 dark:text-indigo-400">-</p></div>
-                            <div class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm"><p class="text-xs font-medium text-gray-700 dark:text-gray-400">Kürzester Flug</p><p id="stat-shortest-flight" class="text-sm font-bold text-indigo-800 dark:text-indigo-400">-</p></div>
-                            <div class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm"><p class="text-xs font-medium text-gray-700 dark:text-gray-400">Ø Flugdistanz</p><p id="stat-avg-distance" class="text-xl font-bold text-indigo-800 dark:text-indigo-400">0 km</p></div>
-                            <div class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm"><p class="text-xs font-medium text-gray-700 dark:text-gray-400">Häufigster Flugzeugtyp</p><p id="stat-frequent-aircraft" class="text-sm font-bold text-indigo-800 dark:text-indigo-400">-</p></div>
-                            <div class="col-span-2 md:col-span-4 p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm"><div class="flex items-center justify-between"><p class="text-xs font-medium text-gray-700 dark:text-gray-400">Jahreszusammenfassung</p><select id="stat-year-select" class="text-xs p-1 rounded border-gray-300 dark:bg-gray-700 dark:border-gray-600"></select></div><p id="stat-yearly-summary" class="text-lg font-bold text-indigo-800 dark:text-indigo-400 mt-2">-</p></div>
-                        </div>
-                    </div>
-                    <div id="tab-content-charts" class="hidden">
-                        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
-                            <div class="flex justify-between items-center mb-4 border-b border-gray-200 dark:border-gray-600 pb-2">
-                                <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Visuelle Auswertungen</h2>
-                                <div class="flex items-center gap-2 text-sm">
-                                    <button id="chart-view-year" class="chart-view-btn active px-3 py-1 rounded-md transition">Pro Jahr</button>
-                                    <button id="chart-view-month" class="chart-view-btn px-3 py-1 rounded-md transition">Pro Monat</button>
-                                </div>
-                            </div>
-                            <div class="grid grid-cols-1 gap-8 mt-4">
-                                <div><h3 class="font-semibold text-center text-gray-700 dark:text-gray-300 mb-2">Flüge pro Zeitraum</h3><canvas id="flightsChart"></canvas></div>
-                                <div><h3 class="font-semibold text-center text-gray-700 dark:text-gray-300 mb-2">Distanz pro Zeitraum (km)</h3><canvas id="distanceChart"></canvas></div>
-                                <div><h3 class="font-semibold text-center text-gray-700 dark:text-gray-300 mb-2">Flugzeit pro Zeitraum</h3><canvas id="timeChart"></canvas></div>
-                            </div>
-                        </div>
-                    </div>
-					<div id="tab-content-logbook" class="hidden">
-						<div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
-							<div class="flex justify-between items-center mb-4 border-b border-gray-200 dark:border-gray-600 pb-2">
-								<h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Logbuch-Ansichten</h2>
-								<div id="logbook-nav" class="flex items-center gap-2 text-sm">
-									<button id="logbook-view-aircraft" class="logbook-view-btn active px-3 py-1 rounded-md transition">Nach Flugzeugtyp</button>
-									<button id="logbook-view-airline" class="logbook-view-btn px-3 py-1 rounded-md transition">Nach Airline</button>
-									<button id="logbook-view-airport" class="logbook-view-btn px-3 py-1 rounded-md transition">Nach Flughafen</button>
-								</div>
-							</div>
-							<div id="logbook-content" class="mt-4 space-y-4">
-								</div>
-						</div>
-					</div>
-                </div>
+              <label
+                for="flightClass"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >Klasse/Zweck (Optional)</label
+              ><select
+                id="flightClass"
+                class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 bg-white"
+              >
+                <option value="Economy">Economy</option>
+                <option value="Business">Business</option>
+                <option value="First">First</option>
+                <option value="Privat">Privat</option>
+                <option value="Cargo">Cargo</option>
+              </select>
             </div>
-            <div class="bg-indigo-50 dark:bg-gray-900 p-5 rounded-lg mb-6 shadow-inner">
-                <h2 class="text-xl font-semibold text-indigo-600 dark:text-indigo-400 mb-4">Neuen Flug loggen</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div class="autocomplete-container">
-                        <label for="departure" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Abflugort (IATA/Name)</label>
-                        <input type="text" id="departure" placeholder="z.B. FRA" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150">
-                        <div id="departure-list" class="autocomplete-list hidden rounded-lg"></div>
-                    </div>
-                    <div class="autocomplete-container">
-                        <label for="arrival" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Zielort (IATA/Name)</label>
-                        <input type="text" id="arrival" placeholder="z.B. JFK" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150">
-                        <div id="arrival-list" class="autocomplete-list hidden rounded-lg"></div>
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                    <div><label for="flightDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Flugdatum (Optional)</label><input type="date" id="flightDate" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3"></div>
-                    <div><label for="flightClass" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Klasse/Zweck (Optional)</label><select id="flightClass" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 bg-white"><option value="Economy">Economy</option><option value="Business">Business</option><option value="First">First</option><option value="Privat">Privat</option><option value="Cargo">Cargo</option></select></div>
-                    <div><label for="flightNumber" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Flugnummer (Optional)</label><input type="text" id="flightNumber" placeholder="z.B. LH400" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3"></div>
-                    <div><label for="aircraftType" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Flugzeugtyp (Optional)</label><input type="text" id="aircraftType" placeholder="z.B. B747-8" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3"></div>
-                </div>
-                <div class="mb-6">
-                    <label for="flightPhoto" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Foto (Optional)</label>
-                    <input type="file" id="flightPhoto" accept="image/*" class="mt-1 block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400" multiple>
-                    <div id="photo-preview-container" class="hidden mt-2"><p id="photo-preview-text" class="text-sm text-gray-600 dark:text-gray-400"></p></div>
-                </div>
-                <div class="mb-6">
-                    <label for="notes" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Bemerkungen (Optional)</label>
-                    <textarea id="notes" rows="2" placeholder="Besondere Vorkommnisse oder persönliche Notizen..." class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3"></textarea>
-                </div>
-                <div class="grid grid-cols-2 gap-4 bg-indigo-100 dark:bg-indigo-900/50 p-4 rounded-lg border border-indigo-200 dark:border-indigo-800 mb-4">
-                    <div><p class="text-xs font-medium text-indigo-700 dark:text-indigo-300">Geschätzte Entfernung</p><p id="distance-display" class="text-xl font-bold text-indigo-800 dark:text-indigo-400">-</p></div>
-                    <div><p class="text-xs font-medium text-indigo-700 dark:text-indigo-300">Geschätzte Flugzeit</p><p id="time-display" class="text-xl font-bold text-indigo-800 dark:text-indigo-400">-</p></div>
-                </div>
-                <div class="flex items-center gap-4">
-                    <button onclick="logFlight()" id="log-button" disabled class="w-full py-3 px-4 border border-transparent rounded-lg shadow-lg text-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition duration-200 disabled:opacity-50">Flug loggen und speichern</button>
-                    <button onclick="resetForm()" id="cancel-edit-button" class="hidden w-1/3 py-3 px-4 border border-gray-300 rounded-lg shadow-lg text-lg font-medium text-gray-700 bg-white hover:bg-gray-100 transition duration-200">Abbrechen</button>
-                </div>
+            <div>
+              <label
+                for="flightNumber"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >Flugnummer (Optional)</label
+              ><input
+                type="text"
+                id="flightNumber"
+                placeholder="z.B. LH400"
+                class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3"
+              />
             </div>
-            <div class="flex items-center justify-between mb-4 border-b pb-2 border-gray-200 dark:border-gray-700">
-                <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Gespeicherte Flüge</h2>
-                <div class="flex items-center space-x-4">
-                    <button id="toggle-map-view-btn" onclick="toggleAllRoutesView()" class="text-sm font-medium text-indigo-600 hover:text-indigo-800 p-2 rounded-lg bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 transition">Alle Routen zeigen</button>
-                    <button onclick="renderFlights()" class="text-sm font-medium text-indigo-600 hover:text-indigo-800 flex items-center p-2 rounded-lg bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 transition">Aktualisieren</button>
-                </div>
+            <div>
+              <label
+                for="aircraftType"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >Flugzeugtyp (Optional)</label
+              ><input
+                type="text"
+                id="aircraftType"
+                placeholder="z.B. B747-8"
+                class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3"
+              />
             </div>
-            <div class="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg mb-4 border border-gray-200 dark:border-gray-700">
-                <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-3">Flüge filtern</h3>
-                <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
-                    <div><label for="filter-departure" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Abflugort (IATA)</label><input type="text" id="filter-departure" placeholder="z.B. FRA" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2"></div>
-                    <div><label for="filter-arrival" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Zielort (IATA)</label><input type="text" id="filter-arrival" placeholder="z.B. JFK" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2"></div>
-                    <div><label for="filter-date-from" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Datum (von)</label><input type="date" id="filter-date-from" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2"></div>
-                    <div><label for="filter-date-to" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Datum (bis)</label><input type="date" id="filter-date-to" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2"></div>
-                    <div class="flex space-x-2"><button onclick="applyFilters()" class="w-full py-2 px-4 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition">Filtern</button><button onclick="resetFilters()" class="w-full py-2 px-4 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition">Reset</button></div>
-                </div>
+          </div>
+
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+            <div>
+              <label
+                for="price"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >Ticketpreis (Optional)</label
+              >
+              <input
+                type="number"
+                id="price"
+                placeholder="z.B. 199.99"
+                step="0.01"
+                class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3"
+              />
             </div>
-            <div id="sort-bar" class="flex items-center gap-2 mb-2 p-2 bg-gray-100 dark:bg-gray-700 rounded-md text-sm font-semibold">
-                <span class="text-gray-600 dark:text-gray-300 mr-2">Sortieren nach:</span>
-                <button id="sort-btn-flightLogNumber" onclick="setSortOrder('flightLogNumber')" class="sort-btn flex-shrink-0 px-3 py-1 rounded-md transition hover:bg-gray-300 dark:hover:bg-gray-500">#</button>
-                <button id="sort-btn-date" onclick="setSortOrder('date')" class="sort-btn flex-shrink-0 px-3 py-1 rounded-md transition hover:bg-gray-300 dark:hover:bg-gray-500">Datum</button>
-                <button id="sort-btn-departure" onclick="setSortOrder('departure')" class="sort-btn flex-grow px-3 py-1 rounded-md transition hover:bg-gray-300 dark:hover:bg-gray-500 text-left">Route</button>
-                <button id="sort-btn-distance" onclick="setSortOrder('distance')" class="sort-btn flex-shrink-0 px-3 py-1 rounded-md transition hover:bg-gray-300 dark:hover:bg-gray-500">Distanz</button>
+            <div>
+              <label
+                for="currency"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >Währung (Optional)</label
+              >
+              <input
+                type="text"
+                id="currency"
+                placeholder="z.B. EUR"
+                maxlength="3"
+                class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3"
+              />
             </div>
-            <div id="flight-log-list" class="space-y-3 max-h-96 overflow-y-auto pr-2"></div>
-            <div id="pagination-controls" class="flex justify-between items-center mt-4 text-sm text-gray-600 dark:text-gray-400">
-                <button id="prev-page-btn" onclick="prevPage()" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed">‹ Zurück</button>
-                <span id="page-info" class="font-semibold"></span>
-                <button id="next-page-btn" onclick="nextPage()" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed">Weiter ›</button>
+          </div>
+
+          <div class="mb-6">
+            <label
+              for="flightPhoto"
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >Foto (Optional)</label
+            >
+            <input
+              type="file"
+              id="flightPhoto"
+              accept="image/*"
+              class="mt-1 block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+              multiple
+            />
+            <div id="photo-preview-container" class="hidden mt-2">
+              <p
+                id="photo-preview-text"
+                class="text-sm text-gray-600 dark:text-gray-400"
+              ></p>
             </div>
+          </div>
+          <div class="mb-6">
+            <label
+              for="notes"
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >Bemerkungen (Optional)</label
+            >
+            <textarea
+              id="notes"
+              rows="2"
+              placeholder="Besondere Vorkommnisse oder persönliche Notizen..."
+              class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3"
+            ></textarea>
+          </div>
+          <div
+            class="grid grid-cols-2 gap-4 bg-indigo-100 dark:bg-indigo-900/50 p-4 rounded-lg border border-indigo-200 dark:border-indigo-800 mb-4"
+          >
+            <div>
+              <p
+                class="text-xs font-medium text-indigo-700 dark:text-indigo-300"
+              >
+                Geschätzte Entfernung
+              </p>
+              <p
+                id="distance-display"
+                class="text-xl font-bold text-indigo-800 dark:text-indigo-400"
+              >
+                -
+              </p>
+            </div>
+            <div>
+              <p
+                class="text-xs font-medium text-indigo-700 dark:text-indigo-300"
+              >
+                Geschätzte Flugzeit
+              </p>
+              <p
+                id="time-display"
+                class="text-xl font-bold text-indigo-800 dark:text-indigo-400"
+              >
+                -
+              </p>
+            </div>
+          </div>
+          <div class="flex items-center gap-4">
+            <button
+              onclick="logFlight()"
+              id="log-button"
+              disabled
+              class="w-full py-3 px-4 border border-transparent rounded-lg shadow-lg text-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition duration-200 disabled:opacity-50"
+            >
+              Flug loggen und speichern
+            </button>
+            <button
+              onclick="resetForm()"
+              id="cancel-edit-button"
+              class="hidden w-1/3 py-3 px-4 border border-gray-300 rounded-lg shadow-lg text-lg font-medium text-gray-700 bg-white hover:bg-gray-100 transition duration-200"
+            >
+              Abbrechen
+            </button>
+          </div>
         </div>
+        <div
+          class="flex items-center justify-between mb-4 border-b pb-2 border-gray-200 dark:border-gray-700"
+        >
+          <h2 class="text-2xl font-bold text-gray-800 dark:text-white">
+            Gespeicherte Flüge
+          </h2>
+          <div class="flex items-center space-x-4">
+            <button
+              id="toggle-map-view-btn"
+              onclick="toggleAllRoutesView()"
+              class="text-sm font-medium text-indigo-600 hover:text-indigo-800 p-2 rounded-lg bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 transition"
+            >
+              Alle Routen zeigen
+            </button>
+            <button
+              onclick="renderFlights()"
+              class="text-sm font-medium text-indigo-600 hover:text-indigo-800 flex items-center p-2 rounded-lg bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 transition"
+            >
+              Aktualisieren
+            </button>
+          </div>
+        </div>
+        <div
+          class="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg mb-4 border border-gray-200 dark:border-gray-700"
+        >
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-3">
+            Flüge filtern
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+            <div>
+              <label
+                for="filter-departure"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >Abflugort (IATA)</label
+              ><input
+                type="text"
+                id="filter-departure"
+                placeholder="z.B. FRA"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2"
+              />
+            </div>
+            <div>
+              <label
+                for="filter-arrival"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >Zielort (IATA)</label
+              ><input
+                type="text"
+                id="filter-arrival"
+                placeholder="z.B. JFK"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2"
+              />
+            </div>
+            <div>
+              <label
+                for="filter-date-from"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >Datum (von)</label
+              ><input
+                type="date"
+                id="filter-date-from"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2"
+              />
+            </div>
+            <div>
+              <label
+                for="filter-date-to"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >Datum (bis)</label
+              ><input
+                type="date"
+                id="filter-date-to"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2"
+              />
+            </div>
+            <div class="flex space-x-2">
+              <button
+                onclick="applyFilters()"
+                class="w-full py-2 px-4 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition"
+              >
+                Filtern</button
+              ><button
+                onclick="resetFilters()"
+                class="w-full py-2 px-4 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition"
+              >
+                Reset
+              </button>
+            </div>
+          </div>
+        </div>
+        <div
+          id="sort-bar"
+          class="flex items-center gap-2 mb-2 p-2 bg-gray-100 dark:bg-gray-700 rounded-md text-sm font-semibold"
+        >
+          <span class="text-gray-600 dark:text-gray-300 mr-2"
+            >Sortieren nach:</span
+          >
+          <button
+            id="sort-btn-flightLogNumber"
+            onclick="setSortOrder('flightLogNumber')"
+            class="sort-btn flex-shrink-0 px-3 py-1 rounded-md transition hover:bg-gray-300 dark:hover:bg-gray-500"
+          >
+            #
+          </button>
+          <button
+            id="sort-btn-date"
+            onclick="setSortOrder('date')"
+            class="sort-btn flex-shrink-0 px-3 py-1 rounded-md transition hover:bg-gray-300 dark:hover:bg-gray-500"
+          >
+            Datum
+          </button>
+          <button
+            id="sort-btn-departure"
+            onclick="setSortOrder('departure')"
+            class="sort-btn flex-grow px-3 py-1 rounded-md transition hover:bg-gray-300 dark:hover:bg-gray-500 text-left"
+          >
+            Route
+          </button>
+          <button
+            id="sort-btn-distance"
+            onclick="setSortOrder('distance')"
+            class="sort-btn flex-shrink-0 px-3 py-1 rounded-md transition hover:bg-gray-300 dark:hover:bg-gray-500"
+          >
+            Distanz
+          </button>
+        </div>
+        <div
+          id="flight-log-list"
+          class="space-y-3 max-h-96 overflow-y-auto pr-2"
+        ></div>
+        <div
+          id="pagination-controls"
+          class="flex justify-between items-center mt-4 text-sm text-gray-600 dark:text-gray-400"
+        >
+          <button
+            id="prev-page-btn"
+            onclick="prevPage()"
+            class="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            ‹ Zurück
+          </button>
+          <span id="page-info" class="font-semibold"></span>
+          <button
+            id="next-page-btn"
+            onclick="nextPage()"
+            class="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Weiter ›
+          </button>
+        </div>
+      </div>
     </div>
-    
-    <div id="password-change-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center p-4 z-50">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-full max-w-md">
-            <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-4">Neues Passwort festlegen</h3>
-            <form id="password-change-form" class="space-y-4">
-                <div>
-                    <label for="new-password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Neues Passwort</label>
-                    <input type="password" id="new-password" placeholder="Mindestens 6 Zeichen" class="mt-1 w-full p-3 rounded-lg border-gray-300 dark:bg-gray-700 dark:border-gray-600">
-                </div>
-                <div class="flex justify-end gap-4">
-                    <button type="button" onclick="closePasswordChangeModal(event)" class="px-4 py-2 bg-gray-200 dark:bg-gray-600 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500 transition">Abbrechen</button>
-                    <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition">Speichern</button>
-                </div>
-            </form>
-        </div>
+
+    <div
+      id="password-change-modal"
+      class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center p-4 z-50"
+    >
+      <div
+        class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-full max-w-md"
+      >
+        <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-4">
+          Neues Passwort festlegen
+        </h3>
+        <form id="password-change-form" class="space-y-4">
+          <div>
+            <label
+              for="new-password"
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >Neues Passwort</label
+            >
+            <input
+              type="password"
+              id="new-password"
+              placeholder="Mindestens 6 Zeichen"
+              class="mt-1 w-full p-3 rounded-lg border-gray-300 dark:bg-gray-700 dark:border-gray-600"
+            />
+          </div>
+          <div class="flex justify-end gap-4">
+            <button
+              type="button"
+              onclick="closePasswordChangeModal(event)"
+              class="px-4 py-2 bg-gray-200 dark:bg-gray-600 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500 transition"
+            >
+              Abbrechen
+            </button>
+            <button
+              type="submit"
+              class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition"
+            >
+              Speichern
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
 
     <div id="toast-container" class="fixed top-5 right-5 z-50 space-y-2"></div>
-    
+
     <script>
-        // (JavaScript content follows)
-		
-        // =================================================================
-        // INITIALISIERUNG & GLOBALE VARIABLEN
-        // =================================================================
+      // (JavaScript content follows)
 
-        const SUPABASE_URL = "https://sbmjdwktxsnmukbooycu.supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNibWpkd2t0eHNubXVrYm9veWN1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAyOTczNDgsImV4cCI6MjA3NTg3MzM0OH0.NN9EHfS7iyAZvFm_UYs3PxEWj2pMbYmMduUeVA70rpo";
-        const { createClient } = supabase;
-        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      // =================================================================
+      // INITIALISIERUNG & GLOBALE VARIABLEN
+      // =================================================================
 
-        let map;
-        let routeLayer;
-        let currentlyEditingFlightData = null;
-        let isAllRoutesViewActive = false;
-        let currentSort = { key: "flightLogNumber", direction: "asc" };
-        let currentPage = 1;
-        const ITEMS_PER_PAGE = 5;
-        let flightsChartInstance, distanceChartInstance, timeChartInstance;
-        let currentChartTimeframe = 'year';
-		let isAppInitialized = false; // NEUER SCHUTZSCHALTER
-        var airportData = {
-            FRA: { name: "Frankfurt", lat: 50.0333, lon: 8.5706 }, MUC: { name: "München", lat: 48.3538, lon: 11.7861 },
-            BER: { name: "Berlin Brandenburg", lat: 52.3667, lon: 13.5033 }, HAM: { name: "Hamburg", lat: 53.6304, lon: 9.9882 },
-            DUS: { name: "Düsseldorf", lat: 51.2895, lon: 6.7667 }, VIE: { name: "Wien", lat: 48.1103, lon: 16.5697 },
-            ZRH: { name: "Zürich", lat: 47.4647, lon: 8.5492 }, AMS: { name: "Amsterdam Schiphol", lat: 52.3086, lon: 4.7638 },
-            LHR: { name: "London Heathrow", lat: 51.47, lon: -0.4543 }, CDG: { name: "Paris Charles de Gaulle", lat: 49.0097, lon: 2.5479 },
-            IST: { name: "Istanbul", lat: 41.2619, lon: 28.7361 }, JFK: { name: "New York JFK", lat: 40.6413, lon: -73.7781 },
-            LAX: { name: "Los Angeles Intl", lat: 33.9416, lon: -118.4085 }, ATL: { name: "Atlanta Intl", lat: 33.6407, lon: -84.4277 },
-            DXB: { name: "Dubai Intl", lat: 25.2532, lon: 55.3653 }, SIN: { name: "Singapur Changi", lat: 1.3644, lon: 103.9915 },
-            NRT: { name: "Tokio Narita", lat: 35.7647, lon: 140.3864 }, SYD: { name: "Sydney Intl", lat: -33.9461, lon: 151.1772 },
-            HND: { name: "Tokio Haneda", lat: 35.5523, lon: 139.7797 }, ICN: { name: "Seoul Incheon", lat: 37.4692, lon: 126.4505 },
-            PEK: { name: "Peking Capital", lat: 40.0799, lon: 116.6031 }, PVG: { name: "Shanghai Pudong", lat: 31.1434, lon: 121.7876 },
-            DFW: { name: "Dallas/Fort Worth", lat: 32.8998, lon: -97.0403 }, ORD: { name: "Chicago O'Hare", lat: 41.9742, lon: -87.9073 },
-            MAD: { name: "Madrid Barajas", lat: 40.4839, lon: -3.5679 }, BCN: { name: "Barcelona-El Prat", lat: 41.2974, lon: 2.0787 },
-            FCO: { name: "Rom Fiumicino", lat: 41.8003, lon: 12.2389 }, DOH: { name: "Doha Hamad Intl", lat: 25.273, lon: 51.608 },
-            GRU: { name: "São Paulo Guarulhos", lat: -23.4356, lon: -46.4731 }, CPT: { name: "Kapstadt", lat: -33.9692, lon: 18.6017 },
-            JNB: { name: "Johannesburg OR Tambo", lat: -26.1367, lon: 28.2435 }, SFO: { name: "San Francisco Intl", lat: 37.6213, lon: -122.379 },
-        };
-        
-        // =================================================================
-        // AUTH & APP INITIALIZATION FUNCTIONS
-        // =================================================================
+      const SUPABASE_URL = "https://sbmjdwktxsnmukbooycu.supabase.co";
+      const SUPABASE_ANON_KEY =
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNibWpkd2t0eHNubXVrYm9veWN1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAyOTczNDgsImV4cCI6MjA3NTg3MzM0OH0.NN9EHfS7iyAZvFm_UYs3PxEWj2pMbYmMduUeVA70rpo";
+      const { createClient } = supabase;
+      const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        async function initializeApp() {
-            if (isAppInitialized) return; // Wenn die App schon läuft, sofort abbrechen.
-            isAppInitialized = true;      // Den Schalter umlegen.
-			document.getElementById('auth-container').classList.add('hidden');
-            document.getElementById('app-container').classList.remove('hidden');
-			document.getElementById('password-change-form').addEventListener('submit', changePassword);
+      let map;
+      let routeLayer;
+      let currentlyEditingFlightData = null;
+      let isAllRoutesViewActive = false;
+      let currentSort = { key: "flightLogNumber", direction: "asc" };
+      let currentPage = 1;
+      const ITEMS_PER_PAGE = 5;
+      let flightsChartInstance, distanceChartInstance, timeChartInstance;
+      let currentChartTimeframe = "year";
+      let isAppInitialized = false; // NEUER SCHUTZSCHALTER
+      var airportData = {
+        FRA: { name: "Frankfurt", lat: 50.0333, lon: 8.5706 },
+        MUC: { name: "München", lat: 48.3538, lon: 11.7861 },
+        BER: { name: "Berlin Brandenburg", lat: 52.3667, lon: 13.5033 },
+        HAM: { name: "Hamburg", lat: 53.6304, lon: 9.9882 },
+        DUS: { name: "Düsseldorf", lat: 51.2895, lon: 6.7667 },
+        VIE: { name: "Wien", lat: 48.1103, lon: 16.5697 },
+        ZRH: { name: "Zürich", lat: 47.4647, lon: 8.5492 },
+        AMS: { name: "Amsterdam Schiphol", lat: 52.3086, lon: 4.7638 },
+        LHR: { name: "London Heathrow", lat: 51.47, lon: -0.4543 },
+        CDG: { name: "Paris Charles de Gaulle", lat: 49.0097, lon: 2.5479 },
+        IST: { name: "Istanbul", lat: 41.2619, lon: 28.7361 },
+        JFK: { name: "New York JFK", lat: 40.6413, lon: -73.7781 },
+        LAX: { name: "Los Angeles Intl", lat: 33.9416, lon: -118.4085 },
+        ATL: { name: "Atlanta Intl", lat: 33.6407, lon: -84.4277 },
+        DXB: { name: "Dubai Intl", lat: 25.2532, lon: 55.3653 },
+        SIN: { name: "Singapur Changi", lat: 1.3644, lon: 103.9915 },
+        NRT: { name: "Tokio Narita", lat: 35.7647, lon: 140.3864 },
+        SYD: { name: "Sydney Intl", lat: -33.9461, lon: 151.1772 },
+        HND: { name: "Tokio Haneda", lat: 35.5523, lon: 139.7797 },
+        ICN: { name: "Seoul Incheon", lat: 37.4692, lon: 126.4505 },
+        PEK: { name: "Peking Capital", lat: 40.0799, lon: 116.6031 },
+        PVG: { name: "Shanghai Pudong", lat: 31.1434, lon: 121.7876 },
+        DFW: { name: "Dallas/Fort Worth", lat: 32.8998, lon: -97.0403 },
+        ORD: { name: "Chicago O'Hare", lat: 41.9742, lon: -87.9073 },
+        MAD: { name: "Madrid Barajas", lat: 40.4839, lon: -3.5679 },
+        BCN: { name: "Barcelona-El Prat", lat: 41.2974, lon: 2.0787 },
+        FCO: { name: "Rom Fiumicino", lat: 41.8003, lon: 12.2389 },
+        DOH: { name: "Doha Hamad Intl", lat: 25.273, lon: 51.608 },
+        GRU: { name: "São Paulo Guarulhos", lat: -23.4356, lon: -46.4731 },
+        CPT: { name: "Kapstadt", lat: -33.9692, lon: 18.6017 },
+        JNB: { name: "Johannesburg OR Tambo", lat: -26.1367, lon: 28.2435 },
+        SFO: { name: "San Francisco Intl", lat: 37.6213, lon: -122.379 },
+      };
 
-            try {
-                const { data: { user } } = await supabaseClient.auth.getUser();
-                if (user) {
-                    const userDisplay = document.getElementById('user-display');
-                    if (userDisplay) {
-                        userDisplay.textContent = user.email;
-                    }
-                }
-            } catch (e) {
-                console.error("Fehler beim Abrufen des Benutzers:", e);
+      // =================================================================
+      // AUTH & APP INITIALIZATION FUNCTIONS
+      // =================================================================
+
+      async function initializeApp() {
+        if (isAppInitialized) return; // Wenn die App schon läuft, sofort abbrechen.
+        isAppInitialized = true; // Den Schalter umlegen.
+        document.getElementById("auth-container").classList.add("hidden");
+        document.getElementById("app-container").classList.remove("hidden");
+        document
+          .getElementById("password-change-form")
+          .addEventListener("submit", changePassword);
+
+        try {
+          const {
+            data: { user },
+          } = await supabaseClient.auth.getUser();
+          if (user) {
+            const userDisplay = document.getElementById("user-display");
+            if (userDisplay) {
+              userDisplay.textContent = user.email;
             }
-            
-            await migrateAndLoadAirports();
-            if (localStorage.getItem('supabase_migrated') !== 'true') await migrateDataToSupabase();
-            if (localStorage.getItem('flights_claimed') !== 'true') await claimExistingFlights();
-
-            if (!map) {
-                map = L.map('flight-map-container').setView([20, 0], 2);
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-                }).addTo(map);
-                routeLayer = L.layerGroup().addTo(map);
-            }
-            
-            document.getElementById('logout-btn').addEventListener('click', logout);
-            document.getElementById('theme-toggle').addEventListener('click', toggleDarkMode);
-            document.getElementById('chart-view-year').addEventListener('click', () => setChartTimeframe('year'));
-            document.getElementById('chart-view-month').addEventListener('click', () => setChartTimeframe('month'));
-			
-			document.getElementById('logbook-view-aircraft').addEventListener('click', () => renderLogbookView('aircraftType'));
-			document.getElementById('logbook-view-airline').addEventListener('click', () => renderLogbookView('airline'));
-			document.getElementById('logbook-view-airport').addEventListener('click', () => renderLogbookView('airport'));
-            
-			document.getElementById('flightPhoto').addEventListener('change', (event) => {
-                const files = event.target.files;
-                const previewText = document.getElementById('photo-preview-text');
-                const previewContainer = document.getElementById('photo-preview-container');
-                if (files && files.length > 0) {
-                    previewText.textContent = `${files.length} Foto(s) ausgewählt.`;
-                    previewContainer.classList.remove('hidden');
-                } else {
-                    previewContainer.classList.add('hidden');
-                }
-            });
-            document.getElementById("departure").addEventListener("input", () => {
-                updateAutocompleteList("departure", "departure-list");
-                updateFlightDetails();
-            });
-            document.getElementById("arrival").addEventListener("input", () => {
-                updateAutocompleteList("arrival", "arrival-list");
-                updateFlightDetails();
-            });
-
-            updateThemeIcon();
-            showTab('stats');
-            renderFlights();
+          }
+        } catch (e) {
+          console.error("Fehler beim Abrufen des Benutzers:", e);
         }
 
-        function showAuth() {
-            document.getElementById("auth-container").classList.remove("hidden");
-            document.getElementById("app-container").classList.add("hidden");
-        }
-	
-	    function switchAuthTab(tab) {
-            const loginTab = document.getElementById("login-tab");
-            const registerTab = document.getElementById("register-tab");
-            const loginForm = document.getElementById("login-form");
-            const registerForm = document.getElementById("register-form");
-            document.getElementById("auth-error").textContent = "";
+        await migrateAndLoadAirports();
+        if (localStorage.getItem("supabase_migrated") !== "true")
+          await migrateDataToSupabase();
+        if (localStorage.getItem("flights_claimed") !== "true")
+          await claimExistingFlights();
 
-            if (tab === "login") {
-                loginTab.classList.add("active-tab");
-                registerTab.classList.remove("active-tab");
-                loginForm.classList.remove("hidden");
-                registerForm.classList.add("hidden");
+        if (!map) {
+          map = L.map("flight-map-container").setView([20, 0], 2);
+          L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            attribution:
+              '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+          }).addTo(map);
+          routeLayer = L.layerGroup().addTo(map);
+        }
+
+        document.getElementById("logout-btn").addEventListener("click", logout);
+        document
+          .getElementById("theme-toggle")
+          .addEventListener("click", toggleDarkMode);
+        document
+          .getElementById("chart-view-year")
+          .addEventListener("click", () => setChartTimeframe("year"));
+        document
+          .getElementById("chart-view-month")
+          .addEventListener("click", () => setChartTimeframe("month"));
+
+        document
+          .getElementById("logbook-view-aircraft")
+          .addEventListener("click", () => renderLogbookView("aircraftType"));
+        document
+          .getElementById("logbook-view-airline")
+          .addEventListener("click", () => renderLogbookView("airline"));
+        document
+          .getElementById("logbook-view-airport")
+          .addEventListener("click", () => renderLogbookView("airport"));
+
+        document
+          .getElementById("flightPhoto")
+          .addEventListener("change", (event) => {
+            const files = event.target.files;
+            const previewText = document.getElementById("photo-preview-text");
+            const previewContainer = document.getElementById(
+              "photo-preview-container"
+            );
+            if (files && files.length > 0) {
+              previewText.textContent = `${files.length} Foto(s) ausgewählt.`;
+              previewContainer.classList.remove("hidden");
             } else {
-                loginTab.classList.remove("active-tab");
-                registerTab.classList.add("active-tab");
-                loginForm.classList.add("hidden");
-                registerForm.classList.remove("hidden");
+              previewContainer.classList.add("hidden");
             }
+          });
+        document.getElementById("departure").addEventListener("input", () => {
+          updateAutocompleteList("departure", "departure-list");
+          updateFlightDetails();
+        });
+        document.getElementById("arrival").addEventListener("input", () => {
+          updateAutocompleteList("arrival", "arrival-list");
+          updateFlightDetails();
+        });
+
+        updateThemeIcon();
+        showTab("stats");
+        renderFlights();
+      }
+
+      function showAuth() {
+        document.getElementById("auth-container").classList.remove("hidden");
+        document.getElementById("app-container").classList.add("hidden");
+      }
+
+      function switchAuthTab(tab) {
+        const loginTab = document.getElementById("login-tab");
+        const registerTab = document.getElementById("register-tab");
+        const loginForm = document.getElementById("login-form");
+        const registerForm = document.getElementById("register-form");
+        document.getElementById("auth-error").textContent = "";
+
+        if (tab === "login") {
+          loginTab.classList.add("active-tab");
+          registerTab.classList.remove("active-tab");
+          loginForm.classList.remove("hidden");
+          registerForm.classList.add("hidden");
+        } else {
+          loginTab.classList.remove("active-tab");
+          registerTab.classList.add("active-tab");
+          loginForm.classList.add("hidden");
+          registerForm.classList.remove("hidden");
+        }
+      }
+
+      async function logout() {
+        const { error } = await supabaseClient.auth.signOut();
+        if (error) {
+          console.error("Error logging out:", error);
+          showMessage("Logout-Fehler", error.message, "error");
+        } else {
+          window.location.reload();
+        }
+      }
+
+      function showPasswordChangeModal() {
+        document.getElementById("new-password").value = "";
+        document
+          .getElementById("password-change-modal")
+          .classList.remove("hidden");
+        document.getElementById("password-change-modal").classList.add("flex");
+      }
+
+      function closePasswordChangeModal(event) {
+        if (event) {
+          event.preventDefault(); // Verhindert jegliche Standard-Button-Aktion
+        }
+        document
+          .getElementById("password-change-modal")
+          .classList.add("hidden");
+        document
+          .getElementById("password-change-modal")
+          .classList.remove("flex");
+      }
+
+      async function changePassword(event) {
+        event.preventDefault();
+        const newPassword = document.getElementById("new-password").value;
+
+        if (newPassword.length < 6) {
+          showMessage(
+            "Fehler",
+            "Das Passwort muss mindestens 6 Zeichen lang sein.",
+            "error"
+          );
+          return;
         }
 
-        async function logout() {
-            const { error } = await supabaseClient.auth.signOut();
+        try {
+          const { error } = await supabaseClient.auth.updateUser({
+            password: newPassword,
+          });
+
+          if (error) {
+            // Fängt "normale" Supabase-Fehler ab (z.B. "Passwort zu schwach")
+            throw error;
+          }
+
+          // Dieser Teil wird jetzt wieder erreicht werden
+          showMessage(
+            "Erfolg!",
+            "Dein Passwort wurde erfolgreich geändert.",
+            "success"
+          );
+          closePasswordChangeModal();
+        } catch (error) {
+          // Fängt JEDEN denkbaren Fehler ab, auch Netzwerkprobleme oder unerwartetes Verhalten
+          showMessage(
+            "Fehler",
+            "Das Passwort konnte nicht geändert werden.",
+            "error"
+          );
+          console.error(
+            "Ein unerwarteter Fehler ist beim Passwort-Update aufgetreten:",
+            error
+          );
+        }
+      }
+
+      function showPasswordResetForm() {
+        document.getElementById("auth-tabs").classList.add("hidden");
+        document.getElementById("login-form").classList.add("hidden");
+        document.getElementById("register-form").classList.add("hidden");
+        document
+          .getElementById("password-reset-container")
+          .classList.remove("hidden");
+        document
+          .getElementById("request-reset-form")
+          .classList.remove("hidden");
+        document.getElementById("update-password-form").classList.add("hidden");
+        document.getElementById("auth-error").textContent = "";
+      }
+
+      function backToLogin() {
+        document.getElementById("auth-tabs").classList.remove("hidden");
+        document
+          .getElementById("password-reset-container")
+          .classList.add("hidden");
+        switchAuthTab("login");
+      }
+
+      // =================================================================
+      // DATA MIGRATION & LOADING FUNCTIONS
+      // =================================================================
+
+      async function migrateDataToSupabase() {
+        if (localStorage.getItem("supabase_migrated") === "true") {
+          return;
+        }
+        console.log(
+          "Starte einmalige Datenmigration von localStorage nach Supabase..."
+        );
+        const oldFlightsJson = localStorage.getItem("flightLog");
+        const oldFlights = oldFlightsJson ? JSON.parse(oldFlightsJson) : [];
+        if (oldFlights.length > 0) {
+          const flightsToInsert = oldFlights.map((flight) => {
+            return {
+              flight_id: flight.id,
+              date: flight.date,
+              departure: flight.departure,
+              arrival: flight.arrival,
+              distance: flight.distance,
+              time: flight.time,
+              class: flight.class,
+              flightNumber: flight.flightNumber,
+              aircraftType: flight.aircraftType,
+              notes: flight.notes,
+              depLat: flight.depLat,
+              depLon: flight.depLon,
+              arrLat: flight.arrLat,
+              arrLon: flight.arrLon,
+              depName: flight.depName,
+              arrName: flight.arrName,
+              flightLogNumber: flight.flightLogNumber,
+            };
+          });
+          const { error } = await supabaseClient
+            .from("flights")
+            .insert(flightsToInsert);
+          if (error) {
+            console.error("Fehler bei der Migration:", error);
+            showMessage(
+              "Migrations-Fehler",
+              "Daten konnten nicht zu Supabase migriert werden.",
+              "error"
+            );
+          } else {
+            console.log("Migration erfolgreich!");
+            localStorage.setItem("supabase_migrated", "true");
+          }
+        } else {
+          localStorage.setItem("supabase_migrated", "true");
+        }
+      }
+
+      async function migrateAndLoadAirports() {
+        if (localStorage.getItem("airports_migrated") !== "true") {
+          console.log(
+            "Starte einmalige Migration der Flughäfen von localStorage nach Supabase..."
+          );
+          const cachedAirportsJSON = localStorage.getItem("cachedAirports");
+          const cachedAirports = cachedAirportsJSON
+            ? JSON.parse(cachedAirportsJSON)
+            : {};
+          const airportsToInsert = Object.keys(cachedAirports).map((iata) => ({
+            iata: iata,
+            name: cachedAirports[iata].name,
+            lat: cachedAirports[iata].lat,
+            lon: cachedAirports[iata].lon,
+          }));
+          if (airportsToInsert.length > 0) {
+            const { error } = await supabaseClient
+              .from("airports")
+              .insert(airportsToInsert);
             if (error) {
-                console.error("Error logging out:", error);
-                showMessage("Logout-Fehler", error.message, "error");
+              console.error("Fehler bei der Flughafen-Migration:", error);
             } else {
-                window.location.reload();
+              console.log("Flughafen-Migration erfolgreich!");
+              localStorage.setItem("airports_migrated", "true");
+              localStorage.removeItem("cachedAirports");
             }
+          } else {
+            localStorage.setItem("airports_migrated", "true");
+          }
+        }
+        const { data, error } = await supabaseClient
+          .from("airports")
+          .select("*");
+        if (error) {
+          console.error("Fehler beim Laden der Flughäfen aus Supabase:", error);
+          return;
+        }
+        data.forEach((airport) => {
+          airportData[airport.iata] = {
+            name: airport.name,
+            lat: airport.lat,
+            lon: airport.lon,
+          };
+        });
+        console.log(`${data.length} Flughäfen aus der Datenbank geladen.`);
+      }
+
+      async function claimExistingFlights() {
+        if (localStorage.getItem("flights_claimed") === "true") {
+          return;
+        }
+        const {
+          data: { user },
+        } = await supabaseClient.auth.getUser();
+        if (user) {
+          console.log(
+            `Beanspruche bestehende Flüge für Benutzer ${user.id}...`
+          );
+          const { error } = await supabaseClient
+            .from("flights")
+            .update({ user_id: user.id })
+            .is("user_id", null);
+          if (error) {
+            console.error("Fehler beim Beanspruchen der Flüge:", error);
+          } else {
+            console.log("Flüge erfolgreich beansprucht!");
+            localStorage.setItem("flights_claimed", "true");
+          }
+        }
+      }
+
+      async function getFlights() {
+        const { data, error } = await supabaseClient
+          .from("flights")
+          .select("*");
+        if (error) {
+          console.error("Fehler beim Laden der Flüge:", error);
+          return [];
+        }
+        return data.map((flight) => ({ ...flight, id: flight.flight_id }));
+      }
+
+      // =================================================================
+      // CORE APP & HELPER FUNCTIONS
+      // =================================================================
+
+      function updateThemeIcon() {
+        const isDarkMode = document.documentElement.classList.contains("dark");
+        document
+          .getElementById("theme-toggle-dark-icon")
+          .classList.toggle("hidden", !isDarkMode);
+        document
+          .getElementById("theme-toggle-light-icon")
+          .classList.toggle("hidden", isDarkMode);
+      }
+
+      function toggleDarkMode() {
+        document.documentElement.classList.toggle("dark");
+        localStorage.setItem(
+          "theme",
+          document.documentElement.classList.contains("dark") ? "dark" : "light"
+        );
+        updateThemeIcon();
+      }
+
+      function showTab(tabName) {
+        // Alle Inhalte verstecken
+        document.getElementById("tab-content-stats").classList.add("hidden");
+        document.getElementById("tab-content-charts").classList.add("hidden");
+        document.getElementById("tab-content-logbook").classList.add("hidden"); // NEU
+
+        // Alle Buttons als inaktiv markieren
+        document.querySelectorAll(".tab-btn").forEach((btn) => {
+          btn.classList.remove("border-indigo-500", "text-indigo-600");
+          btn.classList.add(
+            "border-transparent",
+            "text-gray-500",
+            "hover:text-gray-700",
+            "hover:border-gray-300"
+          );
+        });
+
+        // Den ausgewählten Tab und Button aktivieren
+        const activeBtn = document.getElementById(`tab-btn-${tabName}`);
+        const activeContent = document.getElementById(`tab-content-${tabName}`);
+        if (activeBtn && activeContent) {
+          activeContent.classList.remove("hidden");
+          activeBtn.classList.add("border-indigo-500", "text-indigo-600");
+          activeBtn.classList.remove(
+            "border-transparent",
+            "text-gray-500",
+            "hover:text-gray-700",
+            "hover:border-gray-300"
+          );
         }
 
-        function showPasswordChangeModal() {
-            document.getElementById('new-password').value = '';
-            document.getElementById('password-change-modal').classList.remove('hidden');
-            document.getElementById('password-change-modal').classList.add('flex');
+        // NEU: Wenn der Logbuch-Tab aktiviert wird, lade die Standardansicht
+        if (tabName === "logbook") {
+          renderLogbookView("aircraftType");
         }
+      }
 
-        function closePasswordChangeModal(event) {
-            if (event) {
-                event.preventDefault(); // Verhindert jegliche Standard-Button-Aktion
-            }
-            document.getElementById('password-change-modal').classList.add('hidden');
-            document.getElementById('password-change-modal').classList.remove('flex');
+      var findAirport = function (input) {
+        const normalizedInput = input.trim().toUpperCase();
+        if (normalizedInput.length === 3 && airportData[normalizedInput]) {
+          return { code: normalizedInput, ...airportData[normalizedInput] };
         }
-
-        async function changePassword(event) {
-            event.preventDefault(); 
-            const newPassword = document.getElementById('new-password').value;
-            
-            if (newPassword.length < 6) {
-                showMessage('Fehler', 'Das Passwort muss mindestens 6 Zeichen lang sein.', 'error');
-                return;
-            }
-
-            try {
-                const { error } = await supabaseClient.auth.updateUser({ password: newPassword });
-
-                if (error) {
-                    // Fängt "normale" Supabase-Fehler ab (z.B. "Passwort zu schwach")
-                    throw error;
-                }
-
-                // Dieser Teil wird jetzt wieder erreicht werden
-                showMessage('Erfolg!', 'Dein Passwort wurde erfolgreich geändert.', 'success');
-                closePasswordChangeModal();
-
-            } catch (error) {
-                // Fängt JEDEN denkbaren Fehler ab, auch Netzwerkprobleme oder unerwartetes Verhalten
-                showMessage('Fehler', 'Das Passwort konnte nicht geändert werden.', 'error');
-                console.error('Ein unerwarteter Fehler ist beim Passwort-Update aufgetreten:', error);
-            }
-        }	
-
-        function showPasswordResetForm() {
-            document.getElementById('auth-tabs').classList.add('hidden');
-            document.getElementById('login-form').classList.add('hidden');
-            document.getElementById('register-form').classList.add('hidden');
-            document.getElementById('password-reset-container').classList.remove('hidden');
-            document.getElementById('request-reset-form').classList.remove('hidden');
-            document.getElementById('update-password-form').classList.add('hidden');
-            document.getElementById('auth-error').textContent = '';
+        for (const code in airportData) {
+          if (airportData[code].name.toUpperCase().includes(normalizedInput)) {
+            return { code: code, ...airportData[code] };
+          }
         }
+        return null;
+      };
 
-        function backToLogin() {
-            document.getElementById('auth-tabs').classList.remove('hidden');
-            document.getElementById('password-reset-container').classList.add('hidden');
-            switchAuthTab('login');
-        }
-		
-		// =================================================================
-        // DATA MIGRATION & LOADING FUNCTIONS
-        // =================================================================
-		
-		async function migrateDataToSupabase() {
-            if (localStorage.getItem("supabase_migrated") === "true") {
-                return;
-            }
-            console.log("Starte einmalige Datenmigration von localStorage nach Supabase...");
-            const oldFlightsJson = localStorage.getItem("flightLog");
-            const oldFlights = oldFlightsJson ? JSON.parse(oldFlightsJson) : [];
-            if (oldFlights.length > 0) {
-                const flightsToInsert = oldFlights.map((flight) => {
-                    return {
-                        flight_id: flight.id, date: flight.date, departure: flight.departure,
-                        arrival: flight.arrival, distance: flight.distance, time: flight.time,
-                        class: flight.class, flightNumber: flight.flightNumber, aircraftType: flight.aircraftType,
-                        notes: flight.notes, depLat: flight.depLat, depLon: flight.depLon,
-                        arrLat: flight.arrLat, arrLon: flight.arrLon, depName: flight.depName,
-                        arrName: flight.arrName, flightLogNumber: flight.flightLogNumber,
-                    };
-                });
-                const { error } = await supabaseClient.from("flights").insert(flightsToInsert);
-                if (error) {
-                    console.error("Fehler bei der Migration:", error);
-                    showMessage("Migrations-Fehler", "Daten konnten nicht zu Supabase migriert werden.", "error");
-                } else {
-                    console.log("Migration erfolgreich!");
-                    localStorage.setItem("supabase_migrated", "true");
-                }
-            } else {
-                localStorage.setItem("supabase_migrated", "true");
-            }
-        }
+      var calculateDistance = function (lat1, lon1, lat2, lon2) {
+        var R = 6371;
+        var toRad = (d) => d * (Math.PI / 180);
+        var dLat = toRad(lat2 - lat1);
+        var dLon = toRad(lon2 - lon1);
+        var a =
+          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+          Math.cos(toRad(lat1)) *
+            Math.cos(toRad(lat2)) *
+            Math.sin(dLon / 2) *
+            Math.sin(dLon / 2);
+        var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+      };
 
-        async function migrateAndLoadAirports() {
-            if (localStorage.getItem("airports_migrated") !== "true") {
-                console.log("Starte einmalige Migration der Flughäfen von localStorage nach Supabase...");
-                const cachedAirportsJSON = localStorage.getItem("cachedAirports");
-                const cachedAirports = cachedAirportsJSON ? JSON.parse(cachedAirportsJSON) : {};
-                const airportsToInsert = Object.keys(cachedAirports).map((iata) => ({
-                    iata: iata, name: cachedAirports[iata].name,
-                    lat: cachedAirports[iata].lat, lon: cachedAirports[iata].lon,
-                }));
-                if (airportsToInsert.length > 0) {
-                    const { error } = await supabaseClient.from("airports").insert(airportsToInsert);
-                    if (error) {
-                        console.error("Fehler bei der Flughafen-Migration:", error);
-                    } else {
-                        console.log("Flughafen-Migration erfolgreich!");
-                        localStorage.setItem("airports_migrated", "true");
-                        localStorage.removeItem("cachedAirports");
-                    }
-                } else {
-                    localStorage.setItem("airports_migrated", "true");
-                }
-            }
-            const { data, error } = await supabaseClient.from("airports").select("*");
-            if (error) {
-                console.error("Fehler beim Laden der Flughäfen aus Supabase:", error);
-                return;
-            }
-            data.forEach((airport) => {
-                airportData[airport.iata] = { name: airport.name, lat: airport.lat, lon: airport.lon };
+      var estimateFlightTime = function (distanceKm) {
+        var hours = Math.floor(distanceKm / 850 + 0.5);
+        var minutes = Math.round((distanceKm / 850 + 0.5 - hours) * 60);
+        return `${hours} Std. ${minutes} Min.`;
+      };
+
+      async function uploadFlightPhotos(files) {
+        if (!files || files.length === 0) {
+          return [];
+        }
+        const photoUrls = [];
+        for (const file of files) {
+          const filePath = `public/${Date.now()}-${file.name}`;
+          const { error: uploadError } = await supabaseClient.storage
+            .from("flight-photos")
+            .upload(filePath, file);
+          if (uploadError) {
+            console.error("Fehler beim Hochladen der Datei:", uploadError);
+            showMessage(
+              "Upload-Fehler",
+              `Foto ${file.name} konnte nicht hochgeladen werden.`,
+              "error"
+            );
+            continue;
+          }
+          const { data } = supabaseClient.storage
+            .from("flight-photos")
+            .getPublicUrl(filePath);
+          if (data.publicUrl) {
+            photoUrls.push(data.publicUrl);
+          }
+        }
+        return photoUrls;
+      }
+
+      const cacheAndSaveAirport = async (airport) => {
+        if (airport && !airportData[airport.code]) {
+          airportData[airport.code] = {
+            name: airport.name,
+            lat: airport.lat,
+            lon: airport.lon,
+          };
+          const { error } = await supabaseClient
+            .from("airports")
+            .upsert({
+              iata: airport.code,
+              name: airport.name,
+              lat: airport.lat,
+              lon: airport.lon,
             });
-            console.log(`${data.length} Flughäfen aus der Datenbank geladen.`);
+          if (error) {
+            console.error(
+              "Fehler beim Speichern des neuen Flughafens in Supabase:",
+              error
+            );
+          }
         }
+      };
 
-        async function claimExistingFlights() {
-            if (localStorage.getItem("flights_claimed") === "true") {
-                return;
-            }
-            const { data: { user } } = await supabaseClient.auth.getUser();
-            if (user) {
-                console.log(`Beanspruche bestehende Flüge für Benutzer ${user.id}...`);
-                const { error } = await supabaseClient.from("flights").update({ user_id: user.id }).is("user_id", null);
-                if (error) {
-                    console.error("Fehler beim Beanspruchen der Flüge:", error);
-                } else {
-                    console.log("Flüge erfolgreich beansprucht!");
-                    localStorage.setItem("flights_claimed", "true");
-                }
-            }
-        }
+      var showMessage = function (title, message, type = "info") {
+        const container = document.getElementById("toast-container");
+        if (!container) return;
+        const toast = document.createElement("div");
+        let typeClass = "toast-info";
+        if (type === "success") typeClass = "toast-success";
+        if (type === "error") typeClass = "toast-error";
+        toast.className = `toast ${typeClass}`;
+        toast.innerHTML = `<strong class="block">${title}</strong> ${message}`;
+        container.appendChild(toast);
+        setTimeout(() => {
+          toast.remove();
+        }, 5000);
+      };
 
-        async function getFlights() {
-            const { data, error } = await supabaseClient.from("flights").select("*");
-            if (error) {
-                console.error("Fehler beim Laden der Flüge:", error);
-                return [];
-            }
-            return data.map((flight) => ({ ...flight, id: flight.flight_id }));
-        }
-
-        // =================================================================
-        // CORE APP & HELPER FUNCTIONS
-        // =================================================================
-		
-		function updateThemeIcon() {
-            const isDarkMode = document.documentElement.classList.contains("dark");
-            document.getElementById("theme-toggle-dark-icon").classList.toggle("hidden", !isDarkMode);
-            document.getElementById("theme-toggle-light-icon").classList.toggle("hidden", isDarkMode);
-        }
-
-        function toggleDarkMode() {
-            document.documentElement.classList.toggle("dark");
-            localStorage.setItem("theme", document.documentElement.classList.contains("dark") ? "dark" : "light");
-            updateThemeIcon();
-        }
-
-        function showTab(tabName) {
-            // Alle Inhalte verstecken
-			document.getElementById("tab-content-stats").classList.add("hidden");
-            document.getElementById("tab-content-charts").classList.add("hidden");
-			document.getElementById('tab-content-logbook').classList.add('hidden'); // NEU
-
-			// Alle Buttons als inaktiv markieren
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('border-indigo-500', 'text-indigo-600');
-                btn.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
-            });
-			
-			// Den ausgewählten Tab und Button aktivieren
-			const activeBtn = document.getElementById(`tab-btn-${tabName}`);
-			const activeContent = document.getElementById(`tab-content-${tabName}`);
-			if (activeBtn && activeContent) {
-				activeContent.classList.remove('hidden');
-				activeBtn.classList.add('border-indigo-500', 'text-indigo-600');
-				activeBtn.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
-			}
-    
-			// NEU: Wenn der Logbuch-Tab aktiviert wird, lade die Standardansicht
-			if (tabName === 'logbook') {
-				renderLogbookView('aircraftType');
-			}
-		}
-
-        var findAirport = function (input) {
-            const normalizedInput = input.trim().toUpperCase();
-            if (normalizedInput.length === 3 && airportData[normalizedInput]) {
-                return { code: normalizedInput, ...airportData[normalizedInput] };
-            }
-            for (const code in airportData) {
-                if (airportData[code].name.toUpperCase().includes(normalizedInput)) {
-                    return { code: code, ...airportData[code] };
-                }
-            }
-            return null;
-        };
-
-        var calculateDistance = function (lat1, lon1, lat2, lon2) {
-            var R = 6371; var toRad = (d) => d * (Math.PI / 180);
-            var dLat = toRad(lat2 - lat1); var dLon = toRad(lon2 - lon1);
-            var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-            var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            return R * c;
-        };
-
-        var estimateFlightTime = function (distanceKm) {
-            var hours = Math.floor((distanceKm / 850) + 0.5);
-            var minutes = Math.round(((distanceKm / 850) + 0.5 - hours) * 60);
-            return `${hours} Std. ${minutes} Min.`;
-        };
-
-        async function uploadFlightPhotos(files) {
-            if (!files || files.length === 0) { return []; }
-            const photoUrls = [];
-            for (const file of files) {
-                const filePath = `public/${Date.now()}-${file.name}`;
-                const { error: uploadError } = await supabaseClient.storage.from("flight-photos").upload(filePath, file);
-                if (uploadError) {
-                    console.error("Fehler beim Hochladen der Datei:", uploadError);
-                    showMessage("Upload-Fehler", `Foto ${file.name} konnte nicht hochgeladen werden.`, "error");
-                    continue;
-                }
-                const { data } = supabaseClient.storage.from("flight-photos").getPublicUrl(filePath);
-                if (data.publicUrl) { photoUrls.push(data.publicUrl); }
-            }
-            return photoUrls;
-        }
-
-        const cacheAndSaveAirport = async (airport) => {
-            if (airport && !airportData[airport.code]) {
-                airportData[airport.code] = { name: airport.name, lat: airport.lat, lon: airport.lon };
-                const { error } = await supabaseClient.from("airports").upsert({ iata: airport.code, name: airport.name, lat: airport.lat, lon: airport.lon });
-                if (error) { console.error("Fehler beim Speichern des neuen Flughafens in Supabase:", error); }
-            }
-        };
-
-        var showMessage = function (title, message, type = "info") {
-            const container = document.getElementById("toast-container");
-            if (!container) return;
-            const toast = document.createElement("div");
-            let typeClass = "toast-info";
-            if (type === "success") typeClass = "toast-success";
-            if (type === "error") typeClass = "toast-error";
-            toast.className = `toast ${typeClass}`;
-            toast.innerHTML = `<strong class="block">${title}</strong> ${message}`;
-            container.appendChild(toast);
-            setTimeout(() => { toast.remove(); }, 5000);
-        };
-        
-// (Hier sind alle weiteren, vollständigen Funktionen)
+      // (Hier sind alle weiteren, vollständigen Funktionen)
 
       var calculateStatistics = function (flights) {
         var stats = {
@@ -673,6 +1687,9 @@
           aircraftUsage: {},
           frequentAircraft: "-",
           yearlyData: {},
+          totalSpending: {}, // Objekt, um mehrere Währungen zu speichern
+          mostExpensiveFlight: null,
+          leastExpensiveFlight: null,
         };
 
         if (flights.length === 0) return stats;
@@ -713,6 +1730,30 @@
             (stats.airportUsage[flight.departure] || 0) + 1;
           stats.airportUsage[flight.arrival] =
             (stats.airportUsage[flight.arrival] || 0) + 1;
+
+          // NEU: Kosten berechnen
+// Prüfe, ob der Preis eine Zahl ist (inklusive 0)
+if (typeof flight.price === 'number' && flight.currency)  {		  
+//          if (flight.price > 0 && flight.currency) {
+            const currency = flight.currency;
+            // Gesamtausgaben pro Währung summieren
+            stats.totalSpending[currency] =
+              (stats.totalSpending[currency] || 0) + flight.price;
+
+            // Teuersten/günstigsten Flug finden (vereinfacht, vergleicht nur Preise ohne Währungsumrechnung)
+            if (
+              !stats.mostExpensiveFlight ||
+              flight.price > stats.mostExpensiveFlight.price
+            ) {
+              stats.mostExpensiveFlight = flight;
+            }
+            if (
+              !stats.leastExpensiveFlight ||
+              flight.price < stats.leastExpensiveFlight.price
+            ) {
+              stats.leastExpensiveFlight = flight;
+            }
+          }
         });
 
         // Berechnungen nach der Schleife
@@ -742,7 +1783,7 @@
 
         return stats;
       };
-	  
+
       var updateStatisticsDisplay = function (flights) {
         var stats = calculateStatistics(flights);
 
@@ -780,6 +1821,46 @@
           } (${stats.shortestFlight.distance.toLocaleString("de-DE")} km)`;
         } else {
           document.getElementById("stat-shortest-flight").textContent = "-";
+        }
+
+        // NEU: Kosten-Statistiken anzeigen
+        const spendingText =
+          Object.keys(stats.totalSpending)
+            .map(
+              (currency) =>
+                `${stats.totalSpending[currency].toLocaleString("de-DE", {
+                  style: "currency",
+                  currency: currency,
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 0,
+                })}`
+            )
+            .join(" | ") || "-";
+        document.getElementById("stat-total-spending").textContent =
+          spendingText;
+
+        if (stats.mostExpensiveFlight) {
+          document.getElementById("stat-most-expensive").textContent = `${
+            stats.mostExpensiveFlight.departure
+          } → ${
+            stats.mostExpensiveFlight.arrival
+          } (${stats.mostExpensiveFlight.price.toLocaleString("de-DE")} ${
+            stats.mostExpensiveFlight.currency
+          })`;
+        } else {
+          document.getElementById("stat-most-expensive").textContent = "-";
+        }
+
+        if (stats.leastExpensiveFlight) {
+          document.getElementById("stat-least-expensive").textContent = `${
+            stats.leastExpensiveFlight.departure
+          } → ${
+            stats.leastExpensiveFlight.arrival
+          } (${stats.leastExpensiveFlight.price.toLocaleString("de-DE")} ${
+            stats.leastExpensiveFlight.currency
+          })`;
+        } else {
+          document.getElementById("stat-least-expensive").textContent = "-";
         }
 
         // Logik für die Jahreszusammenfassung
@@ -831,97 +1912,118 @@
         return 0;
       }
 
-        /**
-         * Gruppiert Flüge nach einem bestimmten Kriterium und zeigt sie im Logbuch-Tab an.
-         * @param {'aircraftType' | 'airline' | 'airport'} groupBy - Das Kriterium für die Gruppierung.
-         */
-        async function renderLogbookView(groupBy) {
-            const contentContainer = document.getElementById('logbook-content');
-            contentContainer.innerHTML = '<p class="text-gray-500">Lade Logbuch-Daten...</p>';
-            
-            const allFlights = await getFlights();
-            const grouped = {};
+      /**
+       * Gruppiert Flüge nach einem bestimmten Kriterium und zeigt sie im Logbuch-Tab an.
+       * @param {'aircraftType' | 'airline' | 'airport'} groupBy - Das Kriterium für die Gruppierung.
+       */
+      async function renderLogbookView(groupBy) {
+        const contentContainer = document.getElementById("logbook-content");
+        contentContainer.innerHTML =
+          '<p class="text-gray-500">Lade Logbuch-Daten...</p>';
 
-            // 1. Flüge nach dem gewählten Kriterium gruppieren
-            allFlights.forEach(flight => {
-                let keys = [];
+        const allFlights = await getFlights();
+        const grouped = {};
 
-                if (groupBy === 'aircraftType') {
-                    const type = (flight.aircraftType || 'Unbekannt').trim().toUpperCase();
-                    keys.push(type === '' ? 'Unbekannt' : type);
-                } else if (groupBy === 'airline') {
-                    // Extrahiert den Airline-Code aus der Flugnummer (z.B. "LH" aus "LH404")
-                    const match = flight.flightNumber ? flight.flightNumber.match(/^[A-Z0-9]{2,3}/) : null;
-                    const airline = match ? match[0].toUpperCase() : 'Unbekannt';
-                    keys.push(airline);
-                } else if (groupBy === 'airport') {
-                    // Fügt den Flug sowohl zur Start- als auch zur Zielflughafen-Gruppe hinzu
-                    if (flight.departure) keys.push(flight.departure.toUpperCase());
-                    if (flight.arrival) keys.push(flight.arrival.toUpperCase());
-                }
+        // 1. Flüge nach dem gewählten Kriterium gruppieren
+        allFlights.forEach((flight) => {
+          let keys = [];
 
-                keys.forEach(key => {
-                    if (!grouped[key]) {
-                        grouped[key] = { flights: [], totalDistance: 0, count: 0 };
-                    }
-                    grouped[key].flights.push(flight);
-                    grouped[key].totalDistance += flight.distance;
-                    grouped[key].count++;
-                });
-            });
+          if (groupBy === "aircraftType") {
+            const type = (flight.aircraftType || "Unbekannt")
+              .trim()
+              .toUpperCase();
+            keys.push(type === "" ? "Unbekannt" : type);
+          } else if (groupBy === "airline") {
+            // Extrahiert den Airline-Code aus der Flugnummer (z.B. "LH" aus "LH404")
+            const match = flight.flightNumber
+              ? flight.flightNumber.match(/^[A-Z0-9]{2,3}/)
+              : null;
+            const airline = match ? match[0].toUpperCase() : "Unbekannt";
+            keys.push(airline);
+          } else if (groupBy === "airport") {
+            // Fügt den Flug sowohl zur Start- als auch zur Zielflughafen-Gruppe hinzu
+            if (flight.departure) keys.push(flight.departure.toUpperCase());
+            if (flight.arrival) keys.push(flight.arrival.toUpperCase());
+          }
 
-            // 2. HTML generieren und anzeigen
-            contentContainer.innerHTML = '';
-            const sortedKeys = Object.keys(grouped).sort();
-
-            if (sortedKeys.length === 0) {
-                contentContainer.innerHTML = '<p class="text-gray-500">Keine Daten für diese Ansicht verfügbar.</p>';
-                return;
+          keys.forEach((key) => {
+            if (!grouped[key]) {
+              grouped[key] = { flights: [], totalDistance: 0, count: 0 };
             }
+            grouped[key].flights.push(flight);
+            grouped[key].totalDistance += flight.distance;
+            grouped[key].count++;
+          });
+        });
 
-            sortedKeys.forEach(key => {
-                const group = grouped[key];
-                const detailsElement = document.createElement('details');
-                detailsElement.className = 'bg-gray-50 dark:bg-gray-700 p-4 rounded-lg';
-                
-                const summaryElement = document.createElement('summary');
-                summaryElement.className = 'font-semibold text-lg cursor-pointer text-indigo-700 dark:text-indigo-400';
-                summaryElement.innerHTML = `
+        // 2. HTML generieren und anzeigen
+        contentContainer.innerHTML = "";
+        const sortedKeys = Object.keys(grouped).sort();
+
+        if (sortedKeys.length === 0) {
+          contentContainer.innerHTML =
+            '<p class="text-gray-500">Keine Daten für diese Ansicht verfügbar.</p>';
+          return;
+        }
+
+        sortedKeys.forEach((key) => {
+          const group = grouped[key];
+          const detailsElement = document.createElement("details");
+          detailsElement.className =
+            "bg-gray-50 dark:bg-gray-700 p-4 rounded-lg";
+
+          const summaryElement = document.createElement("summary");
+          summaryElement.className =
+            "font-semibold text-lg cursor-pointer text-indigo-700 dark:text-indigo-400";
+          summaryElement.innerHTML = `
                     ${key} 
                     <span class="text-sm font-normal text-gray-500 dark:text-gray-400 ml-2">
-                        (${group.count} Flüge / ${group.totalDistance.toLocaleString('de-DE')} km)
+                        (${
+                          group.count
+                        } Flüge / ${group.totalDistance.toLocaleString(
+            "de-DE"
+          )} km)
                     </span>
                 `;
-                
-                const flightListDiv = document.createElement('div');
-                flightListDiv.className = 'mt-4 space-y-2 border-t border-gray-200 dark:border-gray-600 pt-4';
-                
-                group.flights.sort((a, b) => new Date(a.date) - new Date(b.date)).forEach(flight => {
-                    flightListDiv.innerHTML += `
+
+          const flightListDiv = document.createElement("div");
+          flightListDiv.className =
+            "mt-4 space-y-2 border-t border-gray-200 dark:border-gray-600 pt-4";
+
+          group.flights
+            .sort((a, b) => new Date(a.date) - new Date(b.date))
+            .forEach((flight) => {
+              flightListDiv.innerHTML += `
                         <div class="text-sm text-gray-700 dark:text-gray-300">
                             <span class="font-semibold">${flight.date}:</span> 
                             ${flight.departure} → ${flight.arrival} 
-                            <span class="text-xs text-gray-500">(${flight.distance.toLocaleString('de-DE')} km)</span>
+                            <span class="text-xs text-gray-500">(${flight.distance.toLocaleString(
+                              "de-DE"
+                            )} km)</span>
                         </div>
                     `;
-                });
-                
-                detailsElement.appendChild(summaryElement);
-                detailsElement.appendChild(flightListDiv);
-                contentContainer.appendChild(detailsElement);
             });
 
-            // 3. UI für die Buttons aktualisieren (KORRIGIERTE LOGIK)
-            document.querySelectorAll('.logbook-view-btn').forEach(btn => btn.classList.remove('active'));
-            let buttonIdFragment = groupBy;
-            if (groupBy === 'aircraftType') {
-                buttonIdFragment = 'aircraft'; // Spezifische Anpassung für den Button
-            }
-            const activeButton = document.getElementById(`logbook-view-${buttonIdFragment}`);
-            if (activeButton) {
-                activeButton.classList.add('active');
-            }
+          detailsElement.appendChild(summaryElement);
+          detailsElement.appendChild(flightListDiv);
+          contentContainer.appendChild(detailsElement);
+        });
+
+        // 3. UI für die Buttons aktualisieren (KORRIGIERTE LOGIK)
+        document
+          .querySelectorAll(".logbook-view-btn")
+          .forEach((btn) => btn.classList.remove("active"));
+        let buttonIdFragment = groupBy;
+        if (groupBy === "aircraftType") {
+          buttonIdFragment = "aircraft"; // Spezifische Anpassung für den Button
         }
+        const activeButton = document.getElementById(
+          `logbook-view-${buttonIdFragment}`
+        );
+        if (activeButton) {
+          activeButton.classList.add("active");
+        }
+      }
 
       /**
        * Setzt den Zeitraum für die Charts und löst eine Aktualisierung aus.
@@ -1108,11 +2210,14 @@
           .classList.toggle("active", timeframe === "month");
       }
 
-window.exportData = async function (format) { // 'async' hinzugefügt
-    var flights = await getFlights(); // 'await' hinzugefügt
-    var stats = calculateStatistics(flights);
-    var filename = `flugbuch_export_${new Date().toISOString().slice(0, 10)}`;
-    var data, mimeType;
+      window.exportData = async function (format) {
+        // 'async' hinzugefügt
+        var flights = await getFlights(); // 'await' hinzugefügt
+        var stats = calculateStatistics(flights);
+        var filename = `flugbuch_export_${new Date()
+          .toISOString()
+          .slice(0, 10)}`;
+        var data, mimeType;
         if (flights.length === 0) {
           showMessage(
             "Export Fehler",
@@ -1303,6 +2408,8 @@ window.exportData = async function (format) { // 'async' hinzugefügt
         document.getElementById("flightNumber").value = "";
         document.getElementById("aircraftType").value = "";
         document.getElementById("notes").value = "";
+        document.getElementById("price").value = "";
+        document.getElementById("currency").value = "";
 
         // Foto-Feld und Vorschau zurücksetzen
         document.getElementById("flightPhoto").value = null;
@@ -1376,6 +2483,8 @@ window.exportData = async function (format) { // 'async' hinzugefügt
         document.getElementById("aircraftType").value =
           flightToEdit.aircraftType;
         document.getElementById("notes").value = flightToEdit.notes;
+        document.getElementById("price").value = flightToEdit.price || "";
+        document.getElementById("currency").value = flightToEdit.currency || "";
 
         // Bearbeitungszustand setzen
         currentlyEditingFlightData = flightToEdit;
@@ -1405,7 +2514,7 @@ window.exportData = async function (format) { // 'async' hinzugefügt
         if (isAllRoutesViewActive) {
           // Zur Gesamtansicht wechseln
           let allFlights = await getFlights();
-		  allFlights = resequenceAndAssignNumbers(allFlights);
+          allFlights = resequenceAndAssignNumbers(allFlights);
 
           drawAllRoutesOnMap(allFlights);
           btn.textContent = "Einzelansicht zeigen";
@@ -1513,118 +2622,80 @@ window.exportData = async function (format) { // 'async' hinzugefügt
       };
 
       // *** Hauptfunktion (jetzt für Loggen & Aktualisieren) ***
-      window.logFlight = async function () {
-        if (currentlyEditingFlightData !== null) {
-          await updateFlight();
-          return;
-        }
+       window.logFlight = async function () {
+            if (currentlyEditingFlightData !== null) {
+                await updateFlight();
+                return;
+            }
 
-        const logButton = document.getElementById("log-button");
-        logButton.textContent = "Speichere...";
-        logButton.disabled = true;
+            const logButton = document.getElementById("log-button");
+            logButton.textContent = "Speichere...";
+            logButton.disabled = true;
 
-        // Hole den aktuellen Benutzer
-        const {
-          data: { user },
-        } = await supabaseClient.auth.getUser();
-        if (!user) {
-          showMessage("Fehler", "Nicht eingeloggt. Bitte neu laden.", "error");
-          return;
-        }
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (!user) {
+                showMessage('Fehler', 'Nicht eingeloggt. Bitte neu laden.', 'error');
+                logButton.disabled = false;
+                return;
+            }
 
-        // 1. Fotos holen und hochladen
-        const photoFiles = document.getElementById("flightPhoto").files;
-        const photoUrls = await uploadFlightPhotos(photoFiles);
+            const photoFiles = document.getElementById('flightPhoto').files;
+            const photoUrls = await uploadFlightPhotos(photoFiles);
 
-        // 2. Restliche Flugdaten sammeln
-        const depCodeInput = document
-          .getElementById("departure")
-          .value.trim()
-          .toUpperCase();
-        const arrCodeInput = document
-          .getElementById("arrival")
-          .value.trim()
-          .toUpperCase();
+            const depCodeInput = document.getElementById("departure").value.trim().toUpperCase();
+            const arrCodeInput = document.getElementById("arrival").value.trim().toUpperCase();
+            let departureAirport = findAirport(depCodeInput) || await window.fetchExternalAirport(depCodeInput);
+            let arrivalAirport = findAirport(arrCodeInput) || await window.fetchExternalAirport(arrCodeInput);
 
-        let departureAirport =
-          findAirport(depCodeInput) ||
-          (await window.fetchExternalAirport(depCodeInput));
-        let arrivalAirport =
-          findAirport(arrCodeInput) ||
-          (await window.fetchExternalAirport(arrCodeInput));
+            if (!departureAirport || !arrivalAirport) {
+                showMessage("Fehler", "Mindestens ein Flughafen-Code wurde nicht gefunden.", "error");
+                logButton.textContent = "Flug loggen und speichern";
+                logButton.disabled = false;
+                return;
+            }
 
-        if (!departureAirport || !arrivalAirport) {
-          showMessage(
-            "Fehler",
-            "Mindestens ein Flughafen-Code wurde nicht gefunden.",
-            "error"
-          );
-          logButton.textContent = "Flug loggen und speichern";
-          logButton.disabled = false;
-          return;
-        }
+            await cacheAndSaveAirport(departureAirport);
+            await cacheAndSaveAirport(arrivalAirport);
 
-        // NEU: Ruft jetzt die neue, globale Funktion auf
-        await cacheAndSaveAirport(departureAirport);
-        await cacheAndSaveAirport(arrivalAirport);
+            const distance = calculateDistance(departureAirport.lat, departureAirport.lon, arrivalAirport.lat, arrivalAirport.lon);
+            const newFlightId = new Date().getTime();
+            
+            // KORREKTE LOGIK FÜR PREIS
+            const priceInput = document.getElementById("price").value;
 
-        const distance = calculateDistance(
-          departureAirport.lat,
-          departureAirport.lon,
-          arrivalAirport.lat,
-          arrivalAirport.lon
-        );
-        const newFlightId = new Date().getTime();
+            const newFlightForSupabase = {
+                flight_id: newFlightId,
+                user_id: user.id,
+                date: document.getElementById("flightDate").value || new Date().toISOString().slice(0, 10),
+                departure: departureAirport.code,
+                arrival: arrivalAirport.code,
+                distance: Math.round(distance),
+                time: estimateFlightTime(distance),
+                class: document.getElementById("flightClass").value,
+                flightNumber: document.getElementById("flightNumber").value.trim(),
+                aircraftType: document.getElementById("aircraftType").value.trim(),
+                notes: document.getElementById("notes").value.trim(),
+                depLat: departureAirport.lat, depLon: departureAirport.lon,
+                arrLat: arrivalAirport.lat, arrLon: arrivalAirport.lon,
+                depName: departureAirport.name, arrName: arrivalAirport.name,
+                photo_url: photoUrls,
+                price: (priceInput !== '' && !isNaN(parseFloat(priceInput))) ? parseFloat(priceInput) : null,
+                currency: document.getElementById("currency").value.trim().toUpperCase() || null,
+            };
 
-        // 3. Flug-Objekt für Supabase erstellen
-        const newFlightForSupabase = {
-          flight_id: newFlightId,
-          user_id: user.id,
-          date:
-            document.getElementById("flightDate").value ||
-            new Date().toISOString().slice(0, 10),
-          departure: departureAirport.code,
-          arrival: arrivalAirport.code,
-          distance: Math.round(distance),
-          time: estimateFlightTime(distance),
-          class: document.getElementById("flightClass").value,
-          flightNumber: document.getElementById("flightNumber").value.trim(),
-          aircraftType: document.getElementById("aircraftType").value.trim(),
-          notes: document.getElementById("notes").value.trim(),
-          depLat: departureAirport.lat,
-          depLon: departureAirport.lon,
-          arrLat: arrivalAirport.lat,
-          arrLon: arrivalAirport.lon,
-          depName: departureAirport.name,
-          arrName: arrivalAirport.name,
-          photo_url: photoUrls,
+            const { error } = await supabaseClient.from('flights').insert(newFlightForSupabase);
+
+            if (error) {
+                showMessage("Speicherfehler", "Der Flug konnte nicht in der Datenbank gespeichert werden.", "error");
+                console.error("Supabase Insert Error:", error);
+            } else {
+                showMessage("Erfolg!", `Flug von ${departureAirport.name} nach ${arrivalAirport.name} erfolgreich geloggt.`, "success");
+                resetForm();
+                renderFlights(null, newFlightId);
+            }
+            logButton.textContent = "Flug loggen und speichern";
+            logButton.disabled = true;
         };
-
-        // 4. In die Datenbank einfügen
-        const { error } = await supabaseClient
-          .from("flights")
-          .insert(newFlightForSupabase);
-
-        if (error) {
-          showMessage(
-            "Speicherfehler",
-            "Der Flug konnte nicht in der Datenbank gespeichert werden.",
-            "error"
-          );
-          console.error("Supabase Insert Error:", error);
-        } else {
-          showMessage(
-            "Erfolg!",
-            `Flug von ${departureAirport.name} nach ${arrivalAirport.name} erfolgreich geloggt.`,
-            "success"
-          );
-          resetForm();
-          renderFlights(null, newFlightId);
-        }
-
-        logButton.textContent = "Flug loggen und speichern";
-        logButton.disabled = true;
-      };
 
       /**
        * Aktualisiert die Paginierungs-UI (Button-Zustände, Seitenzahlanzeige).
@@ -1668,109 +2739,74 @@ window.exportData = async function (format) { // 'async' hinzugefügt
       /**
        * Speichert die Änderungen eines bestehenden Fluges in Supabase.
        */
-      async function updateFlight() {
-        const logButton = document.getElementById("log-button");
-        logButton.textContent = "Aktualisiere...";
-        logButton.disabled = true;
+ async function updateFlight() {
+            const logButton = document.getElementById("log-button");
+            logButton.textContent = "Aktualisiere...";
+            logButton.disabled = true;
 
-        let photoUrls = currentlyEditingFlightData.photo_url || []; // Behalte alte Fotos als Standard
-        const newPhotoFiles = document.getElementById("flightPhoto").files;
+            let photoUrls = currentlyEditingFlightData.photo_url || [];
+            const newPhotoFiles = document.getElementById('flightPhoto').files;
 
-        // Wenn neue Fotos ausgewählt wurden, ersetze die alten
-        if (newPhotoFiles.length > 0) {
-          // 1. Lösche alte Fotos aus dem Storage (falls vorhanden)
-          if (photoUrls.length > 0) {
-            const oldFilePaths = photoUrls.map((url) =>
-              url.substring(url.lastIndexOf("public/") + 7)
-            );
-            await supabaseClient.storage
-              .from("flight-photos")
-              .remove(oldFilePaths);
-          }
-          // 2. Lade neue Fotos hoch
-          photoUrls = await uploadFlightPhotos(newPhotoFiles);
+            if (newPhotoFiles.length > 0) {
+                if (photoUrls && photoUrls.length > 0) {
+                    const oldFilePaths = photoUrls.map(url => url.substring(url.lastIndexOf('public/') + 7));
+                    await supabaseClient.storage.from('flight-photos').remove(oldFilePaths);
+                }
+                photoUrls = await uploadFlightPhotos(newPhotoFiles);
+            }
+            
+            const depCodeInput = document.getElementById("departure").value.trim().toUpperCase();
+            const arrCodeInput = document.getElementById("arrival").value.trim().toUpperCase();
+            let departureAirport = findAirport(depCodeInput) || await window.fetchExternalAirport(depCodeInput);
+            let arrivalAirport = findAirport(arrCodeInput) || await window.fetchExternalAirport(arrCodeInput);
+
+            if (!departureAirport || !arrivalAirport) {
+                showMessage("Flug nicht speicherbar", "Mindestens ein Flughafen-Code wurde nicht gefunden.", "error");
+                resetForm();
+                return;
+            }
+
+            await cacheAndSaveAirport(departureAirport);
+            await cacheAndSaveAirport(arrivalAirport);
+
+            const distance = calculateDistance(departureAirport.lat, departureAirport.lon, arrivalAirport.lat, arrivalAirport.lon);
+
+            // KORREKTE LOGIK FÜR PREIS
+            const priceInput = document.getElementById("price").value;
+
+            const updatedFlightForSupabase = {
+                date: document.getElementById("flightDate").value,
+                departure: departureAirport.code,
+                arrival: arrivalAirport.code,
+                distance: Math.round(distance),
+                time: estimateFlightTime(distance),
+                class: document.getElementById("flightClass").value,
+                flightNumber: document.getElementById("flightNumber").value.trim(),
+                aircraftType: document.getElementById("aircraftType").value.trim(),
+                notes: document.getElementById("notes").value.trim(),
+                depLat: departureAirport.lat, depLon: departureAirport.lon,
+                arrLat: arrivalAirport.lat, arrLon: arrivalAirport.lon,
+                depName: departureAirport.name, arrName: arrivalAirport.name,
+                photo_url: photoUrls,
+                price: (priceInput !== '' && !isNaN(parseFloat(priceInput))) ? parseFloat(priceInput) : null,
+                currency: document.getElementById("currency").value.trim().toUpperCase() || null,
+            };
+
+            const { error } = await supabaseClient
+                .from('flights')
+                .update(updatedFlightForSupabase)
+                .eq('flight_id', currentlyEditingFlightData.id);
+
+            if (error) {
+                showMessage("Update-Fehler", "Die Änderungen konnten nicht gespeichert werden.", "error");
+                console.error("Supabase Update Error:", error);
+            } else {
+                showMessage("Erfolg!", "Die Flugdaten wurden erfolgreich aktualisiert.", "success");
+            }
+            const flightIdToFocus = currentlyEditingFlightData.id;
+            resetForm();
+            renderFlights(null, flightIdToFocus);
         }
-
-        const depCodeInput = document
-          .getElementById("departure")
-          .value.trim()
-          .toUpperCase();
-        const arrCodeInput = document
-          .getElementById("arrival")
-          .value.trim()
-          .toUpperCase();
-
-        let departureAirport =
-          findAirport(depCodeInput) ||
-          (await window.fetchExternalAirport(depCodeInput));
-        let arrivalAirport =
-          findAirport(arrCodeInput) ||
-          (await window.fetchExternalAirport(arrCodeInput));
-
-        if (!departureAirport || !arrivalAirport) {
-          showMessage(
-            "Flug nicht speicherbar",
-            "Mindestens ein Flughafen-Code wurde nicht gefunden.",
-            "error"
-          );
-          resetForm();
-          return;
-        }
-
-        const distance = calculateDistance(
-          departureAirport.lat,
-          departureAirport.lon,
-          arrivalAirport.lat,
-          arrivalAirport.lon
-        );
-
-        // Teil 1: Das "WAS" - die neuen Daten, die gespeichert werden sollen.
-        // Wichtig: Die 'flight_id' selbst ist hier NICHT enthalten!
-        const updatedFlightForSupabase = {
-          date: document.getElementById("flightDate").value,
-          departure: departureAirport.code,
-          arrival: arrivalAirport.code,
-          distance: Math.round(distance),
-          time: estimateFlightTime(distance),
-          class: document.getElementById("flightClass").value,
-          flightNumber: document.getElementById("flightNumber").value.trim(),
-          aircraftType: document.getElementById("aircraftType").value.trim(),
-          notes: document.getElementById("notes").value.trim(),
-          depLat: departureAirport.lat,
-          depLon: departureAirport.lon,
-          arrLat: arrivalAirport.lat,
-          arrLon: arrivalAirport.lon,
-          depName: departureAirport.name,
-          arrName: arrivalAirport.name,
-          photo_url: photoUrls,
-        };
-
-        // Teil 2: Das "WO" - der Befehl zum Aktualisieren und der Filter.
-        // .eq('flight_id', currentlyEditingFlightId) sagt: "Finde die Zeile, deren flight_id mit unserer übereinstimmt".
-        const { error } = await supabaseClient
-          .from("flights")
-          .update(updatedFlightForSupabase)
-          .eq("flight_id", currentlyEditingFlightData.id);
-
-        if (error) {
-          showMessage(
-            "Update-Fehler",
-            "Die Änderungen konnten nicht gespeichert werden.",
-            "error"
-          );
-          console.error("Supabase Update Error:", error);
-        } else {
-          showMessage(
-            "Erfolg!",
-            "Die Flugdaten wurden erfolgreich aktualisiert.",
-            "success"
-          );
-        }
-
-        const flightIdToFocus = currentlyEditingFlightData.id;
-        resetForm();
-        renderFlights(null, flightIdToFocus); // Lade Liste neu mit Fokus auf dem bearbeiteten Flug
-      }
 
       // *** Rendern und Löschen ***
       window.deleteFlight = async function (id) {
@@ -2042,8 +3078,7 @@ window.exportData = async function (format) { // 'async' hinzugefügt
 
         mapInfo.textContent = `Visualisierung: ${depName} (${depCode}) → ${arrName} (${arrCode}).`;
       };
-	  
-	  
+
       /**
        * Aktualisiert die UI der Sortier-Buttons, um den aktiven Zustand anzuzeigen.
        */
@@ -2063,37 +3098,52 @@ window.exportData = async function (format) { // 'async' hinzugefügt
           activeButton.textContent +=
             currentSort.direction === "asc" ? " ▲" : " ▼";
         }
-      }	  
-	  
-	   /**
+      }
+
+      /**
        * Wendet die in der Filterleiste eingegebenen Kriterien an und rendert die Ergebnisliste neu.
        */
- window.applyFilters = async function () { // 'async' hinzugefügt
-    currentPage = 1;
-    const allFlights = await getFlights(); // 'await' hinzugefügt
+      window.applyFilters = async function () {
+        // 'async' hinzugefügt
+        currentPage = 1;
+        const allFlights = await getFlights(); // 'await' hinzugefügt
 
-    const depFilter = document.getElementById("filter-departure").value.trim().toUpperCase();
-    const arrFilter = document.getElementById("filter-arrival").value.trim().toUpperCase();
-    const dateFrom = document.getElementById("filter-date-from").value;
-    const dateTo = document.getElementById("filter-date-to").value;
+        const depFilter = document
+          .getElementById("filter-departure")
+          .value.trim()
+          .toUpperCase();
+        const arrFilter = document
+          .getElementById("filter-arrival")
+          .value.trim()
+          .toUpperCase();
+        const dateFrom = document.getElementById("filter-date-from").value;
+        const dateTo = document.getElementById("filter-date-to").value;
 
-    let filteredFlights = allFlights;
+        let filteredFlights = allFlights;
 
-    if (depFilter) {
-        filteredFlights = filteredFlights.filter((flight) => flight.departure.toUpperCase().includes(depFilter));
-    }
-    if (arrFilter) {
-        filteredFlights = filteredFlights.filter((flight) => flight.arrival.toUpperCase().includes(arrFilter));
-    }
-    if (dateFrom) {
-        filteredFlights = filteredFlights.filter((flight) => flight.date >= dateFrom);
-    }
-    if (dateTo) {
-        filteredFlights = filteredFlights.filter((flight) => flight.date <= dateTo);
-    }
+        if (depFilter) {
+          filteredFlights = filteredFlights.filter((flight) =>
+            flight.departure.toUpperCase().includes(depFilter)
+          );
+        }
+        if (arrFilter) {
+          filteredFlights = filteredFlights.filter((flight) =>
+            flight.arrival.toUpperCase().includes(arrFilter)
+          );
+        }
+        if (dateFrom) {
+          filteredFlights = filteredFlights.filter(
+            (flight) => flight.date >= dateFrom
+          );
+        }
+        if (dateTo) {
+          filteredFlights = filteredFlights.filter(
+            (flight) => flight.date <= dateTo
+          );
+        }
 
-    renderFlights(filteredFlights);
-};
+        renderFlights(filteredFlights);
+      };
 
       /**
        * Setzt alle Filterfelder zurück und zeigt wieder die vollständige Flugliste an.
@@ -2128,90 +3178,130 @@ window.exportData = async function (format) { // 'async' hinzugefügt
         // Rendere die Flugliste mit der neuen Sortierung neu
         applyFilters();
       };
-	  
-	  
-	  
-	  
-	  
-	  
-	  
 
-        // =================================================================
-        // DER EINZIGE DOMContentLoaded-LISTENER GANZ AM ENDE
-        // =================================================================
+      // =================================================================
+      // DER EINZIGE DOMContentLoaded-LISTENER GANZ AM ENDE
+      // =================================================================
 
-        document.addEventListener('DOMContentLoaded', function () {
-            // Event-Listener NUR für die Auth-Formulare
-            document.getElementById('login-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const email = document.getElementById('login-email').value;
-                const password = document.getElementById('login-password').value;
-                const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
-                if (error) {
-                    document.getElementById('auth-error').textContent = error.message;
-                }
-                // KEIN 'else' Block hier. onAuthStateChange kümmert sich um den Erfolg.
+      document.addEventListener("DOMContentLoaded", function () {
+        // Event-Listener NUR für die Auth-Formulare
+        document
+          .getElementById("login-form")
+          .addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const email = document.getElementById("login-email").value;
+            const password = document.getElementById("login-password").value;
+            const { error } = await supabaseClient.auth.signInWithPassword({
+              email,
+              password,
             });
+            if (error) {
+              document.getElementById("auth-error").textContent = error.message;
+            }
+            // KEIN 'else' Block hier. onAuthStateChange kümmert sich um den Erfolg.
+          });
 
-            document.getElementById('register-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const email = document.getElementById('register-email').value;
-                const password = document.getElementById('register-password').value;
-                const { error } = await supabaseClient.auth.signUp({ email, password });
-                if (error) {
-                    document.getElementById('auth-error').textContent = error.message;
-                } else {
-                    showMessage('Registrierung erfolgreich!', 'Bitte bestätige deine E-Mail-Adresse, um dich einzuloggen.', 'success');
-                }
+        document
+          .getElementById("register-form")
+          .addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const email = document.getElementById("register-email").value;
+            const password = document.getElementById("register-password").value;
+            const { error } = await supabaseClient.auth.signUp({
+              email,
+              password,
             });
+            if (error) {
+              document.getElementById("auth-error").textContent = error.message;
+            } else {
+              showMessage(
+                "Registrierung erfolgreich!",
+                "Bitte bestätige deine E-Mail-Adresse, um dich einzuloggen.",
+                "success"
+              );
+            }
+          });
 
-            document.getElementById('request-reset-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const email = document.getElementById('reset-email').value;
-                const { error } = await supabaseClient.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin });
-                if (error) {
-                    showMessage('Fehler', error.message, 'error');
-                } else {
-                    showMessage('E-Mail gesendet', 'Wenn ein Benutzer mit dieser E-Mail existiert, wurde ein Link zum Zurücksetzen gesendet.', 'success');
-                }
-            });
+        document
+          .getElementById("request-reset-form")
+          .addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const email = document.getElementById("reset-email").value;
+            const { error } = await supabaseClient.auth.resetPasswordForEmail(
+              email,
+              { redirectTo: window.location.origin }
+            );
+            if (error) {
+              showMessage("Fehler", error.message, "error");
+            } else {
+              showMessage(
+                "E-Mail gesendet",
+                "Wenn ein Benutzer mit dieser E-Mail existiert, wurde ein Link zum Zurücksetzen gesendet.",
+                "success"
+              );
+            }
+          });
 
-            document.getElementById('update-password-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const newPassword = document.getElementById('update-password-input').value;
-                if (newPassword.length < 6) {
-                    showMessage('Fehler', 'Das Passwort muss mindestens 6 Zeichen lang sein.', 'error');
-                    return;
-                }
-                const { error } = await supabaseClient.auth.updateUser({ password: newPassword });
-                if (error) {
-                    showMessage('Fehler', 'Passwort konnte nicht aktualisiert werden: ' + error.message, 'error');
-                } else {
-                    showMessage('Erfolg!', 'Dein Passwort wurde geändert. Du kannst dich jetzt einloggen.', 'success');
-                    backToLogin();
-                }
+        document
+          .getElementById("update-password-form")
+          .addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const newPassword = document.getElementById(
+              "update-password-input"
+            ).value;
+            if (newPassword.length < 6) {
+              showMessage(
+                "Fehler",
+                "Das Passwort muss mindestens 6 Zeichen lang sein.",
+                "error"
+              );
+              return;
+            }
+            const { error } = await supabaseClient.auth.updateUser({
+              password: newPassword,
             });
+            if (error) {
+              showMessage(
+                "Fehler",
+                "Passwort konnte nicht aktualisiert werden: " + error.message,
+                "error"
+              );
+            } else {
+              showMessage(
+                "Erfolg!",
+                "Dein Passwort wurde geändert. Du kannst dich jetzt einloggen.",
+                "success"
+              );
+              backToLogin();
+            }
+          });
 
-            // Haupt-Logik: Reagiere auf Änderungen des Login-Status
-            supabaseClient.auth.onAuthStateChange(async (event, session) => {
-                if (event === 'PASSWORD_RECOVERY') {
-                    showAuth();
-                    showPasswordResetForm();
-                    document.getElementById('request-reset-form').classList.add('hidden');
-                    document.getElementById('update-password-form').classList.remove('hidden');
-                    showMessage('Willkommen zurück!', 'Bitte gib jetzt dein neues Passwort ein.', 'info');
-                } else if (session) {
-                    // Dieser Block wird bei INITIAL_SESSION (Seitenaufruf im eingeloggten Zustand)
-                    // UND bei SIGNED_IN (direkt nach dem Login) ausgeführt.
-                    await initializeApp();
-                } else {
-                    // Dieser Block wird bei SIGNED_OUT ausgeführt.
-                    showAuth();
-                }
-            });
+        // Haupt-Logik: Reagiere auf Änderungen des Login-Status
+        supabaseClient.auth.onAuthStateChange(async (event, session) => {
+          if (event === "PASSWORD_RECOVERY") {
+            showAuth();
+            showPasswordResetForm();
+            document
+              .getElementById("request-reset-form")
+              .classList.add("hidden");
+            document
+              .getElementById("update-password-form")
+              .classList.remove("hidden");
+            showMessage(
+              "Willkommen zurück!",
+              "Bitte gib jetzt dein neues Passwort ein.",
+              "info"
+            );
+          } else if (session) {
+            // Dieser Block wird bei INITIAL_SESSION (Seitenaufruf im eingeloggten Zustand)
+            // UND bei SIGNED_IN (direkt nach dem Login) ausgeführt.
+            await initializeApp();
+          } else {
+            // Dieser Block wird bei SIGNED_OUT ausgeführt.
+            showAuth();
+          }
         });
-        
-		
+      });
     </script>
-</body>
+  </body>
 </html>
