@@ -2016,14 +2016,10 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
     const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
-    if (error) {
-        document.getElementById('auth-error').textContent = error.message;
-    } else {
-        // NICHT neuladen, sondern die App direkt starten.
-        // Der onAuthStateChange Listener wird dies automatisch handhaben,
-        // aber zur Sicherheit können wir hier auch die Initialisierung anstoßen.
-        await initializeApp();
+    if (error) { 
+        document.getElementById('auth-error').textContent = error.message; 
     }
+    // Nichts mehr im 'else'-Block. onAuthStateChange übernimmt.
 });
 
             document.getElementById('register-form').addEventListener('submit', async (e) => {
@@ -2050,18 +2046,21 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
             });
 
             supabaseClient.auth.onAuthStateChange(async (event, session) => {
-                if (event === 'PASSWORD_RECOVERY') {
-                    showAuth();
-                    showPasswordResetForm();
-                    document.getElementById('request-reset-form').classList.add('hidden');
-                    document.getElementById('update-password-form').classList.remove('hidden');
-                    showMessage('Willkommen zurück!', 'Bitte gib jetzt dein neues Passwort ein.', 'info');
-                } else if (session) {
-                    await initializeApp();
-                } else {
-                    showAuth();
-                }
-            });
+    if (event === 'PASSWORD_RECOVERY') {
+        // ... (dein bestehender Code für Passwort-Reset)
+    } else if (event === 'SIGNED_IN') {
+        // NUR wenn sich der Benutzer GERADE EINGELOGGT hat, die App neu laden/initialisieren.
+        window.location.reload(); 
+    } else if (session && !document.getElementById('app-container').classList.contains('hidden')) {
+        // Wenn der Nutzer bereits eingeloggt ist und die App sichtbar ist, nichts tun oder nur kleine Updates.
+    } else if (session) {
+        // Dieser Fall fängt den allerersten Ladevorgang der Seite ab
+        await initializeApp();
+    } else {
+        // Nutzer ist nicht eingeloggt
+        showAuth();
+    }
+});
         
 		
     </script>
