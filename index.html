@@ -228,7 +228,7 @@
                     <input type="password" id="new-password" placeholder="Mindestens 6 Zeichen" class="mt-1 w-full p-3 rounded-lg border-gray-300 dark:bg-gray-700 dark:border-gray-600">
                 </div>
                 <div class="flex justify-end gap-4">
-                    <button type="button" onclick="closePasswordChangeModal()" class="px-4 py-2 bg-gray-200 dark:bg-gray-600 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500 transition">Abbrechen</button>
+                    <button type="button" onclick="closePasswordChangeModal(event)" class="px-4 py-2 bg-gray-200 dark:bg-gray-600 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500 transition">Abbrechen</button>
                     <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition">Speichern</button>
                 </div>
             </form>
@@ -381,7 +381,10 @@
             document.getElementById('password-change-modal').classList.add('flex');
         }
 
-        function closePasswordChangeModal() {
+        function closePasswordChangeModal(event) {
+            if (event) {
+                event.preventDefault(); // Verhindert jegliche Standard-Button-Aktion
+            }
             document.getElementById('password-change-modal').classList.add('hidden');
             document.getElementById('password-change-modal').classList.remove('flex');
         }
