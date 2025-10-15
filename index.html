@@ -966,13 +966,11 @@
           .classList.toggle("active", timeframe === "month");
       }
 
-      window.exportData = function (format) {
-        var flights = getFlights();
-        var stats = calculateStatistics(flights);
-        var filename = `flugbuch_export_${new Date()
-          .toISOString()
-          .slice(0, 10)}`;
-        var data, mimeType;
+window.exportData = async function (format) { // 'async' hinzugefügt
+    var flights = await getFlights(); // 'await' hinzugefügt
+    var stats = calculateStatistics(flights);
+    var filename = `flugbuch_export_${new Date().toISOString().slice(0, 10)}`;
+    var data, mimeType;
         if (flights.length === 0) {
           showMessage(
             "Export Fehler",
@@ -1928,54 +1926,32 @@
 	   /**
        * Wendet die in der Filterleiste eingegebenen Kriterien an und rendert die Ergebnisliste neu.
        */
-      window.applyFilters = function () {
-        currentPage = 1; // Zurück zu Seite 1
-        const allFlights = getFlights();
+ indow.applyFilters = async function () { // 'async' hinzugefügt
+    currentPage = 1;
+    const allFlights = await getFlights(); // 'await' hinzugefügt
 
-        // 1. Hole alle Filterwerte aus den Input-Feldern
-        const depFilter = document
-          .getElementById("filter-departure")
-          .value.trim()
-          .toUpperCase();
-        const arrFilter = document
-          .getElementById("filter-arrival")
-          .value.trim()
-          .toUpperCase();
-        const dateFrom = document.getElementById("filter-date-from").value;
-        const dateTo = document.getElementById("filter-date-to").value;
+    const depFilter = document.getElementById("filter-departure").value.trim().toUpperCase();
+    const arrFilter = document.getElementById("filter-arrival").value.trim().toUpperCase();
+    const dateFrom = document.getElementById("filter-date-from").value;
+    const dateTo = document.getElementById("filter-date-to").value;
 
-        // 2. Wende die Filter schrittweise an
-        let filteredFlights = allFlights;
+    let filteredFlights = allFlights;
 
-        if (depFilter) {
-          filteredFlights = filteredFlights.filter((flight) =>
-            flight.departure.toUpperCase().includes(depFilter)
-          );
-        }
+    if (depFilter) {
+        filteredFlights = filteredFlights.filter((flight) => flight.departure.toUpperCase().includes(depFilter));
+    }
+    if (arrFilter) {
+        filteredFlights = filteredFlights.filter((flight) => flight.arrival.toUpperCase().includes(arrFilter));
+    }
+    if (dateFrom) {
+        filteredFlights = filteredFlights.filter((flight) => flight.date >= dateFrom);
+    }
+    if (dateTo) {
+        filteredFlights = filteredFlights.filter((flight) => flight.date <= dateTo);
+    }
 
-        if (arrFilter) {
-          filteredFlights = filteredFlights.filter((flight) =>
-            flight.arrival.toUpperCase().includes(arrFilter)
-          );
-        }
-
-        if (dateFrom) {
-          // Filtere alle Flüge heraus, die VOR dem Startdatum liegen
-          filteredFlights = filteredFlights.filter(
-            (flight) => flight.date >= dateFrom
-          );
-        }
-
-        if (dateTo) {
-          // Filtere alle Flüge heraus, die NACH dem Enddatum liegen
-          filteredFlights = filteredFlights.filter(
-            (flight) => flight.date <= dateTo
-          );
-        }
-
-        // 3. Zeige das gefilterte Ergebnis an
-        renderFlights(filteredFlights);
-      };
+    renderFlights(filteredFlights);
+};
 
       /**
        * Setzt alle Filterfelder zurück und zeigt wieder die vollständige Flugliste an.
