@@ -240,16 +240,24 @@
     <script>
         // (JavaScript content follows)
 		
-		        // Supabase Client initialisieren
+        // =================================================================
+        // INITIALISIERUNG & GLOBALE VARIABLEN
+        // =================================================================
+
         const SUPABASE_URL = "https://sbmjdwktxsnmukbooycu.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNibWpkd2t0eHNubXVrYm9veWN1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAyOTczNDgsImV4cCI6MjA3NTg3MzM0OH0.NN9EHfS7iyAZvFm_UYs3PxEWj2pMbYmMduUeVA70rpo";
         const { createClient } = supabase;
         const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Globale Variablen
-        let map; let routeLayer; let currentlyEditingFlightData = null; let isAllRoutesViewActive = false;
-        let currentSort = { key: "flightLogNumber", direction: "asc" }; let currentPage = 1; const ITEMS_PER_PAGE = 20;
-        let flightsChartInstance, distanceChartInstance, timeChartInstance; let currentChartTimeframe = 'year';
+        let map;
+        let routeLayer;
+        let currentlyEditingFlightData = null;
+        let isAllRoutesViewActive = false;
+        let currentSort = { key: "flightLogNumber", direction: "asc" };
+        let currentPage = 1;
+        const ITEMS_PER_PAGE = 20;
+        let flightsChartInstance, distanceChartInstance, timeChartInstance;
+        let currentChartTimeframe = 'year';
         var airportData = {
             FRA: { name: "Frankfurt", lat: 50.0333, lon: 8.5706 }, MUC: { name: "München", lat: 48.3538, lon: 11.7861 },
             BER: { name: "Berlin Brandenburg", lat: 52.3667, lon: 13.5033 }, HAM: { name: "Hamburg", lat: 53.6304, lon: 9.9882 },
@@ -273,403 +281,333 @@
         // AUTH & APP INITIALIZATION FUNCTIONS
         // =================================================================
 
-        async function initializeApp() { /* (Komplette Funktion hier einfügen) */ }
-        function showAuth() { /* (Komplette Funktion hier einfügen) */ }
-        function switchAuthTab(tab) { /* (Komplette Funktion hier einfügen) */ }
-        async function logout() { /* (Komplette Funktion hier einfügen) */ }
-        function showPasswordChangeModal() { /* (Komplette Funktion hier einfügen) */ }
-        function closePasswordChangeModal() { /* (Komplette Funktion hier einfügen) */ }
-        async function changePassword(event) { /* (Komplette Funktion hier einfügen) */ }
-        function showPasswordResetForm() { /* (Komplette Funktion hier einfügen) */ }
-        function backToLogin() { /* (Komplette Funktion hier einfügen) */ }
+        async function initializeApp() {
+            document.getElementById('auth-container').classList.add('hidden');
+            document.getElementById('app-container').classList.remove('hidden');
+
+            try {
+                const { data: { user } } = await supabaseClient.auth.getUser();
+                if (user) {
+                    const userDisplay = document.getElementById('user-display');
+                    if (userDisplay) {
+                        userDisplay.textContent = user.email;
+                    }
+                }
+            } catch (e) {
+                console.error("Fehler beim Abrufen des Benutzers:", e);
+            }
+            
+            await migrateAndLoadAirports();
+            if (localStorage.getItem('supabase_migrated') !== 'true') await migrateDataToSupabase();
+            if (localStorage.getItem('flights_claimed') !== 'true') await claimExistingFlights();
+
+            if (!map) {
+                map = L.map('flight-map-container').setView([20, 0], 2);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                }).addTo(map);
+                routeLayer = L.layerGroup().addTo(map);
+            }
+            
+            document.getElementById('logout-btn').addEventListener('click', logout);
+            document.getElementById('theme-toggle').addEventListener('click', toggleDarkMode);
+            document.getElementById('chart-view-year').addEventListener('click', () => setChartTimeframe('year'));
+            document.getElementById('chart-view-month').addEventListener('click', () => setChartTimeframe('month'));
+            document.getElementById('password-change-form').addEventListener('submit', changePassword);
+            document.getElementById('flightPhoto').addEventListener('change', (event) => {
+                const files = event.target.files;
+                const previewText = document.getElementById('photo-preview-text');
+                const previewContainer = document.getElementById('photo-preview-container');
+                if (files && files.length > 0) {
+                    previewText.textContent = `${files.length} Foto(s) ausgewählt.`;
+                    previewContainer.classList.remove('hidden');
+                } else {
+                    previewContainer.classList.add('hidden');
+                }
+            });
+            document.getElementById("departure").addEventListener("input", () => {
+                updateAutocompleteList("departure", "departure-list");
+                updateFlightDetails();
+            });
+            document.getElementById("arrival").addEventListener("input", () => {
+                updateAutocompleteList("arrival", "arrival-list");
+                updateFlightDetails();
+            });
+
+            updateThemeIcon();
+            showTab('stats');
+            renderFlights();
+        }
+
+        function showAuth() {
+            document.getElementById("auth-container").classList.remove("hidden");
+            document.getElementById("app-container").classList.add("hidden");
+        }
+	
+	    function switchAuthTab(tab) {
+            const loginTab = document.getElementById("login-tab");
+            const registerTab = document.getElementById("register-tab");
+            const loginForm = document.getElementById("login-form");
+            const registerForm = document.getElementById("register-form");
+            document.getElementById("auth-error").textContent = "";
+
+            if (tab === "login") {
+                loginTab.classList.add("active-tab");
+                registerTab.classList.remove("active-tab");
+                loginForm.classList.remove("hidden");
+                registerForm.classList.add("hidden");
+            } else {
+                loginTab.classList.remove("active-tab");
+                registerTab.classList.add("active-tab");
+                loginForm.classList.add("hidden");
+                registerForm.classList.remove("hidden");
+            }
+        }
+
+        async function logout() {
+            const { error } = await supabaseClient.auth.signOut();
+            if (error) {
+                console.error("Error logging out:", error);
+                showMessage("Logout-Fehler", error.message, "error");
+            } else {
+                window.location.reload();
+            }
+        }
+
+        function showPasswordChangeModal() {
+            document.getElementById('new-password').value = '';
+            document.getElementById('password-change-modal').classList.remove('hidden');
+            document.getElementById('password-change-modal').classList.add('flex');
+        }
+
+        function closePasswordChangeModal() {
+            document.getElementById('password-change-modal').classList.add('hidden');
+            document.getElementById('password-change-modal').classList.remove('flex');
+        }
+
+        async function changePassword(event) {
+            event.preventDefault(); 
+            const newPassword = document.getElementById('new-password').value;
+            
+            if (newPassword.length < 6) {
+                showMessage('Fehler', 'Das Passwort muss mindestens 6 Zeichen lang sein.', 'error');
+                return;
+            }
+
+            const { error } = await supabaseClient.auth.updateUser({ password: newPassword });
+
+            if (error) {
+                showMessage('Fehler', 'Das Passwort konnte nicht geändert werden.', 'error');
+                console.error('Fehler beim Ändern des Passworts:', error);
+            } else {
+                showMessage('Erfolg!', 'Dein Passwort wurde erfolgreich geändert.', 'success');
+                closePasswordChangeModal();
+            }
+        }	
+
+        function showPasswordResetForm() {
+            document.getElementById('auth-tabs').classList.add('hidden');
+            document.getElementById('login-form').classList.add('hidden');
+            document.getElementById('register-form').classList.add('hidden');
+            document.getElementById('password-reset-container').classList.remove('hidden');
+            document.getElementById('request-reset-form').classList.remove('hidden');
+            document.getElementById('update-password-form').classList.add('hidden');
+            document.getElementById('auth-error').textContent = '';
+        }
+
+        function backToLogin() {
+            document.getElementById('auth-tabs').classList.remove('hidden');
+            document.getElementById('password-reset-container').classList.add('hidden');
+            switchAuthTab('login');
+        }
+		
+		// =================================================================
+        // DATA MIGRATION & LOADING FUNCTIONS
+        // =================================================================
+		
+		async function migrateDataToSupabase() {
+            if (localStorage.getItem("supabase_migrated") === "true") {
+                return;
+            }
+            console.log("Starte einmalige Datenmigration von localStorage nach Supabase...");
+            const oldFlightsJson = localStorage.getItem("flightLog");
+            const oldFlights = oldFlightsJson ? JSON.parse(oldFlightsJson) : [];
+            if (oldFlights.length > 0) {
+                const flightsToInsert = oldFlights.map((flight) => {
+                    return {
+                        flight_id: flight.id, date: flight.date, departure: flight.departure,
+                        arrival: flight.arrival, distance: flight.distance, time: flight.time,
+                        class: flight.class, flightNumber: flight.flightNumber, aircraftType: flight.aircraftType,
+                        notes: flight.notes, depLat: flight.depLat, depLon: flight.depLon,
+                        arrLat: flight.arrLat, arrLon: flight.arrLon, depName: flight.depName,
+                        arrName: flight.arrName, flightLogNumber: flight.flightLogNumber,
+                    };
+                });
+                const { error } = await supabaseClient.from("flights").insert(flightsToInsert);
+                if (error) {
+                    console.error("Fehler bei der Migration:", error);
+                    showMessage("Migrations-Fehler", "Daten konnten nicht zu Supabase migriert werden.", "error");
+                } else {
+                    console.log("Migration erfolgreich!");
+                    localStorage.setItem("supabase_migrated", "true");
+                }
+            } else {
+                localStorage.setItem("supabase_migrated", "true");
+            }
+        }
+
+        async function migrateAndLoadAirports() {
+            if (localStorage.getItem("airports_migrated") !== "true") {
+                console.log("Starte einmalige Migration der Flughäfen von localStorage nach Supabase...");
+                const cachedAirportsJSON = localStorage.getItem("cachedAirports");
+                const cachedAirports = cachedAirportsJSON ? JSON.parse(cachedAirportsJSON) : {};
+                const airportsToInsert = Object.keys(cachedAirports).map((iata) => ({
+                    iata: iata, name: cachedAirports[iata].name,
+                    lat: cachedAirports[iata].lat, lon: cachedAirports[iata].lon,
+                }));
+                if (airportsToInsert.length > 0) {
+                    const { error } = await supabaseClient.from("airports").insert(airportsToInsert);
+                    if (error) {
+                        console.error("Fehler bei der Flughafen-Migration:", error);
+                    } else {
+                        console.log("Flughafen-Migration erfolgreich!");
+                        localStorage.setItem("airports_migrated", "true");
+                        localStorage.removeItem("cachedAirports");
+                    }
+                } else {
+                    localStorage.setItem("airports_migrated", "true");
+                }
+            }
+            const { data, error } = await supabaseClient.from("airports").select("*");
+            if (error) {
+                console.error("Fehler beim Laden der Flughäfen aus Supabase:", error);
+                return;
+            }
+            data.forEach((airport) => {
+                airportData[airport.iata] = { name: airport.name, lat: airport.lat, lon: airport.lon };
+            });
+            console.log(`${data.length} Flughäfen aus der Datenbank geladen.`);
+        }
+
+        async function claimExistingFlights() {
+            if (localStorage.getItem("flights_claimed") === "true") {
+                return;
+            }
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (user) {
+                console.log(`Beanspruche bestehende Flüge für Benutzer ${user.id}...`);
+                const { error } = await supabaseClient.from("flights").update({ user_id: user.id }).is("user_id", null);
+                if (error) {
+                    console.error("Fehler beim Beanspruchen der Flüge:", error);
+                } else {
+                    console.log("Flüge erfolgreich beansprucht!");
+                    localStorage.setItem("flights_claimed", "true");
+                }
+            }
+        }
+
+        async function getFlights() {
+            const { data, error } = await supabaseClient.from("flights").select("*");
+            if (error) {
+                console.error("Fehler beim Laden der Flüge:", error);
+                return [];
+            }
+            return data.map((flight) => ({ ...flight, id: flight.flight_id }));
+        }
+
+        // =================================================================
+        // CORE APP & HELPER FUNCTIONS
+        // =================================================================
+		
+		function updateThemeIcon() {
+            const isDarkMode = document.documentElement.classList.contains("dark");
+            document.getElementById("theme-toggle-dark-icon").classList.toggle("hidden", !isDarkMode);
+            document.getElementById("theme-toggle-light-icon").classList.toggle("hidden", isDarkMode);
+        }
+
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle("dark");
+            localStorage.setItem("theme", document.documentElement.classList.contains("dark") ? "dark" : "light");
+            updateThemeIcon();
+        }
+
+        function showTab(tabName) {
+            document.getElementById("tab-content-stats").classList.add("hidden");
+            document.getElementById("tab-content-charts").classList.add("hidden");
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('border-indigo-500', 'text-indigo-600');
+                btn.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+            });
+            document.getElementById(`tab-content-${tabName}`).classList.remove("hidden");
+            document.getElementById(`tab-btn-${tabName}`).classList.add("border-indigo-500", "text-indigo-600");
+        }
+
+        var findAirport = function (input) {
+            const normalizedInput = input.trim().toUpperCase();
+            if (normalizedInput.length === 3 && airportData[normalizedInput]) {
+                return { code: normalizedInput, ...airportData[normalizedInput] };
+            }
+            for (const code in airportData) {
+                if (airportData[code].name.toUpperCase().includes(normalizedInput)) {
+                    return { code: code, ...airportData[code] };
+                }
+            }
+            return null;
+        };
+
+        var calculateDistance = function (lat1, lon1, lat2, lon2) {
+            var R = 6371; var toRad = (d) => d * (Math.PI / 180);
+            var dLat = toRad(lat2 - lat1); var dLon = toRad(lon2 - lon1);
+            var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c;
+        };
+
+        var estimateFlightTime = function (distanceKm) {
+            var hours = Math.floor((distanceKm / 850) + 0.5);
+            var minutes = Math.round(((distanceKm / 850) + 0.5 - hours) * 60);
+            return `${hours} Std. ${minutes} Min.`;
+        };
+
+        async function uploadFlightPhotos(files) {
+            if (!files || files.length === 0) { return []; }
+            const photoUrls = [];
+            for (const file of files) {
+                const filePath = `public/${Date.now()}-${file.name}`;
+                const { error: uploadError } = await supabaseClient.storage.from("flight-photos").upload(filePath, file);
+                if (uploadError) {
+                    console.error("Fehler beim Hochladen der Datei:", uploadError);
+                    showMessage("Upload-Fehler", `Foto ${file.name} konnte nicht hochgeladen werden.`, "error");
+                    continue;
+                }
+                const { data } = supabaseClient.storage.from("flight-photos").getPublicUrl(filePath);
+                if (data.publicUrl) { photoUrls.push(data.publicUrl); }
+            }
+            return photoUrls;
+        }
+
+        const cacheAndSaveAirport = async (airport) => {
+            if (airport && !airportData[airport.code]) {
+                airportData[airport.code] = { name: airport.name, lat: airport.lat, lon: airport.lon };
+                const { error } = await supabaseClient.from("airports").upsert({ iata: airport.code, name: airport.name, lat: airport.lat, lon: airport.lon });
+                if (error) { console.error("Fehler beim Speichern des neuen Flughafens in Supabase:", error); }
+            }
+        };
+
+        var showMessage = function (title, message, type = "info") {
+            const container = document.getElementById("toast-container");
+            if (!container) return;
+            const toast = document.createElement("div");
+            let typeClass = "toast-info";
+            if (type === "success") typeClass = "toast-success";
+            if (type === "error") typeClass = "toast-error";
+            toast.className = `toast ${typeClass}`;
+            toast.innerHTML = `<strong class="block">${title}</strong> ${message}`;
+            container.appendChild(toast);
+            setTimeout(() => { toast.remove(); }, 5000);
+        };
         
 // (Hier sind alle weiteren, vollständigen Funktionen)
-
-		     /**
-       * Aktualisiert das Sonnen-/Mond-Icon basierend auf dem aktuellen Theme.
-       */
-      function updateThemeIcon() {
-        const isDarkMode = document.documentElement.classList.contains("dark");
-        document
-          .getElementById("theme-toggle-dark-icon")
-          .classList.toggle("hidden", !isDarkMode);
-        document
-          .getElementById("theme-toggle-light-icon")
-          .classList.toggle("hidden", isDarkMode);
-      }
-
-      /**
-       * Schaltet den Dark Mode um, speichert die Einstellung und aktualisiert das Icon.
-       */
-      function toggleDarkMode() {
-        document.documentElement.classList.toggle("dark");
-        if (document.documentElement.classList.contains("dark")) {
-          localStorage.setItem("theme", "dark");
-        } else {
-          localStorage.setItem("theme", "light");
-        }
-        updateThemeIcon();
-      }
-
-     async function migrateDataToSupabase() {
-        if (localStorage.getItem("supabase_migrated") === "true") {
-          return; // Migration wurde bereits durchgeführt
-        }
-
-        console.log(
-          "Starte einmalige Datenmigration von localStorage nach Supabase..."
-        );
-        const oldFlightsJson = localStorage.getItem("flightLog");
-        const oldFlights = oldFlightsJson ? JSON.parse(oldFlightsJson) : [];
-
-        if (oldFlights.length > 0) {
-          // Die alte ID muss in 'flight_id' umbenannt werden, da 'id' für Supabase reserviert ist
-          const flightsToInsert = oldFlights.map((flight) => {
-            return {
-              flight_id: flight.id, // ID umbenennen
-              date: flight.date,
-              departure: flight.departure,
-              arrival: flight.arrival,
-              distance: flight.distance,
-              time: flight.time,
-              class: flight.class,
-              flightNumber: flight.flightNumber,
-              aircraftType: flight.aircraftType,
-              notes: flight.notes,
-              depLat: flight.depLat,
-              depLon: flight.depLon,
-              arrLat: flight.arrLat,
-              arrLon: flight.arrLon,
-              depName: flight.depName,
-              arrName: flight.arrName,
-              flightLogNumber: flight.flightLogNumber,
-            };
-          });
-
-          const { error } = await supabaseClient
-            .from("flights")
-            .insert(flightsToInsert);
-
-          if (error) {
-            console.error("Fehler bei der Migration:", error);
-            showMessage(
-              "Migrations-Fehler",
-              "Daten konnten nicht zu Supabase migriert werden.",
-              "error"
-            );
-          } else {
-            console.log("Migration erfolgreich!");
-            localStorage.setItem("supabase_migrated", "true");
-            // Optional: Alte Daten löschen
-            // localStorage.removeItem('flightLog');
-          }
-        } else {
-          // Keine alten Daten vorhanden, Migration als erledigt markieren
-          localStorage.setItem("supabase_migrated", "true");
-        }
-      }
-
-     /**
-       * Migriert alte Flughafendaten aus dem localStorage nach Supabase (falls nötig)
-       * und lädt anschließend alle Flughäfen aus der Supabase-Tabelle in das 'airportData'-Objekt.
-       */
-      async function migrateAndLoadAirports() {
-        // Schritt A: Einmalige Migration durchführen
-        if (localStorage.getItem("airports_migrated") !== "true") {
-          console.log(
-            "Starte einmalige Migration der Flughäfen von localStorage nach Supabase..."
-          );
-          const cachedAirportsJSON = localStorage.getItem("cachedAirports");
-          const cachedAirports = cachedAirportsJSON
-            ? JSON.parse(cachedAirportsJSON)
-            : {};
-
-          const airportsToInsert = Object.keys(cachedAirports).map((iata) => ({
-            iata: iata,
-            name: cachedAirports[iata].name,
-            lat: cachedAirports[iata].lat,
-            lon: cachedAirports[iata].lon,
-          }));
-
-          if (airportsToInsert.length > 0) {
-            const { error } = await supabaseClient
-              .from("airports")
-              .insert(airportsToInsert);
-            if (error) {
-              console.error("Fehler bei der Flughafen-Migration:", error);
-            } else {
-              console.log("Flughafen-Migration erfolgreich!");
-              localStorage.setItem("airports_migrated", "true");
-              localStorage.removeItem("cachedAirports"); // Alte Daten aufräumen
-            }
-          } else {
-            localStorage.setItem("airports_migrated", "true"); // Auch als erledigt markieren, wenn nichts zu tun war
-          }
-        }
-
-        // Schritt B: Alle Flughäfen aus Supabase laden und in 'airportData' mergen
-        const { data, error } = await supabaseClient
-          .from("airports")
-          .select("*");
-        if (error) {
-          console.error("Fehler beim Laden der Flughäfen aus Supabase:", error);
-          return;
-        }
-
-        // Wandle die geladenen Daten in das Format um, das 'airportData' erwartet
-        data.forEach((airport) => {
-          airportData[airport.iata] = {
-            name: airport.name,
-            lat: airport.lat,
-            lon: airport.lon,
-          };
-        });
-        console.log(`${data.length} Flughäfen aus der Datenbank geladen.`);
-      }
-
-      /**
-       * Führt ein einmaliges Update durch, um alle "herrenlosen" Flüge
-       * dem aktuell eingeloggten Benutzer zuzuordnen.
-       */
-      async function claimExistingFlights() {
-        if (localStorage.getItem("flights_claimed") === "true") {
-          return; // Wurde bereits ausgeführt
-        }
-
-        const {
-          data: { user },
-        } = await supabaseClient.auth.getUser();
-
-        if (user) {
-          console.log(
-            `Beanspruche bestehende Flüge für Benutzer ${user.id}...`
-          );
-
-          const { error } = await supabaseClient
-            .from("flights")
-            .update({ user_id: user.id }) // Setze die user_id des aktuellen Benutzers
-            .is("user_id", null); // ... aber nur für die Zeilen, wo sie bisher NULL ist
-
-          if (error) {
-            console.error("Fehler beim Beanspruchen der Flüge:", error);
-          } else {
-            console.log("Flüge erfolgreich beansprucht!");
-            localStorage.setItem("flights_claimed", "true"); // Merken, dass es erledigt ist
-          }
-        }
-      }
-
-      async function getFlights() {
-        const { data, error } = await supabaseClient
-          .from("flights")
-          .select("*");
-        if (error) {
-          console.error("Fehler beim Laden der Flüge:", error);
-          return [];
-        }
-        // Wandel die Daten zurück in das Format, das deine App erwartet (id statt flight_id)
-        return data.map((flight) => ({ ...flight, id: flight.flight_id }));
-      }
-
- 
-      /**
-       * Steuert die Tab-Navigation zwischen Statistiken und Charts.
-       * @param {'stats' | 'charts'} tabName - Der Name des zu aktivierenden Tabs.
-       */
-      function showTab(tabName) {
-        // Alle Inhalte verstecken
-        document.getElementById("tab-content-stats").classList.add("hidden");
-        document.getElementById("tab-content-charts").classList.add("hidden");
-
-        // Alle Buttons als inaktiv markieren
-        document
-          .getElementById("tab-btn-stats")
-          .classList.remove("border-indigo-500", "text-indigo-600");
-        document
-          .getElementById("tab-btn-stats")
-          .classList.add(
-            "border-transparent",
-            "text-gray-500",
-            "hover:text-gray-700",
-            "hover:border-gray-300"
-          );
-        document
-          .getElementById("tab-btn-charts")
-          .classList.remove("border-indigo-500", "text-indigo-600");
-        document
-          .getElementById("tab-btn-charts")
-          .classList.add(
-            "border-transparent",
-            "text-gray-500",
-            "hover:text-gray-700",
-            "hover:border-gray-300"
-          );
-
-        // Den ausgewählten Tab und Button aktivieren
-        if (tabName === "stats") {
-          document
-            .getElementById("tab-content-stats")
-            .classList.remove("hidden");
-          document
-            .getElementById("tab-btn-stats")
-            .classList.add("border-indigo-500", "text-indigo-600");
-          document
-            .getElementById("tab-btn-stats")
-            .classList.remove(
-              "border-transparent",
-              "text-gray-500",
-              "hover:text-gray-700",
-              "hover:border-gray-300"
-            );
-        } else if (tabName === "charts") {
-          document
-            .getElementById("tab-content-charts")
-            .classList.remove("hidden");
-          document
-            .getElementById("tab-btn-charts")
-            .classList.add("border-indigo-500", "text-indigo-600");
-          document
-            .getElementById("tab-btn-charts")
-            .classList.remove(
-              "border-transparent",
-              "text-gray-500",
-              "hover:text-gray-700",
-              "hover:border-gray-300"
-            );
-        }
-      }
-
-      // *** Find Airport (SYNCHRON und STABIL) ***
-      var findAirport = function (input) {
-        const normalizedInput = input.trim().toUpperCase();
-        if (normalizedInput.length === 3 && airportData[normalizedInput]) {
-          return { code: normalizedInput, ...airportData[normalizedInput] };
-        }
-        for (const code in airportData) {
-          if (airportData[code].name.toUpperCase().includes(normalizedInput)) {
-            return { code: code, ...airportData[code] };
-          }
-        }
-        return null;
-      };
-
-      // --- HILFSFUNKTIONEN (Distanz/Zeit/etc.) ---
-      var calculateDistance = function (lat1, lon1, lat2, lon2) {
-        var R = 6371;
-        var toRad = (degree) => degree * (Math.PI / 180);
-        var dLat = toRad(lat2 - lat1);
-        var dLon = toRad(lon2 - lon1);
-        var a =
-          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-          Math.cos(toRad(lat1)) *
-            Math.cos(toRad(lat2)) *
-            Math.sin(dLon / 2) *
-            Math.sin(dLon / 2);
-        var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return R * c;
-      };
-      var estimateFlightTime = function (distanceKm) {
-        var averageSpeedKmh = 850;
-        var extraMinutes = 30;
-        var flightHours = distanceKm / averageSpeedKmh;
-        var totalMinutes = flightHours * 60 + extraMinutes;
-        var hours = Math.floor(totalMinutes / 60);
-        var minutes = Math.round(totalMinutes % 60);
-        if (distanceKm < 100) return "Kurzflug (< 30 Min.)";
-        return `${hours} Std. ${minutes} Min.`;
-      };
-
-      /**
-       * Lädt eine Liste von Dateien zu Supabase Storage hoch.
-       * @param {FileList} files - Die Liste der Dateien aus dem <input type="file">.
-       * @returns {Promise<Array<string>>} Ein Promise, das zu einem Array der öffentlichen Foto-URLs auflöst.
-       */
-      async function uploadFlightPhotos(files) {
-        if (!files || files.length === 0) {
-          return []; // Gib ein leeres Array zurück, wenn keine Dateien da sind
-        }
-
-        const photoUrls = [];
-
-        for (const file of files) {
-          const filePath = `public/${Date.now()}-${file.name}`; // Eindeutiger Dateipfad
-
-          const { error: uploadError } = await supabaseClient.storage
-            .from("flight-photos")
-            .upload(filePath, file);
-
-          if (uploadError) {
-            console.error("Fehler beim Hochladen der Datei:", uploadError);
-            showMessage(
-              "Upload-Fehler",
-              `Foto ${file.name} konnte nicht hochgeladen werden.`,
-              "error"
-            );
-            continue; // Mache mit der nächsten Datei weiter
-          }
-
-          // Öffentliche URL der gerade hochgeladenen Datei abrufen
-          const { data } = supabaseClient.storage
-            .from("flight-photos")
-            .getPublicUrl(filePath);
-
-          if (data.publicUrl) {
-            photoUrls.push(data.publicUrl);
-          }
-        }
-        return photoUrls;
-      }
-
-      const cacheAndSaveAirport = async (airport) => {
-        if (airport && !airportData[airport.code]) {
-          // Zum In-Memory-Objekt für die aktuelle Sitzung hinzufügen
-          airportData[airport.code] = {
-            name: airport.name,
-            lat: airport.lat,
-            lon: airport.lon,
-          };
-
-          // Persistent in der Supabase-Tabelle speichern/aktualisieren
-          const { error } = await supabaseClient.from("airports").upsert({
-            iata: airport.code,
-            name: airport.name,
-            lat: airport.lat,
-            lon: airport.lon,
-          });
-
-          if (error) {
-            console.error(
-              "Fehler beim Speichern des neuen Flughafens in Supabase:",
-              error
-            );
-          }
-        }
-      };
-
-      var showMessage = function (title, message, type = "info") {
-        // Neuer 'type' Parameter
-        const container = document.getElementById("toast-container");
-        if (!container) return;
-
-        const toast = document.createElement("div");
-
-        // Bestimme die CSS-Klasse basierend auf dem Typ
-        let typeClass = "toast-info";
-        if (type === "success") typeClass = "toast-success";
-        if (type === "error") typeClass = "toast-error";
-
-        toast.className = `toast ${typeClass}`;
-        toast.innerHTML = `<strong class="block">${title}</strong> ${message}`;
-
-        container.appendChild(toast);
-
-        // Entferne das Toast-Element nach 5 Sekunden aus dem DOM
-        setTimeout(() => {
-          toast.remove();
-        }, 5000);
-      };
-
-
 
       var calculateStatistics = function (flights) {
         var stats = {
@@ -753,6 +691,7 @@
 
         return stats;
       };
+	  
       var updateStatisticsDisplay = function (flights) {
         var stats = calculateStatistics(flights);
 
@@ -1119,7 +1058,6 @@
           "success"
         );
       };
-      // *** Ende HILFSFUNKTIONEN ***
 
       // *** Autocomplete-Logik ***
       var updateAutocompleteList = function (inputId, listId) {
@@ -1964,44 +1902,45 @@
         mapInfo.textContent = `Visualisierung: ${depName} (${depCode}) → ${arrName} (${arrCode}).`;
       };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         // =================================================================
         // DER EINZIGE DOMContentLoaded-LISTENER GANZ AM ENDE
         // =================================================================
 
         document.addEventListener('DOMContentLoaded', async function () {
-            // Event-Listener NUR für die Auth-Formulare
-            document.getElementById('login-form').addEventListener('submit', async (e) => { e.preventDefault(); const { error } = await supabaseClient.auth.signInWithPassword({ email: document.getElementById('login-email').value, password: document.getElementById('login-password').value }); if (error) { document.getElementById('auth-error').textContent = error.message; } else { window.location.reload(); } });
+            document.getElementById('login-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const { error } = await supabaseClient.auth.signInWithPassword({ email: document.getElementById('login-email').value, password: document.getElementById('login-password').value });
+                if (error) { document.getElementById('auth-error').textContent = error.message; }
+                else { window.location.reload(); }
+            });
 
-            document.getElementById('register-form').addEventListener('submit', async (e) => { e.preventDefault(); const { error } = await supabaseClient.auth.signUp({ email: document.getElementById('register-email').value, password: document.getElementById('register-password').value }); if (error) { document.getElementById('auth-error').textContent = error.message; } else { showMessage('Registrierung erfolgreich!', 'Bitte bestätige deine E-Mail-Adresse, um dich einzuloggen.', 'success'); } });
+            document.getElementById('register-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const { error } = await supabaseClient.auth.signUp({ email: document.getElementById('register-email').value, password: document.getElementById('register-password').value });
+                if (error) { document.getElementById('auth-error').textContent = error.message; }
+                else { showMessage('Registrierung erfolgreich!', 'Bitte bestätige deine E-Mail-Adresse, um dich einzuloggen.', 'success'); }
+            });
 
-            document.getElementById('request-reset-form').addEventListener('submit', async (e) => { e.preventDefault(); const { error } = await supabaseClient.auth.resetPasswordForEmail(document.getElementById('reset-email').value, { redirectTo: window.location.origin }); if (error) { showMessage('Fehler', error.message, 'error'); } else { showMessage('E-Mail gesendet', 'Wenn ein Benutzer mit dieser E-Mail existiert, wurde ein Link zum Zurücksetzen gesendet.', 'success'); } });
+            document.getElementById('request-reset-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const { error } = await supabaseClient.auth.resetPasswordForEmail(document.getElementById('reset-email').value, { redirectTo: window.location.origin });
+                if (error) { showMessage('Fehler', error.message, 'error'); }
+                else { showMessage('E-Mail gesendet', 'Wenn ein Benutzer mit dieser E-Mail existiert, wurde ein Link zum Zurücksetzen gesendet.', 'success'); }
+            });
 
-            document.getElementById('update-password-form').addEventListener('submit', async (e) => { e.preventDefault(); const newPassword = document.getElementById('update-password-input').value; if (newPassword.length < 6) { showMessage('Fehler', 'Das Passwort muss mindestens 6 Zeichen lang sein.', 'error'); return; } const { error } = await supabaseClient.auth.updateUser({ password: newPassword }); if (error) { showMessage('Fehler', 'Passwort konnte nicht aktualisiert werden: ' + error.message, 'error'); } else { showMessage('Erfolg!', 'Dein Passwort wurde geändert. Du kannst dich jetzt einloggen.', 'success'); backToLogin(); } });
+            document.getElementById('update-password-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const newPassword = document.getElementById('update-password-input').value;
+                if (newPassword.length < 6) { showMessage('Fehler', 'Das Passwort muss mindestens 6 Zeichen lang sein.', 'error'); return; }
+                const { error } = await supabaseClient.auth.updateUser({ password: newPassword });
+                if (error) { showMessage('Fehler', 'Passwort konnte nicht aktualisiert werden: ' + error.message, 'error'); }
+                else { showMessage('Erfolg!', 'Dein Passwort wurde geändert. Du kannst dich jetzt einloggen.', 'success'); backToLogin(); }
+            });
 
-            // Haupt-Logik: Reagiere auf Änderungen des Login-Status
             supabaseClient.auth.onAuthStateChange(async (event, session) => {
                 if (event === 'PASSWORD_RECOVERY') {
-                    showAuth(); showPasswordResetForm();
+                    showAuth();
+                    showPasswordResetForm();
                     document.getElementById('request-reset-form').classList.add('hidden');
                     document.getElementById('update-password-form').classList.remove('hidden');
                     showMessage('Willkommen zurück!', 'Bitte gib jetzt dein neues Passwort ein.', 'info');
