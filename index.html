@@ -436,7 +436,55 @@
 		
 
 
+        async function migrateAndLoadAirports() {
+            if (localStorage.getItem("airports_migrated") !== "true") {
+                console.log("Starte einmalige Migration der Flughäfen von localStorage nach Supabase...");
+                const cachedAirportsJSON = localStorage.getItem("cachedAirports");
+                const cachedAirports = cachedAirportsJSON ? JSON.parse(cachedAirportsJSON) : {};
+                const airportsToInsert = Object.keys(cachedAirports).map((iata) => ({
+                    iata: iata, name: cachedAirports[iata].name,
+                    lat: cachedAirports[iata].lat, lon: cachedAirports[iata].lon,
+                }));
+                if (airportsToInsert.length > 0) {
+                    const { error } = await supabaseClient.from("airports").insert(airportsToInsert);
+                    if (error) {
+                        console.error("Fehler bei der Flughafen-Migration:", error);
+                    } else {
+                        console.log("Flughafen-Migration erfolgreich!");
+                        localStorage.setItem("airports_migrated", "true");
+                        localStorage.removeItem("cachedAirports");
+                    }
+                } else {
+                    localStorage.setItem("airports_migrated", "true");
+                }
+            }
+            const { data, error } = await supabaseClient.from("airports").select("*");
+            if (error) {
+                console.error("Fehler beim Laden der Flughäfen aus Supabase:", error);
+                return;
+            }
+            data.forEach((airport) => {
+                airportData[airport.iata] = { name: airport.name, lat: airport.lat, lon: airport.lon };
+            });
+            console.log(`${data.length} Flughäfen aus der Datenbank geladen.`);
+        }
 
+        async function claimExistingFlights() {
+            if (localStorage.getItem("flights_claimed") === "true") {
+                return;
+            }
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (user) {
+                console.log(`Beanspruche bestehende Flüge für Benutzer ${user.id}...`);
+                const { error } = await supabaseClient.from("flights").update({ user_id: user.id }).is("user_id", null);
+                if (error) {
+                    console.error("Fehler beim Beanspruchen der Flüge:", error);
+                } else {
+                    console.log("Flüge erfolgreich beansprucht!");
+                    localStorage.setItem("flights_claimed", "true");
+                }
+            }
+        }
 
         async function getFlights() {
             const { data, error } = await supabaseClient.from("flights").select("*");
