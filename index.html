@@ -395,14 +395,22 @@
                 return;
             }
 
-            const { error } = await supabaseClient.auth.updateUser({ password: newPassword });
+            try {
+                const { error } = await supabaseClient.auth.updateUser({ password: newPassword });
 
-            if (error) {
-                showMessage('Fehler', 'Das Passwort konnte nicht geändert werden.', 'error');
-                console.error('Fehler beim Ändern des Passworts:', error);
-            } else {
+                if (error) {
+                    // Fängt "normale" Supabase-Fehler ab (z.B. "Passwort zu schwach")
+                    throw error;
+                }
+
+                // Dieser Teil wird jetzt wieder erreicht werden
                 showMessage('Erfolg!', 'Dein Passwort wurde erfolgreich geändert.', 'success');
                 closePasswordChangeModal();
+
+            } catch (error) {
+                // Fängt JEDEN denkbaren Fehler ab, auch Netzwerkprobleme oder unerwartetes Verhalten
+                showMessage('Fehler', 'Das Passwort konnte nicht geändert werden.', 'error');
+                console.error('Ein unerwarteter Fehler ist beim Passwort-Update aufgetreten:', error);
             }
         }	
 
@@ -2001,15 +2009,15 @@ window.exportData = async function (format) { // 'async' hinzugefügt
         document.addEventListener('DOMContentLoaded', async function () {
             document.getElementById('login-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const { error } = await supabaseClient.auth.signInWithPassword({ email: document.getElementById('login-email').value, password: document.getElementById('login-password').value });
-                if (error) { document.getElementById('auth-error').textContent = error.message; }
-                 else {
-        // NICHT neuladen, sondern die App direkt starten.
-        // Der onAuthStateChange Listener wird dies automatisch handhaben,
-        // aber zur Sicherheit können wir hier auch die Initialisierung anstoßen.
-        await initializeApp();
-    }
-});
+                const email = document.getElementById('login-email').value;
+                const password = document.getElementById('login-password').value;
+                const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+                if (error) { 
+                    document.getElementById('auth-error').textContent = error.message; 
+                }
+                // HINWEIS: Das 'else' mit window.location.reload() wird hier bewusst weggelassen.
+                // Der onAuthStateChange-Listener kümmert sich um den Start der App.
+            });
 
             document.getElementById('register-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
