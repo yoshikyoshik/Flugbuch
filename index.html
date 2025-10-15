@@ -1109,9 +1109,17 @@ console.log("Startpunkt 1: initializeApp beginnt.");
 console.log("Startpunkt 2: App-Container sichtbar.");
 
             // 2. Benutzer-E-Mail anzeigen
-            const { data: { user } } = await supabaseClient.auth.getUser();
-            if (user) {
-                document.getElementById('user-display').textContent = user.email;
+			const { data, error } = await supabaseClient.auth.getUser();
+
+            if (error) {
+                console.error("Fehler beim Abrufen des Benutzers:", error);
+            } else if (data && data.user) {
+                const userDisplay = document.getElementById('user-display');
+                if (userDisplay) {
+                    userDisplay.textContent = data.user.email;
+                } else {
+                    console.error("HTML-Element mit der ID 'user-display' wurde nicht gefunden!");
+                }
             }
 console.log("Startpunkt 3: Benutzerdaten geladen.");
             
