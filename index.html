@@ -1050,31 +1050,25 @@
         /**
          * Schließt das Modal zum Ändern des Passworts.
          */
-        function closePasswordChangeModal(event) {
+        function closePasswordChangeModal() {
             document.getElementById('password-change-modal').classList.add('hidden');
             document.getElementById('password-change-modal').classList.remove('flex');
         }
 
-        /**
-         * Aktualisiert das Passwort des eingeloggten Benutzers bei Supabase.
-         */
         async function changePassword(event) {
-			//event.preventDefault();
+            event.preventDefault(); // Verhindert den Formular-Reload
             const newPassword = document.getElementById('new-password').value;
             
-            // Einfache Passwort-Validierung
             if (newPassword.length < 6) {
                 showMessage('Fehler', 'Das Passwort muss mindestens 6 Zeichen lang sein.', 'error');
                 return;
             }
 
-            const { data, error } = await supabaseClient.auth.updateUser({
-                password: newPassword
-            });
+            const { error } = await supabaseClient.auth.updateUser({ password: newPassword });
 
             if (error) {
-                console.error('Fehler beim Ändern des Passworts:', error);
                 showMessage('Fehler', 'Das Passwort konnte nicht geändert werden.', 'error');
+                console.error('Fehler beim Ändern des Passworts:', error);
             } else {
                 showMessage('Erfolg!', 'Dein Passwort wurde erfolgreich geändert.', 'success');
                 closePasswordChangeModal();
@@ -1102,15 +1096,10 @@
          * Baut die Karte auf und registriert alle Event-Listener für die App-Funktionalität.
          */
         async function initializeApp() {
-console.log("Startpunkt 1: initializeApp beginnt.");
-            // 1. Auth-Container verstecken, App-Container zeigen
             document.getElementById('auth-container').classList.add('hidden');
             document.getElementById('app-container').classList.remove('hidden');
-			
-console.log("Startpunkt 2: App-Container sichtbar.");
 
-            // 2. Benutzer-E-Mail anzeigen
-			try {
+            try {
                 const { data: { user } } = await supabaseClient.auth.getUser();
                 if (user) {
                     const userDisplay = document.getElementById('user-display');
@@ -1119,17 +1108,13 @@ console.log("Startpunkt 2: App-Container sichtbar.");
                     }
                 }
             } catch (e) {
-                console.error("Fehler beim Abrufen des Benutzers oder Setzen des Namens:", e);
+                console.error("Fehler beim Abrufen des Benutzers:", e);
             }
-console.log("Startpunkt 3: Benutzerdaten geladen.");
             
-            // 3. Einmalige Migrationen ausführen (falls nötig)
-            await migrateDataToSupabase();
             await migrateAndLoadAirports();
-            await claimExistingFlights();
-console.log("Startpunkt 4: Migrationen abgeschlossen.");
+            if (localStorage.getItem('supabase_migrated') !== 'true') await migrateDataToSupabase();
+            if (localStorage.getItem('flights_claimed') !== 'true') await claimExistingFlights();
 
-            // 4. Karteninitialisierung (nur einmal)
             if (!map) {
                 map = L.map('flight-map-container').setView([20, 0], 2);
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -1137,20 +1122,17 @@ console.log("Startpunkt 4: Migrationen abgeschlossen.");
                 }).addTo(map);
                 routeLayer = L.layerGroup().addTo(map);
             }
-console.log("Startpunkt 5: Karte initialisiert.");
             
-            // 5. ALLE Event-Listener für die App-Funktionalität hier registrieren
+            // Event-Listener für die App-Funktionalität
             document.getElementById('logout-btn').addEventListener('click', logout);
-console.log("Startpunkt 6: Theme-Listener registriert.");
-			document.getElementById('theme-toggle').addEventListener('click', toggleDarkMode);
+            document.getElementById('theme-toggle').addEventListener('click', toggleDarkMode);
             document.getElementById('chart-view-year').addEventListener('click', () => setChartTimeframe('year'));
             document.getElementById('chart-view-month').addEventListener('click', () => setChartTimeframe('month'));
-console.log("Startpunkt 8: Chart-Listener registriert.");
-            
+            document.getElementById('password-change-form').addEventListener('submit', changePassword);
             document.getElementById('flightPhoto').addEventListener('change', (event) => {
                 const files = event.target.files;
-                const previewContainer = document.getElementById('photo-preview-container');
                 const previewText = document.getElementById('photo-preview-text');
+                const previewContainer = document.getElementById('photo-preview-container');
                 if (files && files.length > 0) {
                     previewText.textContent = `${files.length} Foto(s) ausgewählt.`;
                     previewContainer.classList.remove('hidden');
@@ -1158,8 +1140,6 @@ console.log("Startpunkt 8: Chart-Listener registriert.");
                     previewContainer.classList.add('hidden');
                 }
             });
- console.log("Startpunkt 9: Foto-Listener registriert.");
-
             document.getElementById("departure").addEventListener("input", () => {
                 updateAutocompleteList("departure", "departure-list");
                 updateFlightDetails();
@@ -1168,16 +1148,11 @@ console.log("Startpunkt 8: Chart-Listener registriert.");
                 updateAutocompleteList("arrival", "arrival-list");
                 updateFlightDetails();
             });
-			document.getElementById('password-change-form').addEventListener('submit', changePassword);
-console.log("Startpunkt 10: Alle Listener registriert.");
-            // ... (Hier könnten noch weitere Listener für 'focus' etc. hin, falls benötigt)
 
-            // 6. Initiales Rendern der App-Daten
+            // Initiales Rendern der App
             updateThemeIcon();
             showTab('stats');
-console.log("Startpunkt 11: Rendern wird aufgerufen...");
             renderFlights();
-console.log("Startpunkt 12: initializeApp erfolgreich beendet.");
         }
 
       function showAuth() {
@@ -3111,21 +3086,21 @@ console.log("Startpunkt 12: initializeApp erfolgreich beendet.");
       };
     </script>
 	
-    <div id="password-change-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center p-4 z-50">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-full max-w-md">
-            <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-4">Neues Passwort festlegen</h3>
-			<form id="password-change-form" class="space-y-4">
-                <div>
-                  <label for="new-password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Neues Passwort</label>
-                  <input type="password" id="new-password" placeholder="Mindestens 6 Zeichen" class="mt-1 w-full p-3 rounded-lg border-gray-300 dark:bg-gray-700 dark:border-gray-600">
-                </div>
-                <div class="flex justify-end gap-4">
-                    <button onclick="closePasswordChangeModal(event)" class="px-4 py-2 bg-gray-200 dark:bg-gray-600 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500 transition">Abbrechen</button>
-                    <button onclick="changePassword(event)" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition">Speichern</button>
-                </div>
-			</form>
-        </div>
-    </div>	
+		<div id="password-change-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center p-4 z-50">
+				<div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-full max-w-md">
+					<h3 class="text-xl font-bold text-gray-800 dark:text-white mb-4">Neues Passwort festlegen</h3>
+					<form id="password-change-form" class="space-y-4">
+						<div>
+							<label for="new-password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Neues Passwort</label>
+							<input type="password" id="new-password" placeholder="Mindestens 6 Zeichen" class="mt-1 w-full p-3 rounded-lg border-gray-300 dark:bg-gray-700 dark:border-gray-600">
+						</div>
+						<div class="flex justify-end gap-4">
+							<button type="button" onclick="closePasswordChangeModal()" class="px-4 py-2 bg-gray-200 dark:bg-gray-600 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500 transition">Abbrechen</button>
+							<button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition">Speichern</button>
+						</div>
+					</form>
+				</div>
+		</div>	
 	
     <div id="toast-container" class="fixed top-5 right-5 z-50 space-y-2"></div>
 	
