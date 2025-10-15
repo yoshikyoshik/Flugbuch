@@ -258,6 +258,7 @@
         const ITEMS_PER_PAGE = 20;
         let flightsChartInstance, distanceChartInstance, timeChartInstance;
         let currentChartTimeframe = 'year';
+		let isAppInitialized = false; // NEUER SCHUTZSCHALTER
         var airportData = {
             FRA: { name: "Frankfurt", lat: 50.0333, lon: 8.5706 }, MUC: { name: "München", lat: 48.3538, lon: 11.7861 },
             BER: { name: "Berlin Brandenburg", lat: 52.3667, lon: 13.5033 }, HAM: { name: "Hamburg", lat: 53.6304, lon: 9.9882 },
@@ -282,7 +283,9 @@
         // =================================================================
 
         async function initializeApp() {
-            document.getElementById('auth-container').classList.add('hidden');
+            if (isAppInitialized) return; // Wenn die App schon läuft, sofort abbrechen.
+            isAppInitialized = true;      // Den Schalter umlegen.
+			document.getElementById('auth-container').classList.add('hidden');
             document.getElementById('app-container').classList.remove('hidden');
 			document.getElementById('password-change-form').addEventListener('submit', changePassword);
 
