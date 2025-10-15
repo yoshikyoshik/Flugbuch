@@ -2938,7 +2938,7 @@ console.log("Startpunkt 12: initializeApp erfolgreich beendet.");
                 if (error) {
                     document.getElementById('auth-error').textContent = error.message;
                 } else {
-                    window.location.reload(); // Seite nach Login neu laden für sauberen Zustand
+                    await initializeApp();
                 }
             });
 
