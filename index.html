@@ -1059,7 +1059,7 @@
          * Aktualisiert das Passwort des eingeloggten Benutzers bei Supabase.
          */
         async function changePassword(event) {
-			event.preventDefault();
+			//event.preventDefault();
             const newPassword = document.getElementById('new-password').value;
             
             // Einfache Passwort-Validierung
@@ -1106,20 +1106,20 @@ console.log("Startpunkt 1: initializeApp beginnt.");
             // 1. Auth-Container verstecken, App-Container zeigen
             document.getElementById('auth-container').classList.add('hidden');
             document.getElementById('app-container').classList.remove('hidden');
+			
 console.log("Startpunkt 2: App-Container sichtbar.");
 
             // 2. Benutzer-E-Mail anzeigen
-			const { data, error } = await supabaseClient.auth.getUser();
-
-            if (error) {
-                console.error("Fehler beim Abrufen des Benutzers:", error);
-            } else if (data && data.user) {
-                const userDisplay = document.getElementById('user-display');
-                if (userDisplay) {
-                    userDisplay.textContent = data.user.email;
-                } else {
-                    console.error("HTML-Element mit der ID 'user-display' wurde nicht gefunden!");
+			try {
+                const { data: { user } } = await supabaseClient.auth.getUser();
+                if (user) {
+                    const userDisplay = document.getElementById('user-display');
+                    if (userDisplay) {
+                        userDisplay.textContent = user.email;
+                    }
                 }
+            } catch (e) {
+                console.error("Fehler beim Abrufen des Benutzers oder Setzen des Namens:", e);
             }
 console.log("Startpunkt 3: Benutzerdaten geladen.");
             
@@ -1168,7 +1168,8 @@ console.log("Startpunkt 8: Chart-Listener registriert.");
                 updateAutocompleteList("arrival", "arrival-list");
                 updateFlightDetails();
             });
-console.log("Startpunkt 10: Autocomplete-Listener registriert.");
+			document.getElementById('password-change-form').addEventListener('submit', changePassword);
+console.log("Startpunkt 10: Alle Listener registriert.");
             // ... (Hier könnten noch weitere Listener für 'focus' etc. hin, falls benötigt)
 
             // 6. Initiales Rendern der App-Daten
@@ -3113,16 +3114,16 @@ console.log("Startpunkt 12: initializeApp erfolgreich beendet.");
     <div id="password-change-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center p-4 z-50">
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-full max-w-md">
             <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-4">Neues Passwort festlegen</h3>
-            <div class="space-y-4">
+			<form id="password-change-form" class="space-y-4">
                 <div>
-                    <label for="new-password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Neues Passwort</label>
-                    <input type="password" id="new-password" placeholder="Mindestens 6 Zeichen" class="mt-1 w-full p-3 rounded-lg border-gray-300 dark:bg-gray-700 dark:border-gray-600">
+                  <label for="new-password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Neues Passwort</label>
+                  <input type="password" id="new-password" placeholder="Mindestens 6 Zeichen" class="mt-1 w-full p-3 rounded-lg border-gray-300 dark:bg-gray-700 dark:border-gray-600">
                 </div>
                 <div class="flex justify-end gap-4">
                     <button onclick="closePasswordChangeModal(event)" class="px-4 py-2 bg-gray-200 dark:bg-gray-600 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500 transition">Abbrechen</button>
                     <button onclick="changePassword(event)" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition">Speichern</button>
                 </div>
-            </div>
+			</form>
         </div>
     </div>	
 	
