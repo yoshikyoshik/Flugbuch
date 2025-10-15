@@ -1926,7 +1926,7 @@ window.exportData = async function (format) { // 'async' hinzugefügt
 	   /**
        * Wendet die in der Filterleiste eingegebenen Kriterien an und rendert die Ergebnisliste neu.
        */
- indow.applyFilters = async function () { // 'async' hinzugefügt
+ window.applyFilters = async function () { // 'async' hinzugefügt
     currentPage = 1;
     const allFlights = await getFlights(); // 'await' hinzugefügt
 
