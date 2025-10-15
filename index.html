@@ -284,6 +284,7 @@
         async function initializeApp() {
             document.getElementById('auth-container').classList.add('hidden');
             document.getElementById('app-container').classList.remove('hidden');
+			document.getElementById('password-change-form').addEventListener('submit', changePassword);
 
             try {
                 const { data: { user } } = await supabaseClient.auth.getUser();
@@ -1911,8 +1912,13 @@
                 e.preventDefault();
                 const { error } = await supabaseClient.auth.signInWithPassword({ email: document.getElementById('login-email').value, password: document.getElementById('login-password').value });
                 if (error) { document.getElementById('auth-error').textContent = error.message; }
-                else { window.location.reload(); }
-            });
+                 else {
+        // NICHT neuladen, sondern die App direkt starten.
+        // Der onAuthStateChange Listener wird dies automatisch handhaben,
+        // aber zur Sicherheit können wir hier auch die Initialisierung anstoßen.
+        await initializeApp();
+    }
+});
 
             document.getElementById('register-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
