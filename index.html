@@ -346,6 +346,12 @@
               id="user-display"
               class="text-sm text-gray-500 dark:text-gray-400 hidden md:inline"
             ></span>
+			
+			<button
+				onclick="showPasswordChangeModal()" class="text-sm font-medium text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white transition">
+				Passwort ändern
+			</button>
+			
             <button
               id="logout-btn"
               onclick="logout()"
@@ -1008,6 +1014,48 @@
           registerForm.classList.remove("hidden");
         }
       }
+	  
+        /**
+         * Öffnet das Modal zum Ändern des Passworts.
+         */
+        function showPasswordChangeModal() {
+            document.getElementById('new-password').value = '';
+            document.getElementById('password-change-modal').classList.remove('hidden');
+            document.getElementById('password-change-modal').classList.add('flex');
+        }
+
+        /**
+         * Schließt das Modal zum Ändern des Passworts.
+         */
+        function closePasswordChangeModal() {
+            document.getElementById('password-change-modal').classList.add('hidden');
+            document.getElementById('password-change-modal').classList.remove('flex');
+        }
+
+        /**
+         * Aktualisiert das Passwort des eingeloggten Benutzers bei Supabase.
+         */
+        async function changePassword() {
+            const newPassword = document.getElementById('new-password').value;
+            
+            // Einfache Passwort-Validierung
+            if (newPassword.length < 6) {
+                showMessage('Fehler', 'Das Passwort muss mindestens 6 Zeichen lang sein.', 'error');
+                return;
+            }
+
+            const { data, error } = await supabaseClient.auth.updateUser({
+                password: newPassword
+            });
+
+            if (error) {
+                console.error('Fehler beim Ändern des Passworts:', error);
+                showMessage('Fehler', 'Das Passwort konnte nicht geändert werden.', 'error');
+            } else {
+                showMessage('Erfolg!', 'Dein Passwort wurde erfolgreich geändert.', 'success');
+                closePasswordChangeModal();
+            }
+        }	  
 
         /**
          * Initialisiert die gesamte App, nachdem der Benutzer eingeloggt ist.
@@ -2964,6 +3012,24 @@
         renderFlights();
       };
     </script>
+	
+    <div id="password-change-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center p-4 z-50">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-full max-w-md">
+            <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-4">Neues Passwort festlegen</h3>
+            <div class="space-y-4">
+                <div>
+                    <label for="new-password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Neues Passwort</label>
+                    <input type="password" id="new-password" placeholder="Mindestens 6 Zeichen" class="mt-1 w-full p-3 rounded-lg border-gray-300 dark:bg-gray-700 dark:border-gray-600">
+                </div>
+                <div class="flex justify-end gap-4">
+                    <button onclick="closePasswordChangeModal()" class="px-4 py-2 bg-gray-200 dark:bg-gray-600 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500 transition">Abbrechen</button>
+                    <button onclick="changePassword()" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition">Speichern</button>
+                </div>
+            </div>
+        </div>
+    </div>	
+	
     <div id="toast-container" class="fixed top-5 right-5 z-50 space-y-2"></div>
+	
   </body>
 </html>
