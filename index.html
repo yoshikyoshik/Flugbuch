@@ -293,6 +293,9 @@
             required
             class="w-full p-3 rounded-lg border-gray-300 dark:bg-gray-700 dark:border-gray-600"
           />
+			<div class="text-right">
+				<a href="#" onclick="event.preventDefault(); showPasswordResetForm();" class="text-sm font-medium text-indigo-600 hover:underline dark:text-indigo-400">Passwort vergessen?</a>
+			</div>		  
           <button
             type="submit"
             class="w-full py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
@@ -323,6 +326,27 @@
             Registrieren
           </button>
         </form>
+		
+		<div id="password-reset-container" class="hidden">
+			<form id="request-reset-form" class="space-y-4">
+				<p class="text-sm text-center text-gray-600 dark:text-gray-400">Gib deine E-Mail-Adresse ein, um einen Link zum Zurücksetzen deines Passworts zu erhalten.</p>
+				<input type="email" id="reset-email" placeholder="E-Mail" required class="w-full p-3 rounded-lg border-gray-300 dark:bg-gray-700 dark:border-gray-600">
+				<button type="submit" class="w-full py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">Reset-Link anfordern</button>
+			</form>
+			
+			<form id="update-password-form" class="space-y-4 hidden">
+				 <p class="text-sm text-center text-gray-600 dark:text-gray-400">Gib dein neues Passwort ein.</p>
+				<input type="password" id="update-password-input" placeholder="Neues Passwort (mind. 6 Zeichen)" required class="w-full p-3 rounded-lg border-gray-300 dark:bg-gray-700 dark:border-gray-600">
+				<button type="submit" class="w-full py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition">Neues Passwort speichern</button>
+			</form>
+			 <div class="text-center mt-4">
+				<a href="#" onclick="event.preventDefault(); backToLogin();" class="text-sm font-medium text-indigo-600 hover:underline dark:text-indigo-400">Zurück zum Login</a>
+			</div>
+		</div>
+
+            <p id="auth-error" class="text-red-500 text-sm mt-4 text-center"></p>
+        </div>		
+		
         <p id="auth-error" class="text-red-500 text-sm mt-4 text-center"></p>
       </div>
     </div>
@@ -1056,6 +1080,22 @@
                 closePasswordChangeModal();
             }
         }	  
+
+        function showPasswordResetForm() {
+            document.getElementById('auth-tabs').classList.add('hidden');
+            document.getElementById('login-form').classList.add('hidden');
+            document.getElementById('register-form').classList.add('hidden');
+            document.getElementById('password-reset-container').classList.remove('hidden');
+            document.getElementById('request-reset-form').classList.remove('hidden');
+            document.getElementById('update-password-form').classList.add('hidden');
+            document.getElementById('auth-error').textContent = '';
+        }
+
+        function backToLogin() {
+            document.getElementById('auth-tabs').classList.remove('hidden');
+            document.getElementById('password-reset-container').classList.add('hidden');
+            switchAuthTab('login'); // Zurück zum Login-Tab
+        }
 
         /**
          * Initialisiert die gesamte App, nachdem der Benutzer eingeloggt ist.
@@ -2869,7 +2909,7 @@
       };
 
         document.addEventListener('DOMContentLoaded', async function () {
-            // Event-Listener NUR für die Auth-Formulare
+            // Event-Listener NUR für die Formulare (Login, Registrierung, Passwort-Reset)
             document.getElementById('login-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const email = document.getElementById('login-email').value;
@@ -2894,15 +2934,52 @@
                 }
             });
 
-            // Haupt-Logik: Prüfe, ob der Benutzer eingeloggt ist
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            if (session) {
-                // Wenn ja, starte die komplette App-Logik
-                await initializeApp();
-            } else {
-                // Wenn nein, zeige nur die Login-Maske
-                showAuth();
-            }
+            document.getElementById('request-reset-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('reset-email').value;
+                const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+                    redirectTo: window.location.origin // Link zur aktuellen Seite
+                });
+                if (error) {
+                    showMessage('Fehler', error.message, 'error');
+                } else {
+                    showMessage('E-Mail gesendet', 'Wenn ein Benutzer mit dieser E-Mail existiert, wurde ein Link zum Zurücksetzen gesendet.', 'success');
+                }
+            });
+
+            document.getElementById('update-password-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const newPassword = document.getElementById('update-password-input').value;
+                if (newPassword.length < 6) {
+                    showMessage('Fehler', 'Das Passwort muss mindestens 6 Zeichen lang sein.', 'error');
+                    return;
+                }
+                const { error } = await supabaseClient.auth.updateUser({ password: newPassword });
+                if (error) {
+                    showMessage('Fehler', 'Passwort konnte nicht aktualisiert werden: ' + error.message, 'error');
+                } else {
+                    showMessage('Erfolg!', 'Dein Passwort wurde geändert. Du kannst dich jetzt einloggen.', 'success');
+                    backToLogin();
+                }
+            });
+
+            // Haupt-Logik: Reagiere auf Änderungen des Login-Status
+            supabaseClient.auth.onAuthStateChange(async (event, session) => {
+                if (event === 'PASSWORD_RECOVERY') {
+                    // Nutzer kommt vom E-Mail-Link zurück
+                    showAuth(); // Zeige Auth-Container, falls er versteckt ist
+                    showPasswordResetForm(); // Zeige Reset-Container
+                    document.getElementById('request-reset-form').classList.add('hidden');
+                    document.getElementById('update-password-form').classList.remove('hidden');
+                    showMessage('Willkommen zurück!', 'Bitte gib jetzt dein neues Passwort ein.', 'info');
+                } else if (session) {
+                    // Nutzer ist normal eingeloggt
+                    await initializeApp();
+                } else {
+                    // Nutzer ist nicht eingeloggt
+                    showAuth();
+                }
+            });
         });
 
       /**
