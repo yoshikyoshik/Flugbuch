@@ -314,8 +314,10 @@
             document.getElementById('theme-toggle').addEventListener('click', toggleDarkMode);
             document.getElementById('chart-view-year').addEventListener('click', () => setChartTimeframe('year'));
             document.getElementById('chart-view-month').addEventListener('click', () => setChartTimeframe('month'));
-            document.getElementById('password-change-form').addEventListener('submit', changePassword);
-            document.getElementById('flightPhoto').addEventListener('change', (event) => {
+            
+			//document.getElementById('password-change-form').addEventListener('submit', changePassword);
+            
+			document.getElementById('flightPhoto').addEventListener('change', (event) => {
                 const files = event.target.files;
                 const previewText = document.getElementById('photo-preview-text');
                 const previewContainer = document.getElementById('photo-preview-container');
@@ -2009,18 +2011,20 @@ window.exportData = async function (format) { // 'async' hinzugefügt
         // DER EINZIGE DOMContentLoaded-LISTENER GANZ AM ENDE
         // =================================================================
 
-        document.addEventListener('DOMContentLoaded', async function () {
-            document.getElementById('login-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const email = document.getElementById('login-email').value;
-                const password = document.getElementById('login-password').value;
-                const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
-                if (error) { 
-                    document.getElementById('auth-error').textContent = error.message; 
-                }
-                // HINWEIS: Das 'else' mit window.location.reload() wird hier bewusst weggelassen.
-                // Der onAuthStateChange-Listener kümmert sich um den Start der App.
-            });
+document.getElementById('login-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+    const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+    if (error) {
+        document.getElementById('auth-error').textContent = error.message;
+    } else {
+        // NICHT neuladen, sondern die App direkt starten.
+        // Der onAuthStateChange Listener wird dies automatisch handhaben,
+        // aber zur Sicherheit können wir hier auch die Initialisierung anstoßen.
+        await initializeApp();
+    }
+});
 
             document.getElementById('register-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
