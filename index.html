@@ -1902,6 +1902,121 @@
 
         mapInfo.textContent = `Visualisierung: ${depName} (${depCode}) → ${arrName} (${arrCode}).`;
       };
+	  
+	  
+      /**
+       * Aktualisiert die UI der Sortier-Buttons, um den aktiven Zustand anzuzeigen.
+       */
+      function updateSortButtonUI() {
+        // Entferne zuerst alle aktiven Zustände und Pfeile
+        document.querySelectorAll(".sort-btn").forEach((btn) => {
+          btn.classList.remove("active");
+          btn.textContent = btn.textContent.replace(/ [▲▼]/, "");
+        });
+
+        // Setze den aktiven Zustand und Pfeil für den aktuellen Sortier-Button
+        const activeButton = document.getElementById(
+          `sort-btn-${currentSort.key}`
+        );
+        if (activeButton) {
+          activeButton.classList.add("active");
+          activeButton.textContent +=
+            currentSort.direction === "asc" ? " ▲" : " ▼";
+        }
+      }	  
+	  
+	   /**
+       * Wendet die in der Filterleiste eingegebenen Kriterien an und rendert die Ergebnisliste neu.
+       */
+      window.applyFilters = function () {
+        currentPage = 1; // Zurück zu Seite 1
+        const allFlights = getFlights();
+
+        // 1. Hole alle Filterwerte aus den Input-Feldern
+        const depFilter = document
+          .getElementById("filter-departure")
+          .value.trim()
+          .toUpperCase();
+        const arrFilter = document
+          .getElementById("filter-arrival")
+          .value.trim()
+          .toUpperCase();
+        const dateFrom = document.getElementById("filter-date-from").value;
+        const dateTo = document.getElementById("filter-date-to").value;
+
+        // 2. Wende die Filter schrittweise an
+        let filteredFlights = allFlights;
+
+        if (depFilter) {
+          filteredFlights = filteredFlights.filter((flight) =>
+            flight.departure.toUpperCase().includes(depFilter)
+          );
+        }
+
+        if (arrFilter) {
+          filteredFlights = filteredFlights.filter((flight) =>
+            flight.arrival.toUpperCase().includes(arrFilter)
+          );
+        }
+
+        if (dateFrom) {
+          // Filtere alle Flüge heraus, die VOR dem Startdatum liegen
+          filteredFlights = filteredFlights.filter(
+            (flight) => flight.date >= dateFrom
+          );
+        }
+
+        if (dateTo) {
+          // Filtere alle Flüge heraus, die NACH dem Enddatum liegen
+          filteredFlights = filteredFlights.filter(
+            (flight) => flight.date <= dateTo
+          );
+        }
+
+        // 3. Zeige das gefilterte Ergebnis an
+        renderFlights(filteredFlights);
+      };
+
+      /**
+       * Setzt alle Filterfelder zurück und zeigt wieder die vollständige Flugliste an.
+       */
+      window.resetFilters = function () {
+        currentPage = 1; // Zurück zu Seite 1
+        // Setze die Werte der Input-Felder zurück
+        document.getElementById("filter-departure").value = "";
+        document.getElementById("filter-arrival").value = "";
+        document.getElementById("filter-date-from").value = "";
+        document.getElementById("filter-date-to").value = "";
+
+        // Rufe renderFlights ohne Argument auf, um alle Flüge anzuzeigen
+        renderFlights();
+      };
+
+      /**
+       * Setzt den Sortierschlüssel und die Richtung und rendert die Liste neu.
+       * @param {string} sortKey - Die Eigenschaft, nach der sortiert werden soll (z.B. 'date').
+       */
+      window.setSortOrder = function (sortKey) {
+        currentPage = 1; // Zurück zu Seite 1
+        if (currentSort.key === sortKey) {
+          // Wenn derselbe Button geklickt wird, kehre die Richtung um
+          currentSort.direction =
+            currentSort.direction === "asc" ? "desc" : "asc";
+        } else {
+          // Bei einem neuen Button, setze den Schlüssel und starte mit aufsteigender Sortierung
+          currentSort.key = sortKey;
+          currentSort.direction = "asc";
+        }
+        // Rendere die Flugliste mit der neuen Sortierung neu
+        applyFilters();
+      };
+	  
+	  
+	  
+	  
+	  
+	  
+	  
 
         // =================================================================
         // DER EINZIGE DOMContentLoaded-LISTENER GANZ AM ENDE
