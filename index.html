@@ -1666,12 +1666,14 @@
             name: airport.name,
             lat: airport.lat,
             lon: airport.lon,
+			city: airport.city
           };
           const { error } = await supabaseClient.from("airports").upsert({
             iata: airport.code,
             name: airport.name,
             lat: airport.lat,
             lon: airport.lon,
+			city: airport.city
           });
           if (error) {
             console.error(
@@ -3155,16 +3157,22 @@
         return sortedFlights;
       }
 
-async function showWeatherForFlight(airportName) {
-            if (airportName) {
-                // Extrahiere den Stadtnamen (das erste Wort)
-                const city = airportName.split(' ')[0].replace(',', '');
-                
-                const weather = await fetchWeatherForCity(city);
-                
+async function showWeatherForFlight(flight) {
+            // Hole den IATA-Code des Ankunftsorts
+            const arrivalIata = flight.arrival;
+            if (!arrivalIata) return;
+
+            // Finde den passenden Flughafen in unserem lokalen Datenbestand
+            const airportInfo = airportData[arrivalIata];
+            
+            // Verwende den korrekten Stadtnamen aus unseren Daten
+            const arrivalCity = airportInfo?.city;
+
+            if (arrivalCity) {
+                const weather = await fetchWeatherForCity(arrivalCity);
                 if (weather && typeof weather.temp !== 'undefined') {
                     showMessage(
-                        `Wetter in ${city}`,
+                        `Wetter in ${arrivalCity}`,
                         `Temperatur: ${weather.temp}°C, Wind: ${weather.wind_speed} km/h`,
                         'info'
                     );
@@ -3231,7 +3239,7 @@ async function showWeatherForFlight(airportName) {
 
         mapInfo.textContent = `Visualisierung: ${depName} (${depCode}) → ${arrName} (${arrCode}).`;
 
-showWeatherForFlight(arrName);     
+showWeatherForFlight({ arrival: arrCode, arrName: arrName });     
 
 	 };
 

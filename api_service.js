@@ -23,6 +23,7 @@ window.fetchExternalAirport = async function(input) {
             return data.map(result => ({ 
                 code: result.iata, 
                 name: result.name, 
+				city: result.city,
                 lat: parseFloat(result.latitude), 
                 lon: parseFloat(result.longitude)
             }));
