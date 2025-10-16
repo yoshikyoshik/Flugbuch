@@ -1,26 +1,32 @@
 // netlify/functions/fetch-airport.js
 
 exports.handler = async function(event, context) {
-    // API-Schlüssel sicher aus den Netlify-Umgebungsvariablen holen
     const API_KEY = process.env.API_NINJAS_KEY;
     
-    // IATA-Code aus der Anfrage des Frontends holen (z.B. ...?iata=LHR)
-    const iataCode = event.queryStringParameters.iata;
+    // Wir verwenden einen allgemeinen Parameter 'query' anstelle von 'iata'
+    const query = event.queryStringParameters.query;
 
-    if (!iataCode || iataCode.length !== 3) {
+    if (!query || query.length < 3) {
         return {
             statusCode: 400,
-            body: JSON.stringify({ message: 'Ein gültiger 3-stelliger IATA-Code ist erforderlich.' })
+            body: JSON.stringify({ message: 'Eine Suchanfrage mit mindestens 3 Zeichen ist erforderlich.' })
         };
     }
 
-    const API_ENDPOINT = `https://api.api-ninjas.com/v1/airports?iata=${iataCode}`;
+    let apiEndpoint = '';
+    
+    // NEUE LOGIK: Entscheide, ob nach IATA oder Name gesucht wird
+    if (query.length === 3) {
+        // Wenn die Anfrage 3 Zeichen lang ist, nehmen wir an, es ist ein IATA-Code
+        apiEndpoint = `https://api.api-ninjas.com/v1/airports?iata=${query}`;
+    } else {
+        // Ansonsten suchen wir nach dem Namen
+        apiEndpoint = `https://api.api-ninjas.com/v1/airports?name=${encodeURIComponent(query)}`;
+    }
 
     try {
-        const response = await fetch(API_ENDPOINT, {
-            headers: {
-                'X-Api-Key': API_KEY
-            }
+        const response = await fetch(apiEndpoint, {
+            headers: { 'X-Api-Key': API_KEY }
         });
 
         if (!response.ok) {
