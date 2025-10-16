@@ -3335,7 +3335,7 @@ showWeatherForFlight(arrName);
         applyFilters();
       };
 	  
-/**
+		/**
          * Ruft Wetterdaten für eine Stadt über die sichere Netlify Function ab.
          * @param {string} cityName - Der Name der Stadt.
          * @returns {Promise<object|null>} Ein Promise, das mit dem Wetterobjekt oder null aufgelöst wird.
@@ -3343,27 +3343,28 @@ showWeatherForFlight(arrName);
         window.fetchWeatherForCity = async function(cityName) {
             try {
                 const response = await fetch(`/.netlify/functions/fetch-weather?city=${encodeURIComponent(cityName)}`);
+                
                 if (!response.ok) {
-                    console.error(`Fehler beim Abrufen des Wetters für ${cityName}:`, response.statusText);
+                    console.error(`Fehler beim Abrufen des Wetters für ${cityName}: `, response.statusText);
                     return null;
                 }
                 
                 const data = await response.json();
 
-                // KORREKTUR: Wir prüfen, ob die Liste Ergebnisse enthält,
-                // und geben nur das ERSTE Ergebnis-Objekt zurück.
-                if (data && data.length > 0) {
-                    return data[0]; // Gib das Objekt zurück, nicht die Liste
+                // KORREKTUR: Wir prüfen, ob die Antwort eine Liste mit mindestens einem Element ist,
+                // und geben dann nur das ERSTE Element (das Wetter-Objekt) zurück.
+                if (Array.isArray(data) && data.length > 0) {
+                    return data[0]; 
                 }
 
-                // Wenn die Liste leer ist, wurde nichts gefunden.
+                // Wenn die API eine leere Liste oder etwas anderes zurückgibt, wurde nichts gefunden.
                 return null;
 
             } catch (error) {
                 console.error("Netzwerkfehler beim Aufruf der Wetter-Funktion:", error);
                 return null;
             }
-        };	  
+        };  
 
 
       // =================================================================
