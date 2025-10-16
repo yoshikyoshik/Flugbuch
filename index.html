@@ -3155,17 +3155,16 @@
         return sortedFlights;
       }
 
-async function showWeatherForFlight(flight) {
-            const fullAirportName = flight.arrName;
-            if (fullAirportName) {
-                // NEU: Extrahiere den Stadtnamen aus dem vollen Flughafennamen.
-                // Wir nehmen vereinfacht an, dass das erste Wort die Stadt ist.
-                const arrivalCity = fullAirportName.split(' ')[0].replace(',', '');
-
-                const weather = await fetchWeatherForCity(arrivalCity);
-                if (weather && weather.temp) { // Prüfe ob gültige Wetterdaten zurückkamen
+async function showWeatherForFlight(airportName) {
+            if (airportName) {
+                // Extrahiere den Stadtnamen (das erste Wort)
+                const city = airportName.split(' ')[0].replace(',', '');
+                
+                const weather = await fetchWeatherForCity(city);
+                
+                if (weather && typeof weather.temp !== 'undefined') {
                     showMessage(
-                        `Wetter in ${arrivalCity}`,
+                        `Wetter in ${city}`,
                         `Temperatur: ${weather.temp}°C, Wind: ${weather.wind_speed} km/h`,
                         'info'
                     );
@@ -3232,7 +3231,7 @@ async function showWeatherForFlight(flight) {
 
         mapInfo.textContent = `Visualisierung: ${depName} (${depCode}) → ${arrName} (${arrCode}).`;
 
-showWeatherForFlight({arrival: arrCode});     
+showWeatherForFlight(arrName);     
 
 	 };
 
