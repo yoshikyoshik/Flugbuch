@@ -3161,25 +3161,42 @@
       }
 
 async function showWeatherForFlight(flight) {
-            // Hole den IATA-Code des Ankunftsorts
+            console.log("--- Wetter-Funktion gestartet ---");
+            console.log("Empfangenes Flug-Objekt:", flight);
+
             const arrivalIata = flight.arrival;
-            if (!arrivalIata) return;
+            if (!arrivalIata) {
+                console.log("FEHLER: Kein Ankunfts-IATA-Code im Flug-Objekt gefunden. Abbruch.");
+                return;
+            }
+            console.log(`Schritt 1: Ankunfts-IATA ist ${arrivalIata}.`);
 
-            // Finde den passenden Flughafen in unserem lokalen Datenbestand
             const airportInfo = airportData[arrivalIata];
-            
-            // Verwende den korrekten Stadtnamen aus unseren Daten
-            const arrivalCity = airportInfo?.city;
+            if (!airportInfo) {
+                console.log(`FEHLER: Keine Flughafen-Infos für ${arrivalIata} im 'airportData'-Cache gefunden. Abbruch.`);
+                return;
+            }
+            console.log(`Schritt 2: Flughafen-Infos gefunden:`, airportInfo);
 
-            if (arrivalCity) {
-                const weather = await fetchWeatherForCity(arrivalCity);
-                if (weather && typeof weather.temp !== 'undefined') {
-                    showMessage(
-                        `Wetter in ${arrivalCity}`,
-                        `Temperatur: ${weather.temp}°C, Wind: ${weather.wind_speed} km/h`,
-                        'info'
-                    );
-                }
+            const arrivalCity = airportInfo.city;
+            if (!arrivalCity) {
+                console.log(`FEHLER: Keine 'city' Eigenschaft für ${arrivalIata} im Cache gefunden. Abbruch.`);
+                return;
+            }
+            console.log(`Schritt 3: Stadt gefunden: ${arrivalCity}. Rufe Wetter-API auf...`);
+
+            const weather = await fetchWeatherForCity(arrivalCity);
+            console.log(`Schritt 4: Antwort von Wetter-API:`, weather);
+
+            if (weather && typeof weather.temp !== 'undefined') {
+                console.log("Schritt 5: Gültige Wetterdaten empfangen. Zeige Nachricht an.");
+                showMessage(
+                    `Wetter in ${arrivalCity}`,
+                    `Temperatur: ${weather.temp}°C, Wind: ${weather.wind_speed} km/h`,
+                    'info'
+                );
+            } else {
+                console.log("FEHLER: Keine gültigen Wetterdaten von der API erhalten. Es wird keine Nachricht angezeigt.");
             }
         }
 
