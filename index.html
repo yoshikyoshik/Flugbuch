@@ -3336,10 +3336,10 @@ showWeatherForFlight({arrival: arrCode});
         applyFilters();
       };
 	  
-		/**
+/**
          * Ruft Wetterdaten für eine Stadt über die sichere Netlify Function ab.
          * @param {string} cityName - Der Name der Stadt.
-         * @returns {Promise<object|null>} Ein Promise, das mit dem Wetterobjekt aufgelöst wird.
+         * @returns {Promise<object|null>} Ein Promise, das mit dem Wetterobjekt oder null aufgelöst wird.
          */
         window.fetchWeatherForCity = async function(cityName) {
             try {
@@ -3348,7 +3348,18 @@ showWeatherForFlight({arrival: arrCode});
                     console.error(`Fehler beim Abrufen des Wetters für ${cityName}:`, response.statusText);
                     return null;
                 }
-                return await response.json();
+                
+                const data = await response.json();
+
+                // KORREKTUR: Wir prüfen, ob die Liste Ergebnisse enthält,
+                // und geben nur das ERSTE Ergebnis-Objekt zurück.
+                if (data && data.length > 0) {
+                    return data[0]; // Gib das Objekt zurück, nicht die Liste
+                }
+
+                // Wenn die Liste leer ist, wurde nichts gefunden.
+                return null;
+
             } catch (error) {
                 console.error("Netzwerkfehler beim Aufruf der Wetter-Funktion:", error);
                 return null;
