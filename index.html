@@ -3156,10 +3156,14 @@
       }
 
 async function showWeatherForFlight(flight) {
-            const arrivalCity = airportData[flight.arrival]?.name;
-            if (arrivalCity) {
+            const fullAirportName = flight.arrName;
+            if (fullAirportName) {
+                // NEU: Extrahiere den Stadtnamen aus dem vollen Flughafennamen.
+                // Wir nehmen vereinfacht an, dass das erste Wort die Stadt ist.
+                const arrivalCity = fullAirportName.split(' ')[0].replace(',', '');
+
                 const weather = await fetchWeatherForCity(arrivalCity);
-                if (weather) {
+                if (weather && weather.temp) { // Prüfe ob gültige Wetterdaten zurückkamen
                     showMessage(
                         `Wetter in ${arrivalCity}`,
                         `Temperatur: ${weather.temp}°C, Wind: ${weather.wind_speed} km/h`,
