@@ -2,6 +2,15 @@
 
 exports.handler = async function(event, context) {
     const API_KEY = process.env.API_NINJAS_KEY;
+    
+    // NEUE, WICHTIGE PRÜFUNG:
+    if (!API_KEY) {
+        return {
+            statusCode: 500,
+            body: JSON.stringify({ message: 'API-Schlüssel ist auf dem Server nicht konfiguriert.' })
+        };
+    }
+
     const city = event.queryStringParameters.city;
 
     if (!city) {
@@ -19,7 +28,9 @@ exports.handler = async function(event, context) {
         });
 
         if (!response.ok) {
-            return { statusCode: response.status, body: response.statusText };
+            // Gib die Fehlermeldung der externen API weiter
+            const errorBody = await response.text();
+            return { statusCode: response.status, body: `Fehler von externer API: ${errorBody}` };
         }
 
         const data = await response.json();
