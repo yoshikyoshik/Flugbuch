@@ -3,24 +3,20 @@
 exports.handler = async function(event, context) {
     const API_KEY = process.env.API_NINJAS_KEY;
     
-    // NEUE, WICHTIGE PRÜFUNG:
     if (!API_KEY) {
-        return {
-            statusCode: 500,
-            body: JSON.stringify({ message: 'API-Schlüssel ist auf dem Server nicht konfiguriert.' })
-        };
+        return { statusCode: 500, body: JSON.stringify({ message: 'API-Schlüssel ist auf dem Server nicht konfiguriert.' }) };
     }
 
-    const city = event.queryStringParameters.city;
+    const { lat, lon } = event.queryStringParameters;
 
-    if (!city) {
+    if (!lat || !lon) {
         return {
             statusCode: 400,
-            body: JSON.stringify({ message: 'Ein Stadtname ist erforderlich.' })
+            body: JSON.stringify({ message: 'Latitude und Longitude sind erforderlich.' })
         };
     }
 
-    const API_ENDPOINT = `https://api.api-ninjas.com/v1/weather?city=${city}`;
+    const API_ENDPOINT = `https://api.api-ninjas.com/v1/weather?lat=${lat}&lon=${lon}`;
 
     try {
         const response = await fetch(API_ENDPOINT, {
@@ -28,7 +24,6 @@ exports.handler = async function(event, context) {
         });
 
         if (!response.ok) {
-            // Gib die Fehlermeldung der externen API weiter
             const errorBody = await response.text();
             return { statusCode: response.status, body: `Fehler von externer API: ${errorBody}` };
         }

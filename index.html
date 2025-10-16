@@ -3161,42 +3161,22 @@
       }
 
 async function showWeatherForFlight(flight) {
-            console.log("--- Wetter-Funktion gestartet ---");
-            console.log("Empfangenes Flug-Objekt:", flight);
-
             const arrivalIata = flight.arrival;
-            if (!arrivalIata) {
-                console.log("FEHLER: Kein Ankunfts-IATA-Code im Flug-Objekt gefunden. Abbruch.");
-                return;
-            }
-            console.log(`Schritt 1: Ankunfts-IATA ist ${arrivalIata}.`);
+            if (!arrivalIata) return;
 
             const airportInfo = airportData[arrivalIata];
-            if (!airportInfo) {
-                console.log(`FEHLER: Keine Flughafen-Infos für ${arrivalIata} im 'airportData'-Cache gefunden. Abbruch.`);
-                return;
-            }
-            console.log(`Schritt 2: Flughafen-Infos gefunden:`, airportInfo);
-
-            const arrivalCity = airportInfo.city;
-            if (!arrivalCity) {
-                console.log(`FEHLER: Keine 'city' Eigenschaft für ${arrivalIata} im Cache gefunden. Abbruch.`);
-                return;
-            }
-            console.log(`Schritt 3: Stadt gefunden: ${arrivalCity}. Rufe Wetter-API auf...`);
-
-            const weather = await fetchWeatherForCity(arrivalCity);
-            console.log(`Schritt 4: Antwort von Wetter-API:`, weather);
-
-            if (weather && typeof weather.temp !== 'undefined') {
-                console.log("Schritt 5: Gültige Wetterdaten empfangen. Zeige Nachricht an.");
-                showMessage(
-                    `Wetter in ${arrivalCity}`,
-                    `Temperatur: ${weather.temp}°C, Wind: ${weather.wind_speed} km/h`,
-                    'info'
-                );
-            } else {
-                console.log("FEHLER: Keine gültigen Wetterdaten von der API erhalten. Es wird keine Nachricht angezeigt.");
+            
+            // Verwende die korrekten Koordinaten und den Stadtnamen aus unseren Daten
+            if (airportInfo && airportInfo.lat && airportInfo.lon && airportInfo.city) {
+                const weather = await fetchWeatherByCoords(airportInfo.lat, airportInfo.lon);
+                
+                if (weather) {
+                    showMessage(
+                        `Wetter in ${airportInfo.city}`,
+                        `Temperatur: ${weather.temp}°C, Wind: ${weather.wind_speed} km/h`,
+                        'info'
+                    );
+                }
             }
         }
 
@@ -3363,36 +3343,35 @@ showWeatherForFlight({ arrival: arrCode, arrName: arrName });
         applyFilters();
       };
 	  
-		/**
-         * Ruft Wetterdaten für eine Stadt über die sichere Netlify Function ab.
-         * @param {string} cityName - Der Name der Stadt.
+/**
+         * Ruft Wetterdaten für gegebene Koordinaten ab.
+         * @param {number} lat - Latitude.
+         * @param {number} lon - Longitude.
          * @returns {Promise<object|null>} Ein Promise, das mit dem Wetterobjekt oder null aufgelöst wird.
          */
-        window.fetchWeatherForCity = async function(cityName) {
+        window.fetchWeatherByCoords = async function(lat, lon) {
             try {
-                const response = await fetch(`/.netlify/functions/fetch-weather?city=${encodeURIComponent(cityName)}`);
+                const response = await fetch(`/.netlify/functions/fetch-weather?lat=${lat}&lon=${lon}`);
                 
                 if (!response.ok) {
-                    console.error(`Fehler beim Abrufen des Wetters für ${cityName}: `, response.statusText);
+                    console.error(`Fehler beim Abrufen des Wetters für Koordinaten ${lat},${lon}:`, response.statusText);
                     return null;
                 }
                 
                 const data = await response.json();
 
-                // KORREKTUR: Wir prüfen, ob die Antwort eine Liste mit mindestens einem Element ist,
-                // und geben dann nur das ERSTE Element (das Wetter-Objekt) zurück.
-                if (Array.isArray(data) && data.length > 0) {
-                    return data[0]; 
+                // Die API gibt direkt ein Objekt zurück, keine Liste, wenn sie erfolgreich ist.
+                if (data && typeof data.temp !== 'undefined') {
+                    return data; 
                 }
 
-                // Wenn die API eine leere Liste oder etwas anderes zurückgibt, wurde nichts gefunden.
                 return null;
 
             } catch (error) {
                 console.error("Netzwerkfehler beim Aufruf der Wetter-Funktion:", error);
                 return null;
             }
-        };  
+        }; 
 
 
       // =================================================================
