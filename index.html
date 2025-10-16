@@ -1697,7 +1697,9 @@
         }, 5000);
       };
 
-      // (Hier sind alle weiteren, vollständigen Funktionen)
+      // =================================================================
+      // Hier sind alle weiteren, vollständigen Funktionen
+      // =================================================================
 
       var calculateStatistics = function (flights) {
         var stats = {
@@ -2331,80 +2333,85 @@
       };
 
       // *** Autocomplete-Logik ***
-async function updateAutocompleteList(inputId, listId) {
-            const input = document.getElementById(inputId);
-            const list = document.getElementById(listId);
-            const value = input.value.trim();
-            list.innerHTML = "";
+      async function updateAutocompleteList(inputId, listId) {
+        const input = document.getElementById(inputId);
+        const list = document.getElementById(listId);
+        const value = input.value.trim();
+        list.innerHTML = "";
 
-            if (value.length < 3) {
-                list.classList.add("hidden");
-                return;
-            }
-
-            const upperCaseValue = value.toUpperCase();
-            let matches = [];
-            
-            // 1. Lokale Suche (schnell)
-            for (const code in airportData) {
-                const airport = airportData[code];
-                if (code.includes(upperCaseValue) || airport.name.toUpperCase().includes(upperCaseValue)) {
-                    matches.push({ code, ...airport });
-                }
-            }
-
-            // 2. Externe API-Suche (langsamer)
-            const apiResults = await window.fetchExternalAirport(value);
-
-            // 3. Ergebnisse zusammenführen und Duplikate entfernen
-            if (apiResults && apiResults.length > 0) {
-                const existingCodes = new Set(matches.map(m => m.code));
-                apiResults.forEach(result => {
-                    if (!existingCodes.has(result.code)) {
-                        matches.push(result);
-                    }
-                });
-            }
-            
-            // 4. Ergebnisse alphabetisch sortieren
-            matches.sort((a, b) => a.name.localeCompare(b.name));
-
-            // 5. Ergebnisse anzeigen
-            if (matches.length > 0) {
-                matches.slice(0, 10).forEach(match => { // Begrenze auf 10 Ergebnisse zur Übersicht
-                    const item = document.createElement("div");
-                    item.className = "p-2 cursor-pointer text-gray-700 dark:text-gray-300 autocomplete-item";
-                    item.textContent = `${match.name} (${match.code})`;
-                    item.addEventListener("click", () => {
-                        selectAutocompleteItem(input, list, match); // Übergib das komplette Objekt
-                    });
-                    list.appendChild(item);
-                });
-                list.classList.remove("hidden");
-            } else {
-                list.classList.add("hidden");
-            }
+        if (value.length < 3) {
+          list.classList.add("hidden");
+          return;
         }
+
+        const upperCaseValue = value.toUpperCase();
+        let matches = [];
+
+        // 1. Lokale Suche (schnell)
+        for (const code in airportData) {
+          const airport = airportData[code];
+          if (
+            code.includes(upperCaseValue) ||
+            airport.name.toUpperCase().includes(upperCaseValue)
+          ) {
+            matches.push({ code, ...airport });
+          }
+        }
+
+        // 2. Externe API-Suche (langsamer)
+        const apiResults = await window.fetchExternalAirport(value);
+
+        // 3. Ergebnisse zusammenführen und Duplikate entfernen
+        if (apiResults && apiResults.length > 0) {
+          const existingCodes = new Set(matches.map((m) => m.code));
+          apiResults.forEach((result) => {
+            if (!existingCodes.has(result.code)) {
+              matches.push(result);
+            }
+          });
+        }
+
+        // 4. Ergebnisse alphabetisch sortieren
+        matches.sort((a, b) => a.name.localeCompare(b.name));
+
+        // 5. Ergebnisse anzeigen
+        if (matches.length > 0) {
+          matches.slice(0, 10).forEach((match) => {
+            // Begrenze auf 10 Ergebnisse zur Übersicht
+            const item = document.createElement("div");
+            item.className =
+              "p-2 cursor-pointer text-gray-700 dark:text-gray-300 autocomplete-item";
+            item.textContent = `${match.name} (${match.code})`;
+            item.addEventListener("click", () => {
+              selectAutocompleteItem(input, list, match); // Übergib das komplette Objekt
+            });
+            list.appendChild(item);
+          });
+          list.classList.remove("hidden");
+        } else {
+          list.classList.add("hidden");
+        }
+      }
 
       var hideAllAutocompleteLists = function () {
         document.getElementById("departure-list").classList.add("hidden");
         document.getElementById("arrival-list").classList.add("hidden");
       };
 
-function selectAutocompleteItem(input, list, selectedAirport) {
-            // Speichere den Flughafen im Cache, falls er neu ist (aus der API kam)
-            cacheAndSaveAirport({
-                code: selectedAirport.code,
-                name: selectedAirport.name,
-                lat: selectedAirport.lat,
-                lon: selectedAirport.lon
-            });
+      function selectAutocompleteItem(input, list, selectedAirport) {
+        // Speichere den Flughafen im Cache, falls er neu ist (aus der API kam)
+        cacheAndSaveAirport({
+          code: selectedAirport.code,
+          name: selectedAirport.name,
+          lat: selectedAirport.lat,
+          lon: selectedAirport.lon,
+        });
 
-            input.value = selectedAirport.code; // Setze den IATA-Code in das Feld
-            list.classList.add("hidden");
-            updateFlightDetails();
-            input.focus();
-        }
+        input.value = selectedAirport.code; // Setze den IATA-Code in das Feld
+        list.classList.add("hidden");
+        updateFlightDetails();
+        input.focus();
+      }
 
       var updateFlightDetails = function () {
         var departureInput = document.getElementById("departure").value;
@@ -3148,6 +3155,20 @@ function selectAutocompleteItem(input, list, selectedAirport) {
         return sortedFlights;
       }
 
+async function showWeatherForFlight(flight) {
+            const arrivalCity = airportData[flight.arrival]?.name;
+            if (arrivalCity) {
+                const weather = await fetchWeatherForCity(arrivalCity);
+                if (weather) {
+                    showMessage(
+                        `Wetter in ${arrivalCity}`,
+                        `Temperatur: ${weather.temp}°C, Wind: ${weather.wind_speed} km/h`,
+                        'info'
+                    );
+                }
+            }
+        }
+
       /**
        * Zeichnet die Flugroute mit Markern auf die interaktive Leaflet-Karte.
        */
@@ -3206,7 +3227,10 @@ function selectAutocompleteItem(input, list, selectedAirport) {
         ); // Ein kleiner Rand um die Route
 
         mapInfo.textContent = `Visualisierung: ${depName} (${depCode}) → ${arrName} (${arrCode}).`;
-      };
+
+showWeatherForFlight({arrival: arrCode});     
+
+	 };
 
       /**
        * Aktualisiert die UI der Sortier-Buttons, um den aktiven Zustand anzuzeigen.
@@ -3307,6 +3331,26 @@ function selectAutocompleteItem(input, list, selectedAirport) {
         // Rendere die Flugliste mit der neuen Sortierung neu
         applyFilters();
       };
+	  
+		/**
+         * Ruft Wetterdaten für eine Stadt über die sichere Netlify Function ab.
+         * @param {string} cityName - Der Name der Stadt.
+         * @returns {Promise<object|null>} Ein Promise, das mit dem Wetterobjekt aufgelöst wird.
+         */
+        window.fetchWeatherForCity = async function(cityName) {
+            try {
+                const response = await fetch(`/.netlify/functions/fetch-weather?city=${encodeURIComponent(cityName)}`);
+                if (!response.ok) {
+                    console.error(`Fehler beim Abrufen des Wetters für ${cityName}:`, response.statusText);
+                    return null;
+                }
+                return await response.json();
+            } catch (error) {
+                console.error("Netzwerkfehler beim Aufruf der Wetter-Funktion:", error);
+                return null;
+            }
+        };	  
+
 
       // =================================================================
       // DER EINZIGE DOMContentLoaded-LISTENER GANZ AM ENDE
