@@ -1488,13 +1488,15 @@
           console.error("Fehler beim Laden der Flughäfen aus Supabase:", error);
           return;
         }
-        data.forEach((airport) => {
-          airportData[airport.iata] = {
-            name: airport.name,
-            lat: airport.lat,
-            lon: airport.lon,
-          };
-        });
+        // Wandle die geladenen Daten in das Format um, das 'airportData' erwartet
+		data.forEach((airport) => {
+			airportData[airport.iata] = {
+				name: airport.name,
+				lat: airport.lat,
+				lon: airport.lon,
+				city: airport.city // KORREKTUR: Stadtinformation hinzufügen
+			};
+		});
         console.log(`${data.length} Flughäfen aus der Datenbank geladen.`);
       }
 
@@ -2400,20 +2402,21 @@
         document.getElementById("arrival-list").classList.add("hidden");
       };
 
-      function selectAutocompleteItem(input, list, selectedAirport) {
-        // Speichere den Flughafen im Cache, falls er neu ist (aus der API kam)
-        cacheAndSaveAirport({
-          code: selectedAirport.code,
-          name: selectedAirport.name,
-          lat: selectedAirport.lat,
-          lon: selectedAirport.lon,
-        });
+		function selectAutocompleteItem(input, list, selectedAirport) {
+			// Stelle sicher, dass die Stadtinformation an die Speicherfunktion übergeben wird
+			cacheAndSaveAirport({
+				code: selectedAirport.code,
+				name: selectedAirport.name,
+				lat: selectedAirport.lat,
+				lon: selectedAirport.lon,
+				city: selectedAirport.city // KORREKTUR: Stadtinformation hinzufügen
+			});
 
-        input.value = selectedAirport.code; // Setze den IATA-Code in das Feld
-        list.classList.add("hidden");
-        updateFlightDetails();
-        input.focus();
-      }
+			input.value = selectedAirport.code;
+			list.classList.add("hidden");
+			updateFlightDetails();
+			input.focus();
+		}
 
       var updateFlightDetails = function () {
         var departureInput = document.getElementById("departure").value;
