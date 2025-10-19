@@ -15,7 +15,14 @@ exports.handler = async function(event, context) {
         const response = await fetch(apiEndpoint, { headers: { 'X-Api-Key': API_KEY } });
         if (!response.ok) { return { statusCode: response.status, body: response.statusText }; }
         const data = await response.json();
-        return { statusCode: 200, body: JSON.stringify(data) };
+        return {
+    statusCode: 200,
+    headers: {
+        "Access-Control-Allow-Origin": "*", // Erlaubt Anfragen von jeder Herkunft
+        "Access-Control-Allow-Headers": "Content-Type",
+    },
+    body: JSON.stringify(data)
+};
     } catch (error) {
         return { statusCode: 500, body: JSON.stringify({ message: 'Interner Serverfehler' }) };
     }
