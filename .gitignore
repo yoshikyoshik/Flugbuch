@@ -1,0 +1,15 @@
+# Dependency directories
+node_modules/
+
+# Capacitor build files
+www/
+android/
+ios/
+
+# IDE files
+.idea/
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

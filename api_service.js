@@ -1,37 +1,32 @@
 // api_service.js
-
 window.fetchExternalAirport = async function(input) {
+    const { CapacitorHttp } = Capacitor; // Capacitor-Plugin laden
     const normalizedInput = input.trim();
 
-    if (normalizedInput.length < 3) {
-        return []; // Gib immer ein leeres Array zurück, wenn die Eingabe zu kurz ist
-    }
-    
-    const API_ENDPOINT = `/.netlify/functions/fetch-airport?query=${encodeURIComponent(normalizedInput)}`; 
+    if (normalizedInput.length < 3) return [];
+
+    const url = `https://aesthetic-strudel-ecfe50.netlify.app/.netlify/functions/fetch-airport?query=${encodeURIComponent(normalizedInput)}`;
+
+    const options = {
+        url: url,
+        headers: { 'Content-Type': 'application/json' }
+    };
 
     try {
-        const response = await fetch(API_ENDPOINT);
-        if (!response.ok) {
-            console.warn(`API-Abfrage für '${input}' fehlgeschlagen: Status ${response.status}`);
-            return [];
-        }
-        
-        const data = await response.json();
+        const response = await CapacitorHttp.get(options);
 
-        if (data && data.length > 0) {
-            // Gib die komplette, formatierte Liste der Ergebnisse zurück
-            return data.map(result => ({ 
+        if (response.data && response.data.length > 0) {
+            return response.data.map(result => ({ 
                 code: result.iata, 
                 name: result.name, 
-				city: result.city,
+                city: result.city,
                 lat: parseFloat(result.latitude), 
                 lon: parseFloat(result.longitude)
             }));
-        } else {
-            return []; // Kein Ergebnis gefunden, gib ein leeres Array zurück
         }
+        return [];
     } catch (error) {
-        console.error("Netzwerkfehler beim Aufruf der Netlify Function:", error);
+        console.error("Fehler bei der Capacitor HTTP-Anfrage (Flughafen):", error);
         return [];
     }
 };
