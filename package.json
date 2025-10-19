@@ -1,0 +1,25 @@
+{
+  "name": "developement",
+  "version": "1.0.0",
+  "description": "",
+  "main": "api_finder.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yoshikyoshik/Flugbuch.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/yoshikyoshik/Flugbuch/issues"
+  },
+  "homepage": "https://github.com/yoshikyoshik/Flugbuch#readme",
+  "dependencies": {
+    "@capacitor/android": "^7.4.3",
+    "@capacitor/cli": "^7.4.3",
+    "@capacitor/core": "^7.4.3"
+  }
+}
