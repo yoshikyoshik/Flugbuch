@@ -5,7 +5,9 @@ window.fetchExternalAirport = async function(input) {
 
     if (normalizedInput.length < 3) return [];
 
-    const url = `https://aesthetic-strudel-ecfe50.netlify.app/.netlify/functions/fetch-airport?query=${encodeURIComponent(normalizedInput)}`;
+    //const url = `https://aesthetic-strudel-ecfe50.netlify.app/.netlify/functions/fetch-airport?query=${encodeURIComponent(normalizedInput)}`;
+	
+	const API_ENDPOINT = `/.netlify/functions/fetch-airport?query=${encodeURIComponent(normalizedInput)}`; 
 
     const options = {
         url: url,

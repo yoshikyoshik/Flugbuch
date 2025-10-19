@@ -3456,7 +3456,7 @@
        * @param {number} lon - Longitude.
        * @returns {Promise<object|null>} Ein Promise, das mit dem Wetterobjekt oder null aufgelöst wird.
        */
-window.fetchWeatherByCoords = async function(lat, lon) {
+/** window.fetchWeatherByCoords = async function(lat, lon) {
     const { CapacitorHttp } = Capacitor; // Capacitor-Plugin laden
 
     const url = `https://aesthetic-strudel-ecfe50.netlify.app/.netlify/functions/fetch-weather?lat=${lat}&lon=${lon}`;
@@ -3478,6 +3478,38 @@ window.fetchWeatherByCoords = async function(lat, lon) {
         return null;
     }
 };
+*/
+
+window.fetchWeatherByCoords = async function (lat, lon) {
+        try {
+          const response = await fetch(
+            `/.netlify/functions/fetch-weather?lat=${lat}&lon=${lon}`
+          );
+
+          if (!response.ok) {
+            console.error(
+              `Fehler beim Abrufen des Wetters für Koordinaten ${lat},${lon}:`,
+              response.statusText
+            );
+            return null;
+          }
+
+          const data = await response.json();
+
+          // Die API gibt direkt ein Objekt zurück, keine Liste, wenn sie erfolgreich ist.
+          if (data && typeof data.temp !== "undefined") {
+            return data;
+          }
+
+          return null;
+        } catch (error) {
+          console.error(
+            "Netzwerkfehler beim Aufruf der Wetter-Funktion:",
+            error
+          );
+          return null;
+        }
+      };
 
       // =================================================================
       // DER EINZIGE DOMContentLoaded-LISTENER GANZ AM ENDE
