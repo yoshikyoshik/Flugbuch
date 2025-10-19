@@ -3482,9 +3482,9 @@
 
 window.fetchWeatherByCoords = async function (lat, lon) {
         try {
-          const response = await fetch(
-            `/.netlify/functions/fetch-weather?lat=${lat}&lon=${lon}`
-          );
+//          const response = await fetch(`/.netlify/functions/fetch-weather?lat=${lat}&lon=${lon}` );
+		  
+		  const response = await fetch(`https://aesthetic-strudel-ecfe50.netlify.app/.netlify/functions/fetch-weather?lat=${lat}&lon=${lon}`);
 
           if (!response.ok) {
             console.error(

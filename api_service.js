@@ -7,7 +7,9 @@ window.fetchExternalAirport = async function(input) {
 
     //const url = `https://aesthetic-strudel-ecfe50.netlify.app/.netlify/functions/fetch-airport?query=${encodeURIComponent(normalizedInput)}`;
 	
-	const API_ENDPOINT = `/.netlify/functions/fetch-airport?query=${encodeURIComponent(normalizedInput)}`; 
+	//const API_ENDPOINT = `/.netlify/functions/fetch-airport?query=${encodeURIComponent(normalizedInput)}`; 
+	
+	const API_ENDPOINT = `https://aesthetic-strudel-ecfe50.netlify.app/.netlify/functions/fetch-airport?query=${encodeURIComponent(normalizedInput)}`;
 
     const options = {
         url: url,
