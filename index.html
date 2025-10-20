@@ -320,33 +320,100 @@
         class="w-full max-w-4xl bg-white dark:bg-gray-800 shadow-2xl rounded-xl p-6 md:p-10 border border-gray-100 dark:border-gray-700"
       >
         <div class="flex justify-between items-center mb-2">
-    <h1 class="text-2xl md:text-4xl font-extrabold text-indigo-700 dark:text-indigo-400">
-        ✈️ Digitales Flugbuch
-    </h1>
-    <div class="relative">
-        <button id="burger-menu-btn" class="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
-        </button>
-        <div id="burger-menu" class="hidden absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-md shadow-lg z-50 border dark:border-gray-700">
-            <div class="md:hidden border-b dark:border-gray-700">
-                <a href="#" onclick="event.preventDefault(); showTab('neue-fluege')" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Neuer Flug</a>
-                <a href="#" onclick="event.preventDefault(); showTab('fluege')" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Flüge</a>
-                <a href="#" onclick="event.preventDefault(); showTab('stats')" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Statistiken</a>
-                <a href="#" onclick="event.preventDefault(); showTab('charts')" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Charts</a>
-                <a href="#" onclick="event.preventDefault(); showTab('logbook')" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Logbuch</a>
+          <h1
+            class="text-2xl md:text-4xl font-extrabold text-indigo-700 dark:text-indigo-400"
+          >
+            ✈️ Digitales Flugbuch
+          </h1>
+          <div class="relative">
+            <button
+              id="burger-menu-btn"
+              class="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
+            >
+              <svg
+                class="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 6h16M4 12h16m-7 6h7"
+                ></path>
+              </svg>
+            </button>
+            <div
+              id="burger-menu"
+              class="hidden absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-md shadow-lg z-50 border dark:border-gray-700"
+            >
+              <div class="md:hidden border-b dark:border-gray-700">
+                <a
+                  href="#"
+                  onclick="event.preventDefault(); showTab('neue-fluege')"
+                  class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  >Neuer Flug</a
+                >
+                <a
+                  href="#"
+                  onclick="event.preventDefault(); showTab('fluege')"
+                  class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  >Flüge</a
+                >
+                <a
+                  href="#"
+                  onclick="event.preventDefault(); showTab('stats')"
+                  class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  >Statistiken</a
+                >
+                <a
+                  href="#"
+                  onclick="event.preventDefault(); showTab('charts')"
+                  class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  >Charts</a
+                >
+                <a
+                  href="#"
+                  onclick="event.preventDefault(); showTab('logbook')"
+                  class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  >Logbuch</a
+                >
+              </div>
+              <div class="py-1">
+                <a
+                  href="#"
+                  onclick="event.preventDefault(); showPasswordChangeModal()"
+                  class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  >Passwort ändern</a
+                >
+                <a
+                  href="#"
+                  id="menu-theme-toggle"
+                  class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  >Modus wechseln</a
+                >
+                <a
+                  href="#"
+                  id="menu-logout-btn"
+                  class="block px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  >Logout</a
+                >
+              </div>
+              <div class="border-t dark:border-gray-700 px-4 py-2">
+                <span
+                  id="user-display"
+                  class="block text-xs text-gray-500"
+                ></span>
+                <span
+                  id="app-version"
+                  class="block text-xs text-gray-400"
+                ></span>
+              </div>
             </div>
-            <div class="py-1">
-                <a href="#" onclick="event.preventDefault(); showPasswordChangeModal()" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Passwort ändern</a>
-                <a href="#" id="menu-theme-toggle" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Modus wechseln</a>
-                <a href="#" id="menu-logout-btn" class="block px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700">Logout</a>
-            </div>
-            <div class="border-t dark:border-gray-700 px-4 py-2">
-                <span id="user-display" class="block text-xs text-gray-500"></span>
-                <span id="app-version" class="block text-xs text-gray-400"></span>
-            </div>
+          </div>
         </div>
-    </div>
-</div>
 
         <h2
           class="text-xl md:text-2xl font-bold text-gray-800 dark:text-white mb-4 border-b pb-2 border-gray-200 dark:border-gray-700"
@@ -402,6 +469,13 @@
                 class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
               >
                 Logbuch
+              </button>
+              <button
+                onclick="showTab('achievements')"
+                id="tab-btn-achievements"
+                class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              >
+                Errungenschaften
               </button>
             </nav>
           </div>
@@ -603,10 +677,25 @@
                     </p>
                   </div>
                 </div>
-					<div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
-						<button onclick="logFlight()" id="log-button" disabled class="w-full py-3 px-4 ...">Flug loggen und speichern</button>
-						<button onclick="resetForm()" id="cancel-edit-button" class="hidden w-full sm:w-1/3 py-3 px-4 ...">Abbrechen</button>
-					</div>
+                <div
+                  class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4"
+                >
+                  <button
+                    onclick="logFlight()"
+                    id="log-button"
+                    disabled
+                    class="w-full py-3 px-4 ..."
+                  >
+                    Flug loggen und speichern
+                  </button>
+                  <button
+                    onclick="resetForm()"
+                    id="cancel-edit-button"
+                    class="hidden w-full sm:w-1/3 py-3 px-4 ..."
+                  >
+                    Abbrechen
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -614,7 +703,9 @@
               <div
                 class="flex items-center justify-between mb-4 border-b pb-2 border-gray-200 dark:border-gray-700"
               >
-                <h2 class="text-xl md:text-2xl font-bold text-gray-800 dark:text-white">
+                <h2
+                  class="text-xl md:text-2xl font-bold text-gray-800 dark:text-white"
+                >
                   Gespeicherte Flüge
                 </h2>
                 <div class="flex flex-wrap items-center space-x-4">
@@ -1014,7 +1105,10 @@
                   >
                     Logbuch-Ansichten
                   </h2>
-                  <div id="logbook-nav" class="flex flex-wrap items-center gap-2 text-sm">
+                  <div
+                    id="logbook-nav"
+                    class="flex flex-wrap items-center gap-2 text-sm"
+                  >
                     <button
                       id="logbook-view-aircraft"
                       class="logbook-view-btn active px-3 py-1 rounded-md transition"
@@ -1036,6 +1130,22 @@
                   </div>
                 </div>
                 <div id="logbook-content" class="mt-4 space-y-4"></div>
+              </div>
+            </div>
+
+            <div id="tab-content-achievements" class="hidden">
+              <div
+                class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700"
+              >
+                <h2
+                  class="text-xl md:text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4"
+                >
+                  Deine Errungenschaften
+                </h2>
+                <div
+                  id="achievements-container"
+                  class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+                ></div>
               </div>
             </div>
           </div>
@@ -1100,6 +1210,214 @@
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNibWpkd2t0eHNubXVrYm9veWN1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAyOTczNDgsImV4cCI6MjA3NTg3MzM0OH0.NN9EHfS7iyAZvFm_UYs3PxEWj2pMbYmMduUeVA70rpo";
       const { createClient } = supabase;
       const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+      // Achievements
+      const achievements = {
+        flights: [
+          {
+            milestone: 1,
+            emoji: "🎉",
+            title: "Erster Eintrag",
+            description: "Dein erster Flug ist geloggt!",
+          },
+          {
+            milestone: 10,
+            emoji: "✈️",
+            title: "Vielflieger-Anwärter",
+            description: "10 Flüge geloggt",
+          },
+          {
+            milestone: 25,
+            emoji: "🛫",
+            title: "Bronze-Flieger",
+            description: "25 Flüge erreicht",
+          },
+          {
+            milestone: 50,
+            emoji: "🌍",
+            title: "Globetrotter",
+            description: "50 Flüge absolviert",
+          },
+          {
+            milestone: 100,
+            emoji: "💯",
+            title: "Hunderter-Club",
+            description: "100 Flüge gemeistert!",
+          },
+          {
+            milestone: 150,
+            emoji: "🌟",
+            title: "Silber-Status",
+            description: "150 Flüge im Logbuch",
+          },
+          {
+            milestone: 250,
+            emoji: "🏆",
+            title: "Gold-Status",
+            description: "250 Flüge erreicht!",
+          },
+          {
+            milestone: 500,
+            emoji: "🚀",
+            title: "Luftfahrt-Legende",
+            description: "500 Flüge, unglaublich!",
+          },
+          {
+            milestone: 750,
+            emoji: "💎",
+            title: "Diamant-Status",
+            description: "750 Flüge, der Himmel gehört dir!",
+          },
+          {
+            milestone: 1000,
+            emoji: "🌌",
+            title: "Meister der Lüfte",
+            description: "1.000 Flüge geloggt!",
+          },
+        ],
+        distance: [
+          {
+            milestone: 10000,
+            emoji: "🏃",
+            title: "Zehntausender-Marke",
+            description: "10.000 km zurückgelegt",
+          },
+          {
+            milestone: 40075,
+            emoji: "🌐",
+            title: "Weltumrunder",
+            description: "Einmal um den Äquator geflogen (40.075 km)",
+          },
+          {
+            milestone: 100000,
+            emoji: "✨",
+            title: "Sechsstellige Distanz",
+            description: "100.000 km geknackt",
+          },
+          {
+            milestone: 250000,
+            emoji: "🏅",
+            title: "Viertelmillionär",
+            description: "250.000 km in der Luft",
+          },
+          {
+            milestone: 384400,
+            emoji: "🌕",
+            title: "Mond-Reisender",
+            description: "Die Distanz zum Mond zurückgelegt (384.400 km)",
+          },
+          {
+            milestone: 500000,
+            emoji: "🌠",
+            title: "Halbe Million",
+            description: "500.000 km gereist",
+          },
+          {
+            milestone: 768800,
+            emoji: "🛰️",
+            title: "Hin und Zurück",
+            description:
+              "Die Distanz zum Mond und zurück zur Erde (768.800 km)",
+          },
+          {
+            milestone: 1000000,
+            emoji: "💥",
+            title: "Distanz-Millionär",
+            description: "Eine Million Kilometer geflogen!",
+          },
+        ],
+        time: [
+          // in Stunden
+          {
+            milestone: 24,
+            emoji: "☀️",
+            title: "Rund um die Uhr",
+            description: "24 Stunden in der Luft verbracht",
+          },
+          {
+            milestone: 100,
+            emoji: "🗓️",
+            title: "Hundert Stunden",
+            description: "Über 100 Stunden Flugzeit",
+          },
+          {
+            milestone: 500,
+            emoji: "🕰️",
+            title: "500-Stunden-Marke",
+            description: "Mehr als 20 Tage im Flugzeug verbracht",
+          },
+          {
+            milestone: 1000,
+            emoji: "⏳",
+            title: "Tausend Stunden Flugzeit",
+            description: "Über 1.000 Stunden in der Luft",
+          },
+          {
+            milestone: 2500,
+            emoji: "✨",
+            title: "Viertausend Stunden",
+            description: "Mehr als 100 Tage Flugzeit",
+          },
+          {
+            milestone: 8760,
+            emoji: "💫",
+            title: "Ein Jahr im Himmel",
+            description: "Ein ganzes Jahr (8.760h) in der Luft verbracht",
+          },
+        ],
+        uniqueAirports: [
+          {
+            milestone: 10,
+            emoji: "🗺️",
+            title: "Entdecker",
+            description: "10 verschiedene Flughäfen besucht",
+          },
+          {
+            milestone: 25,
+            emoji: "🧭",
+            title: "Weltenbummler",
+            description: "25 einzigartige Flughäfen im Logbuch",
+          },
+          {
+            milestone: 50,
+            emoji: "🏛️",
+            title: "Kultursammler",
+            description: "50 verschiedene Flughäfen gesehen",
+          },
+          {
+            milestone: 100,
+            emoji: "🗽",
+            title: "Hub-Hopper",
+            description: "100 einzigartige Flughäfen angeflogen!",
+          },
+        ],
+        longestFlight: [
+          {
+            milestone: 3000,
+            emoji: "✈️",
+            title: "Langstrecken-Debüt",
+            description: "Ein Flug über 3.000 km",
+          },
+          {
+            milestone: 5000,
+            emoji: "🛫",
+            title: "Kontinentspringer",
+            description: "Einen Flug über 5.000 km absolviert",
+          },
+          {
+            milestone: 8000,
+            emoji: "🌊",
+            title: "Ozean-Überquerer",
+            description: "Ein Flug über 8.000 km",
+          },
+          {
+            milestone: 12000,
+            emoji: "🚀",
+            title: "Ultra-Langstrecke",
+            description: "Einen epischen Flug über 12.000 km gemeistert",
+          },
+        ],
+      };
 
       let map;
       let routeLayer;
@@ -1280,84 +1598,115 @@
       // AUTH & APP INITIALIZATION FUNCTIONS
       // =================================================================
 
-async function initializeApp() {
-            if (isAppInitialized) return;
-            isAppInitialized = true;
+      async function initializeApp() {
+        if (isAppInitialized) return;
+        isAppInitialized = true;
 
-            document.getElementById('auth-container').classList.add('hidden');
-            document.getElementById('app-container').classList.remove('hidden');
+        document.getElementById("auth-container").classList.add("hidden");
+        document.getElementById("app-container").classList.remove("hidden");
 
-            try {
-                const { data: { user } } = await supabaseClient.auth.getUser();
-                if (user) {
-                    const userDisplay = document.getElementById('user-display');
-                    if (userDisplay) { userDisplay.textContent = user.email; }
-                }
-            } catch (e) {
-                console.error("Fehler beim Abrufen des Benutzers:", e);
+        try {
+          const {
+            data: { user },
+          } = await supabaseClient.auth.getUser();
+          if (user) {
+            const userDisplay = document.getElementById("user-display");
+            if (userDisplay) {
+              userDisplay.textContent = user.email;
             }
-            
-            await migrateAndLoadAirports();
-            
-            if (!map) {
-                map = L.map('flight-map-container').setView([20, 0], 2);
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-                }).addTo(map);
-                routeLayer = L.layerGroup().addTo(map);
-            }
-            
-            // --- KORRIGIERTER BEREICH: Event-Listener ---
-
-            // Listener für das neue Burger-Menü
-            document.getElementById('burger-menu-btn').addEventListener('click', toggleBurgerMenu);
-            document.getElementById('menu-logout-btn').addEventListener('click', logout);
-            document.getElementById('menu-theme-toggle').addEventListener('click', toggleDarkMode);
-
-            // Listener, um das Menü zu schließen, wenn man daneben klickt
-            document.addEventListener('click', function(event) {
-                const menu = document.getElementById('burger-menu');
-                const menuBtn = document.getElementById('burger-menu-btn');
-                // Prüfe, ob das Menü offen ist UND der Klick außerhalb des Menüs und des Buttons war
-                if (!menu.classList.contains('hidden') && !menu.contains(event.target) && !menuBtn.contains(event.target)) {
-                    toggleBurgerMenu();
-                }
-            });
-
-            // Alle anderen, weiterhin gültigen Listener
-            document.getElementById('chart-view-year').addEventListener('click', () => setChartTimeframe('year'));
-            document.getElementById('chart-view-month').addEventListener('click', () => setChartTimeframe('month'));
-            document.getElementById('password-change-form').addEventListener('submit', changePassword);
-            document.getElementById('flightPhoto').addEventListener('change', (event) => {
-                const files = event.target.files;
-                const previewText = document.getElementById('photo-preview-text');
-                const previewContainer = document.getElementById('photo-preview-container');
-                if (files && files.length > 0) {
-                    previewText.textContent = `${files.length} Foto(s) ausgewählt.`;
-                    previewContainer.classList.remove('hidden');
-                } else {
-                    previewContainer.classList.add('hidden');
-                }
-            });
-            document.getElementById("departure").addEventListener("input", () => {
-                updateAutocompleteList("departure", "departure-list");
-                updateFlightDetails();
-            });
-            document.getElementById("arrival").addEventListener("input", () => {
-                updateAutocompleteList("arrival", "arrival-list");
-                updateFlightDetails();
-            });
-            document.getElementById('logbook-view-aircraft').addEventListener('click', () => renderLogbookView('aircraftType'));
-            document.getElementById('logbook-view-airline').addEventListener('click', () => renderLogbookView('airline'));
-            document.getElementById('logbook-view-airport').addEventListener('click', () => renderLogbookView('airport'));
-
-            // --- ENDE KORRIGIERTER BEREICH ---
-
-            // Initiales Rendern der App
-            showTab('neue-fluege');
-            renderFlights();
-            displayAppVersion();
+          }
+        } catch (e) {
+          console.error("Fehler beim Abrufen des Benutzers:", e);
         }
+
+        await migrateAndLoadAirports();
+
+        if (!map) {
+          map = L.map("flight-map-container").setView([20, 0], 2);
+          L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            attribution:
+              '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+          }).addTo(map);
+          routeLayer = L.layerGroup().addTo(map);
+        }
+
+        // --- KORRIGIERTER BEREICH: Event-Listener ---
+
+        // Listener für das neue Burger-Menü
+        document
+          .getElementById("burger-menu-btn")
+          .addEventListener("click", toggleBurgerMenu);
+        document
+          .getElementById("menu-logout-btn")
+          .addEventListener("click", logout);
+        document
+          .getElementById("menu-theme-toggle")
+          .addEventListener("click", toggleDarkMode);
+
+        // Listener, um das Menü zu schließen, wenn man daneben klickt
+        document.addEventListener("click", function (event) {
+          const menu = document.getElementById("burger-menu");
+          const menuBtn = document.getElementById("burger-menu-btn");
+          // Prüfe, ob das Menü offen ist UND der Klick außerhalb des Menüs und des Buttons war
+          if (
+            !menu.classList.contains("hidden") &&
+            !menu.contains(event.target) &&
+            !menuBtn.contains(event.target)
+          ) {
+            toggleBurgerMenu();
+          }
+        });
+
+        // Alle anderen, weiterhin gültigen Listener
+        document
+          .getElementById("chart-view-year")
+          .addEventListener("click", () => setChartTimeframe("year"));
+        document
+          .getElementById("chart-view-month")
+          .addEventListener("click", () => setChartTimeframe("month"));
+        document
+          .getElementById("password-change-form")
+          .addEventListener("submit", changePassword);
+        document
+          .getElementById("flightPhoto")
+          .addEventListener("change", (event) => {
+            const files = event.target.files;
+            const previewText = document.getElementById("photo-preview-text");
+            const previewContainer = document.getElementById(
+              "photo-preview-container"
+            );
+            if (files && files.length > 0) {
+              previewText.textContent = `${files.length} Foto(s) ausgewählt.`;
+              previewContainer.classList.remove("hidden");
+            } else {
+              previewContainer.classList.add("hidden");
+            }
+          });
+        document.getElementById("departure").addEventListener("input", () => {
+          updateAutocompleteList("departure", "departure-list");
+          updateFlightDetails();
+        });
+        document.getElementById("arrival").addEventListener("input", () => {
+          updateAutocompleteList("arrival", "arrival-list");
+          updateFlightDetails();
+        });
+        document
+          .getElementById("logbook-view-aircraft")
+          .addEventListener("click", () => renderLogbookView("aircraftType"));
+        document
+          .getElementById("logbook-view-airline")
+          .addEventListener("click", () => renderLogbookView("airline"));
+        document
+          .getElementById("logbook-view-airport")
+          .addEventListener("click", () => renderLogbookView("airport"));
+
+        // --- ENDE KORRIGIERTER BEREICH ---
+
+        // Initiales Rendern der App
+        showTab("neue-fluege");
+        renderFlights();
+        displayAppVersion();
+      }
 
       function showAuth() {
         document.getElementById("auth-container").classList.remove("hidden");
@@ -1623,19 +1972,22 @@ async function initializeApp() {
       // =================================================================
 
       function toggleDarkMode() {
-            document.documentElement.classList.toggle("dark");
-            if (document.documentElement.classList.contains("dark")) {
-                localStorage.setItem("theme", "dark");
-            } else {
-                localStorage.setItem("theme", "light");
-            }
+        document.documentElement.classList.toggle("dark");
+        if (document.documentElement.classList.contains("dark")) {
+          localStorage.setItem("theme", "dark");
+        } else {
+          localStorage.setItem("theme", "light");
         }
+      }
 
       function showTab(tabName) {
         // Alle Inhalte verstecken
         document.getElementById("tab-content-stats").classList.add("hidden");
         document.getElementById("tab-content-charts").classList.add("hidden");
         document.getElementById("tab-content-logbook").classList.add("hidden");
+        document
+          .getElementById("tab-content-achievements")
+          .classList.add("hidden");
         document.getElementById("tab-content-fluege").classList.add("hidden");
         document
           .getElementById("tab-content-neue-fluege")
@@ -1666,9 +2018,14 @@ async function initializeApp() {
           );
         }
 
-        // NEU: Wenn der Logbuch-Tab aktiviert wird, lade die Standardansicht
+        // Wenn der Logbuch-Tab aktiviert wird, lade die Standardansicht
         if (tabName === "logbook") {
           renderLogbookView("aircraftType");
+        }
+
+        // Wenn der Errungenschaften-Tab aktiviert wird, lade die Ansicht
+        if (tabName === "achievements") {
+          updateAchievements();
         }
       }
 
@@ -1790,29 +2147,162 @@ async function initializeApp() {
       // Hier sind alle weiteren, vollständigen Funktionen
       // =================================================================
 
-		/**
-         * Lädt die Version aus der package.json und zeigt sie in der App an.
-         */
-        async function displayAppVersion() {
-            try {
-                const response = await fetch('package.json');
-                const data = await response.json();
-                const versionElement = document.getElementById('app-version');
-                if (versionElement && data.version) {
-                    versionElement.textContent = `v${data.version}`;
-                }
-            } catch (error) {
-                console.error("Fehler beim Laden der Versionsnummer:", error);
-            }
+      /**
+       * Lädt die Version aus der package.json und zeigt sie in der App an.
+       */
+      async function displayAppVersion() {
+        try {
+          const response = await fetch("package.json");
+          const data = await response.json();
+          const versionElement = document.getElementById("app-version");
+          if (versionElement && data.version) {
+            versionElement.textContent = `v${data.version}`;
+          }
+        } catch (error) {
+          console.error("Fehler beim Laden der Versionsnummer:", error);
+        }
+      }
+
+      /**
+       * Schaltet die Sichtbarkeit des Burger-Menüs um.
+       */
+      function toggleBurgerMenu() {
+        const menu = document.getElementById("burger-menu");
+        menu.classList.toggle("hidden");
+      }
+
+      /**
+       * Berechnet und zeigt die Errungenschaften des Nutzers an.
+       */
+      async function updateAchievements() {
+        const container = document.getElementById("achievements-container");
+        container.innerHTML =
+          '<p class="text-gray-500">Berechne Errungenschaften...</p>';
+
+        const allFlights = await getFlights();
+        if (allFlights.length === 0) {
+          container.innerHTML =
+            '<p class="text-gray-500">Logge deinen ersten Flug, um Errungenschaften freizuschalten!</p>';
+          return;
         }
 
-		/**
-         * Schaltet die Sichtbarkeit des Burger-Menüs um.
-         */
-        function toggleBurgerMenu() {
-            const menu = document.getElementById('burger-menu');
-            menu.classList.toggle('hidden');
+        // 1. Aktuelle Statistiken berechnen
+        const totalFlights = allFlights.length;
+        const totalDistance = allFlights.reduce(
+          (sum, flight) => sum + flight.distance,
+          0
+        );
+        const totalMinutes = allFlights.reduce(
+          (sum, flight) => sum + parseFlightTimeToMinutes(flight.time),
+          0
+        );
+        const totalHours = totalMinutes / 60;
+
+        // Einzigartige Flughäfen und längsten Flug berechnen
+        const uniqueAirports = new Set(
+          allFlights.flatMap((f) => [f.departure, f.arrival])
+        );
+        const longestFlightDistance = Math.max(
+          ...allFlights.map((f) => f.distance)
+        );
+
+        let html = "";
+
+        // 2. Alle definierten Errungenschaften durchgehen
+        const allAchievementTypes = [
+          { category: "flights", value: totalFlights, unit: "Flüge" },
+          { category: "distance", value: totalDistance, unit: "km" },
+          { category: "time", value: totalHours, unit: "Std." },
+          {
+            category: "uniqueAirports",
+            value: uniqueAirports.size,
+            unit: "Flughäfen",
+          },
+          {
+            category: "longestFlight",
+            value: longestFlightDistance,
+            unit: "km",
+          },
+        ];
+
+        allAchievementTypes.forEach((type) => {
+          achievements[type.category].forEach((achievement) => {
+            const isUnlocked = type.value >= achievement.milestone;
+            const progressPercent = Math.min(
+              (type.value / achievement.milestone) * 100,
+              100
+            );
+
+            html += `
+                        <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg flex items-center gap-4 ${
+                          isUnlocked ? "" : "opacity-40"
+                        }">
+                            <span class="text-3xl">${achievement.emoji}</span>
+                            <div>
+                                <h3 class="font-bold text-gray-800 dark:text-white">${
+                                  achievement.title
+                                }</h3>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">${
+                                  achievement.description
+                                }</p>
+                                <div class="w-full bg-gray-300 dark:bg-gray-600 rounded-full h-2 mt-2">
+                                    <div class="bg-indigo-500 h-2 rounded-full" style="width: ${progressPercent}%"></div>
+                                </div>
+                                <p class="text-xs text-right text-gray-500 dark:text-gray-400 mt-1">${Math.round(
+                                  type.value
+                                ).toLocaleString(
+                                  "de-DE"
+                                )} / ${achievement.milestone.toLocaleString(
+              "de-DE"
+            )} ${type.unit}</p>
+                            </div>
+                        </div>
+                    `;
+          });
+        });
+
+        container.innerHTML = html;
+      }
+
+      /**
+       * Ermittelt eine CSS-Farbklasse basierend auf der Flugnummer und den Errungenschaften.
+       * @param {number} flightNumber - Die sequenzielle Flugnummer.
+       * @returns {string} Die Tailwind-CSS-Klasse für die Hintergrundfarbe.
+       */
+      function getMilestoneColor(flightNumber) {
+        // Wir durchsuchen die Errungenschaften von der höchsten zur niedrigsten Stufe.
+        const flightAchievements = [...achievements.flights].reverse();
+
+        for (const achievement of flightAchievements) {
+          if (flightNumber >= achievement.milestone) {
+            // Weise Farben basierend auf dem Titel oder der Stufe zu
+            switch (achievement.milestone) {
+              case 1000:
+                return "bg-purple-600"; // Meister
+              case 750:
+                return "bg-cyan-500"; // Diamant
+              case 500:
+                return "bg-amber-500"; // Legende
+              case 250:
+                return "bg-yellow-400"; // Gold
+              case 150:
+                return "bg-slate-400"; // Silber
+              case 100:
+                return "bg-rose-600";
+              case 50:
+                return "bg-orange-400"; // Globetrotter
+              case 25:
+                return "bg-amber-600"; // Bronze
+              case 10:
+                return "bg-teal-500";
+              default:
+                continue; // Prüfe die nächste Stufe
+            }
+          }
         }
+        // Standardfarbe, wenn kein besonderer Meilenstein erreicht wurde
+        return "bg-indigo-600";
+      }
 
       var calculateStatistics = function (flights) {
         var stats = {
@@ -2712,7 +3202,7 @@ async function initializeApp() {
         }
 
         const routeGroups = {};
-        // NEU: Ein Objekt, um alle einzigartigen Flughäfen zu sammeln
+        // Ein Objekt, um alle einzigartigen Flughäfen zu sammeln
         const uniqueAirports = {};
 
         // Alle Flüge durchgehen, um Routen zu gruppieren UND Flughäfen zu sammeln
@@ -2733,7 +3223,7 @@ async function initializeApp() {
             }
             routeGroups[routeKey].flightNumbers.push(flight.flightLogNumber);
 
-            // --- NEU: Einzigartige Flughäfen sammeln ---
+            // --- Einzigartige Flughäfen sammeln ---
             if (!uniqueAirports[flight.departure]) {
               uniqueAirports[flight.departure] = {
                 name: flight.depName,
@@ -2755,10 +3245,17 @@ async function initializeApp() {
 
         // 1. Linien für die gruppierten Routen zeichnen
         Object.values(routeGroups).forEach((group) => {
+          const flightCount = group.flightNumbers.length;
+
+          // Wir berechnen die Linienstärke. Basis = 1.5, +0.5 für jeden weiteren Flug auf der Route.
+          // Mit Math.min begrenzen wir die maximale Dicke auf einen sinnvollen Wert (z.B. 8).
+          const weight = Math.min(1.5 + (flightCount - 1) * 0.5, 8);
+          const opacity = 0.6 + flightCount * 0.05; // Linien werden auch etwas deckender
+
           const flightPath = L.polyline(group.latLngs, {
             color: "#312E81",
-            weight: 1.5,
-            opacity: 0.7,
+            weight: weight, // Dynamische Stärke
+            opacity: opacity, // Dynamische Deckkraft
           });
           const labelText = group.flightNumbers
             .sort((a, b) => a - b)
@@ -2774,7 +3271,7 @@ async function initializeApp() {
           bounds.push(group.latLngs[1]);
         });
 
-        // 2. NEU: Marker für alle einzigartigen Flughäfen zeichnen
+        // 2. Marker für alle einzigartigen Flughäfen zeichnen
         Object.keys(uniqueAirports).forEach((iataCode) => {
           const airport = uniqueAirports[iataCode];
           const marker = L.marker([airport.lat, airport.lon]);
@@ -3162,18 +3659,21 @@ async function initializeApp() {
             '<p id="no-flights-message" class="log-placeholder text-gray-500 italic text-center py-4">Noch keine Flüge geloggt.</p>';
         } else {
           paginatedFlights.forEach((flight) => {
-            const depName = airportData[flight.departure]
-              ? airportData[flight.departure].name
-              : flight.departure;
-            const arrName = airportData[flight.arrival]
-              ? airportData[flight.arrival].name
-              : flight.arrival;
+            const depName =
+              airportData[flight.departure]?.name || flight.departure;
+            const arrName = airportData[flight.arrival]?.name || flight.arrival;
+
+            // Rufe die Hilfsfunktion auf, um die Farbe zu bestimmen
+            const milestoneColor = getMilestoneColor(flight.flightLogNumber);
+
             const flightElement = document.createElement("div");
             flightElement.className =
               "bg-white dark:bg-gray-800 p-3 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 hover:shadow-lg transition flex justify-between items-start";
+
+            // KORRIGIERTER innerHTML Block
             flightElement.innerHTML = `
                 <div class="flex items-start gap-4 flex-grow">
-                    <div class="flex-shrink-0 bg-indigo-600 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm" title="Flugbuch-Nummer">
+                    <div class="flex-shrink-0 ${milestoneColor} text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm" title="Flugbuch-Nummer">
                         #${flight.flightLogNumber || "-"}
                     </div>
                     <div class="flex-grow">
@@ -3192,34 +3692,30 @@ async function initializeApp() {
                           flight.aircraftType ||
                           flight.class
                             ? `<p class="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                                Flug: ${flight.flightNumber || "-"} | Typ: ${
+                                  Flug: ${flight.flightNumber || "-"} | Typ: ${
                                 flight.aircraftType || "-"
                               } | Klasse: ${flight.class}
-                            </p>`
+                              </p>`
                             : ""
                         }
-						
-						${
-              flight.photo_url && flight.photo_url.length > 0
-                ? `<div class="mt-2 flex gap-2">
-								${flight.photo_url
-                  .map(
-                    (url) => `
-									<a href="${url}" target="_blank">
-										<img src="${url}" alt="Flugfoto" class="h-12 w-12 rounded-md object-cover shadow-sm hover:scale-110 transition">
-									</a>
-								`
-                  )
-                  .join("")}
-							</div>`
-                : ""
-            }
-						
+                        ${
+                          flight.photo_url && flight.photo_url.length > 0
+                            ? `<div class="mt-2 flex gap-2">${flight.photo_url
+                                .map(
+                                  (url) => `
+                                <a href="${url}" target="_blank">
+                                    <img src="${url}" alt="Flugfoto" class="h-12 w-12 rounded-md object-cover shadow-sm hover:scale-110 transition">
+                                </a>`
+                                )
+                                .join("")}
+                               </div>`
+                            : ""
+                        }
                         ${
                           flight.notes
                             ? `<p class="text-xs text-gray-700 dark:text-gray-300 italic mt-2 border-l-2 border-indigo-400 pl-2">
-                                ${flight.notes}
-                            </p>`
+                                  ${flight.notes}
+                              </p>`
                             : ""
                         }
                     </div>
@@ -3436,7 +3932,7 @@ async function initializeApp() {
        * @param {number} lon - Longitude.
        * @returns {Promise<object|null>} Ein Promise, das mit dem Wetterobjekt oder null aufgelöst wird.
        */
-/** window.fetchWeatherByCoords = async function(lat, lon) {
+      /** window.fetchWeatherByCoords = async function(lat, lon) {
     const { CapacitorHttp } = Capacitor; // Capacitor-Plugin laden
 
     const url = `https://aesthetic-strudel-ecfe50.netlify.app/.netlify/functions/fetch-weather?lat=${lat}&lon=${lon}`;
@@ -3460,11 +3956,13 @@ async function initializeApp() {
 };
 */
 
-window.fetchWeatherByCoords = async function (lat, lon) {
+      window.fetchWeatherByCoords = async function (lat, lon) {
         try {
-//          const response = await fetch(`/.netlify/functions/fetch-weather?lat=${lat}&lon=${lon}` );
-		  
-		  const response = await fetch(`https://aesthetic-strudel-ecfe50.netlify.app/.netlify/functions/fetch-weather?lat=${lat}&lon=${lon}`);
+          //          const response = await fetch(`/.netlify/functions/fetch-weather?lat=${lat}&lon=${lon}` );
+
+          const response = await fetch(
+            `https://aesthetic-strudel-ecfe50.netlify.app/.netlify/functions/fetch-weather?lat=${lat}&lon=${lon}`
+          );
 
           if (!response.ok) {
             console.error(
