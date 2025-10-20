@@ -320,59 +320,33 @@
         class="w-full max-w-4xl bg-white dark:bg-gray-800 shadow-2xl rounded-xl p-6 md:p-10 border border-gray-100 dark:border-gray-700"
       >
         <div class="flex justify-between items-center mb-2">
-          <h1
-            class="text-2xl md:text-4xl font-extrabold text-indigo-700 dark:text-indigo-400"
-          >
-            ✈️ Digitales Flugbuch
-          </h1>
-          <div class="flex items-center gap-4">
-            <span
-              id="user-display"
-              class="text-sm text-gray-500 dark:text-gray-400 hidden md:inline"
-            ></span>
-			<span id="app-version" class="text-xs text-gray-400 dark:text-gray-500"></span>
-            <button
-              onclick="showPasswordChangeModal()"
-              class="text-sm font-medium text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white transition"
-            >
-              Passwort ändern
-            </button>
-            <button
-              id="logout-btn"
-              class="text-sm font-medium text-indigo-600 hover:text-indigo-800 p-2 rounded-lg bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 transition"
-            >
-              Logout
-            </button>
-            <button
-              id="theme-toggle"
-              type="button"
-              class="text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-sm p-2.5"
-            >
-              <svg
-                id="theme-toggle-dark-icon"
-                class="hidden w-5 h-5"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"
-                ></path>
-              </svg>
-              <svg
-                id="theme-toggle-light-icon"
-                class="hidden w-5 h-5"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm-.707 8.486a1 1 0 011.414 0l.707.707a1 1 0 11-1.414 1.414l-.707-.707a1 1 0 010-1.414zM4 11a1 1 0 100-2H3a1 1 0 100 2h1z"
-                  fill-rule="evenodd"
-                  clip-rule="evenodd"
-                ></path>
-              </svg>
-            </button>
-          </div>
+    <h1 class="text-2xl md:text-4xl font-extrabold text-indigo-700 dark:text-indigo-400">
+        ✈️ Digitales Flugbuch
+    </h1>
+    <div class="relative">
+        <button id="burger-menu-btn" class="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+        </button>
+        <div id="burger-menu" class="hidden absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-md shadow-lg z-50 border dark:border-gray-700">
+            <div class="md:hidden border-b dark:border-gray-700">
+                <a href="#" onclick="event.preventDefault(); showTab('neue-fluege')" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Neuer Flug</a>
+                <a href="#" onclick="event.preventDefault(); showTab('fluege')" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Flüge</a>
+                <a href="#" onclick="event.preventDefault(); showTab('stats')" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Statistiken</a>
+                <a href="#" onclick="event.preventDefault(); showTab('charts')" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Charts</a>
+                <a href="#" onclick="event.preventDefault(); showTab('logbook')" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Logbuch</a>
+            </div>
+            <div class="py-1">
+                <a href="#" onclick="event.preventDefault(); showPasswordChangeModal()" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Passwort ändern</a>
+                <a href="#" id="menu-theme-toggle" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Modus wechseln</a>
+                <a href="#" id="menu-logout-btn" class="block px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700">Logout</a>
+            </div>
+            <div class="border-t dark:border-gray-700 px-4 py-2">
+                <span id="user-display" class="block text-xs text-gray-500"></span>
+                <span id="app-version" class="block text-xs text-gray-400"></span>
+            </div>
         </div>
+    </div>
+</div>
 
         <h2
           class="text-xl md:text-2xl font-bold text-gray-800 dark:text-white mb-4 border-b pb-2 border-gray-200 dark:border-gray-700"
@@ -393,7 +367,7 @@
         </div>
         <div>
           <div class="border-b border-gray-200 dark:border-gray-700">
-            <nav class="flex flex-wrap -mb-px gap-x-6 gap-y-2" aria-label="Tabs">
+            <nav class="hidden md:flex -mb-px space-x-6" aria-label="Tabs">
               <button
                 onclick="showTab('neue-fluege')"
                 id="tab-btn-neue-fluege"
@@ -1306,94 +1280,84 @@
       // AUTH & APP INITIALIZATION FUNCTIONS
       // =================================================================
 
-      async function initializeApp() {
-        if (isAppInitialized) return; // Wenn die App schon läuft, sofort abbrechen.
-        isAppInitialized = true; // Den Schalter umlegen.
-        document.getElementById("auth-container").classList.add("hidden");
-        document.getElementById("app-container").classList.remove("hidden");
-        document
-          .getElementById("password-change-form")
-          .addEventListener("submit", changePassword);
+async function initializeApp() {
+            if (isAppInitialized) return;
+            isAppInitialized = true;
 
-        try {
-          const {
-            data: { user },
-          } = await supabaseClient.auth.getUser();
-          if (user) {
-            const userDisplay = document.getElementById("user-display");
-            if (userDisplay) {
-              userDisplay.textContent = user.email;
+            document.getElementById('auth-container').classList.add('hidden');
+            document.getElementById('app-container').classList.remove('hidden');
+
+            try {
+                const { data: { user } } = await supabaseClient.auth.getUser();
+                if (user) {
+                    const userDisplay = document.getElementById('user-display');
+                    if (userDisplay) { userDisplay.textContent = user.email; }
+                }
+            } catch (e) {
+                console.error("Fehler beim Abrufen des Benutzers:", e);
             }
-          }
-        } catch (e) {
-          console.error("Fehler beim Abrufen des Benutzers:", e);
-        }
-
-        await migrateAndLoadAirports();
-        if (localStorage.getItem("supabase_migrated") !== "true")
-          await migrateDataToSupabase();
-        if (localStorage.getItem("flights_claimed") !== "true")
-          await claimExistingFlights();
-
-        if (!map) {
-          map = L.map("flight-map-container").setView([20, 0], 2);
-          L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-            attribution:
-              '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-          }).addTo(map);
-          routeLayer = L.layerGroup().addTo(map);
-        }
-
-        document.getElementById("logout-btn").addEventListener("click", logout);
-        document
-          .getElementById("theme-toggle")
-          .addEventListener("click", toggleDarkMode);
-        document
-          .getElementById("chart-view-year")
-          .addEventListener("click", () => setChartTimeframe("year"));
-        document
-          .getElementById("chart-view-month")
-          .addEventListener("click", () => setChartTimeframe("month"));
-
-        document
-          .getElementById("logbook-view-aircraft")
-          .addEventListener("click", () => renderLogbookView("aircraftType"));
-        document
-          .getElementById("logbook-view-airline")
-          .addEventListener("click", () => renderLogbookView("airline"));
-        document
-          .getElementById("logbook-view-airport")
-          .addEventListener("click", () => renderLogbookView("airport"));
-
-        document
-          .getElementById("flightPhoto")
-          .addEventListener("change", (event) => {
-            const files = event.target.files;
-            const previewText = document.getElementById("photo-preview-text");
-            const previewContainer = document.getElementById(
-              "photo-preview-container"
-            );
-            if (files && files.length > 0) {
-              previewText.textContent = `${files.length} Foto(s) ausgewählt.`;
-              previewContainer.classList.remove("hidden");
-            } else {
-              previewContainer.classList.add("hidden");
+            
+            await migrateAndLoadAirports();
+            
+            if (!map) {
+                map = L.map('flight-map-container').setView([20, 0], 2);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                }).addTo(map);
+                routeLayer = L.layerGroup().addTo(map);
             }
-          });
-        document.getElementById("departure").addEventListener("input", () => {
-          updateAutocompleteList("departure", "departure-list");
-          updateFlightDetails();
-        });
-        document.getElementById("arrival").addEventListener("input", () => {
-          updateAutocompleteList("arrival", "arrival-list");
-          updateFlightDetails();
-        });
+            
+            // --- KORRIGIERTER BEREICH: Event-Listener ---
 
-        updateThemeIcon();
-        showTab("neue-fluege");
-        renderFlights();
-		displayAppVersion(); // Aufruf App-Version
-      }
+            // Listener für das neue Burger-Menü
+            document.getElementById('burger-menu-btn').addEventListener('click', toggleBurgerMenu);
+            document.getElementById('menu-logout-btn').addEventListener('click', logout);
+            document.getElementById('menu-theme-toggle').addEventListener('click', toggleDarkMode);
+
+            // Listener, um das Menü zu schließen, wenn man daneben klickt
+            document.addEventListener('click', function(event) {
+                const menu = document.getElementById('burger-menu');
+                const menuBtn = document.getElementById('burger-menu-btn');
+                // Prüfe, ob das Menü offen ist UND der Klick außerhalb des Menüs und des Buttons war
+                if (!menu.classList.contains('hidden') && !menu.contains(event.target) && !menuBtn.contains(event.target)) {
+                    toggleBurgerMenu();
+                }
+            });
+
+            // Alle anderen, weiterhin gültigen Listener
+            document.getElementById('chart-view-year').addEventListener('click', () => setChartTimeframe('year'));
+            document.getElementById('chart-view-month').addEventListener('click', () => setChartTimeframe('month'));
+            document.getElementById('password-change-form').addEventListener('submit', changePassword);
+            document.getElementById('flightPhoto').addEventListener('change', (event) => {
+                const files = event.target.files;
+                const previewText = document.getElementById('photo-preview-text');
+                const previewContainer = document.getElementById('photo-preview-container');
+                if (files && files.length > 0) {
+                    previewText.textContent = `${files.length} Foto(s) ausgewählt.`;
+                    previewContainer.classList.remove('hidden');
+                } else {
+                    previewContainer.classList.add('hidden');
+                }
+            });
+            document.getElementById("departure").addEventListener("input", () => {
+                updateAutocompleteList("departure", "departure-list");
+                updateFlightDetails();
+            });
+            document.getElementById("arrival").addEventListener("input", () => {
+                updateAutocompleteList("arrival", "arrival-list");
+                updateFlightDetails();
+            });
+            document.getElementById('logbook-view-aircraft').addEventListener('click', () => renderLogbookView('aircraftType'));
+            document.getElementById('logbook-view-airline').addEventListener('click', () => renderLogbookView('airline'));
+            document.getElementById('logbook-view-airport').addEventListener('click', () => renderLogbookView('airport'));
+
+            // --- ENDE KORRIGIERTER BEREICH ---
+
+            // Initiales Rendern der App
+            showTab('neue-fluege');
+            renderFlights();
+            displayAppVersion();
+        }
 
       function showAuth() {
         document.getElementById("auth-container").classList.remove("hidden");
@@ -1658,24 +1622,14 @@
       // CORE APP & HELPER FUNCTIONS
       // =================================================================
 
-      function updateThemeIcon() {
-        const isDarkMode = document.documentElement.classList.contains("dark");
-        document
-          .getElementById("theme-toggle-dark-icon")
-          .classList.toggle("hidden", !isDarkMode);
-        document
-          .getElementById("theme-toggle-light-icon")
-          .classList.toggle("hidden", isDarkMode);
-      }
-
       function toggleDarkMode() {
-        document.documentElement.classList.toggle("dark");
-        localStorage.setItem(
-          "theme",
-          document.documentElement.classList.contains("dark") ? "dark" : "light"
-        );
-        updateThemeIcon();
-      }
+            document.documentElement.classList.toggle("dark");
+            if (document.documentElement.classList.contains("dark")) {
+                localStorage.setItem("theme", "dark");
+            } else {
+                localStorage.setItem("theme", "light");
+            }
+        }
 
       function showTab(tabName) {
         // Alle Inhalte verstecken
@@ -1850,6 +1804,14 @@
             } catch (error) {
                 console.error("Fehler beim Laden der Versionsnummer:", error);
             }
+        }
+
+		/**
+         * Schaltet die Sichtbarkeit des Burger-Menüs um.
+         */
+        function toggleBurgerMenu() {
+            const menu = document.getElementById('burger-menu');
+            menu.classList.toggle('hidden');
         }
 
       var calculateStatistics = function (flights) {
