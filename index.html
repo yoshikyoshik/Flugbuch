@@ -330,6 +330,7 @@
               id="user-display"
               class="text-sm text-gray-500 dark:text-gray-400 hidden md:inline"
             ></span>
+			<span id="app-version" class="text-xs text-gray-400 dark:text-gray-500"></span>
             <button
               onclick="showPasswordChangeModal()"
               class="text-sm font-medium text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white transition"
@@ -1391,6 +1392,7 @@
         updateThemeIcon();
         showTab("neue-fluege");
         renderFlights();
+		displayAppVersion(); // Aufruf App-Version
       }
 
       function showAuth() {
@@ -1833,6 +1835,22 @@
       // =================================================================
       // Hier sind alle weiteren, vollständigen Funktionen
       // =================================================================
+
+		/**
+         * Lädt die Version aus der package.json und zeigt sie in der App an.
+         */
+        async function displayAppVersion() {
+            try {
+                const response = await fetch('package.json');
+                const data = await response.json();
+                const versionElement = document.getElementById('app-version');
+                if (versionElement && data.version) {
+                    versionElement.textContent = `v${data.version}`;
+                }
+            } catch (error) {
+                console.error("Fehler beim Laden der Versionsnummer:", error);
+            }
+        }
 
       var calculateStatistics = function (flights) {
         var stats = {
