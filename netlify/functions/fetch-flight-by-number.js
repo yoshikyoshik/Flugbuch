@@ -10,7 +10,7 @@ exports.handler = async function(event, context) {
         return { statusCode: 400, body: JSON.stringify({ message: 'Flugnummer und Datum sind erforderlich.' }) };
     }
 
-    const API_ENDPOINT = `https://api.api-ninjas.com/v1/flights?flight_iata=${flight_iata}&date=${date}`;
+    const API_ENDPOINT = `https://api.api-ninjas.com/v1/flighttracker?flight_iata=${flight_iata}&date=${date}`;
 
     try {
         const response = await fetch(API_ENDPOINT, { headers: { 'X-Api-Key': API_KEY } });
