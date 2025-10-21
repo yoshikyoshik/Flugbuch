@@ -2556,15 +2556,10 @@
          */
         async function autofillFlightData() {
             const flightNumber = document.getElementById('auto-flight-number').value.replace(/\s/g, '').trim().toUpperCase();
-            // Das Datum wird für die AviationStack-API nicht benötigt, aber wir behalten es.
-            let flightDate = document.getElementById('auto-flight-date').value;
-            if (!flightDate) {
-                flightDate = new Date().toISOString().slice(0, 10);
-                document.getElementById('auto-flight-date').value = flightDate;
-            }
+            const flightDate = document.getElementById('auto-flight-date').value;
 
-            if (!flightNumber) {
-                showMessage('Fehler', 'Bitte eine Flugnummer eingeben.', 'error');
+            if (!flightNumber || !flightDate) {
+                showMessage('Fehler', 'Bitte Flugnummer und Datum eingeben.', 'error');
                 return;
             }
 
@@ -2573,17 +2568,15 @@
             btn.disabled = true;
 
             try {
-                // Der Aufruf der Netlify-Funktion bleibt derselbe
-                const response = await fetch(`https://aesthetic-strudel-ecfe50.netlify.app/.netlify/functions/fetch-flight-by-number?flight_iata=${flightNumber}`);
+                // NEU: Wir übergeben jetzt auch den 'date'-Parameter an die Netlify Function
+                const response = await fetch(`https://aesthetic-strudel-ecfe50.netlify.app/.netlify/functions/fetch-flight-by-number?flight_iata=${flightNumber}&date=${flightDate}`);
                 const result = await response.json();
 
-                // NEUE ANTWORT-STRUKTUR: "result.data" ist die Liste
                 if (response.ok && result.data && result.data.length > 0) {
-                    const flight = result.data[0]; 
+                    const flight = result.data[0];
                     
                     document.getElementById('departure').value = flight.departure.iata;
                     document.getElementById('arrival').value = flight.arrival.iata;
-                    // AviationStack liefert oft keine Flugzeug-Details im Free-Tier
                     document.getElementById('aircraftType').value = ''; 
                     document.getElementById('flightNumber').value = flight.flight.iata;
                     document.getElementById('flightDate').value = flightDate;
@@ -2591,7 +2584,7 @@
                     updateFlightDetails();
                     showMessage('Erfolg!', 'Flugdaten wurden erfolgreich geladen.', 'success');
                 } else {
-                    showMessage('Fehler', 'Keine Flugdaten für diese Flugnummer gefunden.', 'error');
+                    showMessage('Fehler', 'Keine Flugdaten für diese Kombination gefunden.', 'error');
                 }
             } catch (error) {
                 console.error("Fehler beim Abrufen der Flugdaten:", error);

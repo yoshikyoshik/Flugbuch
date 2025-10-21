@@ -1,20 +1,18 @@
 // netlify/functions/fetch-flight-by-number.js
 exports.handler = async function(event, context) {
-    // NEU: Der richtige API-Schlüssel wird gelesen
     const API_KEY = process.env.AVIATIONSTACK_API_KEY; 
     if (!API_KEY) {
         return { statusCode: 500, body: JSON.stringify({ message: 'AviationStack API-Schlüssel ist nicht konfiguriert.' }) };
     }
 
-    // Der Parameter von der App bleibt 'flight_iata'
+    // NEU: Wir holen uns jetzt auch das Datum aus der Anfrage
     const { flight_iata, date } = event.queryStringParameters;
-    if (!flight_iata) {
-        return { statusCode: 400, body: JSON.stringify({ message: 'Flugnummer ist erforderlich.' }) };
+    if (!flight_iata || !date) {
+        return { statusCode: 400, body: JSON.stringify({ message: 'Flugnummer und Datum sind erforderlich.' }) };
     }
 
-    // NEU: Der korrekte Endpunkt von AviationStack
-    // Hinweis: Der kostenlose Plan erfordert HTTP, nicht HTTPS. Das ist okay, da der Aufruf sicher vom Netlify-Server aus erfolgt.
-    const API_ENDPOINT = `http://api.aviationstack.com/v1/flights?access_key=${API_KEY}&flight_iata=${flight_iata}`;
+    // NEU: Der korrekte Endpunkt mit dem flight_date Parameter
+    const API_ENDPOINT = `http://api.aviationstack.com/v1/flights?access_key=${API_KEY}&flight_iata=${flight_iata}&flight_date=${date}`;
 
     try {
         const response = await fetch(API_ENDPOINT);
