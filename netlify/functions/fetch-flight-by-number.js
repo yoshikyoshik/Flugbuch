@@ -1,24 +1,29 @@
 // netlify/functions/fetch-flight-by-number.js
 exports.handler = async function(event, context) {
-    const API_KEY = process.env.API_NINJAS_KEY;
+    // NEU: Der richtige API-Schlüssel wird gelesen
+    const API_KEY = process.env.AVIATIONSTACK_API_KEY; 
     if (!API_KEY) {
-        return { statusCode: 500, body: JSON.stringify({ message: 'API-Schlüssel ist auf dem Server nicht konfiguriert.' }) };
+        return { statusCode: 500, body: JSON.stringify({ message: 'AviationStack API-Schlüssel ist nicht konfiguriert.' }) };
     }
 
+    // Der Parameter von der App bleibt 'flight_iata'
     const { flight_iata, date } = event.queryStringParameters;
-    if (!flight_iata || !date) {
-        return { statusCode: 400, body: JSON.stringify({ message: 'Flugnummer und Datum sind erforderlich.' }) };
+    if (!flight_iata) {
+        return { statusCode: 400, body: JSON.stringify({ message: 'Flugnummer ist erforderlich.' }) };
     }
 
-    const API_ENDPOINT = `https://api.api-ninjas.com/v1/flighttracker?flight_iata=${flight_iata}&date=${date}`;
+    // NEU: Der korrekte Endpunkt von AviationStack
+    // Hinweis: Der kostenlose Plan erfordert HTTP, nicht HTTPS. Das ist okay, da der Aufruf sicher vom Netlify-Server aus erfolgt.
+    const API_ENDPOINT = `http://api.aviationstack.com/v1/flights?access_key=${API_KEY}&flight_iata=${flight_iata}`;
 
     try {
-        const response = await fetch(API_ENDPOINT, { headers: { 'X-Api-Key': API_KEY } });
+        const response = await fetch(API_ENDPOINT);
         if (!response.ok) {
             const errorBody = await response.text();
             return { statusCode: response.status, body: `Fehler von externer API: ${errorBody}` };
         }
         const data = await response.json();
+        
         return {
             statusCode: 200,
             headers: { "Access-Control-Allow-Origin": "*" },
