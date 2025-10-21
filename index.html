@@ -2555,7 +2555,7 @@
          * Ruft Flugdaten per Flugnummer und Datum ab und füllt das Formular aus.
          */
         async function autofillFlightData() {
-            const flightNumber = document.getElementById('auto-flight-number').value.trim().toUpperCase();
+            const flightNumber = document.getElementById('auto-flight-number').value.replace(/\s/g, '').trim().toUpperCase();
             const flightDate = document.getElementById('auto-flight-date').value;
 
             if (!flightNumber || !flightDate) {
