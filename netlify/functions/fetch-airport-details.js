@@ -1,6 +1,6 @@
 
 // netlify/functions/fetch-airport-details.js
-const fetch = require('node-fetch');
+// const fetch = require('node-fetch');
 
 exports.handler = async function(event, context) {
     const API_KEY = process.env.GOFLIGHTLABS_API_KEY; 
@@ -41,7 +41,7 @@ exports.handler = async function(event, context) {
 
 /**
 // netlify/functions/fetch-airport-details.js
-const fetch = require('node-fetch'); // Behalte node-fetch bei, da es für die Stabilität sorgt
+const fetch = require('node-fetch');
 
 exports.handler = async function(event, context) {
     const API_KEY = process.env.GOFLIGHTLABS_API_KEY; 
@@ -49,13 +49,14 @@ exports.handler = async function(event, context) {
         return { statusCode: 500, body: JSON.stringify({ message: 'API-Schlüssel ist nicht konfiguriert.' }) };
     }
 
-    // KORREKTUR: Der Parameter heißt 'code', nicht 'iata_code'
+    // KORREKTUR: Wir erwarten den Parameter 'code', den das Frontend sendet.
     const { code } = event.queryStringParameters;
     if (!code) {
-        return { statusCode: 400, body: JSON.stringify({ message: 'IATA-Code (code) ist erforderlich.' }) };
+        return { statusCode: 400, body: JSON.stringify({ message: 'Parameter "code" ist erforderlich.' }) };
     }
 
-    // KORREKTUR: Verwende 'www.goflightlabs.com' und den '/airports'-Endpunkt
+    // KORREKTUR: Verwende 'www.goflightlabs.com', den '/airports'-Endpunkt
+    // und sende den Parameter, den die API erwartet (basierend auf der Doku ist 'iata_code' der richtige Filtername)
     const apiEndpoint = `https://www.goflightlabs.com/airports?access_key=${API_KEY}&iata_code=${code}`;
     
     try {
