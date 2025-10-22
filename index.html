@@ -2571,20 +2571,23 @@
                 const response = await fetch(`https://aesthetic-strudel-ecfe50.netlify.app/.netlify/functions/fetch-flight-by-number?flight_iata=${flightNumber}&date=${flightDate}`);
                 
                 if (!response.ok) {
-                    // NEU: Fängt den 404 oder 400 Fehler ab, den der Server jetzt weiterleitet
                     const errorText = await response.text();
                     throw new Error(errorText);
                 }
 
                 const result = await response.json();
 
-                if (result.data && result.data.length > 0) {
-                    const flight = result.data[0]; 
+                // NEUE LOGIK: Prüft beide möglichen Antwort-Strukturen
+                const flightData = result.data || result.response;
+
+                if (flightData && flightData.length > 0) {
+                    const flight = flightData[0]; 
                     
-                    document.getElementById('departure').value = flight.departure.iata_code;
-                    document.getElementById('arrival').value = flight.arrival.iata_code;
-                    document.getElementById('aircraftType').value = flight.aircraft.icao_code || '';
-                    document.getElementById('flightNumber').value = flight.flight.iata_number;
+                    // Verwendet die korrekten Feldnamen für BEIDE Endpunkte
+                    document.getElementById('departure').value = flight.departure?.iata_code || flight.dep_iata;
+                    document.getElementById('arrival').value = flight.arrival?.iata_code || flight.arr_iata;
+                    document.getElementById('aircraftType').value = flight.aircraft?.icao_code || flight.aircraft_icao || '';
+                    document.getElementById('flightNumber').value = flight.flight?.iata_number || flight.flight_iata;
                     document.getElementById('flightDate').value = flightDate; 
 
                     updateFlightDetails();
@@ -2594,7 +2597,6 @@
                 }
             } catch (error) {
                 console.error("Fehler beim Abrufen der Flugdaten:", error);
-                // Zeigt jetzt die spezifische Fehlermeldung von Netlify/GoFlightLabs an
                 showMessage('Fehler', `Suche fehlgeschlagen: ${error.message}`, 'error');
             } finally {
                 btn.textContent = 'Daten abrufen';

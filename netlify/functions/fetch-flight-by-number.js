@@ -15,13 +15,13 @@ exports.handler = async function(event, context) {
     const today = new Date().toISOString().slice(0, 10);
     let apiEndpoint = '';
 
-    // KORRIGIERTE DOMAIN: app.goflightlabs.com
+    // KORREKTE LOGIK FÜR STARTER-PLAN:
     if (date < today) {
         // Datum liegt in der Vergangenheit -> /history/flights
         apiEndpoint = `https://app.goflightlabs.com/history/flights?access_key=${API_KEY}&flight_iata=${flight_iata}&date=${date}`;
     } else {
-        // Datum ist heute oder in der Zukunft -> /futures/flights
-        apiEndpoint = `https://app.goflightlabs.com/futures/flights?access_key=${API_KEY}&flight_iata=${flight_iata}&date=${date}`;
+        // Datum ist heute oder in der Zukunft -> /schedules
+        apiEndpoint = `https://app.goflightlabs.com/schedules?access_key=${API_KEY}&flight_iata=${flight_iata}&date=${date}`;
     }
     
     try {
