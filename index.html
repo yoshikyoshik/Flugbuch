@@ -2556,10 +2556,11 @@
          */
         async function autofillFlightData() {
             const flightNumber = document.getElementById('auto-flight-number').value.replace(/\s/g, '').trim().toUpperCase();
-            const flightDate = document.getElementById('auto-flight-date').value;
+            const flightDate = document.getElementById('auto-flight-date').value; // Wir brauchen das Datum jetzt immer
 
+            // NEU: Prüfe, ob BEIDE Felder ausgefüllt sind
             if (!flightNumber || !flightDate) {
-                showMessage('Fehler', 'Bitte Flugnummer und Datum eingeben.', 'error');
+                showMessage('Fehler', 'Bitte Flugnummer UND Datum eingeben.', 'error');
                 return;
             }
 
@@ -2568,17 +2569,17 @@
             btn.disabled = true;
 
             try {
-                // NEU: Wir übergeben jetzt auch den 'date'-Parameter an die Netlify Function
+                // NEU: Wir übergeben das flightDate in der URL an unsere Funktion
                 const response = await fetch(`https://aesthetic-strudel-ecfe50.netlify.app/.netlify/functions/fetch-flight-by-number?flight_iata=${flightNumber}&date=${flightDate}`);
                 const result = await response.json();
 
                 if (response.ok && result.data && result.data.length > 0) {
-                    const flight = result.data[0];
+                    const flight = result.data[0]; 
                     
-                    document.getElementById('departure').value = flight.departure.iata;
-                    document.getElementById('arrival').value = flight.arrival.iata;
-                    document.getElementById('aircraftType').value = ''; 
-                    document.getElementById('flightNumber').value = flight.flight.iata;
+                    document.getElementById('departure').value = flight.departure.iata_code;
+                    document.getElementById('arrival').value = flight.arrival.iata_code;
+                    document.getElementById('aircraftType').value = flight.aircraft.icao_code || '';
+                    document.getElementById('flightNumber').value = flight.flight.iata_number;
                     document.getElementById('flightDate').value = flightDate;
 
                     updateFlightDetails();
