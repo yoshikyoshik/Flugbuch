@@ -23,7 +23,7 @@ exports.handler = async function(event, context) {
     console.log(`Parameter 'code' erfolgreich empfangen: ${code}`);
 
     // Wir verwenden die Domain 'www.' und den Parameter 'iata_code' für die API
-    const apiEndpoint = `https://www.goflightlabs.com/airports?access_key=${API_KEY}&iata_code=${code}`;
+    const apiEndpoint = `https://www.goflightlabs.com/airports-by-filter?access_key=${API_KEY}&iata_code=${code}`;
     
     console.log(`Rufe externe API auf: ${apiEndpoint}`);
 
