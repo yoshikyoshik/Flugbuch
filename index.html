@@ -1215,6 +1215,20 @@
         </form>
       </div>
     </div>
+	
+	<div id="info-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center p-4 z-40">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-full max-w-lg">
+            <div class="flex justify-between items-center border-b pb-3 mb-4 dark:border-gray-700">
+                <h3 id="info-modal-title" class="text-xl font-bold text-gray-800 dark:text-white">Modal-Titel</h3>
+                <button onclick="closeInfoModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div id="info-modal-content" class="text-sm text-gray-700 dark:text-gray-300">
+                <p>Lade Details...</p>
+            </div>
+        </div>
+    </div>
 
     <div id="toast-container" class="fixed top-5 right-5 z-50 space-y-2"></div>
 
@@ -1617,6 +1631,59 @@
       // =================================================================
       // AUTH & APP INITIALIZATION FUNCTIONS
       // =================================================================
+
+		/**
+         * Öffnet das universelle Info-Modal.
+         */
+        function openInfoModal() {
+            document.getElementById('info-modal').classList.remove('hidden');
+            document.getElementById('info-modal').classList.add('flex');
+        }
+
+        /**
+         * Schließt das universelle Info-Modal und setzt den Inhalt zurück.
+         */
+        function closeInfoModal() {
+            document.getElementById('info-modal').classList.add('hidden');
+            document.getElementById('info-modal').classList.remove('flex');
+            document.getElementById('info-modal-title').textContent = 'Lade...';
+            document.getElementById('info-modal-content').innerHTML = '<p>Lade Details...</p>';
+        }
+
+        /**
+         * Ruft Details für einen Flughafen ab und zeigt sie im Modal an.
+         * @param {string} iataCode - Der IATA-Code des Flughafens (z.B. "DRS").
+         */
+        async function showAirportDetails(iataCode) {
+            openInfoModal();
+            document.getElementById('info-modal-title').textContent = `Details für ${iataCode}`;
+
+            try {
+                const response = await fetch(`https://aesthetic-strudel-ecfe50.netlify.app/.netlify/functions/fetch-airport-details?iata_code=${iataCode}`);
+                if (!response.ok) {
+                    throw new Error('Netzwerk-Antwort war nicht OK');
+                }
+                const result = await response.json();
+                
+                if (result.data && result.data.length > 0) {
+                    const airport = result.data[0];
+                    // Formatiere die Details als HTML
+                    const content = `
+                        <p><strong>Name:</strong> ${airport.name}</p>
+                        <p><strong>Standort:</strong> ${airport.city}, ${airport.country_code}</p>
+                        <p><strong>Zeitzone:</strong> ${airport.timezone}</p>
+                        <p><strong>Koordinaten:</strong> Lat: ${airport.lat}, Lng: ${airport.lng}</p>
+                        <p class="mt-2"><a href="${airport.website}" target="_blank" class="text-indigo-500 hover:underline">Website besuchen</a></p>
+                    `;
+                    document.getElementById('info-modal-content').innerHTML = content;
+                } else {
+                    document.getElementById('info-modal-content').innerHTML = '<p>Keine Details für diesen Flughafen gefunden.</p>';
+                }
+            } catch (error) {
+                console.error("Fehler beim Abrufen der Flughafen-Details:", error);
+                document.getElementById('info-modal-content').innerHTML = '<p>Details konnten nicht geladen werden.</p>';
+            }
+        }
 
       async function initializeApp() {
         if (isAppInitialized) return;
@@ -2757,7 +2824,14 @@
           const summaryElement = document.createElement("summary");
           summaryElement.className =
             "font-semibold text-lg cursor-pointer text-indigo-700 dark:text-indigo-400";
-          summaryElement.innerHTML = `
+          
+		  // NEUE LOGIK: Mache den Titel klickbar, wenn es die Flughafen-Ansicht ist
+                let titleHtml = key;
+                if (isAirportView) {
+                    titleHtml = `<a href="#" onclick="event.preventDefault(); showAirportDetails('${key}')" class="hover:underline">${key}</a>`;
+                }
+		  
+		  summaryElement.innerHTML = `
                     ${key} 
                     <span class="text-sm font-normal text-gray-500 dark:text-gray-400 ml-2">
                         (${
