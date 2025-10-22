@@ -2766,120 +2766,95 @@
        * @param {'aircraftType' | 'airline' | 'airport'} groupBy - Das Kriterium für die Gruppierung.
        */
       async function renderLogbookView(groupBy) {
-        const contentContainer = document.getElementById("logbook-content");
-        contentContainer.innerHTML =
-          '<p class="text-gray-500">Lade Logbuch-Daten...</p>';
+            const contentContainer = document.getElementById('logbook-content');
+            contentContainer.innerHTML = '<p class="text-gray-500">Lade Logbuch-Daten...</p>';
+            
+            const allFlights = await getFlights();
+            const grouped = {};
+            
+            // HIER WIRD DIE VARIABLE KORREKT DEFINIERT
+            let isAirportView = (groupBy === 'airport'); 
 
-        const allFlights = await getFlights();
-        const grouped = {};
+            allFlights.forEach(flight => {
+                let keys = [];
+                if (groupBy === 'aircraftType') {
+                    const type = (flight.aircraftType || 'Unbekannt').trim().toUpperCase();
+                    keys.push(type === '' ? 'Unbekannt' : type);
+                } else if (groupBy === 'airline') {
+                    const match = flight.flightNumber ? flight.flightNumber.match(/^[A-Z0-9]{2,3}/) : null;
+                    const airline = match ? match[0].toUpperCase() : 'Unbekannt';
+                    keys.push(airline);
+                } else if (isAirportView) { // Wir können die Variable hier schon nutzen
+                    if (flight.departure) keys.push(flight.departure.toUpperCase());
+                    if (flight.arrival) keys.push(flight.arrival.toUpperCase());
+                }
+                
+                keys.forEach(key => {
+                    if(key === '') key = 'Unbekannt'; // Fängt leere Keys ab
+                    if (!grouped[key]) { grouped[key] = { flights: [], totalDistance: 0, count: 0 }; }
+                    grouped[key].flights.push(flight);
+                    grouped[key].totalDistance += flight.distance;
+                    grouped[key].count++;
+                });
+            });
 
-        // 1. Flüge nach dem gewählten Kriterium gruppieren
-        allFlights.forEach((flight) => {
-          let keys = [];
+            contentContainer.innerHTML = '';
+            const sortedKeys = Object.keys(grouped).sort();
 
-          if (groupBy === "aircraftType") {
-            const type = (flight.aircraftType || "Unbekannt")
-              .trim()
-              .toUpperCase();
-            keys.push(type === "" ? "Unbekannt" : type);
-          } else if (groupBy === "airline") {
-            // Extrahiert den Airline-Code aus der Flugnummer (z.B. "LH" aus "LH404")
-            const match = flight.flightNumber
-              ? flight.flightNumber.match(/^[A-Z0-9]{2,3}/)
-              : null;
-            const airline = match ? match[0].toUpperCase() : "Unbekannt";
-            keys.push(airline);
-          } else if (groupBy === "airport") {
-            // Fügt den Flug sowohl zur Start- als auch zur Zielflughafen-Gruppe hinzu
-            if (flight.departure) keys.push(flight.departure.toUpperCase());
-            if (flight.arrival) keys.push(flight.arrival.toUpperCase());
-          }
-
-          keys.forEach((key) => {
-            if (!grouped[key]) {
-              grouped[key] = { flights: [], totalDistance: 0, count: 0 };
+            if (sortedKeys.length === 0) {
+                contentContainer.innerHTML = '<p class="text-gray-500">Keine Daten für diese Ansicht verfügbar.</p>';
+                return;
             }
-            grouped[key].flights.push(flight);
-            grouped[key].totalDistance += flight.distance;
-            grouped[key].count++;
-          });
-        });
 
-        // 2. HTML generieren und anzeigen
-        contentContainer.innerHTML = "";
-        const sortedKeys = Object.keys(grouped).sort();
-
-        if (sortedKeys.length === 0) {
-          contentContainer.innerHTML =
-            '<p class="text-gray-500">Keine Daten für diese Ansicht verfügbar.</p>';
-          return;
-        }
-
-        sortedKeys.forEach((key) => {
-          const group = grouped[key];
-          const detailsElement = document.createElement("details");
-          detailsElement.className =
-            "bg-gray-50 dark:bg-gray-700 p-4 rounded-lg";
-
-          const summaryElement = document.createElement("summary");
-          summaryElement.className =
-            "font-semibold text-lg cursor-pointer text-indigo-700 dark:text-indigo-400";
-          
-		  // NEUE LOGIK: Mache den Titel klickbar, wenn es die Flughafen-Ansicht ist
+            sortedKeys.forEach(key => {
+                const group = grouped[key];
+                const detailsElement = document.createElement('details');
+                detailsElement.className = 'bg-gray-50 dark:bg-gray-700 p-4 rounded-lg';
+                
+                const summaryElement = document.createElement('summary');
+                summaryElement.className = 'font-semibold text-lg cursor-pointer text-indigo-700 dark:text-indigo-400';
+                
                 let titleHtml = key;
-                if (isAirportView) {
+                // HIER WIRD DIE VARIABLE VERWENDET
+                if (isAirportView && key !== 'Unbekannt') { 
                     titleHtml = `<a href="#" onclick="event.preventDefault(); showAirportDetails('${key}')" class="hover:underline">${key}</a>`;
                 }
-		  
-		  summaryElement.innerHTML = `
-                    ${key} 
+
+                summaryElement.innerHTML = `
+                    ${titleHtml} 
                     <span class="text-sm font-normal text-gray-500 dark:text-gray-400 ml-2">
-                        (${
-                          group.count
-                        } Flüge / ${group.totalDistance.toLocaleString(
-            "de-DE"
-          )} km)
+                        (${group.count} Flüge / ${group.totalDistance.toLocaleString('de-DE')} km)
                     </span>
                 `;
-
-          const flightListDiv = document.createElement("div");
-          flightListDiv.className =
-            "mt-4 space-y-2 border-t border-gray-200 dark:border-gray-600 pt-4";
-
-          group.flights
-            .sort((a, b) => new Date(a.date) - new Date(b.date))
-            .forEach((flight) => {
-              flightListDiv.innerHTML += `
+                
+                const flightListDiv = document.createElement('div');
+                flightListDiv.className = 'mt-4 space-y-2 border-t border-gray-200 dark:border-gray-600 pt-4';
+                group.flights.sort((a, b) => new Date(a.date) - new Date(b.date)).forEach(flight => {
+                    flightListDiv.innerHTML += `
                         <div class="text-sm text-gray-700 dark:text-gray-300">
                             <span class="font-semibold">${flight.date}:</span> 
                             ${flight.departure} → ${flight.arrival} 
-                            <span class="text-xs text-gray-500">(${flight.distance.toLocaleString(
-                              "de-DE"
-                            )} km)</span>
+                            <span class="text-xs text-gray-500">(${flight.distance.toLocaleString('de-DE')} km)</span>
                         </div>
                     `;
+                });
+                
+                detailsElement.appendChild(summaryElement);
+                detailsElement.appendChild(flightListDiv);
+                contentContainer.appendChild(detailsElement);
             });
 
-          detailsElement.appendChild(summaryElement);
-          detailsElement.appendChild(flightListDiv);
-          contentContainer.appendChild(detailsElement);
-        });
-
-        // 3. UI für die Buttons aktualisieren (KORRIGIERTE LOGIK)
-        document
-          .querySelectorAll(".logbook-view-btn")
-          .forEach((btn) => btn.classList.remove("active"));
-        let buttonIdFragment = groupBy;
-        if (groupBy === "aircraftType") {
-          buttonIdFragment = "aircraft"; // Spezifische Anpassung für den Button
+            // UI für die Buttons aktualisieren
+            document.querySelectorAll('.logbook-view-btn').forEach(btn => btn.classList.remove('active'));
+            let buttonIdFragment = groupBy;
+            if (groupBy === 'aircraftType') {
+                buttonIdFragment = 'aircraft';
+            }
+            const activeButton = document.getElementById(`logbook-view-${buttonIdFragment}`);
+            if (activeButton) {
+                activeButton.classList.add('active');
+            }
         }
-        const activeButton = document.getElementById(
-          `logbook-view-${buttonIdFragment}`
-        );
-        if (activeButton) {
-          activeButton.classList.add("active");
-        }
-      }
 
       /**
        * Setzt den Zeitraum für die Charts und löst eine Aktualisierung aus.
