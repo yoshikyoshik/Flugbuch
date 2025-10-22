@@ -15,8 +15,8 @@ exports.handler = async function(event, context) {
     }
 
     // KORREKTUR: Verwende den von dir gefundenen /flight Endpunkt
-    const API_ENDPOINT = `https://api.goflightlabs.com/v1/flight?access_key=${API_KEY}&flight_number=${flight_number}&date=${date}`;
-	//const API_ENDPOINT = `https://api.goflightlabs.com/flight?access_key=${API_KEY}&flight_number=${flight_number}&date=${date}`;
+    //const API_ENDPOINT = `https://api.goflightlabs.com/v1/flight?access_key=${API_KEY}&flight_number=${flight_number}&date=${date}`;
+	const API_ENDPOINT = `https://www.goflightlabs.com/flight?access_key=${API_KEY}&flight_number=${flight_number}&date=${date}`;
     
     try {
         const response = await fetch(apiEndpoint); 
