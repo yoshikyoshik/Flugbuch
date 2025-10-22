@@ -7,18 +7,18 @@ exports.handler = async function(event, context) {
         return { statusCode: 500, body: JSON.stringify({ message: 'GoFlightLabs API-Schlüssel ist nicht konfiguriert.' }) };
     }
 
-    // KORREKTUR: Verwende 'flight_number' statt 'flight_iata'
+    // Wir verwenden die Parameter, die du in der Doku gefunden hast
     const { flight_number, date } = event.queryStringParameters;
     
     if (!flight_number || !date) {
         return { statusCode: 400, body: JSON.stringify({ message: 'Flugnummer und Datum sind erforderlich.' }) };
     }
 
-    // KORREKTUR: Verwende den von dir gefundenen /flight Endpunkt
-    const API_ENDPOINT = `https://api.goflightlabs.com/v1/flight?access_key=${API_KEY}&flight_number=${flight_number}&date=${date}`;
-	//const API_ENDPOINT = `https://www.goflightlabs.com/flight?access_key=${API_KEY}&flight_number=${flight_number}&date=${date}`;
+    // KORREKTER ENDPUNKT: /v1/flight, wie von dir recherchiert
+    const apiEndpoint = `https://api.goflightlabs.com/v1/flight?access_key=${API_KEY}&flight_number=${flight_number}&date=${date}`;
     
     try {
+        // KORREKTE VARIABLE: apiEndpoint (kleingeschrieben)
         const response = await fetch(apiEndpoint); 
         const responseBody = await response.text(); 
 
