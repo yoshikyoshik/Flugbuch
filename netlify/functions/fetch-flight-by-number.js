@@ -1,6 +1,4 @@
 // netlify/functions/fetch-flight-by-number.js
-
-// NEU: Wir importieren das 'node-fetch'-Werkzeug
 const fetch = require('node-fetch');
 
 exports.handler = async function(event, context) {
@@ -17,14 +15,16 @@ exports.handler = async function(event, context) {
     const today = new Date().toISOString().slice(0, 10);
     let apiEndpoint = '';
 
+    // KORRIGIERTE DOMAIN: app.goflightlabs.com
     if (date < today) {
-        apiEndpoint = `https://api.goflightlabs.com/history/flights?access_key=${API_KEY}&flight_iata=${flight_iata}&date=${date}`;
+        // Datum liegt in der Vergangenheit -> /history/flights
+        apiEndpoint = `https://app.goflightlabs.com/history/flights?access_key=${API_KEY}&flight_iata=${flight_iata}&date=${date}`;
     } else {
-        apiEndpoint = `https://api.goflightlabs.com/futures/flights?access_key=${API_KEY}&flight_iata=${flight_iata}&date=${date}`;
+        // Datum ist heute oder in der Zukunft -> /futures/flights
+        apiEndpoint = `https://app.goflightlabs.com/futures/flights?access_key=${API_KEY}&flight_iata=${flight_iata}&date=${date}`;
     }
-
+    
     try {
-        // Der 'fetch'-Befehl verwendet jetzt die 'node-fetch'-Bibliothek
         const response = await fetch(apiEndpoint); 
         const responseBody = await response.text(); 
 
