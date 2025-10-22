@@ -2821,8 +2821,16 @@
                 let titleHtml = key;
                 // HIER WIRD DIE VARIABLE VERWENDET
                 if (isAirportView && key !== 'Unbekannt') { 
-                    titleHtml = `<a href="#" onclick="event.preventDefault(); showAirportDetails('${key}')" class="hover:underline">${key}</a>`;
-                }
+					// Wir fügen einen Button mit einem Icon hinzu
+					titleHtml = `
+						${key}
+						<button onclick="event.stopPropagation(); showAirportDetails('${key}')" class="ml-2 p-1 rounded-full text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors duration-150" title="Details für ${key} anzeigen">
+							<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z" />
+							</svg>
+						</button>
+					`;
+				}
 
                 summaryElement.innerHTML = `
                     ${titleHtml} 
