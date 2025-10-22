@@ -1654,7 +1654,7 @@
          * Ruft Details für einen Flughafen ab und zeigt sie im Modal an.
          * @param {string} iataCode - Der IATA-Code des Flughafens (z.B. "DRS").
          */
-        aasync function showAirportDetails(iataCode) {
+        async function showAirportDetails(iataCode) {
             openInfoModal();
             document.getElementById('info-modal-title').textContent = `Details für ${iataCode}`;
 
