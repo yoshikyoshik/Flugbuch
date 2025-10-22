@@ -16,12 +16,13 @@ exports.handler = async function(event, context) {
     let apiEndpoint = '';
 
     // KORREKTE LOGIK FÜR STARTER-PLAN:
+    // Die Domain ist 'api.goflightlabs.com' und 'v1' ist Teil des Pfades.
     if (date < today) {
-        // Datum liegt in der Vergangenheit -> /history/flights
-        apiEndpoint = `https://app.goflightlabs.com/history/flights?access_key=${API_KEY}&flight_iata=${flight_iata}&date=${date}`;
+        // Datum liegt in der Vergangenheit -> /v1/historical/flights
+        apiEndpoint = `https://api.goflightlabs.com/v1/historical/flights?access_key=${API_KEY}&flight_iata=${flight_iata}&date=${date}`;
     } else {
-        // Datum ist heute oder in der Zukunft -> /schedules
-        apiEndpoint = `https://app.goflightlabs.com/schedules?access_key=${API_KEY}&flight_iata=${flight_iata}&date=${date}`;
+        // Datum ist heute oder in der Zukunft -> /v1/flights
+        apiEndpoint = `https://api.goflightlabs.com/v1/flights?access_key=${API_KEY}&flight_iata=${flight_iata}&date=${date}`;
     }
     
     try {

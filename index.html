@@ -2578,16 +2578,17 @@
                 const result = await response.json();
 
                 // NEUE LOGIK: Prüft beide möglichen Antwort-Strukturen
-                const flightData = result.data || result.response;
+                // 'result.data' für Standard- und Zukunftsflüge
+                // 'result.response.data' für Vergangenheitsflüge
+                const flightData = result.data || (result.response ? result.response.data : null);
 
                 if (flightData && flightData.length > 0) {
                     const flight = flightData[0]; 
                     
-                    // Verwendet die korrekten Feldnamen für BEIDE Endpunkte
-                    document.getElementById('departure').value = flight.departure?.iata_code || flight.dep_iata;
-                    document.getElementById('arrival').value = flight.arrival?.iata_code || flight.arr_iata;
-                    document.getElementById('aircraftType').value = flight.aircraft?.icao_code || flight.aircraft_icao || '';
-                    document.getElementById('flightNumber').value = flight.flight?.iata_number || flight.flight_iata;
+                    document.getElementById('departure').value = flight.departure.iata_code;
+                    document.getElementById('arrival').value = flight.arrival.iata_code;
+                    document.getElementById('aircraftType').value = flight.aircraft.icao_code || '';
+                    document.getElementById('flightNumber').value = flight.flight.iata_number;
                     document.getElementById('flightDate').value = flightDate; 
 
                     updateFlightDetails();
