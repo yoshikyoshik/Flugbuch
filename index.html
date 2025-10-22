@@ -1709,16 +1709,39 @@
                     const aircraft = result[0]; // Nimm das erste Ergebnis
                     
                     const content = `
-                        <p><strong>Hersteller:</strong> ${aircraft.manufacturer || 'k.A.'}</p>
-                        <p><strong>Modell:</strong> ${aircraft.model || 'k.A.'}</p>
-                        <p><strong>Triebwerkstyp:</strong> ${aircraft.engine_type || 'k.A.'}</p>
-                        <p><strong>Anzahl Triebwerke:</strong> ${aircraft.engines_count || 'k.A.'}</p>
-                        <hr class="my-2 dark:border-gray-700">
-                        <p><strong>Geschwindigkeit (km/h):</strong> ${aircraft.speed_km_h || 'k.A.'}</p>
-                        <p><strong>Reichweite (km):</strong> ${aircraft.range_km || 'k.A.'}</p>
-                        <p><strong>Maximale Flughöhe (ft):</strong> ${aircraft.ceiling_ft || 'k.A.'}</p>
-                        <p><strong>Länge (m):</strong> ${aircraft.length_m || 'k.A.'}</p>
-                        <p><strong>Spannweite (m):</strong> ${aircraft.wingspan_m || 'k.A.'}</p>
+                        <div class="grid grid-cols-2 gap-x-4 gap-y-1">
+                            <p><strong>Hersteller:</strong></p> 
+                            <p>${aircraft.manufacturer || 'k.A.'}</p>
+                            
+                            <p><strong>Modell:</strong></p> 
+                            <p>${aircraft.model || 'k.A.'}</p>
+                            
+                            <p><strong>Triebwerkstyp:</strong></p> 
+                            <p>${aircraft.engine_type || 'k.A.'}</p>
+                            
+                            <p><strong>Anz. Triebwerke:</strong></p> 
+                            <p>${aircraft.engines_count || 'k.A.'}</p>
+                            
+                            <p class="col-span-2 mt-2 pt-2 border-t dark:border-gray-700"></p>
+
+                            <p><strong>Geschw. (km/h):</strong></p> 
+                            <p>${aircraft.speed_km_h ? aircraft.speed_km_h.toLocaleString('de-DE') : 'k.A.'}</p>
+                            
+                            <p><strong>Reichweite (km):</strong></p> 
+                            <p>${aircraft.range_km ? aircraft.range_km.toLocaleString('de-DE') : 'k.A.'}</p>
+                            
+                            <p><strong>Flughöhe (ft):</strong></p> 
+                            <p>${aircraft.ceiling_ft ? aircraft.ceiling_ft.toLocaleString('de-DE') : 'k.A.'}</p>
+                            
+                            <p><strong>Länge (m):</strong></p> 
+                            <p>${aircraft.length_m || 'k.A.'}</p>
+                            
+                            <p><strong>Spannweite (m):</strong></p> 
+                            <p>${aircraft.wingspan_m || 'k.A.'}</p>
+                            
+                            <p><strong>Max. Abfluggewicht:</strong></p> 
+                            <p>${aircraft.max_takeoff_weight_kg ? aircraft.max_takeoff_weight_kg.toLocaleString('de-DE') + ' kg' : 'k.A.'}</p>
+                        </div>
                     `;
                     document.getElementById('info-modal-content').innerHTML = content;
                 } else {
