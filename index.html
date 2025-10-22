@@ -2556,9 +2556,8 @@
          */
         async function autofillFlightData() {
             const flightNumber = document.getElementById('auto-flight-number').value.replace(/\s/g, '').trim().toUpperCase();
-            const flightDate = document.getElementById('auto-flight-date').value; // Wir brauchen das Datum jetzt immer
+            const flightDate = document.getElementById('auto-flight-date').value;
 
-            // NEU: Prüfe, ob BEIDE Felder ausgefüllt sind
             if (!flightNumber || !flightDate) {
                 showMessage('Fehler', 'Bitte Flugnummer UND Datum eingeben.', 'error');
                 return;
@@ -2569,18 +2568,24 @@
             btn.disabled = true;
 
             try {
-                // NEU: Wir übergeben das flightDate in der URL an unsere Funktion
                 const response = await fetch(`https://aesthetic-strudel-ecfe50.netlify.app/.netlify/functions/fetch-flight-by-number?flight_iata=${flightNumber}&date=${flightDate}`);
+                
+                if (!response.ok) {
+                    // NEU: Fängt den 404 oder 400 Fehler ab, den der Server jetzt weiterleitet
+                    const errorText = await response.text();
+                    throw new Error(errorText);
+                }
+
                 const result = await response.json();
 
-                if (response.ok && result.data && result.data.length > 0) {
+                if (result.data && result.data.length > 0) {
                     const flight = result.data[0]; 
                     
                     document.getElementById('departure').value = flight.departure.iata_code;
                     document.getElementById('arrival').value = flight.arrival.iata_code;
                     document.getElementById('aircraftType').value = flight.aircraft.icao_code || '';
                     document.getElementById('flightNumber').value = flight.flight.iata_number;
-                    document.getElementById('flightDate').value = flightDate;
+                    document.getElementById('flightDate').value = flightDate; 
 
                     updateFlightDetails();
                     showMessage('Erfolg!', 'Flugdaten wurden erfolgreich geladen.', 'success');
@@ -2589,7 +2594,8 @@
                 }
             } catch (error) {
                 console.error("Fehler beim Abrufen der Flugdaten:", error);
-                showMessage('Fehler', 'Ein Problem ist aufgetreten.', 'error');
+                // Zeigt jetzt die spezifische Fehlermeldung von Netlify/GoFlightLabs an
+                showMessage('Fehler', `Suche fehlgeschlagen: ${error.message}`, 'error');
             } finally {
                 btn.textContent = 'Daten abrufen';
                 btn.disabled = false;
