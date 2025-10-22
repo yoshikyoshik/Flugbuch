@@ -2629,6 +2629,10 @@
                 }
 
                 const result = await response.json();
+				
+				// --- HIER IST DIE NEUE DEBUG-ZEILE ---
+                console.log("Antwort von GoFlightLabs API:", JSON.stringify(result, null, 2));
+                // ------------------------------------
 
                 // KORRIGIERTE ANTWORT-STRUKTUR: 'result.response.data'
                 const flightData = result.response ? result.response.data : null;
