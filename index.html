@@ -1688,6 +1688,47 @@
                 document.getElementById('info-modal-content').innerHTML = '<p>Details konnten nicht geladen werden.</p>';
             }
         }
+		
+		/**
+         * Ruft Details für einen Flugzeugtyp ab und zeigt sie im Modal an.
+         * @param {string} model - Das Flugzeugmodell (z.B. "A320").
+         */
+        async function showAircraftDetails(model) {
+            openInfoModal();
+            document.getElementById('info-modal-title').textContent = `Details für ${model}`;
+
+            try {
+                const response = await fetch(`https://aesthetic-strudel-ecfe50.netlify.app/.netlify/functions/fetch-aircraft-details?model=${model}`);
+                if (!response.ok) {
+                    throw new Error('Netzwerk-Antwort war nicht OK');
+                }
+                const result = await response.json();
+                
+                // API-Ninjas gibt eine Liste zurück
+                if (result && result.length > 0) {
+                    const aircraft = result[0]; // Nimm das erste Ergebnis
+                    
+                    const content = `
+                        <p><strong>Hersteller:</strong> ${aircraft.manufacturer || 'k.A.'}</p>
+                        <p><strong>Modell:</strong> ${aircraft.model || 'k.A.'}</p>
+                        <p><strong>Triebwerkstyp:</strong> ${aircraft.engine_type || 'k.A.'}</p>
+                        <p><strong>Anzahl Triebwerke:</strong> ${aircraft.engines_count || 'k.A.'}</p>
+                        <hr class="my-2 dark:border-gray-700">
+                        <p><strong>Geschwindigkeit (km/h):</strong> ${aircraft.speed_km_h || 'k.A.'}</p>
+                        <p><strong>Reichweite (km):</strong> ${aircraft.range_km || 'k.A.'}</p>
+                        <p><strong>Maximale Flughöhe (ft):</strong> ${aircraft.ceiling_ft || 'k.A.'}</p>
+                        <p><strong>Länge (m):</strong> ${aircraft.length_m || 'k.A.'}</p>
+                        <p><strong>Spannweite (m):</strong> ${aircraft.wingspan_m || 'k.A.'}</p>
+                    `;
+                    document.getElementById('info-modal-content').innerHTML = content;
+                } else {
+                    document.getElementById('info-modal-content').innerHTML = '<p>Keine Details für diesen Flugzeugtyp gefunden.</p>';
+                }
+            } catch (error) {
+                console.error("Fehler beim Abrufen der Flugzeug-Details:", error);
+                document.getElementById('info-modal-content').innerHTML = '<p>Details konnten nicht geladen werden.</p>';
+            }
+        }
 
       async function initializeApp() {
         if (isAppInitialized) return;
@@ -2831,6 +2872,16 @@
 						</button>
 					`;
 				}
+
+				// NEUER BLOCK für Flugzeugtypen
+                else if (isAircraftTypeView && key !== 'Unbekannt') {
+                    titleHtml = `
+                        ${key}
+                        <button onclick="event.stopPropagation(); showAircraftDetails('${key}')" class="ml-2 p-1 rounded-full text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors duration-150" title="Details für ${key} anzeigen">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z" /></svg>
+                        </button>
+                    `;
+                }
 
                 summaryElement.innerHTML = `
                     ${titleHtml} 
