@@ -1659,20 +1659,18 @@
             document.getElementById('info-modal-title').textContent = `Details für ${iataCode}`;
 
             try {
-                // KORREKTUR: Sendet den Parameter als 'code'
                 const response = await fetch(`https://aesthetic-strudel-ecfe50.netlify.app/.netlify/functions/fetch-airport-details?code=${iataCode}`);
                 if (!response.ok) {
                     throw new Error('Netzwerk-Antwort war nicht OK');
                 }
                 const result = await response.json();
-				
-				// --- DIESE DEBUG-ZEILE EINFÜGEN ---
-                console.log("Tatsächliche API-Antwort für Flughafen-Details:", JSON.stringify(result, null, 2));
-                // ------------------------------------
                 
-                // KORREKTUR: Die Antwort ist direkt das Objekt, kein Array
-                if (result.response && result.response.length > 0) {
-                    const airport = result.response[0]; // Nimm das erste Element aus der 'response'-Liste
+                // Debug-Zeile (kannst du drin lassen oder entfernen)
+                console.log("Tatsächliche API-Antwort für Flughafen-Details:", JSON.stringify(result, null, 2));
+
+                // KORRIGIERTE LOGIK: Prüfe auf 'result.data' statt 'result.response'
+                if (result.data && result.data.length > 0) {
+                    const airport = result.data[0]; // Nimm das erste Element aus dem 'data'-Array
                     
                     const content = `
                         <p><strong>Name:</strong> ${airport.name}</p>
