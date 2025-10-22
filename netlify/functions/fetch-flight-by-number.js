@@ -7,29 +7,21 @@ exports.handler = async function(event, context) {
         return { statusCode: 500, body: JSON.stringify({ message: 'GoFlightLabs API-Schlüssel ist nicht konfiguriert.' }) };
     }
 
-    const { flight_iata, date } = event.queryStringParameters;
-    if (!flight_iata || !date) {
+    // KORREKTUR: Verwende 'flight_number' statt 'flight_iata'
+    const { flight_number, date } = event.queryStringParameters;
+    
+    if (!flight_number || !date) {
         return { statusCode: 400, body: JSON.stringify({ message: 'Flugnummer und Datum sind erforderlich.' }) };
     }
 
-    const today = new Date().toISOString().slice(0, 10);
-    let apiEndpoint = '';
-
-    // KORRIGIERTE LOGIK BASIEREND AUF DEINER RECHERCHE:
-    if (date < today) {
-        // Datum liegt in der Vergangenheit -> /v1/historical/flights
-        apiEndpoint = `https://api.goflightlabs.com/v1/historical/flights?access_key=${API_KEY}&flight_iata=${flight_iata}&date=${date}`;
-    } else {
-        // Datum ist heute oder in der Zukunft -> /v1/flights (der Standard-Endpunkt)
-        apiEndpoint = `https://api.goflightlabs.com/v1/flights?access_key=${API_KEY}&flight_iata=${flight_iata}&date=${date}`;
-    }
+    // KORREKTUR: Verwende den von dir gefundenen /flight Endpunkt
+    const API_ENDPOINT = `https://api.goflightlabs.com/v1/flight?access_key=${API_KEY}&flight_number=${flight_number}&date=${date}`;
     
     try {
         const response = await fetch(apiEndpoint); 
         const responseBody = await response.text(); 
 
         if (!response.ok) {
-            // Leitet den API-Fehler (z.B. "Datum außerhalb des Bereichs") an das Frontend weiter
             return { statusCode: response.status, body: `Fehler von externer API: ${responseBody}` };
         }
 
