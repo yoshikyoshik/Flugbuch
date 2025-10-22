@@ -2166,6 +2166,17 @@
         return ""; // Gibt nichts zurück, wenn keine Wetterdaten vorhanden sind
       }
 
+		/**
+         * Extrahiert einen IATA-Code aus einem String wie "Dresden (DRS)".
+         * @param {string} text - Der Text, der den Code enthält.
+         * @returns {string|null} Der extrahierte IATA-Code (z.B. "DRS") or null.
+         */
+        function extractIata(text) {
+            const match = text.match(/\(([^)]+)\)/);
+            return match ? match[1] : null;
+        }
+
+
       // =================================================================
       // Hier sind alle weiteren, vollständigen Funktionen
       // =================================================================
@@ -2620,7 +2631,7 @@
             btn.disabled = true;
 
             try {
-                // Der Aufruf ist jetzt korrekt (sendet flight_number)
+                // Wir verwenden 'flight_number', wie von dir im Browser getestet
                 const response = await fetch(`https://aesthetic-strudel-ecfe50.netlify.app/.netlify/functions/fetch-flight-by-number?flight_number=${flightNumber}&date=${flightDate}`);
                 
                 if (!response.ok) {
@@ -2629,21 +2640,29 @@
                 }
 
                 const result = await response.json();
-				
-				// --- HIER IST DIE NEUE DEBUG-ZEILE ---
                 console.log("Antwort von GoFlightLabs API:", JSON.stringify(result, null, 2));
-                // ------------------------------------
 
-                // KORRIGIERTE ANTWORT-STRUKTUR: 'result.response.data'
-                const flightData = result.response ? result.response.data : null;
-
-                if (flightData && flightData.length > 0) {
-                    const flight = flightData[0]; 
+                // KORRIGIERTE ANTWORT-VERARBEITUNG
+                // 1. Prüfen, ob 'result.data' existiert und ein Objekt ist
+                // 2. Prüfen, ob dieses Objekt Einträge hat (z.B. "1", "2")
+                if (result.data && typeof result.data === 'object' && Object.keys(result.data).length > 0) {
                     
-                    document.getElementById('departure').value = flight.dep_iata;
-                    document.getElementById('arrival').value = flight.arr_iata;
-                    document.getElementById('aircraftType').value = flight.aircraft_icao || '';
-                    document.getElementById('flightNumber').value = flight.flight_iata;
+                    // Nimm den ersten Flug aus dem Objekt (den Schlüssel "1")
+                    const flightKey = Object.keys(result.data)[0];
+                    const flight = result.data[flightKey]; 
+                    
+                    // Verwende die neue Hilfsfunktion, um die IATA-Codes zu extrahieren
+                    const depIata = extractIata(flight.FROM);
+                    const arrIata = extractIata(flight.TO);
+
+                    if (!depIata || !arrIata) {
+                        throw new Error("Konnte IATA-Codes nicht aus der API-Antwort extrahieren.");
+                    }
+
+                    document.getElementById('departure').value = depIata;
+                    document.getElementById('arrival').value = arrIata;
+                    document.getElementById('aircraftType').value = flight.AIRCRAFT.split(' ')[0] || ''; // Nimm nur den Typ, z.B. "A320"
+                    document.getElementById('flightNumber').value = flightNumber;
                     document.getElementById('flightDate').value = flightDate; 
 
                     updateFlightDetails();
