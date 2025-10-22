@@ -1665,6 +1665,10 @@
                     throw new Error('Netzwerk-Antwort war nicht OK');
                 }
                 const result = await response.json();
+				
+				// --- DIESE DEBUG-ZEILE EINFÜGEN ---
+                console.log("Tatsächliche API-Antwort für Flughafen-Details:", JSON.stringify(result, null, 2));
+                // ------------------------------------
                 
                 // KORREKTUR: Die Antwort ist direkt das Objekt, kein Array
                 if (result.response && result.response.length > 0) {
