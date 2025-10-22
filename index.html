@@ -2572,19 +2572,17 @@
                 
                 if (!response.ok) {
                     const errorText = await response.text();
-                    throw new Error(errorText);
+                    throw new Error(errorText); // Zeigt die "Fehler von externer API..."-Meldung an
                 }
 
                 const result = await response.json();
 
-                // NEUE LOGIK: Prüft beide möglichen Antwort-Strukturen
-                // 'result.data' für Standard- und Zukunftsflüge
-                // 'result.response.data' für Vergangenheitsflüge
-                const flightData = result.data || (result.response ? result.response.data : null);
-
-                if (flightData && flightData.length > 0) {
-                    const flight = flightData[0]; 
+                // KORRIGIERTE ANTWORT-PRÜFUNG: 
+                // GoFlightLabs sendet die Daten im "data"-Array
+                if (result.data && result.data.length > 0) {
+                    const flight = result.data[0]; 
                     
+                    // Verwende die korrekten Feldnamen aus der GoFlightLabs-Antwort
                     document.getElementById('departure').value = flight.departure.iata_code;
                     document.getElementById('arrival').value = flight.arrival.iata_code;
                     document.getElementById('aircraftType').value = flight.aircraft.icao_code || '';
@@ -2594,6 +2592,7 @@
                     updateFlightDetails();
                     showMessage('Erfolg!', 'Flugdaten wurden erfolgreich geladen.', 'success');
                 } else {
+                    // Wird ausgelöst, wenn die API ein leeres "data"-Array zurückgibt
                     showMessage('Fehler', 'Keine Flugdaten für diese Kombination gefunden.', 'error');
                 }
             } catch (error) {

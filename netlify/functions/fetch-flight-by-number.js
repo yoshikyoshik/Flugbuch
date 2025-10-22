@@ -15,13 +15,12 @@ exports.handler = async function(event, context) {
     const today = new Date().toISOString().slice(0, 10);
     let apiEndpoint = '';
 
-    // KORREKTE LOGIK FÜR STARTER-PLAN:
-    // Die Domain ist 'api.goflightlabs.com' und 'v1' ist Teil des Pfades.
+    // KORRIGIERTE LOGIK BASIEREND AUF DEINER RECHERCHE:
     if (date < today) {
         // Datum liegt in der Vergangenheit -> /v1/historical/flights
         apiEndpoint = `https://api.goflightlabs.com/v1/historical/flights?access_key=${API_KEY}&flight_iata=${flight_iata}&date=${date}`;
     } else {
-        // Datum ist heute oder in der Zukunft -> /v1/flights
+        // Datum ist heute oder in der Zukunft -> /v1/flights (der Standard-Endpunkt)
         apiEndpoint = `https://api.goflightlabs.com/v1/flights?access_key=${API_KEY}&flight_iata=${flight_iata}&date=${date}`;
     }
     
@@ -30,6 +29,7 @@ exports.handler = async function(event, context) {
         const responseBody = await response.text(); 
 
         if (!response.ok) {
+            // Leitet den API-Fehler (z.B. "Datum außerhalb des Bereichs") an das Frontend weiter
             return { statusCode: response.status, body: `Fehler von externer API: ${responseBody}` };
         }
 
