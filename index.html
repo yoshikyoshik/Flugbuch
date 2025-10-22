@@ -2817,25 +2817,27 @@
             const allFlights = await getFlights();
             const grouped = {};
             
-            // HIER WIRD DIE VARIABLE KORREKT DEFINIERT
-            let isAirportView = (groupBy === 'airport'); 
+            // KORREKTUR: Beide Variablen hier oben definieren
+            let isAirportView = (groupBy === 'airport');
+            let isAircraftTypeView = (groupBy === 'aircraftType');
 
             allFlights.forEach(flight => {
                 let keys = [];
-                if (groupBy === 'aircraftType') {
-                    const type = (flight.aircraftType || 'Unbekannt').trim().toUpperCase();
-                    keys.push(type === '' ? 'Unbekannt' : type);
+                if (isAircraftTypeView) {
+                    let type = (flight.aircraftType || 'Unbekannt').trim().toUpperCase();
+                    if (type === '') type = 'Unbekannt';
+                    keys.push(type);
                 } else if (groupBy === 'airline') {
                     const match = flight.flightNumber ? flight.flightNumber.match(/^[A-Z0-9]{2,3}/) : null;
                     const airline = match ? match[0].toUpperCase() : 'Unbekannt';
                     keys.push(airline);
-                } else if (isAirportView) { // Wir können die Variable hier schon nutzen
+                } else if (isAirportView) { 
                     if (flight.departure) keys.push(flight.departure.toUpperCase());
                     if (flight.arrival) keys.push(flight.arrival.toUpperCase());
                 }
                 
                 keys.forEach(key => {
-                    if(key === '') key = 'Unbekannt'; // Fängt leere Keys ab
+                    if(key === '') key = 'Unbekannt'; 
                     if (!grouped[key]) { grouped[key] = { flights: [], totalDistance: 0, count: 0 }; }
                     grouped[key].flights.push(flight);
                     grouped[key].totalDistance += flight.distance;
@@ -2857,24 +2859,19 @@
                 detailsElement.className = 'bg-gray-50 dark:bg-gray-700 p-4 rounded-lg';
                 
                 const summaryElement = document.createElement('summary');
-                summaryElement.className = 'font-semibold text-lg cursor-pointer text-indigo-700 dark:text-indigo-400';
+                summaryElement.className = 'font-semibold text-lg cursor-pointer text-indigo-700 dark:text-indigo-400 flex items-center';
                 
                 let titleHtml = key;
-                // HIER WIRD DIE VARIABLE VERWENDET
+                
                 if (isAirportView && key !== 'Unbekannt') { 
-					// Wir fügen einen Button mit einem Icon hinzu
-					titleHtml = `
-						${key}
-						<button onclick="event.stopPropagation(); showAirportDetails('${key}')" class="ml-2 p-1 rounded-full text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors duration-150" title="Details für ${key} anzeigen">
-							<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z" />
-							</svg>
-						</button>
-					`;
-				}
-
-				// NEUER BLOCK für Flugzeugtypen
-                else if (isAircraftTypeView && key !== 'Unbekannt') {
+                    titleHtml = `
+                        <a href="#" onclick="event.preventDefault(); showAirportDetails('${key}')" class="hover:underline">${key}</a>
+                        <button onclick="event.stopPropagation(); showAirportDetails('${key}')" class="ml-2 p-1 rounded-full text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors duration-150" title="Details für ${key} anzeigen">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z" /></svg>
+                        </button>
+                    `;
+                } 
+                else if (isAircraftTypeView && key !== 'Unbekannt') { // Diese Zeile funktioniert jetzt
                     titleHtml = `
                         ${key}
                         <button onclick="event.stopPropagation(); showAircraftDetails('${key}')" class="ml-2 p-1 rounded-full text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors duration-150" title="Details für ${key} anzeigen">
