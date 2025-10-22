@@ -59,6 +59,7 @@ exports.handler = async function(event, context) {
     const apiEndpoint = `https://www.goflightlabs.com/flight?access_key=${API_KEY}&flight_number=${flight_number}&date=${date}`;
     
     try {
+        // Verwendet die globale fetch-Implementierung von Netlify
         const response = await fetch(apiEndpoint); 
         const responseBody = await response.text(); 
 
