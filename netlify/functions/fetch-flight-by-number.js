@@ -1,4 +1,8 @@
 // netlify/functions/fetch-flight-by-number.js
+
+// NEU: Wir importieren das 'node-fetch'-Werkzeug
+const fetch = require('node-fetch');
+
 exports.handler = async function(event, context) {
     const API_KEY = process.env.GOFLIGHTLABS_API_KEY; 
     if (!API_KEY) {
@@ -10,32 +14,25 @@ exports.handler = async function(event, context) {
         return { statusCode: 400, body: JSON.stringify({ message: 'Flugnummer und Datum sind erforderlich.' }) };
     }
 
-    // --- NEUE LOGIK ZUR ENDPUNKT-AUSWAHL ---
-    
-    // Heutiges Datum im YYYY-MM-DD-Format für einen sauberen Vergleich
     const today = new Date().toISOString().slice(0, 10);
     let apiEndpoint = '';
 
     if (date < today) {
-        // Datum liegt in der Vergangenheit -> /history/flights
         apiEndpoint = `https://api.goflightlabs.com/history/flights?access_key=${API_KEY}&flight_iata=${flight_iata}&date=${date}`;
     } else {
-        // Datum ist heute oder in der Zukunft -> /futures/flights
         apiEndpoint = `https://api.goflightlabs.com/futures/flights?access_key=${API_KEY}&flight_iata=${flight_iata}&date=${date}`;
     }
-    
-    // --- ENDE NEUE LOGIK ---
 
     try {
-        const response = await fetch(apiEndpoint);
-        const responseBody = await response.text(); // Zuerst als Text lesen
+        // Der 'fetch'-Befehl verwendet jetzt die 'node-fetch'-Bibliothek
+        const response = await fetch(apiEndpoint); 
+        const responseBody = await response.text(); 
 
         if (!response.ok) {
-            // API hat einen Fehler gemeldet (z.B. 404, 422)
             return { statusCode: response.status, body: `Fehler von externer API: ${responseBody}` };
         }
 
-        const data = JSON.parse(responseBody); // Jetzt sicher als JSON parsen
+        const data = JSON.parse(responseBody);
         
         return {
             statusCode: 200,
