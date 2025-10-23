@@ -1789,18 +1789,22 @@
                 
                 console.log("Antwort von Airline-API:", JSON.stringify(result, null, 2));
 
-                // Die Antwort-Struktur ist 'result.response.data'
-                if (result.response && result.response.data && result.response.data.length > 0) {
-                    let content = ''; // Leerer String, um alle Airlines zu sammeln
+                // prüfen auf result.data, nicht result.response
+                if (result.data && result.data.length > 0) {
+                    let content = ''; 
                     
-                    result.response.data.forEach((airline, index) => {
+                    // Wir suchen nach exakten Treffern
+                    const exactMatches = result.data.filter(airline => airline.iata_code === iataCode);
+                    const airlinesToShow = exactMatches.length > 0 ? exactMatches : result.data; // Fallback: Zeige alles, wenn kein exakter Treffer
+
+                    airlinesToShow.forEach((airline, index) => {
                         if (index > 0) {
                             content += '<hr class="my-4 dark:border-gray-700">'; // Trennlinie
                         }
                         content += `
                             <div class="grid grid-cols-2 gap-x-4 gap-y-1">
                                 <p><strong>Name:</strong></p> 
-                                <p>${airline.name || 'k.A.'}</p>
+                                <p>${airline.name || 'k.A.'} <strong>(${airline.iata_code || 'k.A.'})</strong></p>
                                 
                                 <p><strong>Land:</strong></p> 
                                 <p>${airline.country_name || 'k.A.'} (${airline.country_iso2 || 'k.A.'})</p>
@@ -4302,11 +4306,16 @@
                 }
                 const result = await response.json();
                 
-                // Wir folgen deiner Logik: Bei mehreren Treffern nehmen wir den ersten.
-                if (result.response && result.response.data && result.response.data.length > 0) {
-                    return result.response.data[0].name; // Gibt den Namen zurück, z.B. "Eurowings"
+                // prüfen auf result.data, nicht result.response
+                if (result.data && result.data.length > 0) {
+                    // Wir suchen nach einer exakten Übereinstimmung des IATA-Codes,
+                    // da die API anscheinend auch nach Namen sucht.
+                    const exactMatch = result.data.find(airline => airline.iata_code === iataCode);
+                    if (exactMatch) {
+                        return exactMatch.name; // Gibt den Namen zurück, z.B. "Eurowings"
+                    }
                 }
-                return null;
+                return null; // Kein exakter Treffer gefunden
             } catch (error) {
                 console.error("Fehler beim Abrufen des Airline-Namens:", error);
                 return null;
