@@ -382,6 +382,19 @@
                 >
 				<a href="#" onclick="event.preventDefault(); showTab('achievements')" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Errungenschaften</a>
               </div>
+			  
+			  <div class="border-b dark:border-gray-700 py-1">
+				<a href="#" onclick="event.preventDefault(); exportData('json'); toggleBurgerMenu();" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+					Daten Exportieren (JSON)
+				</a>
+				<a href="#" onclick="event.preventDefault(); exportData('csv'); toggleBurgerMenu();" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+					Daten Exportieren (CSV)
+				</a>
+				<label for="import-file-input" class="block px-4 py-2 text-sm text-red-500 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
+					Daten Importieren (JSON)...
+				</label>
+			  </div>
+			  
               <div class="py-1">
                 <a
                   href="#"
@@ -924,37 +937,6 @@
                     -
                   </p>
                 </div>
-                <div class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm">
-                  <p
-                    class="text-xs font-medium text-gray-700 dark:text-gray-400"
-                  >
-                    Daten-Export
-                  </p>
-                  <div class="flex space-x-2 mt-1 justify-center">
-                    <button
-                      onclick="exportData('csv')"
-                      class="text-xs py-1 px-2 bg-green-500 text-white rounded hover:bg-green-600 transition"
-                    >
-                      CSV</button
-                    ><button
-                      onclick="exportData('json')"
-                      class="text-xs py-1 px-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
-                    >
-                      JSON
-                    </button>
-                  </div>
-                </div>
-
-				<div class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm">
-					<p class="text-xs font-medium text-gray-700 dark:text-gray-400">Daten-Import (JSON)</p>
-					<div class="flex space-x-2 mt-1 justify-center">
-						<input type="file" id="import-file-input" accept=".json" class="hidden">
-						<label for="import-file-input" class="text-xs py-1 px-2 bg-red-500 text-white rounded hover:bg-red-600 transition cursor-pointer">
-							JSON-Datei wählen...
-						</label>
-					</div>
-				</div>
-
                 <div
                   class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm col-span-2"
                 >
@@ -1243,6 +1225,8 @@
             </div>
         </div>
     </div>
+
+	<input type="file" id="import-file-input" accept=".json" class="hidden">
 
     <div id="toast-container" class="fixed top-5 right-5 z-50 space-y-2"></div>
 
@@ -3255,7 +3239,8 @@
          * Verarbeitet die hochgeladene JSON-Importdatei.
          */
         async function handleImport(event) {
-            const file = event.target.files[0];
+            toggleBurgerMenu();
+			const file = event.target.files[0];
             if (!file) {
                 return; // Abbruch, wenn keine Datei gewählt wurde
             }
