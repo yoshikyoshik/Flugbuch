@@ -24,6 +24,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+	<script src="https://unpkg.com/leaflet-polylinedecorator@1.6.0/dist/leaflet.polylineDecorator.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="api_service.js"></script>
 
@@ -177,6 +178,19 @@
           transform: translateX(100%);
         }
       }
+	  .animated-flight-marker {
+            background: transparent;
+            border: none;
+            text-shadow: 0 0 2px white, 0 0 3px white, 0 0 4px white; /* Stärkerer Schatten für bessere Lesbarkeit */
+            font-weight: bold;
+            font-size: 14px; /* Etwas größer als die 10px vorher */
+            text-align: center;
+            /* Wichtig, damit Leaflet die Position korrekt berechnet */
+            width: 30px !important;
+            height: 20px !important;
+            margin-left: -15px; /* Manuelle Zentrierung */
+            margin-top: -10px;  /* Manuelle Zentrierung */
+        }
     </style>
   </head>
 
@@ -1465,7 +1479,6 @@
       let flightsChartInstance, distanceChartInstance, timeChartInstance;
       let currentChartTimeframe = "year";
       let isAppInitialized = false; // SCHUTZSCHALTER
-	  let isAnimationRunning = false; // Steuert, ob die Animation gerade läuft
 	  
       var airportData = {
         FRA: {
@@ -1896,6 +1909,7 @@
         });
 
         // Alle anderen, weiterhin gültigen Listener
+		document.getElementById('play-chronicle-btn').addEventListener('click', animateTravelChronicle);
         document.getElementById("flightClass").addEventListener("change", updateFlightDetails);
 		document
           .getElementById("chart-view-year")
@@ -3707,74 +3721,122 @@
       };
 	  
 		/**
-         * Eine Hilfsfunktion, die eine bestimmte Zeit in Millisekunden wartet.
-         * @param {number} ms - Die Zeit in Millisekunden.
+         * Eine einfache Hilfsfunktion, um eine Pause in async-Funktionen zu erzeugen.
+         * @param {number} ms - Die Wartezeit in Millisekunden.
          */
-        function pause(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
-        }
+        const delay = ms => new Promise(res => setTimeout(res, ms));
+		
+		/**
+         * Erstellt eine Liste von Zwischenpunkten zwischen einem Start- und Endpunkt.
+         * @param {number} startLat - Start-Latitude
+         * @param {number} startLng - Start-Longitude
+         * @param {number} endLat - Ziel-Latitude
+         * @param {number} endLng - Ziel-Longitude
+         * @param {number} steps - Die Anzahl der Segmente, in die die Linie geteilt wird.
+         * @returns {Array<Array<number>>} Eine Liste von [lat, lng] Koordinatenpaaren.
+         */
+        function interpolatePoints(startLat, startLng, endLat, endLng, steps) {
+            const points = [];
+            const deltaLat = (endLat - startLat) / steps;
+            const deltaLng = (endLng - startLng) / steps;
 
-        /**
-         * Startet oder stoppt die Flugrouten-Animation.
-         */
-        function toggleAnimation() {
-            if (isAnimationRunning) {
-                isAnimationRunning = false;
-                const btn = document.getElementById('play-animation-btn');
-                btn.textContent = 'Chronik abspielen ▶️';
-                btn.classList.remove('text-red-600', 'hover:text-red-800');
-                btn.classList.add('text-green-600', 'hover:text-green-800');
-                renderFlights(); // Setzt die Karte auf den Standardzustand zurück
-            } else {
-                runAnimation();
+            for (let i = 0; i <= steps; i++) {
+                points.push([
+                    startLat + (deltaLat * i),
+                    startLng + (deltaLng * i)
+                ]);
             }
+            return points;
         }
 
         /**
-         * Führt die Animation aus, indem alle Flüge chronologisch auf der Karte gezeichnet werden.
+         * Animiert alle Flüge in chronologischer Reihenfolge auf der Weltkarte.
          */
-        async function runAnimation() {
-            isAnimationRunning = true;
-            const btn = document.getElementById('play-animation-btn');
+        async function animateTravelChronicle() {
+            const btn = document.getElementById('play-chronicle-btn');
             const mapInfo = document.getElementById('map-info');
             
-            btn.textContent = 'Animation stoppen ⏹️';
-            btn.classList.add('text-red-600', 'hover:text-red-800');
-            btn.classList.remove('text-green-600', 'hover:text-green-800');
-
+            btn.disabled = true;
+            btn.textContent = 'Animation läuft...';
             routeLayer.clearLayers();
-            
-            const allFlights = await getFlights();
-            // Wir brauchen hier die ursprüngliche Reihenfolge nach Datum
-            const sortedFlights = allFlights.sort((a, b) => new Date(a.date) - new Date(b.date));
+            map.setView([20, 0], 2);
+            await delay(100);
 
-            map.setView([20, 0], 2); // Starte mit einer globalen Ansicht
+            const allFlights = await getFlights();
+            if (allFlights.length === 0) {
+                mapInfo.textContent = 'Keine Flüge zum Animieren vorhanden.';
+                btn.disabled = false;
+                btn.textContent = '▶️ Chronik abspielen';
+                return;
+            }
+
+            const sortedFlights = resequenceAndAssignNumbers(allFlights);
+            const chronicleColors = ['#312E81', '#10B981', '#E11D48', '#14B8A6', '#D97706'];
 
             for (let i = 0; i < sortedFlights.length; i++) {
-                if (!isAnimationRunning) { // Prüfe bei jedem Schritt, ob abgebrochen wurde
-                    console.log("Animation abgebrochen.");
-                    break;
-                }
-                
                 const flight = sortedFlights[i];
-                if (flight.depLat && flight.arrLat) {
-                    mapInfo.textContent = `Zeige Flug ${i + 1}/${sortedFlights.length}: ${flight.departure} → ${flight.arrival} am ${flight.date}`;
-                    
-                    // Zeichne die Route für diesen Flug
-                    const flightPath = L.polyline([[flight.depLat, flight.depLon], [flight.arrLat, flight.arrLon]], { color: "#312E81", weight: 2, opacity: 0.8 });
-                    flightPath.addTo(routeLayer);
-                    
-                    // Passe die Kartenansicht an die neue Route an
-                    map.fitBounds(flightPath.getBounds(), { padding: [50, 50], maxZoom: 5 });
+                const color = chronicleColors[i % chronicleColors.length];
 
-                    await pause(700); // Warte 700 Millisekunden bis zum nächsten Flug
+                if (flight.depLat && flight.arrLat) {
+                    mapInfo.textContent = `Flug ${flight.flightLogNumber} / ${sortedFlights.length}: ${flight.date} von ${flight.departure} nach ${flight.arrival}`;
+
+                    L.marker([flight.depLat, flight.depLon]).addTo(routeLayer);
+                    L.marker([flight.arrLat, flight.arrLon]).addTo(routeLayer);
+                    map.fitBounds([[flight.depLat, flight.depLon], [flight.arrLat, flight.arrLon]], { padding: [50, 50] });
+
+                    const animationSteps = 40;
+                    const animationDurationMs = 3000;
+                    const delayPerStep = animationDurationMs / animationSteps;
+                    const points = interpolatePoints(flight.depLat, flight.depLon, flight.arrLat, flight.arrLon, animationSteps);
+                    
+                    const animatedPath = L.polyline([], { color: color, weight: 2.5, opacity: 0.8 }).addTo(routeLayer);
+                    
+                    const decorator = L.polylineDecorator(animatedPath, {
+                        patterns: [
+                            { 
+                                offset: '100%', 
+                                repeat: 0, 
+                                symbol: L.Symbol.arrowHead({ pixelSize: 12, pathOptions: { color: color, fillOpacity: 1, weight: 0 } }) 
+                            }
+                        ]
+                    }).addTo(routeLayer);
+
+                    // --- KORREKTUR 1 & 2: Der mitwandernde Marker ---
+                    // 1. Erstelle den HTML-Inhalt für das Icon
+                    const iconHtml = `<span style="color: ${color};">#${flight.flightLogNumber}</span>`;
+                    
+                    // 2. Erstelle das DivIcon
+                    const flightMarkerIcon = L.divIcon({
+                        html: iconHtml,
+                        className: 'animated-flight-marker', // Unsere neue CSS-Klasse
+                        iconSize: [30, 20]
+                    });
+
+                    // 3. Erstelle den Marker am Startpunkt
+                    const flightMarker = L.marker(points[0], { icon: flightMarkerIcon }).addTo(routeLayer);
+                    // --- ENDE KORREKTUR ---
+
+                    for (let p = 0; p < points.length; p++) {
+                        animatedPath.addLatLng(points[p]);
+                        decorator.setPaths(animatedPath);
+                        
+                        // KORREKTUR 1: Bewege den Marker mit der Linie mit
+                        flightMarker.setLatLng(points[p]); 
+                        
+                        await delay(delayPerStep);
+                    }
+
+                    // KORREKTUR 1 (Teil 2): Setze den Marker am Ende in die Mitte der Linie
+                    const centerLatLng = animatedPath.getCenter();
+                    flightMarker.setLatLng(centerLatLng);
+
+                    // Wir entfernen den alten Tooltip-Aufruf, da der Marker jetzt die Aufgabe übernimmt
                 }
             }
 
-            if (isAnimationRunning) { // Nur wenn die Animation durchgelaufen ist
-                mapInfo.textContent = `Reise-Chronik abgeschlossen. ${sortedFlights.length} Flüge angezeigt.`;
-                toggleAnimation(); // Setzt den Button-Zustand zurück
-            }
+            mapInfo.textContent = `Reise-Chronik abgeschlossen. ${sortedFlights.length} Flüge angezeigt.`;
+            btn.disabled = false;
+            btn.textContent = '▶️ Chronik abspielen';
         }
 
       // *** Hauptfunktion (jetzt für Loggen & Aktualisieren) ***
