@@ -684,36 +684,20 @@
                     class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 text-sm"
                   ></textarea>
                 </div>
-                <div
-                  class="grid grid-cols-2 gap-4 bg-indigo-100 dark:bg-indigo-900/50 p-4 rounded-lg border border-indigo-200 dark:border-indigo-800 mb-4"
-                >
-                  <div>
-                    <p
-                      class="text-xs font-medium text-indigo-700 dark:text-indigo-300"
-                    >
-                      Geschätzte Entfernung
-                    </p>
-                    <p
-                      id="distance-display"
-                      class="text-xl font-bold text-indigo-800 dark:text-indigo-400"
-                    >
-                      -
-                    </p>
-                  </div>
-                  <div>
-                    <p
-                      class="text-xs font-medium text-indigo-700 dark:text-indigo-300"
-                    >
-                      Geschätzte Flugzeit
-                    </p>
-                    <p
-                      id="time-display"
-                      class="text-xl font-bold text-indigo-800 dark:text-indigo-400"
-                    >
-                      -
-                    </p>
-                  </div>
-                </div>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 bg-indigo-100 dark:bg-indigo-900/50 p-4 rounded-lg border border-indigo-200 dark:border-indigo-800 mb-4">
+					<div>
+						<p class="text-xs font-medium text-indigo-700 dark:text-indigo-300">Geschätzte Entfernung</p>
+						<p id="distance-display" class="text-xl font-bold text-indigo-800 dark:text-indigo-400">-</p>
+					</div>
+					<div>
+						<p class="text-xs font-medium text-indigo-700 dark:text-indigo-300">Geschätzte Flugzeit</p>
+						<p id="time-display" class="text-xl font-bold text-indigo-800 dark:text-indigo-400">-</p>
+					</div>
+					<div class="col-span-2 md:col-span-1">
+						<p class="text-xs font-medium text-red-700 dark:text-red-400">Geschätzter CO₂-Ausstoß</p>
+						<p id="co2-display" class="text-xl font-bold text-red-800 dark:text-red-400">-</p>
+					</div>
+				</div>
                 <div
                   class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4"
                 >
@@ -1031,6 +1015,16 @@
                     -
                   </p>
                 </div>
+				
+				<div class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm">
+					<p class="text-xs font-medium text-gray-700 dark:text-gray-400">Ø CO₂ pro Flug</p>
+					<p id="stat-avg-co2" class="text-xl font-bold text-red-800 dark:text-red-400">0 kg</p>
+				</div>
+				<div class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm col-span-2 md:col-span-1">
+					<p class="text-xs font-medium text-gray-700 dark:text-gray-400">Gesamter CO₂-Fußabdruck</p>
+					<p id="stat-total-co2" class="text-xl font-bold text-red-800 dark:text-red-400">0 kg</p>
+				</div>
+				
                 <div
                   class="col-span-2 md:col-span-4 p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm"
                 >
@@ -1890,7 +1884,8 @@
         });
 
         // Alle anderen, weiterhin gültigen Listener
-        document
+        document.getElementById("flightClass").addEventListener("change", updateFlightDetails);
+		document
           .getElementById("chart-view-year")
           .addEventListener("click", () => setChartTimeframe("year"));
         document
@@ -2213,6 +2208,40 @@
           localStorage.setItem("theme", "light");
         }
       }
+	  
+		/**
+         * Berechnet den geschätzten CO2-Ausstoß in kg.
+         * Formel basiert auf gängigen Emissionsmodellen (angepasste Faktoren).
+         * @param {number} distance - Distanz in km.
+         * @param {string} flightClass - "Economy", "Business", "First".
+         * @returns {number} Geschätzter CO2-Ausstoß in kg.
+         */
+        function calculateCO2(distance, flightClass) {
+            if (!distance || distance <= 0) return 0;
+
+            let baseFactor; // kg CO2 pro Passagier-km
+            
+            // Emissionsfaktor variiert je nach Streckenlänge (Kurzstrecke ist ineffizienter pro km)
+            if (distance < 1000) {
+                baseFactor = 0.20; // Faktor für Kurzstrecke
+            } else if (distance < 3500) {
+                baseFactor = 0.15; // Faktor für Mittelstrecke
+            } else {
+                baseFactor = 0.12; // Faktor für Langstrecke
+            }
+
+            // Multiplikator für die Flugklasse
+            let classMultiplier = 1.0; // Economy
+            if (flightClass === 'Business') classMultiplier = 2.5;
+            if (flightClass === 'First') classMultiplier = 4.0;
+            
+            // Radiativer Forcing Index (RFI) - ein Multiplikator, der die verstärkte
+            // Klimawirkung von Emissionen in großer Höhe berücksichtigt.
+            const RFI_MULTIPLIER = 1.9;
+
+            const co2_kg = distance * baseFactor * classMultiplier * RFI_MULTIPLIER;
+            return Math.round(co2_kg);
+        }
 
       function showTab(tabName) {
         // Alle Inhalte verstecken
@@ -2553,12 +2582,14 @@
         var stats = {
           totalCount: flights.length,
           totalDistance: 0,
+		  totalCO2: 0,
           airportUsage: {},
           frequentAirport: "-",
           // Neue Statistik-Properties
           longestFlight: null,
           shortestFlight: null,
           averageDistance: 0,
+		  averageCO2: 0,
           aircraftUsage: {},
           frequentAircraft: "-",
           yearlyData: {},
@@ -2571,6 +2602,10 @@
 
         flights.forEach(function (flight) {
           stats.totalDistance += flight.distance;
+		  
+		  if (flight.co2_kg > 0) { // NEU
+                    stats.totalCO2 += flight.co2_kg;
+                }
 
           // 1. Längsten/kürzesten Flug finden
           if (
@@ -2632,9 +2667,9 @@
         });
 
         // Berechnungen nach der Schleife
-        stats.averageDistance = Math.round(
-          stats.totalDistance / stats.totalCount
-        );
+        stats.averageDistance = Math.round(stats.totalDistance / stats.totalCount);
+		stats.averageCO2 = Math.round(stats.totalCO2 / stats.totalCount);
+        
 
         // Häufigsten Flughafen finden
         let maxCount = 0;
@@ -2670,8 +2705,12 @@
         ).textContent = `${stats.totalDistance.toLocaleString("de-DE")} km`;
         document.getElementById("stat-frequent").textContent =
           stats.frequentAirport;
+		  
+		// CO2-Stats anzeigen
+            document.getElementById("stat-total-co2").textContent = `${stats.totalCO2.toLocaleString("de-DE")} kg`;
+            document.getElementById("stat-avg-co2").textContent = `${stats.averageCO2.toLocaleString("de-DE")} kg`;
 
-        // Neue Statistiken
+        // Weitere Statistiken
         document.getElementById(
           "stat-avg-distance"
         ).textContent = `${stats.averageDistance.toLocaleString("de-DE")} km`;
@@ -3398,42 +3437,37 @@
       }
 
       var updateFlightDetails = function () {
-        var departureInput = document.getElementById("departure").value;
-        var arrivalInput = document.getElementById("arrival").value;
-        var departureAirport = findAirport(departureInput);
-        var arrivalAirport = findAirport(arrivalInput);
-        var distanceDisplay = document.getElementById("distance-display");
-        var timeDisplay = document.getElementById("time-display");
-        var logButton = document.getElementById("log-button");
-        distanceDisplay.textContent = "-";
-        timeDisplay.textContent = "-";
-        logButton.disabled = true;
-        if (departureAirport && arrivalAirport) {
-          var distance = calculateDistance(
-            departureAirport.lat,
-            departureAirport.lon,
-            arrivalAirport.lat,
-            arrivalAirport.lon
-          );
-          var formattedDistance = `${Math.round(distance).toLocaleString(
-            "de-DE"
-          )} km`;
-          var estimatedTime = estimateFlightTime(distance);
-          distanceDisplay.textContent = formattedDistance;
-          timeDisplay.textContent = estimatedTime;
-          logButton.disabled = false;
-        } else {
-          // Ermöglicht das Loggen, wenn es sich um einen 3-stelligen Code handelt (für API-Fallback)
-          if (
-            departureInput.trim().length === 3 &&
-            arrivalInput.trim().length === 3
-          ) {
-            logButton.disabled = false;
-            distanceDisplay.textContent = "Berechnung nach API-Abruf";
-            timeDisplay.textContent = "Beim Loggen...";
-          }
-        }
-      };
+            var departureInput = document.getElementById("departure").value;
+            var arrivalInput = document.getElementById("arrival").value;
+            var flightClass = document.getElementById("flightClass").value; // NEU
+            var departureAirport = findAirport(departureInput);
+            var arrivalAirport = findAirport(arrivalInput);
+            var distanceDisplay = document.getElementById("distance-display");
+            var timeDisplay = document.getElementById("time-display");
+            var co2Display = document.getElementById("co2-display"); // NEU
+            var logButton = document.getElementById("log-button");
+            
+            distanceDisplay.textContent = "-";
+            timeDisplay.textContent = "-";
+            co2Display.textContent = "-"; // NEU
+            logButton.disabled = true;
+
+            if (departureAirport && arrivalAirport) {
+                var distance = calculateDistance(departureAirport.lat, departureAirport.lon, arrivalAirport.lat, arrivalAirport.lon);
+                var estimatedTime = estimateFlightTime(distance);
+                var estimatedCO2 = calculateCO2(distance, flightClass); // NEU
+
+                distanceDisplay.textContent = `${Math.round(distance).toLocaleString("de-DE")} km`;
+                timeDisplay.textContent = estimatedTime;
+                co2Display.textContent = `${estimatedCO2.toLocaleString("de-DE")} kg`; // NEU
+                logButton.disabled = false;
+            } else if (departureInput.trim().length === 3 && arrivalInput.trim().length === 3) {
+                logButton.disabled = false;
+                distanceDisplay.textContent = "Berechnung...";
+                timeDisplay.textContent = "Berechnung...";
+                co2Display.textContent = "Berechnung..."; // NEU
+            }
+        };
 
       /**
        * Setzt das Formular zurück und beendet den Bearbeitungsmodus.
@@ -3674,7 +3708,7 @@
           return;
         }
 
-        const logButton = document.getElementById("log-button");
+		const logButton = document.getElementById("log-button");
         logButton.textContent = "Speichere...";
         logButton.disabled = true;
 
@@ -3726,6 +3760,9 @@
           arrivalAirport.lon
         );
         const newFlightId = new Date().getTime();
+		
+		const flightClass = document.getElementById("flightClass").value;
+		const calculatedCO2 = calculateCO2(distance, flightClass);
 
         // KORREKTE LOGIK FÜR PREIS
         const priceInput = document.getElementById("price").value;
@@ -3741,6 +3778,7 @@
           distance: Math.round(distance),
           time: estimateFlightTime(distance),
           class: document.getElementById("flightClass").value,
+		  co2_kg: calculatedCO2,
           flightNumber: document.getElementById("flightNumber").value.trim(),
 		  airline: document.getElementById("airline").value.trim(),
           aircraftType: document.getElementById("aircraftType").value.trim(),
@@ -3882,6 +3920,9 @@
           arrivalAirport.lon
         );
 
+		const flightClass = document.getElementById("flightClass").value;
+		const calculatedCO2 = calculateCO2(distance, flightClass);
+
         // KORREKTE LOGIK FÜR PREIS
         const priceInput = document.getElementById("price").value;
 
@@ -3892,6 +3933,7 @@
           distance: Math.round(distance),
           time: estimateFlightTime(distance),
           class: document.getElementById("flightClass").value,
+		  co2_kg: calculatedCO2,
           flightNumber: document.getElementById("flightNumber").value.trim(),
           aircraftType: document.getElementById("aircraftType").value.trim(),
           notes: document.getElementById("notes").value.trim(),
@@ -4052,32 +4094,26 @@
 
             // KORRIGIERTER innerHTML Block
             flightElement.innerHTML = `
-                <div class="flex items-start gap-4 flex-grow">
-                    <div class="flex-shrink-0 ${milestoneColor} text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm" title="Flugbuch-Nummer">
-                        #${flight.flightLogNumber || "-"}
-                    </div>
-                    <div class="flex-grow">
-                        <p class="text-base md:text-lg font-bold text-indigo-700 dark:text-indigo-400">
-                            ${depName} (${flight.departure}) ➔ ${arrName} (${
-              flight.arrival
-            })
-                        </p>
-                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                            📅 ${flight.date} | ⏱️ ${
-              flight.time
-            } | 📏 ${flight.distance.toLocaleString("de-DE")} km
-                        </p>
-                        ${
-                          flight.flightNumber ||
-                          flight.aircraftType ||
-                          flight.class
-                            ? `<p class="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                                  Flug: ${flight.flightNumber || "-"} | Typ: ${
-                                flight.aircraftType || "-"
-                              } | Klasse: ${flight.class}
-                              </p>`
-                            : ""
-                        }
+                    <div class="flex items-start gap-4 flex-grow">
+                        <div class="flex-shrink-0 ${milestoneColor} ...">
+                            #${flight.flightLogNumber || "-"}
+                        </div>
+                        <div class="flex-grow">
+                            <p class="text-base md:text-lg font-bold text-indigo-700 dark:text-indigo-400">
+                                ${depName} (${flight.departure}) ➔ ${arrName} (${flight.arrival})
+                            </p>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                📅 ${flight.date} | ⏱️ ${flight.time} | 📏 ${flight.distance.toLocaleString("de-DE")} km
+                            </p>
+                            <p class="text-sm font-semibold text-red-600 dark:text-red-400 mt-1">
+                                🌍 ${flight.co2_kg ? flight.co2_kg.toLocaleString('de-DE') + ' kg CO₂' : 'k.A.'}
+                            </p>
+                            
+                            ${flight.flightNumber || flight.airline || flight.aircraftType ? // 'airline' hinzugefügt
+                                `<p class="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                                    Flug: ${flight.flightNumber || "-"} | Airline: ${flight.airline || "-"} | Typ: ${flight.aircraftType || "-"}
+                                </p>` : ""
+                            }
                         ${
                           flight.photo_url && flight.photo_url.length > 0
                             ? `<div class="mt-2 flex gap-2">${flight.photo_url
