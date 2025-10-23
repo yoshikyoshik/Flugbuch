@@ -3192,7 +3192,7 @@
       window.exportData = async function (format) {
             const allFlights = await getFlights(); // Lade alle Flüge asynchron
             const stats = calculateStatistics(allFlights);
-            const filename = `flugbuch_export_${new Date().toISOString().slice(0, 10)}`;
+            let filename = `flugbuch_export_${new Date().toISOString().slice(0, 10)}`;
             let data, mimeType;
 
             if (allFlights.length === 0) {
