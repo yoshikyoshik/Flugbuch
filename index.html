@@ -730,7 +730,10 @@
                   Gespeicherte Flüge
                 </h2>
                 <div class="flex flex-wrap items-center space-x-4">
-                  <button
+                  <button id="play-chronicle-btn" class="text-sm font-medium text-green-600 hover:text-green-800 p-2 rounded-lg bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 transition">
+					▶️ Chronik abspielen
+				  </button>
+				  <button
                     id="toggle-map-view-btn"
                     onclick="toggleAllRoutesView()"
                     class="text-sm font-medium text-indigo-600 hover:text-indigo-800 p-2 rounded-lg bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 transition"
@@ -1461,7 +1464,9 @@
       const ITEMS_PER_PAGE = 5;
       let flightsChartInstance, distanceChartInstance, timeChartInstance;
       let currentChartTimeframe = "year";
-      let isAppInitialized = false; // NEUER SCHUTZSCHALTER
+      let isAppInitialized = false; // SCHUTZSCHALTER
+	  let isAnimationRunning = false; // Steuert, ob die Animation gerade läuft
+	  
       var airportData = {
         FRA: {
           name: "Frankfurt",
@@ -3700,6 +3705,77 @@
           Object.keys(routeGroups).length
         } einzigartige Routen werden angezeigt.`;
       };
+	  
+		/**
+         * Eine Hilfsfunktion, die eine bestimmte Zeit in Millisekunden wartet.
+         * @param {number} ms - Die Zeit in Millisekunden.
+         */
+        function pause(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        /**
+         * Startet oder stoppt die Flugrouten-Animation.
+         */
+        function toggleAnimation() {
+            if (isAnimationRunning) {
+                isAnimationRunning = false;
+                const btn = document.getElementById('play-animation-btn');
+                btn.textContent = 'Chronik abspielen ▶️';
+                btn.classList.remove('text-red-600', 'hover:text-red-800');
+                btn.classList.add('text-green-600', 'hover:text-green-800');
+                renderFlights(); // Setzt die Karte auf den Standardzustand zurück
+            } else {
+                runAnimation();
+            }
+        }
+
+        /**
+         * Führt die Animation aus, indem alle Flüge chronologisch auf der Karte gezeichnet werden.
+         */
+        async function runAnimation() {
+            isAnimationRunning = true;
+            const btn = document.getElementById('play-animation-btn');
+            const mapInfo = document.getElementById('map-info');
+            
+            btn.textContent = 'Animation stoppen ⏹️';
+            btn.classList.add('text-red-600', 'hover:text-red-800');
+            btn.classList.remove('text-green-600', 'hover:text-green-800');
+
+            routeLayer.clearLayers();
+            
+            const allFlights = await getFlights();
+            // Wir brauchen hier die ursprüngliche Reihenfolge nach Datum
+            const sortedFlights = allFlights.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            map.setView([20, 0], 2); // Starte mit einer globalen Ansicht
+
+            for (let i = 0; i < sortedFlights.length; i++) {
+                if (!isAnimationRunning) { // Prüfe bei jedem Schritt, ob abgebrochen wurde
+                    console.log("Animation abgebrochen.");
+                    break;
+                }
+                
+                const flight = sortedFlights[i];
+                if (flight.depLat && flight.arrLat) {
+                    mapInfo.textContent = `Zeige Flug ${i + 1}/${sortedFlights.length}: ${flight.departure} → ${flight.arrival} am ${flight.date}`;
+                    
+                    // Zeichne die Route für diesen Flug
+                    const flightPath = L.polyline([[flight.depLat, flight.depLon], [flight.arrLat, flight.arrLon]], { color: "#312E81", weight: 2, opacity: 0.8 });
+                    flightPath.addTo(routeLayer);
+                    
+                    // Passe die Kartenansicht an die neue Route an
+                    map.fitBounds(flightPath.getBounds(), { padding: [50, 50], maxZoom: 5 });
+
+                    await pause(700); // Warte 700 Millisekunden bis zum nächsten Flug
+                }
+            }
+
+            if (isAnimationRunning) { // Nur wenn die Animation durchgelaufen ist
+                mapInfo.textContent = `Reise-Chronik abgeschlossen. ${sortedFlights.length} Flüge angezeigt.`;
+                toggleAnimation(); // Setzt den Button-Zustand zurück
+            }
+        }
 
       // *** Hauptfunktion (jetzt für Loggen & Aktualisieren) ***
       window.logFlight = async function () {
