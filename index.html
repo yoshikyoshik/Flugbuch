@@ -945,6 +945,16 @@
                   </div>
                 </div>
 
+				<div class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm">
+					<p class="text-xs font-medium text-gray-700 dark:text-gray-400">Daten-Import (JSON)</p>
+					<div class="flex space-x-2 mt-1 justify-center">
+						<input type="file" id="import-file-input" accept=".json" class="hidden">
+						<label for="import-file-input" class="text-xs py-1 px-2 bg-red-500 text-white rounded hover:bg-red-600 transition cursor-pointer">
+							JSON-Datei wählen...
+						</label>
+					</div>
+				</div>
+
                 <div
                   class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm col-span-2"
                 >
@@ -1865,7 +1875,7 @@
           routeLayer = L.layerGroup().addTo(map);
         }
 
-        // --- KORRIGIERTER BEREICH: Event-Listener ---
+        // --- Event-Listener: ---
 
 		// Listener für Flight-Number:
         document.getElementById('autofill-btn').addEventListener('click', autofillFlightData);
@@ -1937,8 +1947,10 @@
         document
           .getElementById("logbook-view-airport")
           .addEventListener("click", () => renderLogbookView("airport"));
+		  
+		document.getElementById('import-file-input').addEventListener('change', handleImport);
 
-        // --- ENDE KORRIGIERTER BEREICH ---
+        // --- ENDE Event-Listener ---
 
         // Initiales Rendern der App
         showTab("neue-fluege");
@@ -3178,99 +3190,145 @@
       }
 
       window.exportData = async function (format) {
-        // 'async' hinzugefügt
-        var flights = await getFlights(); // 'await' hinzugefügt
-        var stats = calculateStatistics(flights);
-        var filename = `flugbuch_export_${new Date()
-          .toISOString()
-          .slice(0, 10)}`;
-        var data, mimeType;
-        if (flights.length === 0) {
-          showMessage(
-            "Export Fehler",
-            "Keine Daten zum Exportieren vorhanden.",
-            "error"
-          );
-          return;
-        }
-        if (format === "json") {
-          var exportObj = {
-            metadata: {
-              totalFlights: stats.totalCount,
-              totalDistanceKm: stats.totalDistance,
-              totalFlightTime: stats.totalTimeString,
-              frequentAirport: stats.frequentAirport,
-            },
-            flights: flights,
-          };
-          data = JSON.stringify(exportObj, null, 2);
-          mimeType = "application/json";
-          filename += ".json";
-        } else if (format === "csv") {
-          var separator = ";";
-          var statsRows = [
-            ["Statistik", "Wert"],
-            ["Gesamte Flüge", stats.totalCount],
-            ["Gesamtdistanz (km)", stats.totalDistance],
-            ["Gesch. Gesamtflugzeit", stats.totalTimeString],
-            ["Häufigster Flughafen", stats.frequentAirport],
-          ]
-            .map(function (row) {
-              return row.join(separator);
-            })
-            .join("\n");
-          statsRows += "\n\n";
-          var flightKeys = [
-            "id",
-            "date",
-            "departure",
-            "arrival",
-            "distance",
-            "time",
-            "class",
-            "flightNumber",
-            "aircraftType",
-            "notes",
-          ];
-          var headers = flightKeys.join(separator);
-          var csvRows = flights
-            .map(function (flight) {
-              return flightKeys
-                .map(function (key) {
-                  var value =
-                    flight[key] !== undefined && flight[key] !== null
-                      ? "" + flight[key]
-                      : "";
-                  if (key === "id") {
-                    value = "'" + value.replace(/\..*/, "");
-                  }
-                  return '"' + value.replace(/"/g, '""') + '"';
-                })
-                .join(separator);
-            })
-            .join("\n");
-          data = "\uFEFF" + statsRows + headers + "\n" + csvRows;
-          mimeType = "text/csv;charset=utf-8;";
-          filename += ".csv";
-        } else {
-          return;
-        }
+            const allFlights = await getFlights(); // Lade alle Flüge asynchron
+            const stats = calculateStatistics(allFlights);
+            const filename = `flugbuch_export_${new Date().toISOString().slice(0, 10)}`;
+            let data, mimeType;
 
-        var blob = new Blob([data], { type: mimeType });
-        var url = URL.createObjectURL(blob);
-        var a = document.createElement("a");
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        showMessage(
-          "Export erfolgreich",
-          `Daten wurden als "${filename}" exportiert.`,
-          "success"
-        );
-      };
+            if (allFlights.length === 0) {
+                showMessage("Export Fehler", "Keine Daten zum Exportieren vorhanden.", "error");
+                return;
+            }
+
+            if (format === "json") {
+                // JSON-Export: Wir exportieren die Rohdaten der Flüge
+                const exportObj = {
+                    metadata: {
+                        export_date: new Date().toISOString(),
+                        totalFlights: stats.totalCount,
+                        totalDistanceKm: stats.totalDistance,
+                    },
+                    flights: allFlights, // Das Array mit allen Flugobjekten
+                };
+                data = JSON.stringify(exportObj, null, 2);
+                mimeType = "application/json";
+                filename += ".json";
+
+            } else if (format === "csv") {
+                const separator = ";";
+                // Definiere ALLE Spalten, die wir exportieren wollen
+                const flightKeys = [
+                    'flightLogNumber', 'date', 'departure', 'arrival', 'distance', 'time',
+                    'class', 'flightNumber', 'airline', 'aircraftType', 'price', 'currency', 'notes'
+                ];
+                const headers = flightKeys.join(separator);
+
+                const csvRows = allFlights.map(flight => {
+                    return flightKeys.map(key => {
+                        let value = (flight[key] !== undefined && flight[key] !== null) ? String(flight[key]) : "";
+                        // Werte mit Anführungszeichen umschließen, um Kommas/Semikolons im "notes"-Feld abzufangen
+                        return `"${value.replace(/"/g, '""')}"`;
+                    }).join(separator);
+                }).join("\n");
+
+                data = "\uFEFF" + headers + "\n" + csvRows; // BOM für Excel-Kompatibilität
+                mimeType = "text/csv;charset=utf-8;";
+                filename += ".csv";
+
+            } else {
+                return;
+            }
+
+            const blob = new Blob([data], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showMessage("Export erfolgreich", `Daten wurden als "${filename}" exportiert.`, "success");
+        };
+
+		/**
+         * Verarbeitet die hochgeladene JSON-Importdatei.
+         */
+        async function handleImport(event) {
+            const file = event.target.files[0];
+            if (!file) {
+                return; // Abbruch, wenn keine Datei gewählt wurde
+            }
+
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                let importData;
+                try {
+                    importData = JSON.parse(e.target.result);
+                    if (!importData.flights || !Array.isArray(importData.flights)) {
+                        throw new Error("JSON-Datei hat nicht das erwartete Format (fehlendes 'flights'-Array).");
+                    }
+                } catch (error) {
+                    showMessage("Import-Fehler", `Die Datei konnte nicht gelesen werden: ${error.message}`, "error");
+                    return;
+                }
+
+                const flightCount = importData.flights.length;
+                if (flightCount === 0) {
+                    showMessage("Import-Info", "Die JSON-Datei enthält keine Flüge.", "info");
+                    return;
+                }
+
+                // WICHTIGE SICHERHEITSABFRAGE
+                const confirmed = confirm(
+                    `ACHTUNG!\n\nDu bist dabei, ${flightCount} Flüge zu importieren. \n\n'OK' klicken: ALLE deine aktuell in der Cloud gespeicherten Flüge werden gelöscht und durch die Flüge aus der Datei ersetzt.\n'Abbrechen' klicken: Der Vorgang wird abgebrochen.`
+                );
+
+                if (!confirmed) {
+                    showMessage("Import abgebrochen", "Es wurden keine Daten geändert.", "info");
+                    event.target.value = null; // Setzt den Datei-Input zurück
+                    return;
+                }
+
+                try {
+                    const { data: { user } } = await supabaseClient.auth.getUser();
+                    if (!user) {
+                        throw new Error("Nutzer nicht authentifiziert.");
+                    }
+
+                    // 1. Alle alten Flüge für diesen Nutzer löschen
+                    const { error: deleteError } = await supabaseClient
+                        .from('flights')
+                        .delete()
+                        .eq('user_id', user.id);
+                    
+                    if (deleteError) throw deleteError;
+
+                    // 2. Die neuen Flüge vorbereiten (alle 'id'-Felder entfernen und 'user_id' setzen)
+                    const flightsToInsert = importData.flights.map(flight => {
+                        delete flight.id; // Entfernt die alte Supabase-ID
+                        return { ...flight, user_id: user.id };
+                    });
+
+                    // 3. Neue Flüge einfügen
+                    const { error: insertError } = await supabaseClient
+                        .from('flights')
+                        .insert(flightsToInsert);
+                    
+                    if (insertError) throw insertError;
+
+                    showMessage("Import erfolgreich!", `${flightCount} Flüge wurden importiert. Die Ansicht wird aktualisiert.`, "success");
+                    renderFlights(); // Lade die App neu
+
+                } catch (error) {
+                    showMessage("Import-Fehler", `Ein Datenbankfehler ist aufgetreten: ${error.message}`, "error");
+                } finally {
+                    event.target.value = null; // Setzt den Datei-Input zurück
+                }
+            };
+            
+            reader.readAsText(file);
+        }
 
       // *** Autocomplete-Logik ***
       async function updateAutocompleteList(inputId, listId) {
