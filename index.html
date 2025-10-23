@@ -2817,7 +2817,7 @@
                     }
 
 					// 1. Extrahiere den Airline-Code aus der Flugnummer (z.B. "EW" aus "EW9029")
-                    const airlineIataMatch = flightNumber.match(/^[A-Z0-9]{2,3}/);
+                    const airlineIataMatch = flightNumber.match(/^[A-Z0-9]{2}/);
                     let airlineName = '';
                     
                     if (airlineIataMatch) {
@@ -2883,7 +2883,7 @@
                     if (type === '') type = 'Unbekannt';
                     keys.push(type);
                 } else if (isAirlineView) { // Geändert
-                    const match = flight.flightNumber ? flight.flightNumber.match(/^[A-Z0-9]{2,3}/) : null;
+                    const match = flight.flightNumber ? flight.flightNumber.match(/^[A-Z0-9]{2}/) : null;
                     const airline = match ? match[0].toUpperCase() : 'Unbekannt';
                     keys.push(airline);
                 } else if (isAirportView) { 
