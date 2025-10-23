@@ -1443,6 +1443,13 @@
             description: "Einen epischen Flug über 12.000 km gemeistert",
           },
         ],
+		co2_total: [
+                { milestone: 1000, emoji: '💨', title: 'Bewusstsein: 1 Tonne', description: 'Du hast deine erste Tonne (1.000 kg) CO₂ erfasst.' },
+                { milestone: 5000, emoji: '🌍', title: 'Bewusstsein: 5 Tonnen', description: 'Du hast 5.000 kg CO₂ erfasst.' },
+                { milestone: 10000, emoji: '📈', title: 'Bewusstsein: 10 Tonnen', description: 'Du hast 10.000 kg CO₂ erfasst.' },
+                { milestone: 50000, emoji: '🏭', title: 'Bewusstsein: 50 Tonnen', description: 'Du hast 50.000 kg CO₂ erfasst.' },
+                { milestone: 100000, emoji: '🚨', title: 'Bewusstsein: 100 Tonnen', description: 'Du hast 100.000 kg CO₂ erfasst.' }
+            ]
       };
 
       let map;
@@ -2479,6 +2486,8 @@
         const longestFlightDistance = Math.max(
           ...allFlights.map((f) => f.distance)
         );
+		
+		const totalCO2 = allFlights.reduce((sum, flight) => sum + (flight.co2_kg || 0), 0);
 
         let html = "";
 
@@ -2497,6 +2506,7 @@
             value: longestFlightDistance,
             unit: "km",
           },
+		  { category: 'co2_total', value: totalCO2, unit: 'kg CO₂' }
         ];
 
         allAchievementTypes.forEach((type) => {
@@ -2507,28 +2517,18 @@
               100
             );
 
+			const progressBarColor = (type.category === 'co2_total') ? 'bg-red-500' : 'bg-indigo-500';
+
             html += `
-                        <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg flex items-center gap-4 ${
-                          isUnlocked ? "" : "opacity-40"
-                        }">
+                        <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg flex items-center gap-4 ${isUnlocked ? '' : 'opacity-40'}">
                             <span class="text-3xl">${achievement.emoji}</span>
                             <div>
-                                <h3 class="font-bold text-gray-800 dark:text-white">${
-                                  achievement.title
-                                }</h3>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">${
-                                  achievement.description
-                                }</p>
+                                <h3 class="font-bold text-gray-800 dark:text-white">${achievement.title}</h3>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">${achievement.description}</p>
                                 <div class="w-full bg-gray-300 dark:bg-gray-600 rounded-full h-2 mt-2">
-                                    <div class="bg-indigo-500 h-2 rounded-full" style="width: ${progressPercent}%"></div>
+                                    <div class="${progressBarColor} h-2 rounded-full" style="width: ${progressPercent}%"></div>
                                 </div>
-                                <p class="text-xs text-right text-gray-500 dark:text-gray-400 mt-1">${Math.round(
-                                  type.value
-                                ).toLocaleString(
-                                  "de-DE"
-                                )} / ${achievement.milestone.toLocaleString(
-              "de-DE"
-            )} ${type.unit}</p>
+                                <p class="text-xs text-right text-gray-500 dark:text-gray-400 mt-1">${Math.round(type.value).toLocaleString('de-DE')} / ${achievement.milestone.toLocaleString('de-DE')} ${type.unit}</p>
                             </div>
                         </div>
                     `;
