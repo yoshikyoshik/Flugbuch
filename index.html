@@ -589,6 +589,10 @@
                       class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3"
                     />
                   </div>
+				  <div>
+					<label for="airline" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Airline (Optional)</label>
+					<input type="text" id="airline" placeholder="z.B. Lufthansa" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3">
+				  </div>
                   <div>
                     <label
                       for="aircraftType"
@@ -2868,6 +2872,7 @@
                     document.getElementById('arrival').value = arrIata;
                     document.getElementById('aircraftType').value = flight.AIRCRAFT.split(' ')[0] || ''; // Nimm nur den Typ, z.B. "A320"
                     document.getElementById('flightNumber').value = flightNumber;
+					document.getElementById('airline').value = flight.airline.name || '';
                     document.getElementById('flightDate').value = flightDate; 
 
                     updateFlightDetails();
@@ -3426,6 +3431,7 @@
         document.getElementById("arrival").value = "";
         document.getElementById("flightDate").value = "";
         document.getElementById("flightNumber").value = "";
+		document.getElementById("airline").value = "";
         document.getElementById("aircraftType").value = "";
         document.getElementById("notes").value = "";
         document.getElementById("price").value = "";
@@ -3499,13 +3505,11 @@
         document.getElementById("arrival").value = flightToEdit.arrival;
         document.getElementById("flightDate").value = flightToEdit.date;
         document.getElementById("flightClass").value = flightToEdit.class;
-        document.getElementById("flightNumber").value =
-          flightToEdit.flightNumber;
-        document.getElementById("aircraftType").value =
-          flightToEdit.aircraftType;
+        document.getElementById("flightNumber").value = flightToEdit.flightNumber;
+		document.getElementById("airline").value = flightToEdit.airline || '';
+        document.getElementById("aircraftType").value = flightToEdit.aircraftType;
         document.getElementById("notes").value = flightToEdit.notes;
-        document.getElementById("price").value =
-          typeof flightToEdit.price === "number" ? flightToEdit.price : "";
+        document.getElementById("price").value = typeof flightToEdit.price === "number" ? flightToEdit.price : "";
         document.getElementById("currency").value = flightToEdit.currency || "";
 
         // Bearbeitungszustand setzen
@@ -3725,6 +3729,7 @@
           time: estimateFlightTime(distance),
           class: document.getElementById("flightClass").value,
           flightNumber: document.getElementById("flightNumber").value.trim(),
+		  airline: document.getElementById("airline").value.trim(),
           aircraftType: document.getElementById("aircraftType").value.trim(),
           notes: document.getElementById("notes").value.trim(),
           depLat: departureAirport.lat,
