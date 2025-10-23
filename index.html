@@ -2880,7 +2880,7 @@
             
             let isAirportView = (groupBy === 'airport');
             let isAircraftTypeView = (groupBy === 'aircraftType');
-            let isAirlineView = (groupBy === 'airline'); // NEU
+            let isAirlineView = (groupBy === 'airline'); 
 
             allFlights.forEach(flight => {
                 let keys = [];
@@ -2888,7 +2888,8 @@
                     let type = (flight.aircraftType || 'Unbekannt').trim().toUpperCase();
                     if (type === '') type = 'Unbekannt';
                     keys.push(type);
-                } else if (isAirlineView) { // Geändert
+                } else if (isAirlineView) { 
+                    // Wir verwenden den 2-stelligen IATA-Code als Schlüssel
                     const match = flight.flightNumber ? flight.flightNumber.match(/^[A-Z0-9]{2}/) : null;
                     const airline = match ? match[0].toUpperCase() : 'Unbekannt';
                     keys.push(airline);
@@ -2940,10 +2941,16 @@
                         </button>
                     `;
                 }
-                // NEUER BLOCK für Airlines
                 else if (isAirlineView && key !== 'Unbekannt') {
+                    // --- NEUE LOGIK HIER ---
+                    // Finde den vollen Airline-Namen aus dem ersten Flug, der ihn gespeichert hat
+                    const firstFlightWithName = group.flights.find(f => f.airline && f.airline.trim() !== '');
+                    // Wenn ein Name gefunden wurde (z.B. "Eurowings"), zeige "Eurowings (EW)"
+                    // Wenn nicht (z.B. bei alten Flügen), zeige nur den Code "EW"
+                    const displayLabel = firstFlightWithName ? `${firstFlightWithName.airline} (${key})` : key;
+
                     titleHtml = `
-                        ${key}
+                        ${displayLabel}
                         <button onclick="event.stopPropagation(); showAirlineDetails('${key}')" class="ml-2 p-1 rounded-full text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors duration-150" title="Details für ${key} anzeigen">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z" /></svg>
                         </button>
@@ -2978,7 +2985,7 @@
             document.querySelectorAll('.logbook-view-btn').forEach(btn => btn.classList.remove('active'));
             let buttonIdFragment = groupBy;
             if (groupBy === 'aircraftType') { buttonIdFragment = 'aircraft'; }
-            if (groupBy === 'airline') { buttonIdFragment = 'airline'; } // Sicherstellen, dass airline-Button auch hervorgehoben wird
+            if (groupBy === 'airline') { buttonIdFragment = 'airline'; } 
             const activeButton = document.getElementById(`logbook-view-${buttonIdFragment}`);
             if (activeButton) {
                 activeButton.classList.add('active');
