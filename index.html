@@ -203,7 +203,7 @@
         class="w-full max-w-md bg-white dark:bg-gray-800 shadow-2xl rounded-xl p-8"
       >
         <h1
-          class="text-3xl font-extrabold text-indigo-700 dark:text-indigo-400 mb-6 text-center"
+          data-i18n="appName" class="text-3xl font-extrabold text-indigo-700 dark:text-indigo-400 mb-6 text-center"
         >
           ✈️ Digitales Flugbuch
         </h1>
@@ -335,7 +335,7 @@
       >
         <div class="flex justify-between items-center mb-2">
           <h1
-            class="text-2xl md:text-4xl font-extrabold text-indigo-700 dark:text-indigo-400"
+            data-i18n="appName" class="text-2xl md:text-4xl font-extrabold text-indigo-700 dark:text-indigo-400"
           >
             ✈️ Digitales Flugbuch
           </h1>
@@ -396,6 +396,12 @@
                 >
 				<a href="#" onclick="event.preventDefault(); showTab('achievements')" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Errungenschaften</a>
               </div>
+			  
+			  <div class="border-b dark:border-gray-700 py-1 flex justify-around">
+				<button onclick="setLanguage('de')" class="p-2 text-sm font-medium rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">🇩🇪 DE</button>
+				
+				<button onclick="setLanguage('en')" class="p-2 text-sm font-medium rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">🇬🇧 EN</button>
+			  </div>
 			  
 			  <div class="border-b dark:border-gray-700 py-1">
 				<a href="#" onclick="event.preventDefault(); exportData('json'); toggleBurgerMenu();" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
@@ -509,7 +515,7 @@
           </div>
           <div class="py-6">
             <div id="tab-content-neue-fluege">
-              <p class="text-gray-500 dark:text-gray-400 mb-8">
+              <p data-i18n="tagline" class="text-gray-500 dark:text-gray-400 mb-8">
                 Wählen Sie einen Flughafen aus der Liste oder geben Sie einen
                 Code/Namen manuell ein.
               </p>
@@ -1479,6 +1485,8 @@
       let flightsChartInstance, distanceChartInstance, timeChartInstance;
       let currentChartTimeframe = "year";
       let isAppInitialized = false; // SCHUTZSCHALTER
+	  let currentLanguage = 'de'; // Standard-Sprache
+      let translations = {}; // Leeres Objekt, das die geladene Sprache hält
 	  
       var airportData = {
         FRA: {
@@ -1849,6 +1857,10 @@
       async function initializeApp() {
         if (isAppInitialized) return;
         isAppInitialized = true;
+		
+		// Kann wieder entfernt werden:
+		// const preferredLanguage = localStorage.getItem('preferredLanguage') || 'de';
+		// await setLanguage(preferredLanguage);
 
         document.getElementById("auth-container").classList.add("hidden");
         document.getElementById("app-container").classList.remove("hidden");
@@ -2234,6 +2246,56 @@
           localStorage.setItem("theme", "light");
         }
       }
+	  
+		/**
+         * Lädt die Übersetzungsdatei und startet die Übersetzung der Seite.
+         * @param {string} lang - Der Sprachcode (z.B. "de" or "en").
+         */
+        async function setLanguage(lang) {
+            try {
+                const response = await fetch(`locales/${lang}.json`);
+                
+                // NEU: Prüfen, ob die Datei gefunden wurde (behebt 404-Fehler)
+                if (!response.ok) {
+                    throw new Error(`Netzwerk-Antwort war nicht OK: ${response.statusText}`);
+                }
+
+                translations = await response.json();
+                currentLanguage = lang;
+                localStorage.setItem('preferredLanguage', lang);
+                translatePage();
+            } catch (error) {
+                // Diese Meldung siehst du jetzt, falls die JSON-Datei fehlt
+                console.error(`Sprachdatei ${lang}.json konnte nicht geladen werden:`, error);
+            }
+        }
+
+        /**
+         * Geht durch die Seite und ersetzt alle data-i18n-Schlüssel mit dem Text der geladenen Sprache.
+         */
+        function translatePage() {
+            document.querySelectorAll('[data-i18n]').forEach(element => {
+                const key = element.getAttribute('data-i18n');
+                const translation = getTranslation(key);
+                if (translation) {
+                    if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
+                        element.placeholder = translation;
+                    } else {
+                        element.textContent = translation;
+                    }
+                }
+            });
+        }
+
+        /**
+         * Holt eine Übersetzung anhand eines Schlüssels aus dem geladenen Sprachobjekt.
+         * Unterstützt verschachtelte Schlüssel wie "tabs.newFlight".
+         * @param {string} key - Der Übersetzungsschlüssel.
+         * @returns {string} Der übersetzte Text oder der Schlüssel selbst, falls nicht gefunden.
+         */
+        function getTranslation(key) {
+            return key.split('.').reduce((obj, k) => (obj && obj[k] !== 'undefined') ? obj[k] : key, translations);
+        }
 	  
 		/**
          * Berechnet den geschätzten CO2-Ausstoß in kg.
@@ -4548,7 +4610,11 @@
       // DER EINZIGE DOMContentLoaded-LISTENER GANZ AM ENDE
       // =================================================================
 
-      document.addEventListener("DOMContentLoaded", function () {
+      document.addEventListener("DOMContentLoaded", async function () {
+		
+		const preferredLanguage = localStorage.getItem('preferredLanguage') || 'de';
+		await setLanguage(preferredLanguage);
+		
         // Event-Listener NUR für die Auth-Formulare
         document
           .getElementById("login-form")

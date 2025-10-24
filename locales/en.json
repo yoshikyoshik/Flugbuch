@@ -1,0 +1,54 @@
+{
+    "appName": "Digital Flightbook",
+    "tagline": "Select an airport from the list or enter a code/name manually.",
+    "lastFlightMap": "Last Logged/Edited Flight",
+    "mapInfo": "Visualizing flight route.",
+    "tabs": {
+        "newFlight": "New Flight",
+        "flights": "Flights",
+        "stats": "Statistics",
+        "charts": "Charts",
+        "logbook": "Logbook",
+        "achievements": "Achievements"
+    },
+    "burgerMenu": {
+        "importJSON": "Import Data (JSON)...",
+        "exportJSON": "Export Data (JSON)",
+        "exportCSV": "Export Data (CSV)",
+        "changePassword": "Change Password",
+        "toggleMode": "Toggle Mode",
+        "logout": "Logout"
+    },
+    "form": {
+        "autopilotTitle": "Autopilot: Load Flight Data by Flight Number",
+        "flightNumber": "Flight Number",
+        "date": "Flight Date",
+        "buttonFetch": "Fetch Data",
+        "buttonFetching": "Fetching...",
+        "logNewFlight": "Log New Flight",
+        "from": "Departure (IATA/Name)",
+        "to": "Arrival (IATA/Name)",
+        "dateOptional": "Flight Date (Optional)",
+        "class": "Class/Purpose (Optional)",
+        "flightNumberOptional": "Flight Number (Optional)",
+        "airline": "Airline (Optional)",
+        "aircraft": "Aircraft Type (Optional)",
+        "price": "Ticket Price (Optional)",
+        "currency": "Currency (Optional)",
+        "photo": "Photo (Optional)",
+        "notes": "Notes (Optional)",
+        "notesPlaceholder": "Special occurrences or personal notes...",
+        "distEstimate": "Estimated Distance",
+        "timeEstimate": "Estimated Flight Time",
+        "co2Estimate": "Estimated CO₂ Footprint",
+        "buttonLogFlight": "Log and Save Flight",
+        "buttonSaveChanges": "Save Changes",
+        "buttonCancel": "Cancel"
+    },
+    "messages": {
+        "noDataFound": "No flight data found for this combination.",
+        "fetchError": "An error occurred.",
+        "importSuccess": "Flights were imported. The view will now refresh.",
+        "importConfirm": "WARNING! You are about to import {count} flights. All your current cloud-saved flights will be deleted and replaced."
+    }
+}

@@ -1,0 +1,54 @@
+{
+    "appName": "Digitales Flugbuch",
+    "tagline": "Wählen Sie einen Flughafen aus der Liste oder geben Sie einen Code/Namen manuell ein.",
+    "lastFlightMap": "Zuletzt geloggter/bearbeiteter Flug",
+    "mapInfo": "Flugroute wird visualisiert.",
+    "tabs": {
+        "newFlight": "Neuer Flug",
+        "flights": "Flüge",
+        "stats": "Statistiken",
+        "charts": "Charts",
+        "logbook": "Logbuch",
+        "achievements": "Errungenschaften"
+    },
+    "burgerMenu": {
+        "importJSON": "Daten Importieren (JSON)...",
+        "exportJSON": "Daten Exportieren (JSON)",
+        "exportCSV": "Daten Exportieren (CSV)",
+        "changePassword": "Passwort ändern",
+        "toggleMode": "Modus wechseln",
+        "logout": "Logout"
+    },
+    "form": {
+        "autopilotTitle": "Autopilot: Flugdaten per Flugnummer laden",
+        "flightNumber": "Flugnummer",
+        "date": "Flugdatum",
+        "buttonFetch": "Daten abrufen",
+        "buttonFetching": "Suche...",
+        "logNewFlight": "Neuen Flug loggen",
+        "from": "Abflugort (IATA/Name)",
+        "to": "Zielort (IATA/Name)",
+        "dateOptional": "Flugdatum (Optional)",
+        "class": "Klasse/Zweck (Optional)",
+        "flightNumberOptional": "Flugnummer (Optional)",
+        "airline": "Airline (Optional)",
+        "aircraft": "Flugzeugtyp (Optional)",
+        "price": "Ticketpreis (Optional)",
+        "currency": "Währung (Optional)",
+        "photo": "Foto (Optional)",
+        "notes": "Bemerkungen (Optional)",
+        "notesPlaceholder": "Besondere Vorkommnisse oder persönliche Notizen...",
+        "distEstimate": "Geschätzte Entfernung",
+        "timeEstimate": "Geschätzte Flugzeit",
+        "co2Estimate": "Geschätzter CO₂-Ausstoß",
+        "buttonLogFlight": "Flug loggen und speichern",
+        "buttonSaveChanges": "Änderungen speichern",
+        "buttonCancel": "Abbrechen"
+    },
+    "messages": {
+        "noDataFound": "Keine Flugdaten für diese Kombination gefunden.",
+        "fetchError": "Ein Problem ist aufgetreten.",
+        "importSuccess": "Flüge wurden importiert. Die Ansicht wird aktualisiert.",
+        "importConfirm": "ACHTUNG! Du bist dabei, {count} Flüge zu importieren. Alle deine aktuellen Flüge werden gelöscht und ersetzt."
+    }
+}
