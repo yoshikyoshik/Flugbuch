@@ -462,7 +462,7 @@
         </h2>
         <div class="mb-6">
           <p
-            id="map-info" data-i18n="mapInfo"
+            id="map-info" data-i18n="mapVisualization"
             class="text-center text-sm text-gray-700 dark:text-gray-300 mb-2 italic"
           >
             Flugroute wird visualisiert.
@@ -1495,7 +1495,7 @@
       let flightsChartInstance, distanceChartInstance, timeChartInstance;
       let currentChartTimeframe = "year";
       let isAppInitialized = false; // SCHUTZSCHALTER
-	  let currentLanguage = 'en'; // Standard-Sprache
+	  let currentLanguage = 'de'; // Standard-Sprache
       let translations = {}; // Leeres Objekt, das die geladene Sprache hält
 	  
       var airportData = {
@@ -2281,8 +2281,31 @@
          * Geht durch die Seite und ersetzt alle data-i18n-Schlüssel mit dem Text der geladenen Sprache.
          */
         function translatePage() {
-            document.querySelectorAll('[data-i18n]').forEach(element => {
-                const key = element.getAttribute('data-i18n');
+        document.querySelectorAll('[data-i18n]').forEach(element => {
+            const key = element.getAttribute('data-i18n');
+
+            // --- NEUE LOGIK FÜR DYNAMISCHE INHALTE ---
+            if (key === 'mapVisualization') {
+                const depName = element.getAttribute('data-dynamic-depName');
+
+                // Prüft, ob dynamische Daten vorhanden sind
+                if (depName) {
+                    // Ja: Baue den Text mit der NEUEN Sprache neu zusammen
+                    const template = getTranslation('mapVisualization'); // Holt die NEUE Sprachvorlage
+                    const translatedText = template
+                        .replace('{depName}', depName)
+                        .replace('{depCode}', element.getAttribute('data-dynamic-depCode'))
+                        .replace('{arrName}', element.getAttribute('data-dynamic-arrName'))
+                        .replace('{arrCode}', element.getAttribute('data-dynamic-arrCode'));
+                    element.textContent = translatedText;
+                } else {
+                    // Nein: Nutze den statischen Fallback-Text (z.B. "Flugroute wird visualisiert.")
+                    element.textContent = getTranslation('mapInfo'); 
+                }
+            // --- ENDE NEUE LOGIK ---
+
+            } else {
+                // Standard-Logik für alle anderen Elemente
                 const translation = getTranslation(key);
                 if (translation) {
                     if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
@@ -2291,8 +2314,9 @@
                         element.textContent = translation;
                     }
                 }
-            });
-        }
+            }
+        });
+    }
 
         /**
          * Holt eine Übersetzung anhand eines Schlüssels aus dem geladenen Sprachobjekt.
@@ -4443,9 +4467,11 @@
         routeLayer.clearLayers();
 
         if (!depLat || !arrLat) {
-          mapInfo.textContent = "Kein Flug geloggt oder Koordinaten fehlen.";
-          map.setView([20, 0], 2);
-          return;
+            // Setze statischen Text und entferne alte Daten-Attribute
+            mapInfo.textContent = getTranslation('mapInfo'); // z.B. "Kein Flug geloggt..."
+            mapInfo.removeAttribute('data-dynamic-depName');
+            map.setView([20, 0], 2);
+            return;
         }
 
         // NEU: Wetterdaten für Start und Ziel gleichzeitig abrufen
@@ -4484,22 +4510,27 @@
           ],
           { padding: [50, 50] }
         );
-       // mapInfo.textContent = `Visualisierung: ${depName} (${depCode}) → ${arrName} (${arrCode}).`;
-		
-			// 1. Hole die Übersetzungsvorlage
-			const template = getTranslation('mapVisualization'); 
+       
+	   // --- NEUE LOGIK HIER ---
+        // 1. Speichere die dynamischen Teile als "data-" Attribute
+        mapInfo.setAttribute('data-dynamic-depName', depName);
+        mapInfo.setAttribute('data-dynamic-depCode', depCode);
+        mapInfo.setAttribute('data-dynamic-arrName', arrName);
+        mapInfo.setAttribute('data-dynamic-arrCode', arrCode);
 
-			// 2. Ersetze die Platzhalter
-			const translatedText = template
-				.replace('{depName}', depName)
-				.replace('{depCode}', depCode)
-				.replace('{arrName}', arrName)
-				.replace('{arrCode}', arrCode);
+        // 2. Hole die Übersetzungsvorlage
+        const template = getTranslation('mapVisualization'); 
 
-			// 3. Setze den fertigen Text
-			mapInfo.textContent = translatedText;
-		
-      };
+        // 3. Ersetze die Platzhalter
+        const translatedText = template
+            .replace('{depName}', depName)
+            .replace('{depCode}', depCode)
+            .replace('{arrName}', arrName)
+            .replace('{arrCode}', arrCode);
+
+        // 4. Setze den fertigen Text
+        mapInfo.textContent = translatedText;
+    };
 
       /**
        * Aktualisiert die UI der Sortier-Buttons, um den aktiven Zustand anzuzeigen.
