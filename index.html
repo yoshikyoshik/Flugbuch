@@ -209,15 +209,15 @@
         </h1>
         <div id="auth-tabs" class="flex justify-center border-b mb-6">
           <button
-            onclick="switchAuthTab('login')"
+            onclick="switchAuthTab('login')" data-i18n="login"
             id="login-tab"
             class="auth-tab active-tab px-4 py-2 font-semibold"
           >
             Login
           </button>
           <button
-            onclick="switchAuthTab('register')"
-            id="register-tab"
+            onclick="switchAuthTab('register')" data-i18n="register"
+            id="register-tab" data-i18n="register"
             class="auth-tab px-4 py-2 font-semibold"
           >
             Registrieren
@@ -228,6 +228,7 @@
             type="email"
             id="login-email"
             placeholder="E-Mail"
+			data-i18n="placeholder.email"
             required
             class="w-full p-3 rounded-lg border-gray-300 dark:bg-gray-700 dark:border-gray-600"
           />
@@ -235,19 +236,20 @@
             type="password"
             id="login-password"
             placeholder="Passwort"
+			data-i18n="placeholder.password"
             required
             class="w-full p-3 rounded-lg border-gray-300 dark:bg-gray-700 dark:border-gray-600"
           />
           <div class="text-right">
             <a
               href="#"
-              onclick="event.preventDefault(); showPasswordResetForm();"
+              onclick="event.preventDefault(); showPasswordResetForm();" data-i18n="forgotPWD"
               class="text-sm font-medium text-indigo-600 hover:underline dark:text-indigo-400"
               >Passwort vergessen?</a
             >
           </div>
           <button
-            type="submit"
+            type="submit" data-i18n="login"
             class="w-full py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
           >
             Einloggen
@@ -258,6 +260,7 @@
             type="email"
             id="register-email"
             placeholder="E-Mail"
+			data-i18n="placeholder.email"
             required
             class="w-full p-3 rounded-lg border-gray-300 dark:bg-gray-700 dark:border-gray-600"
           />
@@ -265,19 +268,20 @@
             type="password"
             id="register-password"
             placeholder="Passwort"
+			data-i18n="placeholder.password"
             required
             class="w-full p-3 rounded-lg border-gray-300 dark:bg-gray-700 dark:border-gray-600"
           />
           <button
-            type="submit"
+            type="submit" data-i18n="register"
             class="w-full py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
           >
             Registrieren
           </button>
         </form>
         <div id="password-reset-container" class="hidden">
-          <form id="request-reset-form" class="space-y-4">
-            <p class="text-sm text-center text-gray-600 dark:text-gray-400">
+          <form id="request-reset-form" class="space-y-4"> 
+            <p data-i18n="newMail4Link4PWD"  class="text-sm text-center text-gray-600 dark:text-gray-400">
               Gib deine E-Mail-Adresse ein, um einen Link zum Zurücksetzen
               deines Passworts zu erhalten.
             </p>
@@ -285,29 +289,31 @@
               type="email"
               id="reset-email"
               placeholder="E-Mail"
+			  data-i18n="placeholder.email"
               required
               class="w-full p-3 rounded-lg border-gray-300 dark:bg-gray-700 dark:border-gray-600"
             />
             <button
-              type="submit"
+              type="submit" data-i18n="reset"
               class="w-full py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
             >
               Reset-Link anfordern
             </button>
           </form>
           <form id="update-password-form" class="space-y-4 hidden">
-            <p class="text-sm text-center text-gray-600 dark:text-gray-400">
+            <p data-i18n="enterNewPWD" class="text-sm text-center text-gray-600 dark:text-gray-400">
               Gib dein neues Passwort ein.
             </p>
             <input
               type="password"
               id="update-password-input"
               placeholder="Neues Passwort (mind. 6 Zeichen)"
+			  data-i18n="placeholder.newPassword"
               required
               class="w-full p-3 rounded-lg border-gray-300 dark:bg-gray-700 dark:border-gray-600"
             />
             <button
-              type="submit"
+              type="submit" data-i18n="saveNewPWD"
               class="w-full py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
             >
               Neues Passwort speichern
@@ -316,7 +322,7 @@
           <div class="text-center mt-4">
             <a
               href="#"
-              onclick="event.preventDefault(); backToLogin();"
+              onclick="event.preventDefault(); backToLogin();" data-i18n="backToLogin"
               class="text-sm font-medium text-indigo-600 hover:underline dark:text-indigo-400"
               >Zurück zum Login</a
             >
@@ -366,35 +372,35 @@
               <div class="md:hidden border-b dark:border-gray-700">
                 <a
                   href="#"
-                  onclick="event.preventDefault(); showTab('neue-fluege')"
+                  onclick="event.preventDefault(); showTab('neue-fluege'); toggleBurgerMenu();" data-i18n="burgerMenu.newFlight"
                   class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                   >Neuer Flug</a
                 >
                 <a
                   href="#"
-                  onclick="event.preventDefault(); showTab('fluege')"
+                  onclick="event.preventDefault(); showTab('fluege'); toggleBurgerMenu();" data-i18n="burgerMenu.flights"
                   class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                   >Flüge</a
                 >
                 <a
                   href="#"
-                  onclick="event.preventDefault(); showTab('stats')"
+                  onclick="event.preventDefault(); showTab('stats'); toggleBurgerMenu();" data-i18n="burgerMenu.stats"
                   class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                   >Statistiken</a
                 >
                 <a
                   href="#"
-                  onclick="event.preventDefault(); showTab('charts')"
+                  onclick="event.preventDefault(); showTab('charts'); toggleBurgerMenu();" data-i18n="burgerMenu.charts"
                   class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                   >Charts</a
                 >
                 <a
                   href="#"
-                  onclick="event.preventDefault(); showTab('logbook')"
+                  onclick="event.preventDefault(); showTab('logbook'); toggleBurgerMenu();" data-i18n="burgerMenu.logbook"
                   class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                   >Logbuch</a
                 >
-				<a href="#" onclick="event.preventDefault(); showTab('achievements')" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Errungenschaften</a>
+				<a href="#" onclick="event.preventDefault(); showTab('achievements'); toggleBurgerMenu();" data-i18n="burgerMenu.achievements" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Errungenschaften</a>
               </div>
 			  
 			  <div class="border-b dark:border-gray-700 py-1 flex justify-around">
@@ -404,13 +410,13 @@
 			  </div>
 			  
 			  <div class="border-b dark:border-gray-700 py-1">
-				<a href="#" onclick="event.preventDefault(); exportData('json'); toggleBurgerMenu();" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+				<a href="#" onclick="event.preventDefault(); exportData('json'); toggleBurgerMenu();" data-i18n="burgerMenu.exportJSON" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
 					Daten Exportieren (JSON)
 				</a>
-				<a href="#" onclick="event.preventDefault(); exportData('csv'); toggleBurgerMenu();" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+				<a href="#" onclick="event.preventDefault(); exportData('csv'); toggleBurgerMenu();" data-i18n="burgerMenu.exportCSV" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
 					Daten Exportieren (CSV)
 				</a>
-				<label for="import-file-input" class="block px-4 py-2 text-sm text-red-500 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
+				<label for="import-file-input" data-i18n="burgerMenu.importJSON" class="block px-4 py-2 text-sm text-red-500 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
 					Daten Importieren (JSON)...
 				</label>
 			  </div>
@@ -418,19 +424,19 @@
               <div class="py-1">
                 <a
                   href="#"
-                  onclick="event.preventDefault(); showPasswordChangeModal()"
+                  onclick="event.preventDefault(); showPasswordChangeModal()" data-i18n="burgerMenu.changePassword"
                   class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                   >Passwort ändern</a
                 >
                 <a
                   href="#"
-                  id="menu-theme-toggle"
+                  id="menu-theme-toggle" data-i18n="burgerMenu.toggleMode"
                   class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                   >Modus wechseln</a
                 >
                 <a
                   href="#"
-                  id="menu-logout-btn"
+                  id="menu-logout-btn" data-i18n="burgerMenu.logout"
                   class="block px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700"
                   >Logout</a
                 >
@@ -450,13 +456,13 @@
         </div>
 
         <h2
-          class="text-xl md:text-2xl font-bold text-gray-800 dark:text-white mb-4 border-b pb-2 border-gray-200 dark:border-gray-700"
+          data-i18n="lastFlightMap" class="text-xl md:text-2xl font-bold text-gray-800 dark:text-white mb-4 border-b pb-2 border-gray-200 dark:border-gray-700"
         >
           Zuletzt geloggter/bearbeiteter Flug
         </h2>
         <div class="mb-6">
           <p
-            id="map-info"
+            id="map-info" data-i18n="mapInfo"
             class="text-center text-sm text-gray-700 dark:text-gray-300 mb-2 italic"
           >
             Flugroute wird visualisiert.
@@ -471,42 +477,42 @@
             <nav class="hidden md:flex -mb-px space-x-6" aria-label="Tabs">
               <button
                 onclick="showTab('neue-fluege')"
-                id="tab-btn-neue-fluege"
+                id="tab-btn-neue-fluege" data-i18n="tabs.newFlight"
                 class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-indigo-500 text-indigo-600"
               >
                 Neuer Flug
               </button>
               <button
                 onclick="showTab('fluege')"
-                id="tab-btn-fluege"
+                id="tab-btn-fluege" data-i18n="tabs.flights"
                 class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-indigo-500 text-indigo-600"
               >
                 Flüge
               </button>
               <button
                 onclick="showTab('stats')"
-                id="tab-btn-stats"
+                id="tab-btn-stats" data-i18n="tabs.stats"
                 class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
               >
                 Statistiken
               </button>
               <button
                 onclick="showTab('charts')"
-                id="tab-btn-charts"
+                id="tab-btn-charts" data-i18n="tabs.charts"
                 class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
               >
                 Charts
               </button>
               <button
                 onclick="showTab('logbook')"
-                id="tab-btn-logbook"
+                id="tab-btn-logbook" data-i18n="tabs.logbook"
                 class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
               >
                 Logbuch
               </button>
               <button
                 onclick="showTab('achievements')"
-                id="tab-btn-achievements"
+                id="tab-btn-achievements" data-i18n="tabs.achievements"
                 class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
               >
                 Errungenschaften
@@ -521,27 +527,27 @@
               </p>
 			  
 			  <div class="bg-gray-50 dark:bg-gray-700 p-5 rounded-lg mb-6 shadow-inner border dark:border-gray-600">
-					<h3 class="text-lg font-semibold text-indigo-600 dark:text-indigo-400 mb-4 flex items-center gap-2">
+					<h3 data-i18n="autoPilot" class="text-lg font-semibold text-indigo-600 dark:text-indigo-400 mb-4 flex items-center gap-2">
 						<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
 						Autopilot: Flugdaten per Flugnummer laden
 					</h3>
 					<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
 						<div>
-							<label for="auto-flight-number" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Flugnummer</label>
-							<input type="text" id="auto-flight-number" placeholder="z.B. LH202" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3">
+							<label for="auto-flight-number" data-i18n="autoFlightNumber" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Flugnummer</label>
+							<input type="text" id="auto-flight-number" placeholder="z.B. LH202" data-i18n="placeholder.egFlightNumber" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3">
 						</div>
 						<div>
-							<label for="auto-flight-date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Flugdatum</label>
+							<label for="auto-flight-date" data-i18n="autoFlightDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Flugdatum</label>
 							<input type="date" id="auto-flight-date" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3">
 						</div>
-						<button id="autofill-btn" class="w-full py-3 px-4 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition">Daten abrufen</button>
+						<button id="autofill-btn" data-i18n="autofillBtn" class="w-full py-3 px-4 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition">Daten abrufen</button>
 					</div>
 				</div>
 			  
               <div
                 class="bg-indigo-50 dark:bg-gray-900 p-5 rounded-lg mb-6 shadow-inner"
               >
-                <h2
+                <h2 data-i18n="logNewFlight"
                   class="text-xl font-semibold text-indigo-600 dark:text-indigo-400 mb-4"
                 >
                   Neuen Flug loggen
@@ -549,7 +555,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div class="autocomplete-container">
                     <label
-                      for="departure"
+                      for="departure" data-i18n="departureNewFlight"
                       class="block text-sm font-medium text-gray-700 dark:text-gray-300"
                       >Abflugort (IATA/Name)</label
                     >
@@ -557,6 +563,7 @@
                       type="text"
                       id="departure"
                       placeholder="z.B. FRA"
+					  data-i18n="placeholder.egDeparture"
                       class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150"
                     />
                     <div
@@ -566,7 +573,7 @@
                   </div>
                   <div class="autocomplete-container">
                     <label
-                      for="arrival"
+                      for="arrival" data-i18n="arrivalNewFlight"
                       class="block text-sm font-medium text-gray-700 dark:text-gray-300"
                       >Zielort (IATA/Name)</label
                     >
@@ -574,6 +581,7 @@
                       type="text"
                       id="arrival"
                       placeholder="z.B. JFK"
+					  data-i18n="placeholder.egArrival"
                       class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150"
                     />
                     <div
@@ -585,7 +593,7 @@
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                   <div>
                     <label
-                      for="flightDate"
+                      for="flightDate" data-i18n="flightDateNewFlight"
                       class="block text-sm font-medium text-gray-700 dark:text-gray-300"
                       >Flugdatum (Optional)</label
                     ><input
@@ -596,45 +604,47 @@
                   </div>
                   <div>
                     <label
-                      for="flightClass"
+                      for="flightClass" data-i18n="flightClassNewFlight"
                       class="block text-sm font-medium text-gray-700 dark:text-gray-300"
                       >Klasse/Zweck (Optional)</label
                     ><select
                       id="flightClass"
                       class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 bg-white"
                     >
-                      <option value="Economy">Economy</option>
-                      <option value="Business">Business</option>
-                      <option value="First">First</option>
-                      <option value="Privat">Privat</option>
-                      <option value="Cargo">Cargo</option>
+						<option value="Economy" data-i18n="flightClassEconomy">Economy</option>
+						<option value="Business" data-i18n="flightClassBusiness">Business</option>
+						<option value="First" data-i18n="flightClassFirst">First</option>
+						<option value="Privat" data-i18n="flightClassPrivat">Privat</option>
+						<option value="Cargo" data-i18n="flightClassCargo">Cargo</option>
                     </select>
                   </div>
                   <div>
                     <label
-                      for="flightNumber"
+                      for="flightNumber" data-i18n="flightNumberNewFlight"
                       class="block text-sm font-medium text-gray-700 dark:text-gray-300"
                       >Flugnummer (Optional)</label
                     ><input
                       type="text"
                       id="flightNumber"
                       placeholder="z.B. LH400"
+					  data-i18n="placeholder.egFlightNumber"
                       class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3"
                     />
                   </div>
 				  <div>
-					<label for="airline" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Airline (Optional)</label>
-					<input type="text" id="airline" placeholder="z.B. Lufthansa" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3">
+					<label for="airline" data-i18n="airlineNewFlight" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Airline (Optional)</label>
+					<input type="text" id="airline" placeholder="z.B. Lufthansa" data-i18n="placeholder.egAirline" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3">
 				  </div>
                   <div>
                     <label
-                      for="aircraftType"
+                      for="aircraftType" data-i18n="aircraftTypeNewFlight"
                       class="block text-sm font-medium text-gray-700 dark:text-gray-300"
                       >Flugzeugtyp (Optional)</label
                     ><input
                       type="text"
                       id="aircraftType"
                       placeholder="z.B. B747-8"
+					  data-i18n="placeholder.egAircraft"
                       class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3"
                     />
                   </div>
@@ -643,7 +653,7 @@
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                   <div>
                     <label
-                      for="price"
+                      for="price" data-i18n="priceNewFlight"
                       class="block text-sm font-medium text-gray-700 dark:text-gray-300"
                       >Ticketpreis (Optional)</label
                     >
@@ -651,13 +661,14 @@
                       type="number"
                       id="price"
                       placeholder="z.B. 199.99"
+					  data-i18n="placeholder.egPrice"
                       step="0.01"
                       class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3"
                     />
                   </div>
                   <div>
                     <label
-                      for="currency"
+                      for="currency" data-i18n="currencyNewFlight"
                       class="block text-sm font-medium text-gray-700 dark:text-gray-300"
                       >Währung (Optional)</label
                     >
@@ -665,6 +676,7 @@
                       type="text"
                       id="currency"
                       placeholder="z.B. EUR"
+					  data-i18n="placeholder.egCurrency"
                       maxlength="3"
                       class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3"
                     />
@@ -672,28 +684,23 @@
                 </div>
 
                 <div class="mb-6">
-                  <label
-                    for="flightPhoto"
-                    class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                    >Foto (Optional)</label
-                  >
-                  <input
-                    type="file"
-                    id="flightPhoto"
-                    accept="image/*"
-                    class="mt-1 block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
-                    multiple
-                  />
-                  <div id="photo-preview-container" class="hidden mt-2">
-                    <p
-                      id="photo-preview-text"
-                      class="text-sm text-gray-600 dark:text-gray-400"
-                    ></p>
-                  </div>
-                </div>
+					<label data-i18n="form.photo" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Foto (Optional)</label>
+
+					<input type="file" id="flightPhoto" accept="image/*" class="hidden" multiple>
+
+					<label for="flightPhoto" data-i18n="form.chooseFile" class="mt-1 inline-block bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 cursor-pointer">
+						Datei auswählen...
+					</label>
+
+					<div id="photo-preview-container" class="inline-block ml-4">
+						<p id="photo-preview-text" class="text-sm text-gray-600 dark:text-gray-400" data-i18n="form.noFileSelected">
+							Keine Datei ausgewählt
+						</p>
+					</div>
+				</div>
                 <div class="mb-6">
                   <label
-                    for="notes"
+                    for="notes" data-i18n="notesNewFlight"
                     class="block text-sm font-medium text-gray-700 dark:text-gray-300"
                     >Bemerkungen (Optional)</label
                   >
@@ -701,20 +708,21 @@
                     id="notes"
                     rows="3"
                     placeholder="Besondere Vorkommnisse oder persönliche Notizen..."
+					data-i18n="form.notesPlaceholder"
                     class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 text-sm"
                   ></textarea>
                 </div>
                 <div class="grid grid-cols-2 md:grid-cols-3 gap-4 bg-indigo-100 dark:bg-indigo-900/50 p-4 rounded-lg border border-indigo-200 dark:border-indigo-800 mb-4">
 					<div>
-						<p class="text-xs font-medium text-indigo-700 dark:text-indigo-300">Geschätzte Entfernung</p>
+						<p data-i18n="estimatedDistanceNewFlight" class="text-xs font-medium text-indigo-700 dark:text-indigo-300">Geschätzte Entfernung</p>
 						<p id="distance-display" class="text-xl font-bold text-indigo-800 dark:text-indigo-400">-</p>
 					</div>
 					<div>
-						<p class="text-xs font-medium text-indigo-700 dark:text-indigo-300">Geschätzte Flugzeit</p>
+						<p data-i18n="estimatedFlightTimeNewFlight" class="text-xs font-medium text-indigo-700 dark:text-indigo-300">Geschätzte Flugzeit</p>
 						<p id="time-display" class="text-xl font-bold text-indigo-800 dark:text-indigo-400">-</p>
 					</div>
 					<div class="col-span-2 md:col-span-1">
-						<p class="text-xs font-medium text-red-700 dark:text-red-400">Geschätzter CO₂-Ausstoß</p>
+						<p data-i18n="estimatedCO2Emissions" class="text-xs font-medium text-red-700 dark:text-red-400">Geschätzter CO₂-Ausstoß</p>
 						<p id="co2-display" class="text-xl font-bold text-red-800 dark:text-red-400">-</p>
 					</div>
 				</div>
@@ -724,7 +732,7 @@
                   <button
                     onclick="logFlight()"
                     id="log-button"
-                    disabled
+                    disabled data-i18n="logFlightNewFlight"
                     class="w-full py-3 px-4 ..."
                   >
                     Flug loggen und speichern
@@ -1487,7 +1495,7 @@
       let flightsChartInstance, distanceChartInstance, timeChartInstance;
       let currentChartTimeframe = "year";
       let isAppInitialized = false; // SCHUTZSCHALTER
-	  let currentLanguage = 'de'; // Standard-Sprache
+	  let currentLanguage = 'en'; // Standard-Sprache
       let translations = {}; // Leeres Objekt, das die geladene Sprache hält
 	  
       var airportData = {
@@ -1934,21 +1942,18 @@
         document
           .getElementById("password-change-form")
           .addEventListener("submit", changePassword);
-        document
-          .getElementById("flightPhoto")
-          .addEventListener("change", (event) => {
-            const files = event.target.files;
-            const previewText = document.getElementById("photo-preview-text");
-            const previewContainer = document.getElementById(
-              "photo-preview-container"
-            );
-            if (files && files.length > 0) {
-              previewText.textContent = `${files.length} Foto(s) ausgewählt.`;
-              previewContainer.classList.remove("hidden");
-            } else {
-              previewContainer.classList.add("hidden");
-            }
-          });
+        document.getElementById('flightPhoto').addEventListener('change', (event) => {
+    const files = event.target.files;
+    const previewText = document.getElementById('photo-preview-text');
+
+    if (files && files.length > 0) {
+        // Verwendet den i18n-Schlüssel und ersetzt {count}
+        previewText.textContent = getTranslation('form.filesSelected').replace('{count}', files.length);
+    } else {
+        // Setzt den Text auf den Standard-i18n-Text zurück
+        previewText.textContent = getTranslation('form.noFileSelected');
+    }
+});
         document.getElementById("departure").addEventListener("input", () => {
           updateAutocompleteList("departure", "departure-list");
           updateFlightDetails();
@@ -2296,8 +2301,9 @@
          * @returns {string} Der übersetzte Text oder der Schlüssel selbst, falls nicht gefunden.
          */
         function getTranslation(key) {
-            return key.split('.').reduce((obj, k) => (obj && obj[k] !== 'undefined') ? obj[k] : key, translations);
-        }
+			// KORREKTUR: Prüft auf 'undefined' als Typ, nicht als String
+			return key.split('.').reduce((obj, k) => (obj && obj[k] !== undefined) ? obj[k] : key, translations);
+		}
 	  
 		/**
          * Berechnet den geschätzten CO2-Ausstoß in kg.
@@ -3553,7 +3559,7 @@
         document
           .getElementById("photo-preview-container")
           .classList.add("hidden");
-        document.getElementById("photo-preview-text").textContent = "";
+        document.getElementById("photo-preview-text").textContent = getTranslation('form.noFileSelected');
 
         // Zustand zurücksetzen
         currentlyEditingFlightData = null;
@@ -4478,7 +4484,21 @@
           ],
           { padding: [50, 50] }
         );
-        mapInfo.textContent = `Visualisierung: ${depName} (${depCode}) → ${arrName} (${arrCode}).`;
+       // mapInfo.textContent = `Visualisierung: ${depName} (${depCode}) → ${arrName} (${arrCode}).`;
+		
+			// 1. Hole die Übersetzungsvorlage
+			const template = getTranslation('mapVisualization'); 
+
+			// 2. Ersetze die Platzhalter
+			const translatedText = template
+				.replace('{depName}', depName)
+				.replace('{depCode}', depCode)
+				.replace('{arrName}', arrName)
+				.replace('{arrCode}', arrCode);
+
+			// 3. Setze den fertigen Text
+			mapInfo.textContent = translatedText;
+		
       };
 
       /**
