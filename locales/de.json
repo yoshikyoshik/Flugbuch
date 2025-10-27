@@ -110,5 +110,42 @@
         "fetchError": "Ein Problem ist aufgetreten.",
         "importSuccess": "Flüge wurden importiert. Die Ansicht wird aktualisiert.",
         "importConfirm": "ACHTUNG! Du bist dabei, {count} Flüge zu importieren. Alle deine aktuellen Flüge werden gelöscht und ersetzt."
+    },
+	"records": {
+        "longestFlight": "Längster Flug",
+        "shortestFlight": "Kürzester Flug",
+        "mostExpensive": "Teuerster Flug",
+        "highestCO2": "Höchster CO₂-Ausstoß",
+        "firstFlight": "Erster Flug",
+        "firstLongHaul": "Erster Langstreckenflug (>5000km)",
+        "firstPremiumFlight": "Erster {class}-Flug",
+        "firstA380": "Erster A380-Flug",
+        "firstEquator": "Äquator überquert",
+        "firstArctic": "Nördl. Polarkreis überquert",
+        "firstAntarctic": "Südl. Polarkreis überquert",
+        "firstMeridian": "Nullmeridian überquert",
+		"firstLongHaulDesc": "Fliege über 5.000 km in einem Flug.",
+        "firstPremiumFlightDesc": "Fliege in der Business- oder First-Class.",
+        "firstA380Desc": "Logge einen Flug in einem A380.",
+        "firstEquatorDesc": "Überquere den Äquator auf einem Flug.",
+        "firstArcticDesc": "Überquere den nördlichen Polarkreis.",
+        "firstAntarcticDesc": "Überquere den südlichen Polarkreis.",
+        "firstMeridianDesc": "Überquere den Nullmeridian.",
+		"firstVisitAsia": "Erster Besuch in Asien",
+        "firstVisitEurope": "Erster Besuch in Europa",
+        "firstVisitNorthAmerica": "Erster Besuch in Nordamerika",
+        "firstVisitSouthAmerica": "Erster Besuch in Südamerika",
+        "firstVisitAfrica": "Erster Besuch in Afrika",
+        "firstVisitOceania": "Erster Besuch in Ozeanien",
+        "firstVisitAntarctica": "Erster Besuch in der Antarktis",
+        
+        "firstVisitAsiaDesc": "Logge einen Flug zu einem Ziel in Asien.",
+        "firstVisitEuropeDesc": "Logge einen Flug zu einem Ziel in Europa.",
+        "firstVisitNorthAmericaDesc": "Logge einen Flug zu einem Ziel in Nordamerika.",
+        "firstVisitSouthAmericaDesc": "Logge einen Flug zu einem Ziel in Südamerika.",
+        "firstVisitAfricaDesc": "Logge einen Flug zu einem Ziel in Afrika.",
+        "firstVisitOceaniaDesc": "Logge einen Flug zu einem Ziel in Ozeanien.",
+        "firstVisitAntarcticaDesc": "Logge einen Flug zu einem Ziel in der Antarktis."
     }
+	
 }

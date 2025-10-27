@@ -1185,8 +1185,13 @@
                 </h2>
                 <div
                   id="achievements-container"
-                  class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
-                ></div>
+                  class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+				</div>
+				<h2 class="text-xl md:text-2xl font-bold text-gray-800 dark:text-gray-100 mt-8 border-t dark:border-gray-700 pt-6 mb-4">
+                  Persönliche Rekorde & "Firsts"
+                </h2>
+                <div id="records-container" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                </div>
               </div>
             </div>
           </div>
@@ -1268,7 +1273,35 @@
       const { createClient } = supabase;
       const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-      // Achievements
+      // Objekt zur Zuordnung von ISO-Ländercodes zu Kontinenten
+        const countryToContinent = {
+            "AF": "Asien", "AX": "Europa", "AL": "Europa", "DZ": "Afrika", "AS": "Ozeanien", "AD": "Europa", "AO": "Afrika", "AI": "Nordamerika", "AQ": "Antarktis", "AG": "Nordamerika",
+            "AR": "Südamerika", "AM": "Asien", "AW": "Nordamerika", "AU": "Ozeanien", "AT": "Europa", "AZ": "Asien", "BS": "Nordamerika", "BH": "Asien", "BD": "Asien", "BB": "Nordamerika",
+            "BY": "Europa", "BE": "Europa", "BZ": "Nordamerika", "BJ": "Afrika", "BM": "Nordamerika", "BT": "Asien", "BO": "Südamerika", "BA": "Europa", "BW": "Afrika", "BR": "Südamerika",
+            "IO": "Asien", "BG": "Europa", "BF": "Afrika", "BI": "Afrika", "KH": "Asien", "CM": "Afrika", "CA": "Nordamerika", "CV": "Afrika", "KY": "Nordamerika", "CF": "Afrika",
+            "TD": "Afrika", "CL": "Südamerika", "CN": "Asien", "CX": "Asien", "CC": "Asien", "CO": "Südamerika", "KM": "Afrika", "CG": "Afrika", "CD": "Afrika", "CK": "Ozeanien",
+            "CR": "Nordamerika", "CI": "Afrika", "HR": "Europa", "CU": "Nordamerika", "CY": "Asien", "CZ": "Europa", "DK": "Europa", "DJ": "Afrika", "DM": "Nordamerika", "DO": "Nordamerika",
+            "EC": "Südamerika", "EG": "Afrika", "SV": "Nordamerika", "GQ": "Afrika", "ER": "Afrika", "EE": "Europa", "ET": "Afrika", "FK": "Südamerika", "FO": "Europa", "FJ": "Ozeanien",
+            "FI": "Europa", "FR": "Europa", "GF": "Südamerika", "PF": "Ozeanien", "GA": "Afrika", "GM": "Afrika", "GE": "Asien", "DE": "Europa", "GH": "Afrika", "GI": "Europa",
+            "GR": "Europa", "GL": "Nordamerika", "GD": "Nordamerika", "GP": "Nordamerika", "GU": "Ozeanien", "GT": "Nordamerika", "GG": "Europa", "GN": "Afrika", "GW": "Afrika", "GY": "Südamerika",
+            "HT": "Nordamerika", "HN": "Nordamerika", "HK": "Asien", "HU": "Europa", "IS": "Europa", "IN": "Asien", "ID": "Asien", "IR": "Asien", "IQ": "Asien", "IE": "Europa",
+            "IM": "Europa", "IL": "Asien", "IT": "Europa", "JM": "Nordamerika", "JP": "Asien", "JE": "Europa", "JO": "Asien", "KZ": "Asien", "KE": "Afrika", "KI": "Ozeanien",
+            "KP": "Asien", "KR": "Asien", "KW": "Asien", "KG": "Asien", "LA": "Asien", "LV": "Europa", "LB": "Asien", "LS": "Afrika", "LR": "Afrika", "LY": "Afrika", "LI": "Europa",
+            "LT": "Europa", "LU": "Europa", "MO": "Asien", "MK": "Europa", "MG": "Afrika", "MW": "Afrika", "MY": "Asien", "MV": "Asien", "ML": "Afrika", "MT": "Europa", "MH": "Ozeanien",
+            "MQ": "Nordamerika", "MR": "Afrika", "MU": "Afrika", "YT": "Afrika", "MX": "Nordamerika", "FM": "Ozeanien", "MD": "Europa", "MC": "Europa", "MN": "Asien", "ME": "Europa",
+            "MS": "Nordamerika", "MA": "Afrika", "MZ": "Afrika", "MM": "Asien", "NA": "Afrika", "NR": "Ozeanien", "NP": "Asien", "NL": "Europa", "NC": "Ozeanien", "NZ": "Ozeanien",
+            "NI": "Nordamerika", "NE": "Afrika", "NG": "Afrika", "NU": "Ozeanien", "NF": "Ozeanien", "MP": "Ozeanien", "NO": "Europa", "OM": "Asien", "PK": "Asien", "PW": "Ozeanien",
+            "PS": "Asien", "PA": "Nordamerika", "PG": "Ozeanien", "PY": "Südamerika", "PE": "Südamerika", "PH": "Asien", "PN": "Ozeanien", "PL": "Europa", "PT": "Europa", "PR": "Nordamerika",
+            "QA": "Asien", "RE": "Afrika", "RO": "Europa", "RU": "Europa", "RW": "Afrika", "BL": "Nordamerika", "SH": "Afrika", "KN": "Nordamerika", "LC": "Nordamerika", "MF": "Nordamerika",
+            "PM": "Nordamerika", "VC": "Nordamerika", "WS": "Ozeanien", "SM": "Europa", "ST": "Afrika", "SA": "Asien", "SN": "Afrika", "RS": "Europa", "SC": "Afrika", "SL": "Afrika",
+            "SG": "Asien", "SX": "Nordamerika", "SK": "Europa", "SI": "Europa", "SB": "Ozeanien", "SO": "Afrika", "ZA": "Afrika", "GS": "Antarktis", "SS": "Afrika", "ES": "Europa",
+            "LK": "Asien", "SD": "Afrika", "SR": "Südamerika", "SJ": "Europa", "SZ": "Afrika", "SE": "Europa", "CH": "Europa", "SY": "Asien", "TW": "Asien", "TJ": "Asien", "TZ": "Afrika",
+            "TH": "Asien", "TL": "Asien", "TG": "Afrika", "TK": "Ozeanien", "TO": "Ozeanien", "TT": "Nordamerika", "TN": "Afrika", "TR": "Asien", "TM": "Asien", "TC": "Nordamerika",
+            "TV": "Ozeanien", "UG": "Afrika", "UA": "Europa", "AE": "Asien", "GB": "Europa", "US": "Nordamerika", "UY": "Südamerika", "UZ": "Asien", "VU": "Ozeanien", "VE": "Südamerika",
+            "VN": "Asien", "VG": "Nordamerika", "VI": "Nordamerika", "WF": "Ozeanien", "EH": "Afrika", "YE": "Asien", "ZM": "Afrika", "ZW": "Afrika"
+        };
+		
+	  // Achievements
       const achievements = {
         flights: [
           {
@@ -1707,6 +1740,16 @@
                 if (result.data && result.data.length > 0) {
                     const airport = result.data[0]; // Nimm das erste Element aus dem 'data'-Array
                     
+					// Speichere die neuen Infos (inkl. country_code) in DB & Cache
+                    await cacheAndSaveAirport({
+                        code: iataCode,
+                        name: airport.name,
+                        lat: airport.lat,
+                        lon: airport.lng,
+                        city: airport.city,
+                        country_code: airport.country_code
+                    });
+					
                     const content = `
                         <p><strong>Name:</strong> ${airport.name}</p>
                         <p><strong>Standort:</strong> ${airport.city}, ${airport.country_code}</p>
@@ -2200,7 +2243,8 @@
             name: airport.name,
             lat: airport.lat,
             lon: airport.lon,
-            city: airport.city, // KORREKTUR: Stadtinformation hinzufügen
+            city: airport.city,
+			country_code: airport.country_code
           };
         });
         console.log(`${data.length} Flughäfen aus der Datenbank geladen.`);
@@ -2262,7 +2306,6 @@
             try {
                 const response = await fetch(`locales/${lang}.json`);
                 
-                // NEU: Prüfen, ob die Datei gefunden wurde (behebt 404-Fehler)
                 if (!response.ok) {
                     throw new Error(`Netzwerk-Antwort war nicht OK: ${response.statusText}`);
                 }
@@ -2270,9 +2313,40 @@
                 translations = await response.json();
                 currentLanguage = lang;
                 localStorage.setItem('preferredLanguage', lang);
-                translatePage();
+                
+                // 1. Alle statischen Elemente (mit data-i18n) übersetzen
+                translatePage(); 
+
+                // --- NEUE LOGIK ---
+                // 2. Dynamische Inhalte des AKTIVEN Tabs neu laden,
+                //    damit sie die neuen Übersetzungen verwenden.
+                
+                // Prüfen, ob der Errungenschaften-Tab aktiv ist
+                if (!document.getElementById('tab-content-achievements').classList.contains('hidden')) {
+                    // Ja -> Lade die Errungenschaften neu (diese rufen intern getTranslation auf)
+                    updateAchievements();
+                }
+                
+                // Prüfen, ob der Logbuch-Tab aktiv ist
+                if (!document.getElementById('tab-content-logbook').classList.contains('hidden')) {
+                    // Ja -> Finde heraus, welche Ansicht aktiv ist und lade sie neu
+                    const activeBtn = document.querySelector('.logbook-view-btn.active');
+                    let view = 'aircraftType'; // Standard
+                    if (activeBtn) {
+                        if (activeBtn.id.includes('airline')) view = 'airline';
+                        if (activeBtn.id.includes('airport')) view = 'airport';
+                    }
+                    renderLogbookView(view);
+                }
+                
+                // Prüfen, ob der Charts-Tab aktiv ist (für zukünftige Übersetzungen der Chart-Titel)
+                if (!document.getElementById('tab-content-charts').classList.contains('hidden')) {
+                    const flights = await getFlights();
+                    updateCharts(flights, currentChartTimeframe);
+                }
+                // --- ENDE NEUE LOGIK ---
+
             } catch (error) {
-                // Diese Meldung siehst du jetzt, falls die JSON-Datei fehlt
                 console.error(`Sprachdatei ${lang}.json konnte nicht geladen werden:`, error);
             }
         }
@@ -2328,6 +2402,19 @@
 			// KORREKTUR: Prüft auf 'undefined' als Typ, nicht als String
 			return key.split('.').reduce((obj, k) => (obj && obj[k] !== undefined) ? obj[k] : key, translations);
 		}
+		
+		/**
+         * Findet den Kontinent für einen IATA-Code über den lokalen Cache.
+         * @param {string} iataCode - Der IATA-Code (z.B. "FRA").
+         * @returns {string|null} Der Kontinent (z.B. "Europa") or null.
+         */
+        function getContinentForAirport(iataCode) {
+            const airport = airportData[iataCode];
+            if (airport && airport.country_code) {
+                return countryToContinent[airport.country_code] || null;
+            }
+            return null;
+        }
 	  
 		/**
          * Berechnet den geschätzten CO2-Ausstoß in kg.
@@ -2457,28 +2544,30 @@
       }
 
       const cacheAndSaveAirport = async (airport) => {
-        if (airport && !airportData[airport.code]) {
-          airportData[airport.code] = {
+    // Prüft, ob der Eintrag fehlt ODER ob die country_code-Info fehlt
+    if (airport && (!airportData[airport.code] || !airportData[airport.code].country_code)) {
+        airportData[airport.code] = {
             name: airport.name,
             lat: airport.lat,
             lon: airport.lon,
             city: airport.city,
-          };
-          const { error } = await supabaseClient.from("airports").upsert({
+            country_code: airport.country_code // NEU
+        };
+
+        const { error } = await supabaseClient.from("airports").upsert({
             iata: airport.code,
             name: airport.name,
             lat: airport.lat,
             lon: airport.lon,
             city: airport.city,
-          });
-          if (error) {
-            console.error(
-              "Fehler beim Speichern des neuen Flughafens in Supabase:",
-              error
-            );
-          }
+            country_code: airport.country_code // NEU
+        });
+
+        if (error) {
+            console.error("Fehler beim Speichern des Flughafens:", error);
         }
-      };
+    }
+};
 
       var showMessage = function (title, message, type = "info") {
         const container = document.getElementById("toast-container");
@@ -2558,7 +2647,9 @@
         if (allFlights.length === 0) {
           container.innerHTML =
             '<p class="text-gray-500">Logge deinen ersten Flug, um Errungenschaften freizuschalten!</p>';
-          return;
+          // Auch den Rekord-Container leeren
+          document.getElementById('records-container').innerHTML = '<p class="text-gray-500 md:col-span-2">Noch keine Rekorde vorhanden.</p>';
+		  return;
         }
 
         // 1. Aktuelle Statistiken berechnen
@@ -2630,7 +2721,179 @@
         });
 
         container.innerHTML = html;
+		
+		// 3. Rekorde & Firsts berechnen und anzeigen
+        const sortedFlights = resequenceAndAssignNumbers([...allFlights]); // Sortierte Kopie erstellen
+        displayPersonalRecords(allFlights, sortedFlights);
       }
+	  
+		/**
+         * Erstellt den HTML-Code für einen einzelnen Rekord-Eintrag.
+         */
+        function formatRecordEntry(title, value, description) {
+            return `
+                <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg">
+                    <p class="text-xs font-medium text-gray-500 dark:text-gray-400">${title}</p>
+                    <p class="text-lg font-bold text-indigo-700 dark:text-indigo-400">${value}</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-300">${description}</p>
+                </div>
+            `;
+        }
+		
+		/**
+         * Erstellt den HTML-Code für einen noch nicht erreichten ("gesperrten") Rekord.
+         */
+        function formatLockedEntry(title, description) {
+            return `
+                <div class="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg opacity-40">
+                    <p class="text-xs font-medium text-gray-500 dark:text-gray-400">${title}</p>
+                    <p class="text-lg font-bold text-gray-400 dark:text-gray-500">???</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-300">${description}</p>
+                </div>
+            `;
+        }
+
+        /**
+         * Berechnet und zeigt die persönlichen Rekorde und "Firsts" an.
+         */
+        function displayPersonalRecords(allFlights, sortedFlights) {
+            const container = document.getElementById('records-container');
+            if (!container) return;
+
+            // --- 1. REKORDE BERECHNEN ---
+            const longestFlight = allFlights.reduce((max, f) => (f.distance > max.distance ? f : max), allFlights[0]);
+            const shortestFlight = allFlights.reduce((min, f) => (f.distance < min.distance ? f : min), allFlights[0]);
+            
+            const paidFlights = allFlights.filter(f => typeof f.price === 'number');
+            const mostExpensiveFlight = paidFlights.length > 0 ? paidFlights.reduce((max, f) => (f.price > max.price ? f : max), paidFlights[0]) : null;
+            
+            const co2Flights = allFlights.filter(f => typeof f.co2_kg === 'number');
+            const highestCo2Flight = co2Flights.length > 0 ? co2Flights.reduce((max, f) => (f.co2_kg > max.co2_kg ? f : max), co2Flights[0]) : null;
+
+            // --- 2. "FIRSTS" BERECHNEN ---
+            const firstFlight = sortedFlights[0];
+            const firstLongHaul = sortedFlights.find(f => f.distance > 5000);
+            const firstBusinessOrFirst = sortedFlights.find(f => f.class === 'Business' || f.class === 'First');
+            const firstA380 = sortedFlights.find(f => f.aircraftType && f.aircraftType.toUpperCase().includes('A380'));
+            
+            const firstEquator = sortedFlights.find(f => (f.depLat > 0 && f.arrLat < 0) || (f.depLat < 0 && f.arrLat > 0));
+            const firstArctic = sortedFlights.find(f => f.depLat > 66.5 || f.arrLat > 66.5);
+            const firstAntarctic = sortedFlights.find(f => f.depLat < -66.5 || f.arrLat < -66.5);
+            const firstMeridian = sortedFlights.find(f => (f.depLon > 0 && f.arrLon < 0) || (f.depLon < 0 && f.arrLon > 0));
+			
+			// KONTINENT-LOGIK
+            const firstContinents = {};
+            const continents = ["Asien", "Europa", "Nordamerika", "Südamerika", "Afrika", "Ozeanien", "Antarktis"];
+            
+            // Initialisiere alle Kontinente als "gesperrt" (null)
+            continents.forEach(c => firstContinents[c] = null); 
+            
+            // Gehe durch alle Flüge und finde den ERSTEN Besuch
+            for (const flight of sortedFlights) {
+                const continent = getContinentForAirport(flight.arrival);
+                if (continent && !firstContinents[continent]) {
+                    // Dies ist der erste Flug zu diesem Kontinent, den wir gefunden haben
+                    firstContinents[continent] = flight;
+                }
+            }
+            
+            // --- 3. HTML ERSTELLEN ---
+            let html = '';
+
+            // Rekorde (immer sichtbar)
+            html += formatRecordEntry(getTranslation('records.longestFlight'), `${longestFlight.distance.toLocaleString('de-DE')} km`, `${longestFlight.departure} → ${longestFlight.arrival}`);
+            html += formatRecordEntry(getTranslation('records.shortestFlight'), `${shortestFlight.distance.toLocaleString('de-DE')} km`, `${shortestFlight.departure} → ${shortestFlight.arrival}`);
+            
+            if (mostExpensiveFlight) {
+                html += formatRecordEntry(getTranslation('records.mostExpensive'), `${mostExpensiveFlight.price.toLocaleString('de-DE')} ${mostExpensiveFlight.currency}`, `${mostExpensiveFlight.departure} → ${mostExpensiveFlight.arrival}`);
+            }
+            if (highestCo2Flight) {
+                html += formatRecordEntry(getTranslation('records.highestCO2'), `${highestCo2Flight.co2_kg.toLocaleString('de-DE')} kg`, `${highestCo2Flight.departure} → ${highestCo2Flight.arrival}`);
+            }
+
+            // "Firsts" (jetzt mit "Gesperrt"-Zustand)
+            html += formatRecordEntry(getTranslation('records.firstFlight'), `${firstFlight.date}`, `${firstFlight.departure} → ${firstFlight.arrival}`);
+            
+            if (firstLongHaul) {
+                html += formatRecordEntry(getTranslation('records.firstLongHaul'), `${firstLongHaul.date}`, `${firstLongHaul.departure} → ${firstLongHaul.arrival}`);
+            } else {
+                html += formatLockedEntry(getTranslation('records.firstLongHaul'), getTranslation('records.firstLongHaulDesc'));
+            }
+
+            if (firstBusinessOrFirst) {
+                const title = getTranslation('records.firstPremiumFlight').replace('{class}', firstBusinessOrFirst.class);
+                html += formatRecordEntry(title, `${firstBusinessOrFirst.date}`, `${firstBusinessOrFirst.departure} → ${firstBusinessOrFirst.arrival}`);
+            } else {
+                const title = getTranslation('records.firstPremiumFlight').replace('{class}', 'Premium');
+                html += formatLockedEntry(title, getTranslation('records.firstPremiumFlightDesc'));
+            }
+
+            if (firstA380) {
+                html += formatRecordEntry(getTranslation('records.firstA380'), `${firstA380.date}`, `${firstA380.departure} → ${firstA380.arrival}`);
+            } else {
+                html += formatLockedEntry(getTranslation('records.firstA380'), getTranslation('records.firstA380Desc'));
+            }
+
+            if (firstEquator) {
+                html += formatRecordEntry(getTranslation('records.firstEquator'), `${firstEquator.date}`, `${firstEquator.departure} → ${firstEquator.arrival}`);
+            } else {
+                html += formatLockedEntry(getTranslation('records.firstEquator'), getTranslation('records.firstEquatorDesc'));
+            }
+            
+            if (firstArctic) {
+                html += formatRecordEntry(getTranslation('records.firstArctic'), `${firstArctic.date}`, `${firstArctic.departure} → ${firstArctic.arrival}`);
+            } else {
+                html += formatLockedEntry(getTranslation('records.firstArctic'), getTranslation('records.firstArcticDesc'));
+            }
+
+            if (firstAntarctic) {
+                html += formatRecordEntry(getTranslation('records.firstAntarctic'), `${firstAntarctic.date}`, `${firstAntarctic.departure} → ${firstAntarctic.arrival}`);
+            } else {
+                html += formatLockedEntry(getTranslation('records.firstAntarctic'), getTranslation('records.firstAntarcticDesc'));
+            }
+
+            if (firstMeridian) {
+                html += formatRecordEntry(getTranslation('records.firstMeridian'), `${firstMeridian.date}`, `${firstMeridian.departure} → ${firstMeridian.arrival}`);
+            } else {
+                html += formatLockedEntry(getTranslation('records.firstMeridian'), getTranslation('records.firstMeridianDesc'));
+            }
+			
+			// Kontinent-Meilensteine anzeigen
+            const continentToKeyMap = {
+                "Asien": "Asia",
+                "Europa": "Europe",
+                "Nordamerika": "NorthAmerica",
+                "Südamerika": "SouthAmerica",
+                "Afrika": "Africa",
+                "Ozeanien": "Oceania",
+                "Antarktis": "Antarctica"
+            };
+
+            // Iteriere über die deutschen Kontinentnamen aus der Logik
+            continents.forEach(continent => {
+                const flight = firstContinents[continent];
+                
+                // KORREKTUR: Baue den Schlüssel über das Mapping-Objekt
+                const keySuffix = continentToKeyMap[continent]; 
+                const titleKey = `records.firstVisit${keySuffix}`;
+                const descKey = `records.firstVisit${keySuffix}Desc`;
+                
+                if (flight) {
+                    html += formatRecordEntry(
+                        getTranslation(titleKey), // <-- KORREKTER SCHLÜSSEL
+                        `${flight.date}`, 
+                        `${flight.departure} → ${flight.arrival}`
+                    );
+                } else {
+                    html += formatLockedEntry(
+                        getTranslation(titleKey), // <-- KORREKTER SCHLÜSSEL
+                        getTranslation(descKey)  // <-- KORREKTER SCHLÜSSEL
+                    );
+                }
+            });
+
+            container.innerHTML = html;
+        }
 
       /**
        * Ermittelt eine CSS-Farbklasse basierend auf der Flugnummer und den Errungenschaften.

@@ -110,5 +110,42 @@
         "fetchError": "An error occurred.",
         "importSuccess": "Flights were imported. The view will now refresh.",
         "importConfirm": "WARNING! You are about to import {count} flights. All your current cloud-saved flights will be deleted and replaced."
+    },
+	"records": {
+        "longestFlight": "Longest Flight",
+        "shortestFlight": "Shortest Flight",
+        "mostExpensive": "Most Expensive Flight",
+        "highestCO2": "Highest CO₂ Footprint",
+        "firstFlight": "First Flight",
+        "firstLongHaul": "First Long-Haul (>5000km)",
+        "firstPremiumFlight": "First {class} Flight",
+        "firstA380": "First A380 Flight",
+        "firstEquator": "Crossed the Equator",
+        "firstArctic": "Crossed the Arctic Circle",
+        "firstAntarctic": "Crossed the Antarctic Circle",
+        "firstMeridian": "Crossed the Prime Meridian",
+		"firstLongHaulDesc": "Fly over 5,000 km in a single flight.",
+        "firstPremiumFlightDesc": "Fly in Business or First Class.",
+        "firstA380Desc": "Log a flight on an A380.",
+        "firstEquatorDesc": "Cross the Equator on a flight.",
+        "firstArcticDesc": "Cross the Arctic Circle.",
+        "firstAntarcticDesc": "Cross the Antarctic Circle.",
+        "firstMeridianDesc": "Cross the Prime Meridian.",
+		"firstVisitAsia": "First visit to Asia",
+        "firstVisitEurope": "First visit to Europe",
+        "firstVisitNorthAmerica": "First visit to North America",
+        "firstVisitSouthAmerica": "First visit to South America",
+        "firstVisitAfrica": "First visit to Africa",
+        "firstVisitOceania": "First visit to Oceania",
+        "firstVisitAntarctica": "First visit to Antarctica",
+        
+        "firstVisitAsiaDesc": "Log a flight to a destination in Asia.",
+        "firstVisitEuropeDesc": "Log a flight to a destination in Europe.",
+        "firstVisitNorthAmericaDesc": "Log a flight to a destination in North America.",
+        "firstVisitSouthAmericaDesc": "Log a flight to a destination in South America.",
+        "firstVisitAfricaDesc": "Log a flight to a destination in Africa.",
+        "firstVisitOceaniaDesc": "Log a flight to a destination in Oceania.",
+        "firstVisitAntarcticaDesc": "Log a flight to a destination in Antarctica."
+
     }
 }
