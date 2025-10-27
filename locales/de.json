@@ -146,6 +146,38 @@
         "firstVisitAfricaDesc": "Logge einen Flug zu einem Ziel in Afrika.",
         "firstVisitOceaniaDesc": "Logge einen Flug zu einem Ziel in Ozeanien.",
         "firstVisitAntarcticaDesc": "Logge einen Flug zu einem Ziel in der Antarktis."
+    },
+	
+	"flights": {
+        "title": "Gespeicherte Flüge",
+        "playChronicle": "▶️ Chronik abspielen",
+		"pauseChronicle": "⏸️ Pausieren",
+		"continueChronicle": "▶️ Fortsetzen",
+        "showAllRoutes": "Alle Routen zeigen",
+        "showSingleRoute": "Einzelansicht zeigen",
+        "refresh": "Aktualisieren",
+        "filterTitle": "Flüge filtern",
+        "filterDeparture": "Abflugort (IATA)",
+        "filterArrival": "Zielort (IATA)",
+        "filterDateFrom": "Datum (von)",
+        "filterDateTo": "Datum (bis)",
+        "filterButton": "Filtern",
+        "resetButton": "Reset",
+        "sortBy": "Sortieren nach:",
+        "sortDate": "Datum",
+        "sortRoute": "Route",
+        "sortDistance": "Distanz",
+        "prevButton": "‹ Zurück",
+        "nextButton": "Weiter ›",
+        "noFlights": "Noch keine Flüge geloggt.",
+        "pageInfo": "Seite {currentPage} von {totalPages}",
+        "flightNumberTitle": "Flugbuch-Nummer",
+        "editTitle": "Flug bearbeiten",
+        "deleteTitle": "Flug löschen",
+        "flightDetails": "Flug: {flightNumber} | Airline: {airline} | Typ: {aircraftType}",
+        "co2Info": "🌍 {co2} kg CO₂",
+        "mapOverview": "Gesamtübersicht: {count} einzigartige Routen werden angezeigt.",
+        "mapNoFlights": "Keine Flüge vorhanden, um eine Gesamtübersicht zu zeigen."
     }
 	
 }

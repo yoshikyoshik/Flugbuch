@@ -146,6 +146,36 @@
         "firstVisitAfricaDesc": "Log a flight to a destination in Africa.",
         "firstVisitOceaniaDesc": "Log a flight to a destination in Oceania.",
         "firstVisitAntarcticaDesc": "Log a flight to a destination in Antarctica."
-
+    },
+	"flights": {
+        "title": "Saved Flights",
+        "playChronicle": "▶️ Play Chronicle",
+		"pauseChronicle": "⏸️ Pause",
+		"continueChronicle": "▶️ Continue",
+        "showAllRoutes": "Show All Routes",
+        "showSingleRoute": "Show Single View",
+        "refresh": "Refresh",
+        "filterTitle": "Filter Flights",
+        "filterDeparture": "Departure (IATA)",
+        "filterArrival": "Arrival (IATA)",
+        "filterDateFrom": "Date (from)",
+        "filterDateTo": "Date (to)",
+        "filterButton": "Filter",
+        "resetButton": "Reset",
+        "sortBy": "Sort by:",
+        "sortDate": "Date",
+        "sortRoute": "Route",
+        "sortDistance": "Distance",
+        "prevButton": "‹ Previous",
+        "nextButton": "Next ›",
+        "noFlights": "No flights logged yet.",
+        "pageInfo": "Page {currentPage} of {totalPages}",
+        "flightNumberTitle": "Flight Log Number",
+        "editTitle": "Edit Flight",
+        "deleteTitle": "Delete Flight",
+        "flightDetails": "Flight: {flightNumber} | Airline: {airline} | Type: {aircraftType}",
+        "co2Info": "🌍 {co2} kg CO₂",
+        "mapOverview": "Overview: Displaying {count} unique routes.",
+        "mapNoFlights": "No flights available to display an overview."
     }
 }

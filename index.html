@@ -753,24 +753,24 @@
                 class="flex items-center justify-between mb-4 border-b pb-2 border-gray-200 dark:border-gray-700"
               >
                 <h2
-                  class="text-xl md:text-2xl font-bold text-gray-800 dark:text-white"
+                  class="text-xl md:text-2xl font-bold text-gray-800 dark:text-white" data-i18n="flights.title"
                 >
                   Gespeicherte Flüge
                 </h2>
                 <div class="flex flex-wrap items-center space-x-4">
-                  <button id="play-chronicle-btn" class="text-sm font-medium text-green-600 hover:text-green-800 p-2 rounded-lg bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 transition">
+                  <button id="play-chronicle-btn" class="text-sm font-medium text-green-600 hover:text-green-800 p-2 rounded-lg bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 transition" data-i18n="flights.playChronicle">
 					▶️ Chronik abspielen
 				  </button>
 				  <button
                     id="toggle-map-view-btn"
                     onclick="toggleAllRoutesView()"
-                    class="text-sm font-medium text-indigo-600 hover:text-indigo-800 p-2 rounded-lg bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 transition"
+                    class="text-sm font-medium text-indigo-600 hover:text-indigo-800 p-2 rounded-lg bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 transition" data-i18n="flights.showAllRoutes"
                   >
                     Alle Routen zeigen
                   </button>
                   <button
                     onclick="renderFlights()"
-                    class="text-sm font-medium text-indigo-600 hover:text-indigo-800 flex items-center p-2 rounded-lg bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 transition"
+                    class="text-sm font-medium text-indigo-600 hover:text-indigo-800 flex items-center p-2 rounded-lg bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 transition" data-i18n="flights.refresh"
                   >
                     Aktualisieren
                   </button>
@@ -780,7 +780,7 @@
                 class="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg mb-4 border border-gray-200 dark:border-gray-700"
               >
                 <h3
-                  class="text-lg font-semibold text-gray-800 dark:text-white mb-3"
+                  class="text-lg font-semibold text-gray-800 dark:text-white mb-3" data-i18n="flights.filterTitle"
                 >
                   Flüge filtern
                 </h3>
@@ -788,7 +788,7 @@
                   <div>
                     <label
                       for="filter-departure"
-                      class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                      class="block text-sm font-medium text-gray-700 dark:text-gray-300" data-i18n="flights.filterDeparture"
                       >Abflugort (IATA)</label
                     ><input
                       type="text"
@@ -800,7 +800,7 @@
                   <div>
                     <label
                       for="filter-arrival"
-                      class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                      class="block text-sm font-medium text-gray-700 dark:text-gray-300" data-i18n="flights.filterArrival"
                       >Zielort (IATA)</label
                     ><input
                       type="text"
@@ -812,7 +812,7 @@
                   <div>
                     <label
                       for="filter-date-from"
-                      class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                      class="block text-sm font-medium text-gray-700 dark:text-gray-300" data-i18n="flights.filterDateFrom"
                       >Datum (von)</label
                     ><input
                       type="date"
@@ -823,7 +823,7 @@
                   <div>
                     <label
                       for="filter-date-to"
-                      class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                      class="block text-sm font-medium text-gray-700 dark:text-gray-300" data-i18n="flights.filterDateTo"
                       >Datum (bis)</label
                     ><input
                       type="date"
@@ -834,12 +834,12 @@
                   <div class="flex space-x-2">
                     <button
                       onclick="applyFilters()"
-                      class="w-full py-2 px-4 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition"
+                      class="w-full py-2 px-4 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition" data-i18n="flights.filterButton"
                     >
                       Filtern</button
                     ><button
                       onclick="resetFilters()"
-                      class="w-full py-2 px-4 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition"
+                      class="w-full py-2 px-4 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition" data-i18n="flights.resetButton"
                     >
                       Reset
                     </button>
@@ -850,7 +850,7 @@
                 id="sort-bar"
                 class="flex flex-wrap items-center gap-2 mb-2 p-2 bg-gray-100 dark:bg-gray-700 rounded-md text-sm font-semibold"
               >
-                <span class="text-gray-600 dark:text-gray-300 mr-2"
+                <span class="text-gray-600 dark:text-gray-300 mr-2" data-i18n="flights.sortBy"
                   >Sortieren nach:</span
                 >
                 <button
@@ -863,21 +863,22 @@
                 <button
                   id="sort-btn-date"
                   onclick="setSortOrder('date')"
-                  class="sort-btn flex-shrink-0 px-3 py-1 rounded-md transition hover:bg-gray-300 dark:hover:bg-gray-500"
+                  class="sort-btn flex-shrink-0 px-3 py-1 rounded-md transition hover:bg-gray-300 dark:hover:bg-gray-500" data-i18n="flights.sortDate"
                 >
                   Datum
                 </button>
                 <button
-                  id="sort-btn-departure"
+				  id="sort-btn-departure"
                   onclick="setSortOrder('departure')"
-                  class="sort-btn flex-grow px-3 py-1 rounded-md transition hover:bg-gray-300 dark:hover:bg-gray-500 text-left"
+                  class="sort-btn flex-grow px-3 py-1 rounded-md transition hover:bg-gray-300 dark:hover:bg-gray-500 text-left" data-i18n="flights.sortRoute"
                 >
                   Route
                 </button>
+				
                 <button
                   id="sort-btn-distance"
                   onclick="setSortOrder('distance')"
-                  class="sort-btn flex-shrink-0 px-3 py-1 rounded-md transition hover:bg-gray-300 dark:hover:bg-gray-500"
+                  class="sort-btn flex-shrink-0 px-3 py-1 rounded-md transition hover:bg-gray-300 dark:hover:bg-gray-500" data-i18n="flights.sortDistance"
                 >
                   Distanz
                 </button>
@@ -893,7 +894,7 @@
                 <button
                   id="prev-page-btn"
                   onclick="prevPage()"
-                  class="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  class="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed" data-i18n="flights.prevButton">
                 >
                   ‹ Zurück
                 </button>
@@ -901,7 +902,7 @@
                 <button
                   id="next-page-btn"
                   onclick="nextPage()"
-                  class="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  class="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed" data-i18n="flights.nextButton"
                 >
                   Weiter ›
                 </button>
@@ -2317,10 +2318,17 @@
                 // 1. Alle statischen Elemente (mit data-i18n) übersetzen
                 translatePage(); 
 
-                // --- NEUE LOGIK ---
                 // 2. Dynamische Inhalte des AKTIVEN Tabs neu laden,
                 //    damit sie die neuen Übersetzungen verwenden.
                 
+				// Prüfen, ob der "Flüge"-Tab aktiv ist
+                if (!document.getElementById('tab-content-fluege').classList.contains('hidden')) {
+                    // Ja -> Lade die Flugliste neu.
+                    // renderFlights() behält die aktuelle Seite (currentPage) bei
+                    // und baut die Liste mit getTranslation('flights.flightDetails') neu auf.
+                    renderFlights(); 
+                }
+				
                 // Prüfen, ob der Errungenschaften-Tab aktiv ist
                 if (!document.getElementById('tab-content-achievements').classList.contains('hidden')) {
                     // Ja -> Lade die Errungenschaften neu (diese rufen intern getTranslation auf)
@@ -3948,11 +3956,11 @@
           allFlights = resequenceAndAssignNumbers(allFlights);
 
           drawAllRoutesOnMap(allFlights);
-          btn.textContent = "Einzelansicht zeigen";
+          btn.textContent = getTranslation('flights.showSingleRoute'); // KORRIGIERT
         } else {
           // Zurück zur Einzelansicht wechseln
           renderFlights(); // Stellt den Standardzustand wieder her
-          btn.textContent = "Alle Routen zeigen";
+          btn.textContent = getTranslation('flights.showAllRoutes'); // KORRIGIERT
         }
       };
 
@@ -3966,8 +3974,7 @@
         routeLayer.clearLayers();
 
         if (!flights || flights.length === 0) {
-          mapInfo.textContent =
-            "Keine Flüge vorhanden, um eine Gesamtübersicht zu zeigen.";
+          mapInfo.textContent = getTranslation('flights.mapNoFlights'); // KORRIGIERT
           map.setView([20, 0], 2);
           return;
         }
@@ -4054,9 +4061,9 @@
           map.fitBounds(bounds, { padding: [40, 40] });
         }
 
-        mapInfo.textContent = `Gesamtübersicht: ${
-          Object.keys(routeGroups).length
-        } einzigartige Routen werden angezeigt.`;
+        // KORRIGIERT
+		mapInfo.textContent = getTranslation('flights.mapOverview')
+			.replace('{count}', Object.keys(routeGroups).length);
       };
 	  
 		/**
@@ -4069,15 +4076,15 @@
          * Stoppt die laufende Reise-Chronik-Animation komplett und setzt sie zurück.
          */
         function stopAnimation() {
-            animationState = 'stopped'; // Setzt den Zustand auf "gestoppt"
-            animationStartIndex = 0;      // Setzt den Zähler zurück
-            
-            const btn = document.getElementById('play-chronicle-btn');
-            if (btn) {
-                btn.disabled = false;
-                btn.innerHTML = '▶️ Chronik abspielen';
-            }
-        }
+    animationState = 'stopped';
+    animationStartIndex = 0;    
+
+    const btn = document.getElementById('play-chronicle-btn');
+    if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = getTranslation('flights.playChronicle'); // KORRIGIERT
+    }
+}
 		
 		/**
          * Erstellt eine Liste von Zwischenpunkten zwischen einem Start- und Endpunkt.
@@ -4120,20 +4127,20 @@
 
             if (animationState === 'running') {
                 animationState = 'paused';
-                btn.innerHTML = '▶️ Fortsetzen';
+                btn.innerHTML = getTranslation('flights.continueChronicle');
                 return; 
             }
 
             if (animationState === 'paused') {
                 animationState = 'running';
-                btn.innerHTML = '⏸️ Pausieren';
+                btn.innerHTML = getTranslation('flights.pauseChronicle');
                 runAnimationLoop(); 
                 return;
             }
 
             animationState = 'running';
             animationStartIndex = 0; 
-            btn.innerHTML = '⏸️ Pausieren';
+            btn.innerHTML = getTranslation('flights.pauseChronicle');
             
             // Die invalidateSize/delay-Logik von hier wurde nach oben verschoben,
             // damit sie VOR der 'running'-Prüfung passiert.
@@ -4373,10 +4380,13 @@
           return;
         }
 
-        paginationControls.style.display = "flex";
-        pageInfo.textContent = `Seite ${currentPage} von ${totalPages}`;
-        prevBtn.disabled = currentPage === 1;
-        nextBtn.disabled = currentPage === totalPages;
+        // Dynamischen Text verwenden
+		pageInfo.textContent = getTranslation('flights.pageInfo')
+        .replace('{currentPage}', currentPage)
+        .replace('{totalPages}', totalPages);
+
+		prevBtn.disabled = currentPage === 1;
+		nextBtn.disabled = currentPage === totalPages;
       }
 
       /**
@@ -4547,7 +4557,7 @@
 
         isAllRoutesViewActive = false;
         document.getElementById("toggle-map-view-btn").textContent =
-          "Alle Routen zeigen";
+      getTranslation('flights.showAllRoutes');
 
         let allFlights = flightsToRender || (await getFlights());
 
@@ -4609,9 +4619,8 @@
         flightList.innerHTML = "";
 
         if (paginatedFlights.length === 0 && currentPage === 1) {
-          flightList.innerHTML =
-            '<p id="no-flights-message" class="log-placeholder text-gray-500 italic text-center py-4">Noch keine Flüge geloggt.</p>';
-        } else {
+          flightList.innerHTML = `<p id="no-flights-message" class="log-placeholder text-gray-500 italic text-center py-4">${getTranslation('flights.noFlights')}</p>`;
+} else {
           paginatedFlights.forEach((flight) => {
             const depName =
               airportData[flight.departure]?.name || flight.departure;
@@ -4626,26 +4635,30 @@
 
             // KORRIGIERTER innerHTML Block
             flightElement.innerHTML = `
-                    <div class="flex items-start gap-4 flex-grow">
-                        <div class="flex-shrink-0 ${milestoneColor} ...">
-                            #${flight.flightLogNumber || "-"}
-                        </div>
-                        <div class="flex-grow">
-                            <p class="text-base md:text-lg font-bold text-indigo-700 dark:text-indigo-400">
-                                ${depName} (${flight.departure}) ➔ ${arrName} (${flight.arrival})
-                            </p>
-                            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                📅 ${flight.date} | ⏱️ ${flight.time} | 📏 ${flight.distance.toLocaleString("de-DE")} km
-                            </p>
-                            <p class="text-sm font-semibold text-red-600 dark:text-red-400 mt-1">
-                                🌍 ${flight.co2_kg ? flight.co2_kg.toLocaleString('de-DE') + ' kg CO₂' : 'k.A.'}
-                            </p>
-                            
-                            ${flight.flightNumber || flight.airline || flight.aircraftType ? // 'airline' hinzugefügt
-                                `<p class="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                                    Flug: ${flight.flightNumber || "-"} | Airline: ${flight.airline || "-"} | Typ: ${flight.aircraftType || "-"}
-                                </p>` : ""
-                            }
+            <div class="flex items-start gap-4 flex-grow">
+                <div class="flex-shrink-0 ${milestoneColor} text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm" title="${getTranslation('flights.flightNumberTitle')}">
+                    #${flight.flightLogNumber || "-"}
+                </div>
+                <div class="flex-grow">
+                    <p class="text-base md:text-lg font-bold text-indigo-700 dark:text-indigo-400">
+                        ${depName} (${flight.departure}) ➔ ${arrName} (${flight.arrival})
+                    </p>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                        📅 ${flight.date} | ⏱️ ${flight.time} | 📏 ${flight.distance.toLocaleString("de-DE")} km
+                    </p>
+                    <p class="text-sm font-semibold text-red-600 dark:text-red-400 mt-1">
+                        ${getTranslation('flights.co2Info').replace('{co2}', flight.co2_kg ? flight.co2_kg.toLocaleString('de-DE') : 'k.A.')}
+                    </p>
+                    ${
+                      (flight.flightNumber || flight.airline || flight.aircraftType)
+                        ? `<p class="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                              ${getTranslation('flights.flightDetails')
+                                  .replace('{flightNumber}', flight.flightNumber || '-')
+                                  .replace('{airline}', flight.airline || '-')
+                                  .replace('{aircraftType}', flight.aircraftType || '-')}
+                          </p>`
+                        : ""
+                    }
                         ${
                           flight.photo_url && flight.photo_url.length > 0
                             ? `<div class="mt-2 flex gap-2">${flight.photo_url
@@ -4669,15 +4682,11 @@
                     </div>
                 </div>
                 <div class="flex flex-col md:flex-row items-center ml-2">
-                    <button onclick="editFlight(${
-                      flight.id
-                    })" class="p-2 text-blue-500 hover:text-blue-700 transition" title="Flug bearbeiten">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" /><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" /></svg>
+                <button onclick="editFlight(${flight.id})" class="p-2 text-blue-500 hover:text-blue-700 transition" title="${getTranslation('flights.editTitle')}">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" /><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" /></svg>
                     </button>
-                    <button onclick="deleteFlight(${
-                      flight.id
-                    })" class="p-2 text-red-500 hover:text-red-700 transition" title="Flug löschen">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
+                    <button onclick="deleteFlight(${flight.id})" class="p-2 text-red-500 hover:text-red-700 transition" title="${getTranslation('flights.deleteTitle')}">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
                     </button>
                 </div>
             `;
