@@ -590,8 +590,10 @@
                     ></div>
                   </div>
                 </div>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                  <div>
+                
+				
+				<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+					<div>
                     <label
                       for="flightDate" data-i18n="flightDateNewFlight"
                       class="block text-sm font-medium text-gray-700 dark:text-gray-300"
@@ -602,7 +604,7 @@
                       class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3"
                     />
                   </div>
-                  <div>
+				  <div>
                     <label
                       for="flightClass" data-i18n="flightClassNewFlight"
                       class="block text-sm font-medium text-gray-700 dark:text-gray-300"
@@ -618,35 +620,24 @@
 						<option value="Cargo" data-i18n="flightClassCargo">Cargo</option>
                     </select>
                   </div>
+				</div>
+				
+				<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-4">
                   <div>
-                    <label
-                      for="flightNumber" data-i18n="flightNumberNewFlight"
-                      class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                      >Flugnummer (Optional)</label
-                    ><input
-                      type="text"
-                      id="flightNumber"
-                      placeholder="z.B. LH400"
-					  data-i18n="placeholder.egFlightNumber"
-                      class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3"
-                    />
+                    <label for="flightNumber" data-i18n="form.flightNumberOptional" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Flugnummer (Optional)</label>
+                    <input type="text" id="flightNumber" placeholder="z.B. LH400" data-i18n="placeholder.egFlightNumber" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3">
                   </div>
-				  <div>
-					<label for="airline" data-i18n="airlineNewFlight" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Airline (Optional)</label>
+                  <div>
+					<label for="airline" data-i18n="form.airline" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Airline (Optional)</label>
 					<input type="text" id="airline" placeholder="z.B. Lufthansa" data-i18n="placeholder.egAirline" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3">
 				  </div>
                   <div>
-                    <label
-                      for="aircraftType" data-i18n="aircraftTypeNewFlight"
-                      class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                      >Flugzeugtyp (Optional)</label
-                    ><input
-                      type="text"
-                      id="aircraftType"
-                      placeholder="z.B. B747-8"
-					  data-i18n="placeholder.egAircraft"
-                      class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3"
-                    />
+                    <label for="aircraftType" data-i18n="form.aircraft" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Flugzeugtyp (Optional)</label>
+                    <input type="text" id="aircraftType" placeholder="z.B. A320" data-i18n="placeholder.egAircraft" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3">
+                  </div>
+                  
+                  <div class="md:col-start-1"> <label for="registration" data-i18n="form.registration" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Registrierung (Optional)</label>
+                    <input type="text" id="registration" placeholder="z.B. D-AINC" data-i18n="placeholder.egRegistration" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3">
                   </div>
                 </div>
 
@@ -1169,6 +1160,9 @@
                     >
                       Nach Flughafen
                     </button>
+					<button id="logbook-view-registration" class="logbook-view-btn px-3 py-1 rounded-md transition" data-i18n="logbook.byRegistration">
+						Nach Registrierung
+					</button>
                   </div>
                 </div>
                 <div id="logbook-content" class="mt-4 space-y-4"></div>
@@ -1847,6 +1841,9 @@
         document
           .getElementById("logbook-view-airport")
           .addEventListener("click", () => renderLogbookView("airport"));
+		document
+		  .getElementById("logbook-view-registration")
+		  .addEventListener("click", () => renderLogbookView("registration"));
 		  
 		document.getElementById('import-file-input').addEventListener('change', handleImport);
 
@@ -2963,76 +2960,79 @@
          * Ruft Flugdaten per Flugnummer und Datum ab und füllt das Formular aus.
          */
 	async function autofillFlightData() {
-            const flightNumber = document.getElementById('auto-flight-number').value.replace(/\s/g, '').trim().toUpperCase();
-            const flightDate = document.getElementById('auto-flight-date').value;
+    const flightNumber = document.getElementById('auto-flight-number').value.replace(/\s/g, '').trim().toUpperCase();
+    const flightDate = document.getElementById('auto-flight-date').value;
 
-            if (!flightNumber || !flightDate) {
-                showMessage('Fehler', 'Bitte Flugnummer UND Datum eingeben.', 'error');
-                return;
-            }
+    if (!flightNumber || !flightDate) {
+        showMessage(getTranslation('form.autopilotError'), 'error'); // i18n
+        return;
+    }
 
-            const btn = document.getElementById('autofill-btn');
-            btn.textContent = 'Suche...';
-            btn.disabled = true;
+    const btn = document.getElementById('autofill-btn');
+    btn.textContent = getTranslation('form.buttonFetching'); // i18n
+    btn.disabled = true;
 
-            try {
-                // Wir verwenden 'flight_number', wie von dir im Browser getestet
-                const response = await fetch(`https://aesthetic-strudel-ecfe50.netlify.app/.netlify/functions/fetch-flight-by-number?flight_number=${flightNumber}&date=${flightDate}`);
-                
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(errorText); 
-                }
+    try {
+        const response = await fetch(`https://aesthetic-strudel-ecfe50.netlify.app/.netlify/functions/fetch-flight-by-number?flight_number=${flightNumber}&date=${flightDate}`);
 
-                const result = await response.json();
-                console.log("Antwort von GoFlightLabs API:", JSON.stringify(result, null, 2));
-
-                // KORRIGIERTE ANTWORT-VERARBEITUNG
-                // 1. Prüfen, ob 'result.data' existiert und ein Objekt ist
-                // 2. Prüfen, ob dieses Objekt Einträge hat (z.B. "1", "2")
-                if (result.data && typeof result.data === 'object' && Object.keys(result.data).length > 0) {
-                    
-                    // Nimm den ersten Flug aus dem Objekt (den Schlüssel "1")
-                    const flightKey = Object.keys(result.data)[0];
-                    const flight = result.data[flightKey]; 
-                    
-                    // Verwende die neue Hilfsfunktion, um die IATA-Codes zu extrahieren
-                    const depIata = extractIata(flight.FROM);
-                    const arrIata = extractIata(flight.TO);
-
-                    if (!depIata || !arrIata) {
-                        throw new Error("Konnte IATA-Codes nicht aus der API-Antwort extrahieren.");
-                    }
-
-					// 1. Extrahiere den Airline-Code aus der Flugnummer (z.B. "EW" aus "EW9029")
-                    const airlineIataMatch = flightNumber.match(/^[A-Z0-9]{2}/);
-                    let airlineName = '';
-                    
-                    if (airlineIataMatch) {
-                        // 2. Rufe parallel den Airline-Namen ab
-                        airlineName = await fetchAirlineName(airlineIataMatch[0]);
-                    }
-
-                    document.getElementById('departure').value = depIata;
-                    document.getElementById('arrival').value = arrIata;
-                    document.getElementById('aircraftType').value = flight.AIRCRAFT.split(' ')[0] || ''; // Nimm nur den Typ, z.B. "A320"
-                    document.getElementById('flightNumber').value = flightNumber;
-					document.getElementById('airline').value = airlineName || '';
-                    document.getElementById('flightDate').value = flightDate; 
-
-                    updateFlightDetails();
-                    showMessage('Erfolg!', 'Flugdaten wurden erfolgreich geladen.', 'success');
-                } else {
-                    showMessage('Fehler', 'Keine Flugdaten für diese Kombination gefunden.', 'error');
-                }
-            } catch (error) {
-                console.error("Fehler beim Abrufen der Flugdaten:", error);
-                showMessage('Fehler', `Suche fehlgeschlagen: ${error.message}`, 'error');
-            } finally {
-                btn.textContent = 'Daten abrufen';
-                btn.disabled = false;
-            }
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(errorText); 
         }
+
+        const result = await response.json();
+
+        if (result.data && result.data.length > 0) {
+            const flight = result.data[0]; 
+
+            // --- DATEN EXTRAHIEREN ---
+            const depIata = flight.departure.airport.iata;
+            const arrIata = flight.arrival.airport.iata;
+            const airlineName = flight.airline.name;
+            const aircraftModel = flight.aircraft.model;
+            const registration = flight.aircraft.reg;
+
+            // --- FORMULAR FÜLLEN ---
+            document.getElementById('departure').value = depIata;
+            document.getElementById('arrival').value = arrIata;
+            document.getElementById('aircraftType').value = aircraftModel || '';
+            document.getElementById('flightNumber').value = flight.number;
+            document.getElementById('airline').value = airlineName || '';
+            document.getElementById('registration').value = registration || ''; // Das neue Feld!
+            document.getElementById('flightDate').value = flightDate; 
+
+            // --- FLUGHÄFEN IM HINTERGRUND SPEICHERN/CACHEN ---
+            // Wir übergeben alle Infos, die wir haben, an die Caching-Funktion
+            await cacheAndSaveAirport({
+                code: depIata,
+                name: flight.departure.airport.name,
+                lat: flight.departure.airport.location.lat,
+                lon: flight.departure.airport.location.lon,
+                city: flight.departure.airport.municipalityName,
+                country_code: flight.departure.airport.countryCode
+            });
+            await cacheAndSaveAirport({
+                code: arrIata,
+                name: flight.arrival.airport.name,
+                lat: flight.arrival.airport.location.lat,
+                lon: flight.arrival.airport.location.lon,
+                city: flight.arrival.airport.municipalityName,
+                country_code: flight.arrival.airport.countryCode
+            });
+
+            updateFlightDetails(); // Distanz, Zeit & CO2 berechnen
+            showMessage(getTranslation('form.autopilotSuccess'), 'success'); // i18n
+        } else {
+            showMessage(getTranslation('messages.noDataFound'), 'error');
+        }
+    } catch (error) {
+        console.error("Fehler beim Abrufen der Flugdaten:", error);
+        showMessage(getTranslation('messages.fetchError') + `: ${error.message}`, 'error');
+    } finally {
+        btn.textContent = getTranslation('form.buttonFetch'); // i18n
+        btn.disabled = false;
+    }
+}
 		
 	  
 	  /**
@@ -3065,6 +3065,7 @@
             let isAirportView = (groupBy === 'airport');
             let isAircraftTypeView = (groupBy === 'aircraftType');
             let isAirlineView = (groupBy === 'airline'); 
+			let isRegistrationView = (groupBy === 'registration');
 
             allFlights.forEach(flight => {
                 let keys = [];
@@ -3079,7 +3080,11 @@
                 } else if (isAirportView) { 
                     if (flight.departure) keys.push(flight.departure.toUpperCase());
                     if (flight.arrival) keys.push(flight.arrival.toUpperCase());
-                }
+                } else if (isRegistrationView) { // NEU
+					let reg = (flight.registration || unknownKey).trim().toUpperCase();
+					if (reg === '') reg = unknownKey;
+					keys.push(reg);
+				}
                 
                 keys.forEach(key => {
                     if(key === '') key = unknownKey; 
@@ -3141,6 +3146,7 @@
                         </button>
                     `;
                 }
+				// KEIN Info-Button für Registrierung, da es keine API dafür gibt
 
                 summaryElement.innerHTML = `
                     ${titleHtml} 
@@ -3174,6 +3180,7 @@
             let buttonIdFragment = groupBy;
             if (groupBy === 'aircraftType') { buttonIdFragment = 'aircraft'; }
             if (groupBy === 'airline') { buttonIdFragment = 'airline'; } 
+			if (groupBy === 'registration') { buttonIdFragment = 'registration'; }
             const activeButton = document.getElementById(`logbook-view-${buttonIdFragment}`);
             if (activeButton) {
                 activeButton.classList.add('active');
@@ -3626,6 +3633,7 @@
         document.getElementById("notes").value = "";
         document.getElementById("price").value = "";
         document.getElementById("currency").value = "";
+		document.getElementById("registration").value = "";
 
         // Foto-Feld und Vorschau zurücksetzen
         document.getElementById("flightPhoto").value = null;
@@ -3701,6 +3709,7 @@
         document.getElementById("notes").value = flightToEdit.notes;
         document.getElementById("price").value = typeof flightToEdit.price === "number" ? flightToEdit.price : "";
         document.getElementById("currency").value = flightToEdit.currency || "";
+		document.getElementById("registration").value = flightToEdit.registration || '';
 
         // Bearbeitungszustand setzen
         currentlyEditingFlightData = flightToEdit;
@@ -4113,6 +4122,7 @@
           currency:
             document.getElementById("currency").value.trim().toUpperCase() ||
             null,
+		  registration: document.getElementById("registration").value.trim().toUpperCase() || null,
         };
 
         const { error } = await supabaseClient
@@ -4270,6 +4280,7 @@
           currency:
             document.getElementById("currency").value.trim().toUpperCase() ||
             null,
+		  registration: document.getElementById("registration").value.trim().toUpperCase() || null,
         };
 
         const { error } = await supabaseClient
