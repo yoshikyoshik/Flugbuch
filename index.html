@@ -404,9 +404,9 @@
               </div>
 			  
 			  <div class="border-b dark:border-gray-700 py-1 flex justify-around">
-				<button onclick="setLanguage('de')" class="p-2 text-sm font-medium rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">🇩🇪 DE</button>
+				<button onclick="setLanguage('de'); toggleBurgerMenu();" class="p-2 text-sm font-medium rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">🇩🇪 DE</button>
 				
-				<button onclick="setLanguage('en')" class="p-2 text-sm font-medium rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">🇬🇧 EN</button>
+				<button onclick="setLanguage('en'); toggleBurgerMenu();" class="p-2 text-sm font-medium rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">🇬🇧 EN</button>
 			  </div>
 			  
 			  <div class="border-b dark:border-gray-700 py-1">
@@ -916,7 +916,7 @@
               >
                 <div class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm">
                   <p
-                    class="text-xs font-medium text-gray-700 dark:text-gray-400"
+                    class="text-xs font-medium text-gray-700 dark:text-gray-400" data-i18n="stats.totalFlights"
                   >
                     Gesamte Flüge
                   </p>
@@ -929,7 +929,7 @@
                 </div>
                 <div class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm">
                   <p
-                    class="text-xs font-medium text-gray-700 dark:text-gray-400"
+                    class="text-xs font-medium text-gray-700 dark:text-gray-400" data-i18n="stats.totalDistance"
                   >
                     Gesamtdistanz
                   </p>
@@ -942,7 +942,7 @@
                 </div>
                 <div class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm">
                   <p
-                    class="text-xs font-medium text-gray-700 dark:text-gray-400"
+                    class="text-xs font-medium text-gray-700 dark:text-gray-400" data-i18n="stats.frequentAirport"
                   >
                     Häufigster Flughafen
                   </p>
@@ -957,7 +957,7 @@
                   class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm col-span-2"
                 >
                   <p
-                    class="text-xs font-medium text-gray-700 dark:text-gray-400"
+                    class="text-xs font-medium text-gray-700 dark:text-gray-400" data-i18n="stats.totalSpending"
                   >
                     Gesamtausgaben
                   </p>
@@ -970,7 +970,7 @@
                 </div>
                 <div class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm">
                   <p
-                    class="text-xs font-medium text-gray-700 dark:text-gray-400"
+                    class="text-xs font-medium text-gray-700 dark:text-gray-400" data-i18n="stats.mostExpensive"
                   >
                     Teuerster Flug
                   </p>
@@ -983,7 +983,7 @@
                 </div>
                 <div class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm">
                   <p
-                    class="text-xs font-medium text-gray-700 dark:text-gray-400"
+                    class="text-xs font-medium text-gray-700 dark:text-gray-400" data-i18n="stats.leastExpensive"
                   >
                     Günstigster Flug
                   </p>
@@ -997,7 +997,7 @@
 
                 <div class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm">
                   <p
-                    class="text-xs font-medium text-gray-700 dark:text-gray-400"
+                    class="text-xs font-medium text-gray-700 dark:text-gray-400" data-i18n="stats.longestFlight"
                   >
                     Längster Flug
                   </p>
@@ -1010,7 +1010,7 @@
                 </div>
                 <div class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm">
                   <p
-                    class="text-xs font-medium text-gray-700 dark:text-gray-400"
+                    class="text-xs font-medium text-gray-700 dark:text-gray-400" data-i18n="stats.shortestFlight"
                   >
                     Kürzester Flug
                   </p>
@@ -1023,7 +1023,7 @@
                 </div>
                 <div class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm">
                   <p
-                    class="text-xs font-medium text-gray-700 dark:text-gray-400"
+                    class="text-xs font-medium text-gray-700 dark:text-gray-400" data-i18n="stats.avgDistance"
                   >
                     Ø Flugdistanz
                   </p>
@@ -1036,7 +1036,7 @@
                 </div>
                 <div class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm">
                   <p
-                    class="text-xs font-medium text-gray-700 dark:text-gray-400"
+                    class="text-xs font-medium text-gray-700 dark:text-gray-400" data-i18n="stats.frequentAircraft"
                   >
                     Häufigster Flugzeugtyp
                   </p>
@@ -1049,11 +1049,11 @@
                 </div>
 				
 				<div class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm">
-					<p class="text-xs font-medium text-gray-700 dark:text-gray-400">Ø CO₂ pro Flug</p>
+					<p class="text-xs font-medium text-gray-700 dark:text-gray-400" data-i18n="stats.avgCo2">Ø CO₂ pro Flug</p>
 					<p id="stat-avg-co2" class="text-xl font-bold text-red-800 dark:text-red-400">0 kg</p>
 				</div>
 				<div class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm col-span-2 md:col-span-1">
-					<p class="text-xs font-medium text-gray-700 dark:text-gray-400">Gesamter CO₂-Fußabdruck</p>
+					<p class="text-xs font-medium text-gray-700 dark:text-gray-400" data-i18n="stats.totalCo2">Gesamter CO₂-Fußabdruck</p>
 					<p id="stat-total-co2" class="text-xl font-bold text-red-800 dark:text-red-400">0 kg</p>
 				</div>
 				
@@ -1062,7 +1062,7 @@
                 >
                   <div class="flex items-center justify-between">
                     <p
-                      class="text-xs font-medium text-gray-700 dark:text-gray-400"
+                      class="text-xs font-medium text-gray-700 dark:text-gray-400" data-i18n="stats.yearlySummary"
                     >
                       Jahreszusammenfassung
                     </p>
@@ -1088,20 +1088,20 @@
                   class="flex justify-between items-center mb-4 border-b border-gray-200 dark:border-gray-600 pb-2"
                 >
                   <h2
-                    class="text-xl md:text-2xl font-bold text-gray-800 dark:text-gray-100"
+                    class="text-xl md:text-2xl font-bold text-gray-800 dark:text-gray-100" data-i18n="charts.title"
                   >
                     Visuelle Auswertungen
                   </h2>
                   <div class="flex items-center gap-2 text-sm">
                     <button
                       id="chart-view-year"
-                      class="chart-view-btn active px-3 py-1 rounded-md transition"
+                      class="chart-view-btn active px-3 py-1 rounded-md transition" data-i18n="charts.perYear"
                     >
                       Pro Jahr
                     </button>
                     <button
                       id="chart-view-month"
-                      class="chart-view-btn px-3 py-1 rounded-md transition"
+                      class="chart-view-btn px-3 py-1 rounded-md transition" data-i18n="charts.perMonth"
                     >
                       Pro Monat
                     </button>
@@ -1110,7 +1110,7 @@
                 <div class="grid grid-cols-1 gap-8 mt-4">
                   <div>
                     <h3
-                      class="font-semibold text-center text-gray-700 dark:text-gray-300 mb-2"
+                      class="font-semibold text-center text-gray-700 dark:text-gray-300 mb-2" data-i18n="charts.flightsOverTime"
                     >
                       Flüge pro Zeitraum
                     </h3>
@@ -1118,7 +1118,7 @@
                   </div>
                   <div>
                     <h3
-                      class="font-semibold text-center text-gray-700 dark:text-gray-300 mb-2"
+                      class="font-semibold text-center text-gray-700 dark:text-gray-300 mb-2" data-i18n="charts.distanceOverTime"
                     >
                       Distanz pro Zeitraum (km)
                     </h3>
@@ -1126,7 +1126,7 @@
                   </div>
                   <div>
                     <h3
-                      class="font-semibold text-center text-gray-700 dark:text-gray-300 mb-2"
+                      class="font-semibold text-center text-gray-700 dark:text-gray-300 mb-2" data-i18n="charts.durationOverTime"
                     >
                       Flugzeit pro Zeitraum
                     </h3>
@@ -1143,7 +1143,7 @@
                   class="flex justify-between items-center mb-4 border-b border-gray-200 dark:border-gray-600 pb-2"
                 >
                   <h2
-                    class="text-xl md:text-2xl font-bold text-gray-800 dark:text-gray-100"
+                    class="text-xl md:text-2xl font-bold text-gray-800 dark:text-gray-100" data-i18n="logbook.title"
                   >
                     Logbuch-Ansichten
                   </h2>
@@ -1153,19 +1153,19 @@
                   >
                     <button
                       id="logbook-view-aircraft"
-                      class="logbook-view-btn active px-3 py-1 rounded-md transition"
+                      class="logbook-view-btn active px-3 py-1 rounded-md transition" data-i18n="logbook.byAircraft"
                     >
                       Nach Flugzeugtyp
                     </button>
                     <button
                       id="logbook-view-airline"
-                      class="logbook-view-btn px-3 py-1 rounded-md transition"
+                      class="logbook-view-btn px-3 py-1 rounded-md transition" data-i18n="logbook.byAirline"
                     >
                       Nach Airline
                     </button>
                     <button
                       id="logbook-view-airport"
-                      class="logbook-view-btn px-3 py-1 rounded-md transition"
+                      class="logbook-view-btn px-3 py-1 rounded-md transition" data-i18n="logbook.byAirport"
                     >
                       Nach Flughafen
                     </button>
@@ -1180,7 +1180,7 @@
                 class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700"
               >
                 <h2
-                  class="text-xl md:text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4"
+                  class="text-xl md:text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4" data-i18n="achievements.title"
                 >
                   Deine Errungenschaften
                 </h2>
@@ -1188,7 +1188,7 @@
                   id="achievements-container"
                   class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 				</div>
-				<h2 class="text-xl md:text-2xl font-bold text-gray-800 dark:text-gray-100 mt-8 border-t dark:border-gray-700 pt-6 mb-4">
+				<h2 class="text-xl md:text-2xl font-bold text-gray-800 dark:text-gray-100 mt-8 border-t dark:border-gray-700 pt-6 mb-4" data-i18n="achievements.recordsTitle"> 
                   Persönliche Rekorde & "Firsts"
                 </h2>
                 <div id="records-container" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
@@ -1304,218 +1304,56 @@
 		
 	  // Achievements
       const achievements = {
-        flights: [
-          {
-            milestone: 1,
-            emoji: "🎉",
-            title: "Erster Eintrag",
-            description: "Dein erster Flug ist geloggt!",
-          },
-          {
-            milestone: 10,
-            emoji: "✈️",
-            title: "Vielflieger-Anwärter",
-            description: "10 Flüge geloggt",
-          },
-          {
-            milestone: 25,
-            emoji: "🛫",
-            title: "Bronze-Flieger",
-            description: "25 Flüge erreicht",
-          },
-          {
-            milestone: 50,
-            emoji: "🌍",
-            title: "Globetrotter",
-            description: "50 Flüge absolviert",
-          },
-          {
-            milestone: 100,
-            emoji: "💯",
-            title: "Hunderter-Club",
-            description: "100 Flüge gemeistert!",
-          },
-          {
-            milestone: 150,
-            emoji: "🌟",
-            title: "Silber-Status",
-            description: "150 Flüge im Logbuch",
-          },
-          {
-            milestone: 250,
-            emoji: "🏆",
-            title: "Gold-Status",
-            description: "250 Flüge erreicht!",
-          },
-          {
-            milestone: 500,
-            emoji: "🚀",
-            title: "Luftfahrt-Legende",
-            description: "500 Flüge, unglaublich!",
-          },
-          {
-            milestone: 750,
-            emoji: "💎",
-            title: "Diamant-Status",
-            description: "750 Flüge, der Himmel gehört dir!",
-          },
-          {
-            milestone: 1000,
-            emoji: "🌌",
-            title: "Meister der Lüfte",
-            description: "1.000 Flüge geloggt!",
-          },
-        ],
-        distance: [
-          {
-            milestone: 10000,
-            emoji: "🏃",
-            title: "Zehntausender-Marke",
-            description: "10.000 km zurückgelegt",
-          },
-          {
-            milestone: 40075,
-            emoji: "🌐",
-            title: "Weltumrunder",
-            description: "Einmal um den Äquator geflogen (40.075 km)",
-          },
-          {
-            milestone: 100000,
-            emoji: "✨",
-            title: "Sechsstellige Distanz",
-            description: "100.000 km geknackt",
-          },
-          {
-            milestone: 250000,
-            emoji: "🏅",
-            title: "Viertelmillionär",
-            description: "250.000 km in der Luft",
-          },
-          {
-            milestone: 384400,
-            emoji: "🌕",
-            title: "Mond-Reisender",
-            description: "Die Distanz zum Mond zurückgelegt (384.400 km)",
-          },
-          {
-            milestone: 500000,
-            emoji: "🌠",
-            title: "Halbe Million",
-            description: "500.000 km gereist",
-          },
-          {
-            milestone: 768800,
-            emoji: "🛰️",
-            title: "Hin und Zurück",
-            description:
-              "Die Distanz zum Mond und zurück zur Erde (768.800 km)",
-          },
-          {
-            milestone: 1000000,
-            emoji: "💥",
-            title: "Distanz-Millionär",
-            description: "Eine Million Kilometer geflogen!",
-          },
-        ],
-        time: [
-          // in Stunden
-          {
-            milestone: 24,
-            emoji: "☀️",
-            title: "Rund um die Uhr",
-            description: "24 Stunden in der Luft verbracht",
-          },
-          {
-            milestone: 100,
-            emoji: "🗓️",
-            title: "Hundert Stunden",
-            description: "Über 100 Stunden Flugzeit",
-          },
-          {
-            milestone: 500,
-            emoji: "🕰️",
-            title: "500-Stunden-Marke",
-            description: "Mehr als 20 Tage im Flugzeug verbracht",
-          },
-          {
-            milestone: 1000,
-            emoji: "⏳",
-            title: "Tausend Stunden Flugzeit",
-            description: "Über 1.000 Stunden in der Luft",
-          },
-          {
-            milestone: 2500,
-            emoji: "✨",
-            title: "Viertausend Stunden",
-            description: "Mehr als 100 Tage Flugzeit",
-          },
-          {
-            milestone: 8760,
-            emoji: "💫",
-            title: "Ein Jahr im Himmel",
-            description: "Ein ganzes Jahr (8.760h) in der Luft verbracht",
-          },
-        ],
-        uniqueAirports: [
-          {
-            milestone: 10,
-            emoji: "🗺️",
-            title: "Entdecker",
-            description: "10 verschiedene Flughäfen besucht",
-          },
-          {
-            milestone: 25,
-            emoji: "🧭",
-            title: "Weltenbummler",
-            description: "25 einzigartige Flughäfen im Logbuch",
-          },
-          {
-            milestone: 50,
-            emoji: "🏛️",
-            title: "Kultursammler",
-            description: "50 verschiedene Flughäfen gesehen",
-          },
-          {
-            milestone: 100,
-            emoji: "🗽",
-            title: "Hub-Hopper",
-            description: "100 einzigartige Flughäfen angeflogen!",
-          },
-        ],
-        longestFlight: [
-          {
-            milestone: 3000,
-            emoji: "✈️",
-            title: "Langstrecken-Debüt",
-            description: "Ein Flug über 3.000 km",
-          },
-          {
-            milestone: 5000,
-            emoji: "🛫",
-            title: "Kontinentspringer",
-            description: "Einen Flug über 5.000 km absolviert",
-          },
-          {
-            milestone: 8000,
-            emoji: "🌊",
-            title: "Ozean-Überquerer",
-            description: "Ein Flug über 8.000 km",
-          },
-          {
-            milestone: 12000,
-            emoji: "🚀",
-            title: "Ultra-Langstrecke",
-            description: "Einen epischen Flug über 12.000 km gemeistert",
-          },
-        ],
-		co2_total: [
-                { milestone: 1000, emoji: '💨', title: 'Bewusstsein: 1 Tonne', description: 'Du hast deine erste Tonne (1.000 kg) CO₂ erfasst.' },
-                { milestone: 5000, emoji: '🌍', title: 'Bewusstsein: 5 Tonnen', description: 'Du hast 5.000 kg CO₂ erfasst.' },
-                { milestone: 10000, emoji: '📈', title: 'Bewusstsein: 10 Tonnen', description: 'Du hast 10.000 kg CO₂ erfasst.' },
-                { milestone: 50000, emoji: '🏭', title: 'Bewusstsein: 50 Tonnen', description: 'Du hast 50.000 kg CO₂ erfasst.' },
-                { milestone: 100000, emoji: '🚨', title: 'Bewusstsein: 100 Tonnen', description: 'Du hast 100.000 kg CO₂ erfasst.' }
+            flights: [
+                { milestone: 1, emoji: '🎉', key: '1' },
+                { milestone: 10, emoji: '✈️', key: '10' },
+                { milestone: 25, emoji: '🛫', key: '25' },
+                { milestone: 50, emoji: '🌍', key: '50' },
+                { milestone: 100, emoji: '💯', key: '100' },
+                { milestone: 150, emoji: '🌟', key: '150' },
+                { milestone: 250, emoji: '🏆', key: '250' },
+                { milestone: 500, emoji: '🚀', key: '500' },
+                { milestone: 750, emoji: '💎', key: '750' },
+                { milestone: 1000, emoji: '🌌', key: '1000' }
+            ],
+            distance: [
+                { milestone: 10000, emoji: '🏃', key: '10000' },
+                { milestone: 40075, emoji: '🌐', key: '40075' },
+                { milestone: 100000, emoji: '✨', key: '100000' },
+                { milestone: 250000, emoji: '🏅', key: '250000' },
+                { milestone: 384400, emoji: '🌕', key: '384400' },
+                { milestone: 500000, emoji: '🌠', key: '500000' },
+                { milestone: 768800, emoji: '🛰️', key: '768800' },
+                { milestone: 1000000, emoji: '💥', key: '1000000' }
+            ],
+            time: [
+                { milestone: 24, emoji: '☀️', key: '24' },
+                { milestone: 100, emoji: '🗓️', key: '100' },
+                { milestone: 500, emoji: '🕰️', key: '500' },
+                { milestone: 1000, emoji: '⏳', key: '1000' },
+                { milestone: 2500, emoji: '✨', key: '2500' },
+                { milestone: 8760, emoji: '💫', key: '8760' }
+            ],
+            uniqueAirports: [
+                { milestone: 10, emoji: '🗺️', key: '10' },
+                { milestone: 25, emoji: '🧭', key: '25' },
+                { milestone: 50, emoji: '🏛️', key: '50' },
+                { milestone: 100, emoji: '🗽', key: '100' }
+            ],
+            longestFlight: [
+                { milestone: 3000, emoji: '✈️', key: '3000' },
+                { milestone: 5000, emoji: '🛫', key: '5000' },
+                { milestone: 8000, emoji: '🌊', key: '8000' },
+                { milestone: 12000, emoji: '🚀', key: '12000' }
+            ],
+            co2_total: [
+                { milestone: 1000, emoji: '💨', key: '1000' },
+                { milestone: 5000, emoji: '🌍', key: '5000' },
+                { milestone: 10000, emoji: '📈', key: '10000' },
+                { milestone: 50000, emoji: '🏭', key: '50000' },
+                { milestone: 100000, emoji: '🚨', key: '100000' }
             ]
-      };
+        };
 
       let animationState = 'stopped'; // Mögliche Zustände: 'stopped', 'running', 'paused'
 	  let animationStartIndex = 0;    // Speichert, bei welchem Flug wir pausiert haben
@@ -1725,7 +1563,9 @@
          */
         async function showAirportDetails(iataCode) {
             openInfoModal();
-            document.getElementById('info-modal-title').textContent = `Details für ${iataCode}`;
+            document.getElementById('info-modal-title').textContent = getTranslation('modalDetails.airportTitle').replace('{key}', iataCode);
+            const contentContainer = document.getElementById('info-modal-content');
+            contentContainer.innerHTML = `<p>${getTranslation('modalDetails.loading')}</p>`;
 
             try {
                 const response = await fetch(`https://aesthetic-strudel-ecfe50.netlify.app/.netlify/functions/fetch-airport-details?code=${iataCode}`);
@@ -1734,14 +1574,11 @@
                 }
                 const result = await response.json();
                 
-                // Debug-Zeile (kannst du drin lassen oder entfernen)
-                console.log("Tatsächliche API-Antwort für Flughafen-Details:", JSON.stringify(result, null, 2));
-
-                // KORRIGIERTE LOGIK: Prüfe auf 'result.data' statt 'result.response'
                 if (result.data && result.data.length > 0) {
-                    const airport = result.data[0]; // Nimm das erste Element aus dem 'data'-Array
+                    const airport = result.data[0];
                     
-					// Speichere die neuen Infos (inkl. country_code) in DB & Cache
+                    // --- HIER IST DEIN WICHTIGER CODE-BLOCK ---
+                    // Speichere die neuen Infos (inkl. country_code) in DB & Cache
                     await cacheAndSaveAirport({
                         code: iataCode,
                         name: airport.name,
@@ -1750,21 +1587,22 @@
                         city: airport.city,
                         country_code: airport.country_code
                     });
-					
+                    // --- ENDE DES WICHTIGEN BLOCKS ---
+                    
                     const content = `
-                        <p><strong>Name:</strong> ${airport.name}</p>
-                        <p><strong>Standort:</strong> ${airport.city}, ${airport.country_code}</p>
-                        <p><strong>Zeitzone:</strong> ${airport.timezone}</p>
-                        <p><strong>Koordinaten:</strong> Lat: ${airport.lat}, Lng: ${airport.lng}</p>
-                        <p class="mt-2"><a href="${airport.website}" target="_blank" class="text-indigo-500 hover:underline">Website besuchen</a></p>
+                        <p><strong>${getTranslation('modalDetails.airportName')}</strong> ${airport.name}</p>
+                        <p><strong>${getTranslation('modalDetails.airportLocation')}</strong> ${airport.city}, ${airport.country_code}</p>
+                        <p><strong>${getTranslation('modalDetails.airportTimezone')}</strong> ${airport.timezone}</p>
+                        <p><strong>${getTranslation('modalDetails.airportCoords')}</strong> Lat: ${airport.lat}, Lng: ${airport.lng}</p>
+                        <p class="mt-2"><a href="${airport.website}" target="_blank" class="text-indigo-500 hover:underline">${getTranslation('modalDetails.airportWebsite')}</a></p>
                     `;
-                    document.getElementById('info-modal-content').innerHTML = content;
+                    contentContainer.innerHTML = content;
                 } else {
-                    document.getElementById('info-modal-content').innerHTML = '<p>Keine Details für diesen Flughafen gefunden.</p>';
+                    contentContainer.innerHTML = `<p>${getTranslation('modalDetails.airportNoDetails')}</p>`;
                 }
             } catch (error) {
                 console.error("Fehler beim Abrufen der Flughafen-Details:", error);
-                document.getElementById('info-modal-content').innerHTML = '<p>Details konnten nicht geladen werden.</p>';
+                contentContainer.innerHTML = `<p>${getTranslation('modalDetails.airportError')}</p>`;
             }
         }
 		
@@ -1774,9 +1612,9 @@
          */
         async function showAircraftDetails(model) {
             openInfoModal();
-            document.getElementById('info-modal-title').textContent = `Details für ${model}`;
+            document.getElementById('info-modal-title').textContent = getTranslation('modalDetails.aircraftTitle').replace('{key}', model);
             const contentContainer = document.getElementById('info-modal-content');
-            contentContainer.innerHTML = '<p>Lade Details...</p>';
+            contentContainer.innerHTML = `<p>${getTranslation('modalDetails.loading')}</p>`;
 
             try {
                 const response = await fetch(`https://aesthetic-strudel-ecfe50.netlify.app/.netlify/functions/fetch-aircraft-details?model=${model}`);
@@ -1786,62 +1624,58 @@
                 const result = await response.json();
                 
                 if (result && result.length > 0) {
-                    const aircraft = result[0]; // Nimm das erste Ergebnis
+                    const aircraft = result[0]; 
+                    const notAvailable = getTranslation('modalDetails.notAvailable');
                     
-                    // --- NEU: Umrechnungslogik ---
                     const speed_kmh = aircraft.max_speed_knots ? (parseFloat(aircraft.max_speed_knots) * 1.852).toFixed(0) : null;
                     const ceiling_m = aircraft.ceiling_ft ? (parseFloat(aircraft.ceiling_ft) * 0.3048).toFixed(0) : null;
                     const weight_kg = aircraft.gross_weight_lbs ? (parseFloat(aircraft.gross_weight_lbs) * 0.453592).toFixed(0) : null;
                     const length_m = aircraft.length_ft ? (parseFloat(aircraft.length_ft) * 0.3048).toFixed(1) : null;
                     const wingspan_m = aircraft.wing_span_ft ? (parseFloat(aircraft.wing_span_ft) * 0.3048).toFixed(1) : null;
                     const range_km = aircraft.range_nautical_miles ? (parseFloat(aircraft.range_nautical_miles) * 1.852).toFixed(0) : null;
-                    // --- ENDE Umrechnungslogik ---
-
-                    // --- KORRIGIERTER UND ERWEITERTER INHALT ---
+                    
                     const content = `
                         <div class="grid grid-cols-2 gap-x-4 gap-y-1">
-                            <p><strong>Hersteller:</strong></p> 
-                            <p>${aircraft.manufacturer || 'k.A.'}</p>
+                            <p><strong>${getTranslation('modalDetails.aircraftManufacturer')}</strong></p> 
+                            <p>${aircraft.manufacturer || notAvailable}</p>
                             
-                            <p><strong>Modell:</strong></p> 
-                            <p>${aircraft.model || 'k.A.'}</p>
+                            <p><strong>${getTranslation('modalDetails.aircraftModel')}</strong></p> 
+                            <p>${aircraft.model || notAvailable}</p>
                             
-                            <p><strong>Triebwerkstyp:</strong></p> 
-                            <p>${aircraft.engine_type || 'k.A.'}</p>
+                            <p><strong>${getTranslation('modalDetails.aircraftEngineType')}</strong></p> 
+                            <p>${aircraft.engine_type || notAvailable}</p>
                             
-                            <p><strong>Anz. Triebwerke:</strong></p> 
-                            <p>${aircraft.engines_count || 'k.A.'}</p>
+                            <p><strong>${getTranslation('modalDetails.aircraftEngineCount')}</strong></p> 
+                            <p>${aircraft.engines_count || notAvailable}</p>
                             
                             <p class="col-span-2 mt-2 pt-2 border-t dark:border-gray-700"></p>
 
-                            <p><strong>Geschw. (km/h):</strong></p> 
-                            <p>${speed_kmh ? speed_kmh.toLocaleString('de-DE') : 'k.A.'}</p>
+                            <p><strong>${getTranslation('modalDetails.aircraftSpeed')}</strong></p> 
+                            <p>${speed_kmh ? speed_kmh.toLocaleString('de-DE') : notAvailable}</p>
                             
-                            <p><strong>Reichweite (km):</strong></p> 
-                            <p>${range_km ? range_km.toLocaleString('de-DE') : 'k.A.'}</p>
+                            <p><strong>${getTranslation('modalDetails.aircraftRange')}</strong></p> 
+                            <p>${range_km ? range_km.toLocaleString('de-DE') : notAvailable}</p>
                             
-                            <p><strong>Flughöhe (m):</strong></p> 
-                            <p>${ceiling_m ? ceiling_m.toLocaleString('de-DE') : 'k.A.'}</p>
+                            <p><strong>${getTranslation('modalDetails.aircraftCeiling')}</strong></p> 
+                            <p>${ceiling_m ? ceiling_m.toLocaleString('de-DE') : notAvailable}</p>
                             
-                            <p><strong>Länge (m):</strong></p> 
-                            <p>${length_m ? length_m : 'k.A.'}</p>
+                            <p><strong>${getTranslation('modalDetails.aircraftLength')}</strong></p> 
+                            <p>${length_m ? length_m : notAvailable}</p>
                             
-                            <p><strong>Spannweite (m):</strong></p> 
-                            <p>${wingspan_m ? wingspan_m : 'k.A.'}</p>
+                            <p><strong>${getTranslation('modalDetails.aircraftWingspan')}</strong></p> 
+                            <p>${wingspan_m ? wingspan_m : notAvailable}</p>
                             
-                            <p><strong>Max. Abfluggewicht:</strong></p> 
-                            <p>${weight_kg ? weight_kg.toLocaleString('de-DE') + ' kg' : 'k.A.'}</p>
+                            <p><strong>${getTranslation('modalDetails.aircraftWeight')}</strong></p> 
+                            <p>${weight_kg ? weight_kg.toLocaleString('de-DE') + ' kg' : notAvailable}</p>
                         </div>
                     `;
-                    // --- ENDE KORREKTUR ---
-                    
                     contentContainer.innerHTML = content;
                 } else {
-                    contentContainer.innerHTML = '<p>Keine Details für diesen Flugzeugtyp gefunden.</p>';
+                    contentContainer.innerHTML = `<p>${getTranslation('modalDetails.aircraftNoDetails')}</p>`;
                 }
             } catch (error) {
                 console.error("Fehler beim Abrufen der Flugzeug-Details:", error);
-                contentContainer.innerHTML = '<p>Details konnten nicht geladen werden.</p>';
+                contentContainer.innerHTML = `<p>${getTranslation('modalDetails.aircraftError')}</p>`;
             }
         }
 		
@@ -1851,9 +1685,9 @@
          */
         async function showAirlineDetails(iataCode) {
             openInfoModal();
-            document.getElementById('info-modal-title').textContent = `Details für ${iataCode}`;
+            document.getElementById('info-modal-title').textContent = getTranslation('modalDetails.airlineTitle').replace('{key}', iataCode);
             const contentContainer = document.getElementById('info-modal-content');
-            contentContainer.innerHTML = '<p>Lade Airline-Details...</p>';
+            contentContainer.innerHTML = `<p>${getTranslation('modalDetails.loading')}</p>`;
 
             try {
                 const response = await fetch(`https://aesthetic-strudel-ecfe50.netlify.app/.netlify/functions/fetch-airline-details?iata_code=${iataCode}`);
@@ -1862,49 +1696,47 @@
                 }
                 const result = await response.json();
                 
-                // KORREKTUR: Wir prüfen auf result.data
                 if (result.data && result.data.length > 0) {
                     let content = '';
+                    const notAvailable = getTranslation('modalDetails.notAvailable');
                     
-                    // Zeige alle gefundenen Airlines (falls es doch mal mehr als eine ist)
                     result.data.forEach((airline, index) => {
                         if (index > 0) {
-                            content += '<hr class="my-4 dark:border-gray-700">'; // Trennlinie
+                            content += '<hr class="my-4 dark:border-gray-700">';
                         }
 
-                        // NEU: Verwende alle Felder aus deiner erfolgreichen Test-Antwort
                         content += `
                             <div class="grid grid-cols-2 gap-x-4 gap-y-1">
-                                <p><strong>Name:</strong></p> 
-                                <p>${airline.name || 'k.A.'} <strong>(${airline.iata_code || 'k.A.'})</strong></p>
+                                <p><strong>${getTranslation('modalDetails.airlineName')}</strong></p> 
+                                <p>${airline.name || notAvailable} <strong>(${airline.iata_code || '?'})</strong></p>
                                 
-                                <p><strong>Land:</strong></p> 
-                                <p>${airline.country_code || 'k.A.'}</p>
+                                <p><strong>${getTranslation('modalDetails.airlineCountry')}</strong></p> 
+                                <p>${airline.country_code || notAvailable}</p>
                                 
-                                <p><strong>ICAO-Code:</strong></p> 
-                                <p>${airline.icao_code || 'k.A.'}</p>
+                                <p><strong>${getTranslation('modalDetails.airlineIcao')}</strong></p> 
+                                <p>${airline.icao_code || notAvailable}</p>
                                 
-                                <p><strong>Rufzeichen:</strong></p> 
-                                <p>${airline.callsign || 'k.A.'}</p>
+                                <p><strong>${getTranslation('modalDetails.airlineCallsign')}</strong></p> 
+                                <p>${airline.callsign || notAvailable}</p>
 
-                                <p><strong>Flottengröße:</strong></p> 
-                                <p>${airline.total_aircrafts || 'k.A.'}</p>
+                                <p><strong>${getTranslation('modalDetails.airlineFleetSize')}</strong></p> 
+                                <p>${airline.total_aircrafts || notAvailable}</p>
 
-                                <p><strong>Flotten-Ø-Alter:</strong></p> 
-                                <p>${airline.average_fleet_age ? `${airline.average_fleet_age} Jahre` : 'k.A.'}</p>
+                                <p><strong>${getTranslation('modalDetails.airlineFleetAge')}</strong></p> 
+                                <p>${airline.average_fleet_age ? `${airline.average_fleet_age} ${getTranslation('modalDetails.airlineAgeUnit')}` : notAvailable}</p>
                                 
-                                <p class="mt-2 col-span-2"><a href="https://${airline.website}" target="_blank" class="text-indigo-500 hover:underline">Website besuchen</a></p>
+                                <p class="mt-2 col-span-2"><a href="https://${airline.website}" target="_blank" class="text-indigo-500 hover:underline">${getTranslation('modalDetails.airlineWebsite')}</a></p>
                             </div>
                         `;
                     });
                     
                     contentContainer.innerHTML = content;
                 } else {
-                    contentContainer.innerHTML = '<p>Keine Details für diese Airline gefunden.</p>';
+                    contentContainer.innerHTML = `<p>${getTranslation('modalDetails.airlineNoDetails')}</p>`;
                 }
             } catch (error) {
                 console.error("Fehler beim Abrufen der Airline-Details:", error);
-                contentContainer.innerHTML = '<p>Details konnten nicht geladen werden.</p>';
+                contentContainer.innerHTML = `<p>${getTranslation('modalDetails.airlineError')}</p>`;
             }
         }
 
@@ -2647,77 +2479,53 @@
        * Berechnet und zeigt die Errungenschaften des Nutzers an.
        */
       async function updateAchievements() {
-        const container = document.getElementById("achievements-container");
-        container.innerHTML =
-          '<p class="text-gray-500">Berechne Errungenschaften...</p>';
+            const container = document.getElementById('achievements-container');
+            container.innerHTML = `<p class="text-gray-500">${getTranslation('achievements.loading')}</p>`;
 
-        const allFlights = await getFlights();
-        if (allFlights.length === 0) {
-          container.innerHTML =
-            '<p class="text-gray-500">Logge deinen ersten Flug, um Errungenschaften freizuschalten!</p>';
-          // Auch den Rekord-Container leeren
-          document.getElementById('records-container').innerHTML = '<p class="text-gray-500 md:col-span-2">Noch keine Rekorde vorhanden.</p>';
-		  return;
-        }
+            const allFlights = await getFlights();
+            if (allFlights.length === 0) {
+                container.innerHTML = `<p class="text-gray-500">${getTranslation('achievements.noFlights')}</p>`;
+                document.getElementById('records-container').innerHTML = `<p class="text-gray-500 md:col-span-2">${getTranslation('stats.noData')}</p>`;
+                return;
+            }
 
-        // 1. Aktuelle Statistiken berechnen
-        const totalFlights = allFlights.length;
-        const totalDistance = allFlights.reduce(
-          (sum, flight) => sum + flight.distance,
-          0
-        );
-        const totalMinutes = allFlights.reduce(
-          (sum, flight) => sum + parseFlightTimeToMinutes(flight.time),
-          0
-        );
-        const totalHours = totalMinutes / 60;
+            // 1. Aktuelle Statistiken berechnen
+            const totalFlights = allFlights.length;
+            const totalDistance = allFlights.reduce((sum, flight) => sum + flight.distance, 0);
+            const totalMinutes = allFlights.reduce((sum, flight) => sum + parseFlightTimeToMinutes(flight.time), 0);
+            const totalHours = totalMinutes / 60;
+            const uniqueAirports = new Set(allFlights.flatMap(f => [f.departure, f.arrival]));
+            const longestFlightDistance = Math.max(...allFlights.map(f => f.distance));
+            const totalCO2 = allFlights.reduce((sum, flight) => sum + (flight.co2_kg || 0), 0);
 
-        // Einzigartige Flughäfen und längsten Flug berechnen
-        const uniqueAirports = new Set(
-          allFlights.flatMap((f) => [f.departure, f.arrival])
-        );
-        const longestFlightDistance = Math.max(
-          ...allFlights.map((f) => f.distance)
-        );
-		
-		const totalCO2 = allFlights.reduce((sum, flight) => sum + (flight.co2_kg || 0), 0);
+            let html = '';
 
-        let html = "";
+            // 2. Alle definierten Errungenschaften durchgehen
+            const allAchievementTypes = [
+                { category: 'flights', value: totalFlights, unit: getTranslation('achievements.unitFlights') },
+                { category: 'distance', value: totalDistance, unit: getTranslation('achievements.unitKm') },
+                { category: 'time', value: totalHours, unit: getTranslation('achievements.unitHours') },
+                { category: 'uniqueAirports', value: uniqueAirports.size, unit: getTranslation('achievements.unitAirports') },
+                { category: 'longestFlight', value: longestFlightDistance, unit: getTranslation('achievements.unitKm') },
+                { category: 'co2_total', value: totalCO2, unit: getTranslation('achievements.unitCo2') }
+            ];
 
-        // 2. Alle definierten Errungenschaften durchgehen
-        const allAchievementTypes = [
-          { category: "flights", value: totalFlights, unit: "Flüge" },
-          { category: "distance", value: totalDistance, unit: "km" },
-          { category: "time", value: totalHours, unit: "Std." },
-          {
-            category: "uniqueAirports",
-            value: uniqueAirports.size,
-            unit: "Flughäfen",
-          },
-          {
-            category: "longestFlight",
-            value: longestFlightDistance,
-            unit: "km",
-          },
-		  { category: 'co2_total', value: totalCO2, unit: 'kg CO₂' }
-        ];
+            allAchievementTypes.forEach(type => {
+                achievements[type.category].forEach(achievement => {
+                    const isUnlocked = type.value >= achievement.milestone;
+                    const progressPercent = Math.min((type.value / achievement.milestone) * 100, 100);
+                    const progressBarColor = (type.category === 'co2_total') ? 'bg-red-500' : 'bg-indigo-500';
 
-        allAchievementTypes.forEach((type) => {
-          achievements[type.category].forEach((achievement) => {
-            const isUnlocked = type.value >= achievement.milestone;
-            const progressPercent = Math.min(
-              (type.value / achievement.milestone) * 100,
-              100
-            );
+                    // KORREKTUR: Verwende getTranslation mit den Schlüsseln aus dem Objekt
+                    const title = getTranslation(`achievements.${type.category}.${achievement.key}.title`);
+                    const description = getTranslation(`achievements.${type.category}.${achievement.key}.description`);
 
-			const progressBarColor = (type.category === 'co2_total') ? 'bg-red-500' : 'bg-indigo-500';
-
-            html += `
+                    html += `
                         <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg flex items-center gap-4 ${isUnlocked ? '' : 'opacity-40'}">
                             <span class="text-3xl">${achievement.emoji}</span>
                             <div>
-                                <h3 class="font-bold text-gray-800 dark:text-white">${achievement.title}</h3>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">${achievement.description}</p>
+                                <h3 class="font-bold text-gray-800 dark:text-white">${title}</h3>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">${description}</p>
                                 <div class="w-full bg-gray-300 dark:bg-gray-600 rounded-full h-2 mt-2">
                                     <div class="${progressBarColor} h-2 rounded-full" style="width: ${progressPercent}%"></div>
                                 </div>
@@ -2725,15 +2533,15 @@
                             </div>
                         </div>
                     `;
-          });
-        });
+                });
+            });
 
-        container.innerHTML = html;
-		
-		// 3. Rekorde & Firsts berechnen und anzeigen
-        const sortedFlights = resequenceAndAssignNumbers([...allFlights]); // Sortierte Kopie erstellen
-        displayPersonalRecords(allFlights, sortedFlights);
-      }
+            container.innerHTML = html;
+            
+            // Rekorde & Firsts berechnen und anzeigen
+            const sortedFlights = resequenceAndAssignNumbers([...allFlights]);
+            displayPersonalRecords(allFlights, sortedFlights);
+        }
 	  
 		/**
          * Erstellt den HTML-Code für einen einzelnen Rekord-Eintrag.
@@ -2949,14 +2757,14 @@
           totalDistance: 0,
 		  totalCO2: 0,
           airportUsage: {},
-          frequentAirport: "-",
+          frequentAirport: getTranslation('stats.noData'),
           // Neue Statistik-Properties
           longestFlight: null,
           shortestFlight: null,
           averageDistance: 0,
 		  averageCO2: 0,
           aircraftUsage: {},
-          frequentAircraft: "-",
+          frequentAircraft: getTranslation('stats.noData'),
           yearlyData: {},
           totalSpending: {}, // Objekt, um mehrere Währungen zu speichern
           mostExpensiveFlight: null,
@@ -3060,122 +2868,96 @@
       };
 
       var updateStatisticsDisplay = function (flights) {
-        var stats = calculateStatistics(flights);
+            var stats = calculateStatistics(flights);
 
-        // Bestehende Statistiken
-        document.getElementById("stat-count").textContent =
-          stats.totalCount.toLocaleString("de-DE");
-        document.getElementById(
-          "stat-distance"
-        ).textContent = `${stats.totalDistance.toLocaleString("de-DE")} km`;
-        document.getElementById("stat-frequent").textContent =
-          stats.frequentAirport;
-		  
-		// CO2-Stats anzeigen
+            // Standard-Werte
+            document.getElementById("stat-count").textContent = stats.totalCount.toLocaleString("de-DE");
+            document.getElementById("stat-distance").textContent = `${stats.totalDistance.toLocaleString("de-DE")} km`;
+            document.getElementById("stat-frequent").textContent = stats.frequentAirport;
+            document.getElementById("stat-avg-distance").textContent = `${stats.averageDistance.toLocaleString("de-DE")} km`;
+            document.getElementById("stat-frequent-aircraft").textContent = stats.frequentAircraft;
             document.getElementById("stat-total-co2").textContent = `${stats.totalCO2.toLocaleString("de-DE")} kg`;
             document.getElementById("stat-avg-co2").textContent = `${stats.averageCO2.toLocaleString("de-DE")} kg`;
 
-        // Weitere Statistiken
-        document.getElementById(
-          "stat-avg-distance"
-        ).textContent = `${stats.averageDistance.toLocaleString("de-DE")} km`;
-        document.getElementById("stat-frequent-aircraft").textContent =
-          stats.frequentAircraft;
+            // Längster Flug
+            if (stats.longestFlight) {
+                document.getElementById("stat-longest-flight").textContent = getTranslation('stats.flightRouteKm')
+                    .replace('{departure}', stats.longestFlight.departure)
+                    .replace('{arrival}', stats.longestFlight.arrival)
+                    .replace('{distance}', stats.longestFlight.distance.toLocaleString("de-DE"));
+            } else {
+                document.getElementById("stat-longest-flight").textContent = getTranslation('stats.noData');
+            }
 
-        if (stats.longestFlight) {
-          document.getElementById("stat-longest-flight").textContent = `${
-            stats.longestFlight.departure
-          } → ${
-            stats.longestFlight.arrival
-          } (${stats.longestFlight.distance.toLocaleString("de-DE")} km)`;
-        } else {
-          document.getElementById("stat-longest-flight").textContent = "-";
-        }
+            // Kürzester Flug
+            if (stats.shortestFlight) {
+                document.getElementById("stat-shortest-flight").textContent = getTranslation('stats.flightRouteKm')
+                    .replace('{departure}', stats.shortestFlight.departure)
+                    .replace('{arrival}', stats.shortestFlight.arrival)
+                    .replace('{distance}', stats.shortestFlight.distance.toLocaleString("de-DE"));
+            } else {
+                document.getElementById("stat-shortest-flight").textContent = getTranslation('stats.noData');
+            }
 
-        if (stats.shortestFlight) {
-          document.getElementById("stat-shortest-flight").textContent = `${
-            stats.shortestFlight.departure
-          } → ${
-            stats.shortestFlight.arrival
-          } (${stats.shortestFlight.distance.toLocaleString("de-DE")} km)`;
-        } else {
-          document.getElementById("stat-shortest-flight").textContent = "-";
-        }
+            // Kosten-Statistiken
+            const spendingText = Object.keys(stats.totalSpending)
+                .map(currency => stats.totalSpending[currency].toLocaleString("de-DE", { style: "currency", currency: currency, minimumFractionDigits: 0, maximumFractionDigits: 0 }))
+                .join(' | ') || getTranslation('stats.noData');
+            document.getElementById("stat-total-spending").textContent = spendingText;
 
-        // NEU: Kosten-Statistiken anzeigen
-        const spendingText =
-          Object.keys(stats.totalSpending)
-            .map(
-              (currency) =>
-                `${stats.totalSpending[currency].toLocaleString("de-DE", {
-                  style: "currency",
-                  currency: currency,
-                  minimumFractionDigits: 0,
-                  maximumFractionDigits: 0,
-                })}`
-            )
-            .join(" | ") || "-";
-        document.getElementById("stat-total-spending").textContent =
-          spendingText;
+            if (stats.mostExpensiveFlight) {
+                document.getElementById("stat-most-expensive").textContent = getTranslation('stats.flightRoutePrice')
+                    .replace('{departure}', stats.mostExpensiveFlight.departure)
+                    .replace('{arrival}', stats.mostExpensiveFlight.arrival)
+                    .replace('{price}', stats.mostExpensiveFlight.price.toLocaleString("de-DE"))
+                    .replace('{currency}', stats.mostExpensiveFlight.currency);
+            } else {
+                document.getElementById("stat-most-expensive").textContent = getTranslation('stats.noData');
+            }
 
-        if (stats.mostExpensiveFlight) {
-          document.getElementById("stat-most-expensive").textContent = `${
-            stats.mostExpensiveFlight.departure
-          } → ${
-            stats.mostExpensiveFlight.arrival
-          } (${stats.mostExpensiveFlight.price.toLocaleString("de-DE")} ${
-            stats.mostExpensiveFlight.currency
-          })`;
-        } else {
-          document.getElementById("stat-most-expensive").textContent = "-";
-        }
+            if (stats.leastExpensiveFlight) {
+                document.getElementById("stat-least-expensive").textContent = getTranslation('stats.flightRoutePrice')
+                    .replace('{departure}', stats.leastExpensiveFlight.departure)
+                    .replace('{arrival}', stats.leastExpensiveFlight.arrival)
+                    .replace('{price}', stats.leastExpensiveFlight.price.toLocaleString("de-DE"))
+                    .replace('{currency}', stats.leastExpensiveFlight.currency);
+            } else {
+                document.getElementById("stat-least-expensive").textContent = getTranslation('stats.noData');
+            }
 
-        if (stats.leastExpensiveFlight) {
-          document.getElementById("stat-least-expensive").textContent = `${
-            stats.leastExpensiveFlight.departure
-          } → ${
-            stats.leastExpensiveFlight.arrival
-          } (${stats.leastExpensiveFlight.price.toLocaleString("de-DE")} ${
-            stats.leastExpensiveFlight.currency
-          })`;
-        } else {
-          document.getElementById("stat-least-expensive").textContent = "-";
-        }
+            // Jahreszusammenfassung
+            const yearSelect = document.getElementById("stat-year-select");
+            const yearlySummary = document.getElementById("stat-yearly-summary");
+            yearSelect.innerHTML = ""; 
 
-        // Logik für die Jahreszusammenfassung
-        const yearSelect = document.getElementById("stat-year-select");
-        const yearlySummary = document.getElementById("stat-yearly-summary");
-        yearSelect.innerHTML = ""; // Dropdown leeren
+            const years = Object.keys(stats.yearlyData).sort((a, b) => b - a);
 
-        const years = Object.keys(stats.yearlyData).sort((a, b) => b - a); // Jahre absteigend sortieren
+            if (years.length > 0) {
+                years.forEach((year) => {
+                    const option = document.createElement("option");
+                    option.value = year;
+                    option.textContent = year;
+                    yearSelect.appendChild(option);
+                });
 
-        if (years.length > 0) {
-          years.forEach((year) => {
-            const option = document.createElement("option");
-            option.value = year;
-            option.textContent = year;
-            yearSelect.appendChild(option);
-          });
+                const updateYearlyDisplay = (year) => {
+                    const data = stats.yearlyData[year];
+                    yearlySummary.textContent = getTranslation('stats.yearlySummaryContent')
+                        .replace('{count}', data.count)
+                        .replace('{distance}', data.distance.toLocaleString("de-DE"));
+                };
 
-          const updateYearlyDisplay = (year) => {
-            const data = stats.yearlyData[year];
-            yearlySummary.textContent = `${
-              data.count
-            } Flüge | ${data.distance.toLocaleString("de-DE")} km`;
-          };
-
-          yearSelect.onchange = (event) => {
-            updateYearlyDisplay(event.target.value);
-          };
-
-          // Initialen Wert für das aktuellste Jahr anzeigen
-          updateYearlyDisplay(years[0]);
-          yearSelect.style.display = "inline-block";
-        } else {
-          yearlySummary.textContent = "Keine Jahresdaten verfügbar.";
-          yearSelect.style.display = "none";
-        }
-      };
+                yearSelect.onchange = (event) => {
+                    updateYearlyDisplay(event.target.value);
+                };
+                
+                updateYearlyDisplay(years[0]);
+                yearSelect.style.display = "inline-block";
+            } else {
+                yearlySummary.textContent = getTranslation('stats.noYearlyData');
+                yearSelect.style.display = "none";
+            }
+        };
 
       /**
          * Ruft Flugdaten per Flugnummer und Datum ab und füllt das Formular aus.
@@ -3273,11 +3055,13 @@
        */
       async function renderLogbookView(groupBy) {
             const contentContainer = document.getElementById('logbook-content');
-            contentContainer.innerHTML = '<p class="text-gray-500">Lade Logbuch-Daten...</p>';
+            contentContainer.innerHTML = `<p class="text-gray-500">${getTranslation('logbook.loading')}</p>`;
             
             const allFlights = await getFlights();
             const grouped = {};
             
+            const unknownKey = getTranslation('logbook.unknown'); // Hole "Unbekannt" einmal
+
             let isAirportView = (groupBy === 'airport');
             let isAircraftTypeView = (groupBy === 'aircraftType');
             let isAirlineView = (groupBy === 'airline'); 
@@ -3285,13 +3069,12 @@
             allFlights.forEach(flight => {
                 let keys = [];
                 if (isAircraftTypeView) {
-                    let type = (flight.aircraftType || 'Unbekannt').trim().toUpperCase();
-                    if (type === '') type = 'Unbekannt';
+                    let type = (flight.aircraftType || unknownKey).trim().toUpperCase();
+                    if (type === '') type = unknownKey;
                     keys.push(type);
                 } else if (isAirlineView) { 
-                    // Wir verwenden den 2-stelligen IATA-Code als Schlüssel
                     const match = flight.flightNumber ? flight.flightNumber.match(/^[A-Z0-9]{2}/) : null;
-                    const airline = match ? match[0].toUpperCase() : 'Unbekannt';
+                    const airline = match ? match[0].toUpperCase() : unknownKey;
                     keys.push(airline);
                 } else if (isAirportView) { 
                     if (flight.departure) keys.push(flight.departure.toUpperCase());
@@ -3299,7 +3082,7 @@
                 }
                 
                 keys.forEach(key => {
-                    if(key === '') key = 'Unbekannt'; 
+                    if(key === '') key = unknownKey; 
                     if (!grouped[key]) { grouped[key] = { flights: [], totalDistance: 0, count: 0 }; }
                     grouped[key].flights.push(flight);
                     grouped[key].totalDistance += flight.distance;
@@ -3311,7 +3094,7 @@
             const sortedKeys = Object.keys(grouped).sort();
 
             if (sortedKeys.length === 0) {
-                contentContainer.innerHTML = '<p class="text-gray-500">Keine Daten für diese Ansicht verfügbar.</p>';
+                contentContainer.innerHTML = `<p class="text-gray-500">${getTranslation('logbook.noData')}</p>`;
                 return;
             }
 
@@ -3324,34 +3107,36 @@
                 summaryElement.className = 'font-semibold text-lg cursor-pointer text-indigo-700 dark:text-indigo-400 flex items-center'; 
                 
                 let titleHtml = key;
+                let titleKey = '';
                 
-                if (isAirportView && key !== 'Unbekannt') { 
-                    titleHtml = `
-                        <a href="#" onclick="event.preventDefault(); showAirportDetails('${key}')" class="hover:underline">${key}</a>
-                        <button onclick="event.stopPropagation(); showAirportDetails('${key}')" class="ml-2 p-1 rounded-full text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors duration-150" title="Details für ${key} anzeigen">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z" /></svg>
-                        </button>
-                    `;
-                } 
-                else if (isAircraftTypeView && key !== 'Unbekannt') {
+                if (isAirportView && key !== unknownKey) { 
+					titleKey = getTranslation('logbook.detailsTitleAirport').replace('{key}', key);
+					// KORREKTUR: Der 'key' (Flughafen-Code) ist jetzt nur noch reiner Text.
+					// Nur der Button löst die showAirportDetails-Funktion aus.
+					titleHtml = `
+						${key}
+						<button onclick="event.stopPropagation(); showAirportDetails('${key}')" class="ml-2 p-1 rounded-full text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors duration-150" title="${titleKey}">
+							<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z" /></svg>
+						</button>
+					`;
+				} 
+                else if (isAircraftTypeView && key !== unknownKey) {
+                    titleKey = getTranslation('logbook.detailsTitleAircraft').replace('{key}', key);
                     titleHtml = `
                         ${key}
-                        <button onclick="event.stopPropagation(); showAircraftDetails('${key}')" class="ml-2 p-1 rounded-full text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors duration-150" title="Details für ${key} anzeigen">
+                        <button onclick="event.stopPropagation(); showAircraftDetails('${key}')" class="ml-2 p-1 rounded-full text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors duration-150" title="${titleKey}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z" /></svg>
                         </button>
                     `;
                 }
-                else if (isAirlineView && key !== 'Unbekannt') {
-                    // --- NEUE LOGIK HIER ---
-                    // Finde den vollen Airline-Namen aus dem ersten Flug, der ihn gespeichert hat
+                else if (isAirlineView && key !== unknownKey) {
                     const firstFlightWithName = group.flights.find(f => f.airline && f.airline.trim() !== '');
-                    // Wenn ein Name gefunden wurde (z.B. "Eurowings"), zeige "Eurowings (EW)"
-                    // Wenn nicht (z.B. bei alten Flügen), zeige nur den Code "EW"
                     const displayLabel = firstFlightWithName ? `${firstFlightWithName.airline} (${key})` : key;
+                    titleKey = getTranslation('logbook.detailsTitleAirline').replace('{key}', key);
 
                     titleHtml = `
                         ${displayLabel}
-                        <button onclick="event.stopPropagation(); showAirlineDetails('${key}')" class="ml-2 p-1 rounded-full text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors duration-150" title="Details für ${key} anzeigen">
+                        <button onclick="event.stopPropagation(); showAirlineDetails('${key}')" class="ml-2 p-1 rounded-full text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors duration-150" title="${titleKey}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z" /></svg>
                         </button>
                     `;
@@ -3360,20 +3145,23 @@
                 summaryElement.innerHTML = `
                     ${titleHtml} 
                     <span class="text-sm font-normal text-gray-500 dark:text-gray-400 ml-2">
-                        (${group.count} Flüge / ${group.totalDistance.toLocaleString('de-DE')} km)
+                        ${getTranslation('logbook.summary')
+                            .replace('{count}', group.count)
+                            .replace('{distance}', group.totalDistance.toLocaleString('de-DE'))}
                     </span>
                 `;
                 
                 const flightListDiv = document.createElement('div');
                 flightListDiv.className = 'mt-4 space-y-2 border-t border-gray-200 dark:border-gray-600 pt-4';
+                
                 group.flights.sort((a, b) => new Date(a.date) - new Date(b.date)).forEach(flight => {
-                    flightListDiv.innerHTML += `
-                        <div class="text-sm text-gray-700 dark:text-gray-300">
-                            <span class="font-semibold">${flight.date}:</span> 
-                            ${flight.departure} → ${flight.arrival} 
-                            <span class="text-xs text-gray-500">(${flight.distance.toLocaleString('de-DE')} km)</span>
-                        </div>
-                    `;
+                    const flightText = getTranslation('logbook.flightEntry')
+                        .replace('{date}', flight.date)
+                        .replace('{departure}', flight.departure)
+                        .replace('{arrival}', flight.arrival)
+                        .replace('{distance}', flight.distance.toLocaleString('de-DE'));
+
+                    flightListDiv.innerHTML += `<div class="text-sm text-gray-700 dark:text-gray-300">${flightText}</div>`;
                 });
                 
                 detailsElement.appendChild(summaryElement);
@@ -3411,118 +3199,108 @@
        * @param {Array<number>} timeData - Die Daten für die Flugzeit in Minuten.
        */
       function renderAllCharts(labels, flightsData, distanceData, timeData) {
-        // Alte Chart-Instanzen zerstören, falls vorhanden
-        if (flightsChartInstance) flightsChartInstance.destroy();
-        if (distanceChartInstance) distanceChartInstance.destroy();
-        if (timeChartInstance) timeChartInstance.destroy();
+            if (flightsChartInstance) flightsChartInstance.destroy();
+            if (distanceChartInstance) distanceChartInstance.destroy();
+            if (timeChartInstance) timeChartInstance.destroy();
 
-        const isDarkMode = document.documentElement.classList.contains("dark");
-        const gridColor = isDarkMode
-          ? "rgba(255, 255, 255, 0.1)"
-          : "rgba(0, 0, 0, 0.1)";
-        const labelColor = isDarkMode ? "#d1d5db" : "#374151";
+            const isDarkMode = document.documentElement.classList.contains("dark");
+            const gridColor = isDarkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)";
+            const labelColor = isDarkMode ? "#d1d5db" : "#374151";
 
-        // 1. Flüge pro Zeitraum (Balkendiagramm)
-        flightsChartInstance = new Chart(
-          document.getElementById("flightsChart"),
-          {
-            type: "bar",
-            data: {
-              labels: labels,
-              datasets: [
+            // 1. Flüge pro Zeitraum (Balkendiagramm)
+            flightsChartInstance = new Chart(
+                document.getElementById("flightsChart"),
                 {
-                  label: "Anzahl der Flüge",
-                  data: flightsData,
-                  backgroundColor: "rgba(79, 70, 229, 0.8)",
-                  borderColor: "rgba(79, 70, 229, 1)",
-                  borderWidth: 1,
-                },
-              ],
-            },
-            options: {
-              scales: {
-                y: {
-                  beginAtZero: true,
-                  ticks: { color: labelColor },
-                  grid: { color: gridColor },
-                },
-                x: { ticks: { color: labelColor }, grid: { color: gridColor } },
-              },
-            },
-          }
-        );
+                    type: "bar",
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: getTranslation('charts.labelFlights'), // KORRIGIERT
+                                data: flightsData,
+                                backgroundColor: "rgba(79, 70, 229, 0.8)",
+                                borderColor: "rgba(79, 70, 229, 1)",
+                                borderWidth: 1,
+                            },
+                        ],
+                    },
+                    options: {
+                        scales: {
+                            y: { beginAtZero: true, ticks: { color: labelColor }, grid: { color: gridColor } },
+                            x: { ticks: { color: labelColor }, grid: { color: gridColor } },
+                        },
+                    },
+                }
+            );
 
-        // 2. Distanz pro Zeitraum (Liniendiagramm)
-        distanceChartInstance = new Chart(
-          document.getElementById("distanceChart"),
-          {
-            type: "line",
-            data: {
-              labels: labels,
-              datasets: [
+            // 2. Distanz pro Zeitraum (Liniendiagramm)
+            distanceChartInstance = new Chart(
+                document.getElementById("distanceChart"),
                 {
-                  label: "Gesamtdistanz (km)",
-                  data: distanceData,
-                  fill: false,
-                  borderColor: "rgba(22, 163, 74, 1)",
-                  tension: 0.1,
-                },
-              ],
-            },
-            options: {
-              scales: {
-                y: {
-                  beginAtZero: true,
-                  ticks: { color: labelColor },
-                  grid: { color: gridColor },
-                },
-                x: { ticks: { color: labelColor }, grid: { color: gridColor } },
-              },
-            },
-          }
-        );
+                    type: "line",
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: getTranslation('charts.labelDistance'), // KORRIGIERT
+                                data: distanceData,
+                                fill: false,
+                                borderColor: "rgba(22, 163, 74, 1)",
+                                tension: 0.1,
+                            },
+                        ],
+                    },
+                    options: {
+                        scales: {
+                            y: { beginAtZero: true, ticks: { color: labelColor }, grid: { color: gridColor } },
+                            x: { ticks: { color: labelColor }, grid: { color: gridColor } },
+                        },
+                    },
+                }
+            );
 
-        // 3. Flugzeit pro Zeitraum (Liniendiagramm)
-        timeChartInstance = new Chart(document.getElementById("timeChart"), {
-          type: "line",
-          data: {
-            labels: labels,
-            datasets: [
-              {
-                label: "Gesamtflugzeit",
-                data: timeData,
-                fill: false,
-                borderColor: "rgba(219, 39, 119, 1)",
-                tension: 0.1,
-              },
-            ],
-          },
-          options: {
-            scales: {
-              y: {
-                beginAtZero: true,
-                ticks: { color: labelColor },
-                grid: { color: gridColor },
-              },
-              x: { ticks: { color: labelColor }, grid: { color: gridColor } },
-            },
-            plugins: {
-              tooltip: {
-                callbacks: {
-                  label: function (context) {
-                    let label = context.dataset.label || "";
-                    if (label) label += ": ";
-                    const totalMinutes = context.parsed.y;
-                    const hours = Math.floor(totalMinutes / 60);
-                    const minutes = totalMinutes % 60;
-                    return `${label}${hours} Std. ${minutes} Min.`;
-                  },
+            // 3. Flugzeit pro Zeitraum (Liniendiagramm)
+            timeChartInstance = new Chart(document.getElementById("timeChart"), {
+                type: "line",
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: getTranslation('charts.labelDuration'), // KORRIGIERT
+                            data: timeData,
+                            fill: false,
+                            borderColor: "rgba(219, 39, 119, 1)",
+                            tension: 0.1,
+                        },
+                    ],
                 },
-              },
-            },
-          },
-        });
-      }
+                options: {
+                    scales: {
+                        y: { beginAtZero: true, ticks: { color: labelColor }, grid: { color: gridColor } },
+                        x: { ticks: { color: labelColor }, grid: { color: gridColor } },
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    let label = context.dataset.label || "";
+                                    if (label) label += ": ";
+                                    const totalMinutes = context.parsed.y;
+                                    const hours = Math.floor(totalMinutes / 60);
+                                    const minutes = totalMinutes % 60;
+                                    
+                                    // KORRIGIERT: Verwendet die Übersetzungsvorlage
+                                    return getTranslation('charts.tooltipLabel')
+                                        .replace('{label}', label)
+                                        .replace('{hours}', hours)
+                                        .replace('{minutes}', minutes);
+                                },
+                            },
+                        },
+                    },
+                },
+            });
+        }
 
       /**
        * Hauptfunktion zum Aufbereiten der Flugdaten und Aktualisieren der Charts.
