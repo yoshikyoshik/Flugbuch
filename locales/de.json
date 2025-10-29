@@ -48,6 +48,7 @@
 		"egFlightNumber": "z.B. LH202",
 		"egDeparture": "z.B. FRA",
 		"egArrival": "z.B. JFK",
+		"egFlightNumber": "z.B. LH400",
 		"egAirline": "z.B. Lufthansa",
 		"egAircraft": "z.B. B747-8",
 		"egPrice": "z.B. 199.99",
