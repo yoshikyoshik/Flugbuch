@@ -590,8 +590,10 @@
                     ></div>
                   </div>
                 </div>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                  <div>
+                
+				
+				<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+					<div>
                     <label
                       for="flightDate" data-i18n="flightDateNewFlight"
                       class="block text-sm font-medium text-gray-700 dark:text-gray-300"
@@ -602,7 +604,7 @@
                       class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3"
                     />
                   </div>
-                  <div>
+				  <div>
                     <label
                       for="flightClass" data-i18n="flightClassNewFlight"
                       class="block text-sm font-medium text-gray-700 dark:text-gray-300"
@@ -618,35 +620,24 @@
 						<option value="Cargo" data-i18n="flightClassCargo">Cargo</option>
                     </select>
                   </div>
+				</div>
+				
+				<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-4">
                   <div>
-                    <label
-                      for="flightNumber" data-i18n="flightNumberNewFlight"
-                      class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                      >Flugnummer (Optional)</label
-                    ><input
-                      type="text"
-                      id="flightNumber"
-                      placeholder="z.B. LH400"
-					  data-i18n="placeholder.egFlightNumber"
-                      class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3"
-                    />
+                    <label for="flightNumber" data-i18n="form.flightNumberOptional" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Flugnummer (Optional)</label>
+                    <input type="text" id="flightNumber" placeholder="z.B. LH400" data-i18n="placeholder.egFlightNumber" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3">
                   </div>
-				  <div>
-					<label for="airline" data-i18n="airlineNewFlight" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Airline (Optional)</label>
+                  <div>
+					<label for="airline" data-i18n="form.airline" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Airline (Optional)</label>
 					<input type="text" id="airline" placeholder="z.B. Lufthansa" data-i18n="placeholder.egAirline" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3">
 				  </div>
                   <div>
-                    <label
-                      for="aircraftType" data-i18n="aircraftTypeNewFlight"
-                      class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                      >Flugzeugtyp (Optional)</label
-                    ><input
-                      type="text"
-                      id="aircraftType"
-                      placeholder="z.B. B747-8"
-					  data-i18n="placeholder.egAircraft"
-                      class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3"
-                    />
+                    <label for="aircraftType" data-i18n="form.aircraft" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Flugzeugtyp (Optional)</label>
+                    <input type="text" id="aircraftType" placeholder="z.B. A320" data-i18n="placeholder.egAircraft" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3">
+                  </div>
+                  
+                  <div class="md:col-start-1"> <label for="registration" data-i18n="form.registration" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Registrierung (Optional)</label>
+                    <input type="text" id="registration" placeholder="z.B. D-AINC" data-i18n="placeholder.egRegistration" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3">
                   </div>
                 </div>
 
@@ -1169,6 +1160,9 @@
                     >
                       Nach Flughafen
                     </button>
+					<button id="logbook-view-registration" class="logbook-view-btn px-3 py-1 rounded-md transition" data-i18n="logbook.byRegistration">
+						Nach Registrierung
+					</button>
                   </div>
                 </div>
                 <div id="logbook-content" class="mt-4 space-y-4"></div>
@@ -1847,6 +1841,9 @@
         document
           .getElementById("logbook-view-airport")
           .addEventListener("click", () => renderLogbookView("airport"));
+		document
+		  .getElementById("logbook-view-registration")
+		  .addEventListener("click", () => renderLogbookView("registration"));
 		  
 		document.getElementById('import-file-input').addEventListener('change', handleImport);
 
@@ -3065,6 +3062,7 @@
             let isAirportView = (groupBy === 'airport');
             let isAircraftTypeView = (groupBy === 'aircraftType');
             let isAirlineView = (groupBy === 'airline'); 
+			let isRegistrationView = (groupBy === 'registration');
 
             allFlights.forEach(flight => {
                 let keys = [];
@@ -3079,7 +3077,11 @@
                 } else if (isAirportView) { 
                     if (flight.departure) keys.push(flight.departure.toUpperCase());
                     if (flight.arrival) keys.push(flight.arrival.toUpperCase());
-                }
+                } else if (isRegistrationView) { // NEU
+					let reg = (flight.registration || unknownKey).trim().toUpperCase();
+					if (reg === '') reg = unknownKey;
+					keys.push(reg);
+				}
                 
                 keys.forEach(key => {
                     if(key === '') key = unknownKey; 
@@ -3141,6 +3143,7 @@
                         </button>
                     `;
                 }
+				// KEIN Info-Button für Registrierung, da es keine API dafür gibt
 
                 summaryElement.innerHTML = `
                     ${titleHtml} 
@@ -3174,6 +3177,7 @@
             let buttonIdFragment = groupBy;
             if (groupBy === 'aircraftType') { buttonIdFragment = 'aircraft'; }
             if (groupBy === 'airline') { buttonIdFragment = 'airline'; } 
+			if (groupBy === 'registration') { buttonIdFragment = 'registration'; }
             const activeButton = document.getElementById(`logbook-view-${buttonIdFragment}`);
             if (activeButton) {
                 activeButton.classList.add('active');
@@ -3626,6 +3630,7 @@
         document.getElementById("notes").value = "";
         document.getElementById("price").value = "";
         document.getElementById("currency").value = "";
+		document.getElementById("registration").value = "";
 
         // Foto-Feld und Vorschau zurücksetzen
         document.getElementById("flightPhoto").value = null;
@@ -3701,6 +3706,7 @@
         document.getElementById("notes").value = flightToEdit.notes;
         document.getElementById("price").value = typeof flightToEdit.price === "number" ? flightToEdit.price : "";
         document.getElementById("currency").value = flightToEdit.currency || "";
+		document.getElementById("registration").value = flightToEdit.registration || '';
 
         // Bearbeitungszustand setzen
         currentlyEditingFlightData = flightToEdit;
@@ -4113,6 +4119,7 @@
           currency:
             document.getElementById("currency").value.trim().toUpperCase() ||
             null,
+		  registration: document.getElementById("registration").value.trim().toUpperCase() || null,
         };
 
         const { error } = await supabaseClient
@@ -4270,6 +4277,7 @@
           currency:
             document.getElementById("currency").value.trim().toUpperCase() ||
             null,
+		  registration: document.getElementById("registration").value.trim().toUpperCase() || null,
         };
 
         const { error } = await supabaseClient

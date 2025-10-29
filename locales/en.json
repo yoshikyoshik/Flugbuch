@@ -52,7 +52,8 @@
 		"egAirline": "e.g. Lufthansa",
 		"egAircraft": "e.g. B747-8",
 		"egPrice": "e.g. 199.99",
-		"egCurrency": "e.g. EUR"
+		"egCurrency": "e.g. EUR",
+		"egRegistration": "e.g. D-AINC"
 	},
     "tabs": {
         "newFlight": "New Flight",
@@ -103,7 +104,8 @@
         "buttonCancel": "Cancel",
 		"chooseFile": "Choose file...",
 		"noFileSelected": "No file(s) selected",
-		"filesSelected": "{count} file(s) selected."
+		"filesSelected": "{count} file(s) selected.",
+		"registration": "Registration (Optional)"
     },
     "messages": {
         "noDataFound": "No flight data found for this combination.",
@@ -223,7 +225,8 @@
         "flightEntry": "{date}: {departure} → {arrival} ({distance} km)",
         "detailsTitleAirport": "Show details for {key}",
         "detailsTitleAircraft": "Show details for {key}",
-        "detailsTitleAirline": "Show details for {key}"
+        "detailsTitleAirline": "Show details for {key}",
+		"byRegistration": "By Registration"
     },
 	"modalDetails": {
         "loading": "Loading details...",
