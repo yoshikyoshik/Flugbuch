@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <script>
       // Initiales Laden des Themes, um Flackern zu verhindern
+	  //...
       if (
         localStorage.theme === "dark" ||
         (!("theme" in localStorage) &&
@@ -4164,6 +4165,9 @@
           paginationControls.style.display = "none"; // Verstecke Steuerung, wenn nicht benötigt
           return;
         }
+		
+		// Stelle sicher, dass die Leiste sichtbar ist, wenn sie gebraucht wird.
+            paginationControls.style.display = "flex";
 
         // Dynamischen Text verwenden
 		pageInfo.textContent = getTranslation('flights.pageInfo')
