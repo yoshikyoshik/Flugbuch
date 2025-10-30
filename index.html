@@ -4735,7 +4735,7 @@
 	  
 	  /**
          * Ruft Flughafendaten von der Netlify-Funktion ab.
-         * Verwendet CapacitorHttp (nativ) falls verfügbar, sonst Standard-Browser-Fetch.
+         * Verwendet IMMER Standard-Browser-Fetch, da wir wissen, dass es funktioniert.
          */
         window.fetchExternalAirport = async function(input) {
             const normalizedInput = input.trim();
@@ -4743,57 +4743,26 @@
             
             const url = `https://aesthetic-strudel-ecfe50.netlify.app/.netlify/functions/fetch-airport?query=${encodeURIComponent(normalizedInput)}`;
 
-            // Prüfen, ob wir in einer nativen App (Capacitor) laufen
-            if (window.Capacitor && window.Capacitor.isNativePlatform()) {
-                
-                // Nativer App-Modus: Verwende CapacitorHttp
-                const { CapacitorHttp } = window.Capacitor;
-                try {
-                    const options = {
-                        url: url,
-                        headers: { 'Content-Type': 'application/json' }
-                    };
-                    const response = await CapacitorHttp.get(options);
-                    
-                    // KORREKTUR: 'response.data' IST BEREITS DAS FERTIGE JSON-OBJEKT/ARRAY
-                    const apiData = response.data || []; 
-
-                    // Wir wandeln es direkt in unser {code: ...} Format um.
-                    return apiData.map(result => ({
-                        code: result.iata,
-                        name: result.name,
-                        city: result.city,
-                        lat: parseFloat(result.latitude),
-                        lon: parseFloat(result.longitude)
-                    }));
-                } catch (error) {
-                    console.error("Fehler bei der Capacitor HTTP-Anfrage (Flughafen):", error);
+            // Es gibt keinen "if (Capacitor)"-Check mehr. Wir verwenden immer fetch().
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    console.warn(`API-Abfrage für '${input}' fehlgeschlagen: Status ${response.status}`);
                     return [];
                 }
+                const apiData = await response.json(); // apiData ist [{iata: "...", name: "...", ...}]
 
-            } else {
-                
-                // Normaler Browser-Modus (Live Server, Netlify-Webseite)
-                try {
-                    const response = await fetch(url);
-                    if (!response.ok) {
-                        console.warn(`API-Abfrage für '${input}' fehlgeschlagen: Status ${response.status}`);
-                        return [];
-                    }
-                    const apiData = await response.json(); // Hier MUSS .json() verwendet werden
-
-                    // Daten in unser {code: ...} Format umwandeln.
-                    return apiData.map(result => ({
-                        code: result.iata,
-                        name: result.name,
-                        city: result.city,
-                        lat: parseFloat(result.latitude),
-                        lon: parseFloat(result.longitude)
-                    }));
-                } catch (error) {
-                    console.error("Netzwerkfehler beim Aufruf der Flughafen-Funktion (Fetch):", error);
-                    return [];
-                }
+                // Wir müssen die rohen API-Daten in unser {code: ...} Format umwandeln.
+                return apiData.map(result => ({
+                    code: result.iata,
+                    name: result.name,
+                    city: result.city,
+                    lat: parseFloat(result.latitude),
+                    lon: parseFloat(result.longitude)
+                }));
+            } catch (error) {
+                console.error("Netzwerkfehler beim Aufruf der Flughafen-Funktion (Fetch):", error);
+                return [];
             }
         };
 	  
