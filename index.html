@@ -27,7 +27,7 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 	  <script src="https://unpkg.com/leaflet-polylinedecorator@1.6.0/dist/leaflet.polylineDecorator.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-   
+    <script src="api_service.js"></script>
 
     <style>
       @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap");
@@ -4732,51 +4732,6 @@
           return null;
         }
       };
-	  
-	  /**
-         * Ruft Flughafendaten von der Netlify-Funktion ab.
-         * Verwendet CapacitorHttp (nativ) falls verfügbar, sonst Standard-Browser-Fetch.
-         */
-        window.fetchExternalAirport = async function(input) {
-            const normalizedInput = input.trim();
-            if (normalizedInput.length < 3) return [];
-            
-            const url = `https://aesthetic-strudel-ecfe50.netlify.app/.netlify/functions/fetch-airport?query=${encodeURIComponent(normalizedInput)}`;
-
-            // Prüfen, ob wir in einer nativen App (Capacitor) laufen
-            // Das 'window.Capacitor' prüft, ob das Objekt überhaupt existiert
-            if (window.Capacitor && window.Capacitor.isNativePlatform()) {
-                
-                // Nativer App-Modus: Verwende CapacitorHttp
-                const { CapacitorHttp } = window.Capacitor;
-                try {
-                    const options = {
-                        url: url,
-                        headers: { 'Content-Type': 'application/json' }
-                    };
-                    const response = await CapacitorHttp.get(options);
-                    // Die 'data' von CapacitorHttp ist bereits das geparste JSON-Objekt
-                    return response.data || []; 
-                } catch (error) {
-                    console.error("Fehler bei der Capacitor HTTP-Anfrage (Flughafen):", error);
-                    return [];
-                }
-            } else {
-                
-                // Normaler Browser-Modus (Live Server, Netlify-Webseite)
-                try {
-                    const response = await fetch(url);
-                    if (!response.ok) {
-                        console.warn(`API-Abfrage für '${input}' fehlgeschlagen: Status ${response.status}`);
-                        return [];
-                    }
-                    return await response.json(); // fetch gibt eine JSON-Antwort zurück
-                } catch (error) {
-                    console.error("Netzwerkfehler beim Aufruf der Flughafen-Funktion (Fetch):", error);
-                    return [];
-                }
-            }
-        };
 	  
 	  /**
          * Ruft den Namen einer Airline anhand ihres IATA-Codes ab.
