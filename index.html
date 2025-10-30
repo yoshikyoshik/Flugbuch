@@ -4755,10 +4755,10 @@
                     };
                     const response = await CapacitorHttp.get(options);
                     
-                    // Die 'data' von CapacitorHttp ist bereits das geparste JSON-Objekt
+                    // KORREKTUR: 'response.data' IST BEREITS DAS FERTIGE JSON-OBJEKT/ARRAY
                     const apiData = response.data || []; 
 
-                    // Wir MÜSSEN es hier in das {code: ...} Format umwandeln.
+                    // Wir wandeln es direkt in unser {code: ...} Format um.
                     return apiData.map(result => ({
                         code: result.iata,
                         name: result.name,
@@ -4770,6 +4770,7 @@
                     console.error("Fehler bei der Capacitor HTTP-Anfrage (Flughafen):", error);
                     return [];
                 }
+
             } else {
                 
                 // Normaler Browser-Modus (Live Server, Netlify-Webseite)
@@ -4779,9 +4780,9 @@
                         console.warn(`API-Abfrage für '${input}' fehlgeschlagen: Status ${response.status}`);
                         return [];
                     }
-                    const apiData = await response.json(); // apiData ist [{iata: "...", name: "...", ...}]
+                    const apiData = await response.json(); // Hier MUSS .json() verwendet werden
 
-                    // Wir müssen die rohen API-Daten in unser {code: ...} Format umwandeln.
+                    // Daten in unser {code: ...} Format umwandeln.
                     return apiData.map(result => ({
                         code: result.iata,
                         name: result.name,
