@@ -2318,18 +2318,22 @@
             }
         }
 
-      var findAirport = function (input) {
-        const normalizedInput = input.trim().toUpperCase();
-        if (normalizedInput.length === 3 && airportData[normalizedInput]) {
-          return { code: normalizedInput, ...airportData[normalizedInput] };
-        }
-        for (const code in airportData) {
-          if (airportData[code].name.toUpperCase().includes(normalizedInput)) {
+      var findAirport = function(input) {
+    const normalizedInput = input.trim().toUpperCase();
+
+    // KORREKTUR: Akzeptiere 3- (IATA) oder 4-stellige (ICAO) Codes
+    if ((normalizedInput.length === 3 || normalizedInput.length === 4) && airportData[normalizedInput]) {
+        return { code: normalizedInput, ...airportData[normalizedInput] };
+    }
+
+    // Fallback: Suche nach Namen (bleibt unverändert)
+    for (const code in airportData) {
+        if (airportData[code].name.toUpperCase().includes(normalizedInput)) {
             return { code: code, ...airportData[code] };
-          }
         }
-        return null;
-      };
+    }
+    return null;
+};
 
       var calculateDistance = function (lat1, lon1, lat2, lon2) {
         var R = 6371;
@@ -4754,12 +4758,13 @@
 
                 // Wir müssen die rohen API-Daten in unser {code: ...} Format umwandeln.
                 return apiData.map(result => ({
-                    code: result.iata,
-                    name: result.name,
-                    city: result.city,
-                    lat: parseFloat(result.latitude),
-                    lon: parseFloat(result.longitude)
-                }));
+                    code: result.iata || result.icao, // Nimm IATA, ODER nimm ICAO
+                        name: result.name,
+                        city: result.city,
+                        lat: parseFloat(result.latitude),
+                        lon: parseFloat(result.longitude)
+                }))
+				.filter(airport => airport.code);
             } catch (error) {
                 console.error("Netzwerkfehler beim Aufruf der Flughafen-Funktion (Fetch):", error);
                 return [];
