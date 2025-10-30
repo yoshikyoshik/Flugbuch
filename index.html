@@ -4755,11 +4755,9 @@
                     };
                     const response = await CapacitorHttp.get(options);
                     
-                    // WICHTIGE KORREKTUR: Wir müssen die Rohdaten von der Netlify-Funktion parsen,
-                    // die im 'data'-Feld von CapacitorHttp als String ankommen.
-                    const apiData = response.data ? (typeof response.data === 'string' ? JSON.parse(response.data) : response.data) : [];
+                    // Die 'data' von CapacitorHttp ist bereits das geparste JSON-Objekt
+                    const apiData = response.data || []; 
 
-                    // response.data (von Netlify) ist ein Array: [{iata: "...", name: "...", ...}]
                     // Wir MÜSSEN es hier in das {code: ...} Format umwandeln.
                     return apiData.map(result => ({
                         code: result.iata,
@@ -4772,7 +4770,6 @@
                     console.error("Fehler bei der Capacitor HTTP-Anfrage (Flughafen):", error);
                     return [];
                 }
-
             } else {
                 
                 // Normaler Browser-Modus (Live Server, Netlify-Webseite)
@@ -4784,7 +4781,6 @@
                     }
                     const apiData = await response.json(); // apiData ist [{iata: "...", name: "...", ...}]
 
-                    // --- HIER WAR DER FEHLER ---
                     // Wir müssen die rohen API-Daten in unser {code: ...} Format umwandeln.
                     return apiData.map(result => ({
                         code: result.iata,
@@ -4793,8 +4789,6 @@
                         lat: parseFloat(result.latitude),
                         lon: parseFloat(result.longitude)
                     }));
-                    // --- ENDE KORREKTUR ---
-
                 } catch (error) {
                     console.error("Netzwerkfehler beim Aufruf der Flughafen-Funktion (Fetch):", error);
                     return [];
