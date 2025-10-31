@@ -4694,19 +4694,15 @@
           window.fetchWeatherByCoords(depLat, depLon),
           window.fetchWeatherByCoords(arrLat, arrLon),
         ]);
-		
-
-        // Popup-Inhalte mit Wetterinformationen erstellen
-        const depPopupContent = `<b>Abflug:</b> ${depName} (${depCode})${formatWeatherForPopup(
-          depWeather
-        )}`;
-        const arrPopupContent = `<b>Ankunft:</b> ${arrName} (${arrCode})${formatWeatherForPopup(
-          arrWeather
-        )}`;
 		*/
 
-        const depMarker = L.marker([depLat, depLon]) //.bindPopup(depPopupContent);
-        const arrMarker = L.marker([arrLat, arrLon]) //.bindPopup(arrPopupContent);
+        // Popup-Inhalte mit Wetterinformationen erstellen
+        const depPopupContent = `<b>Abflug:</b> ${depName} (${depCode})`;
+        const arrPopupContent = `<b>Ankunft:</b> ${arrName} (${arrCode})`;
+		
+
+        const depMarker = L.marker([depLat, depLon]).bindPopup(depPopupContent);
+        const arrMarker = L.marker([arrLat, arrLon]).bindPopup(arrPopupContent);
 		
 
 
