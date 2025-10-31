@@ -4703,11 +4703,11 @@
         const arrPopupContent = `<b>Ankunft:</b> ${arrName} (${arrCode})${formatWeatherForPopup(
           arrWeather
         )}`;
-		
-
-        const depMarker = L.marker([depLat, depLon]).bindPopup(depPopupContent);
-        const arrMarker = L.marker([arrLat, arrLon]).bindPopup(arrPopupContent);
 		*/
+
+        const depMarker = L.marker([depLat, depLon]) //.bindPopup(depPopupContent);
+        const arrMarker = L.marker([arrLat, arrLon]) //.bindPopup(arrPopupContent);
+		
 
 
         const flightPath = L.polyline(
@@ -4718,8 +4718,8 @@
           { color: "#10B981", weight: 3 }
         );
 
-        // routeLayer.addLayer(depMarker);
-        // routeLayer.addLayer(arrMarker);
+        routeLayer.addLayer(depMarker);
+        routeLayer.addLayer(arrMarker);
         routeLayer.addLayer(flightPath);
 
         map.fitBounds(
