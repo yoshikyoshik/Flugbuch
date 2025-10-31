@@ -1555,7 +1555,9 @@
         /**
          * Ruft Details für einen Flughafen ab und zeigt sie im Modal an.
          * @param {string} iataCode - Der IATA-Code des Flughafens (z.B. "DRS").
+		 * OLD
          */
+		 /**
         async function showAirportDetails(iataCode) {
             openInfoModal();
             document.getElementById('info-modal-title').textContent = getTranslation('modalDetails.airportTitle').replace('{key}', iataCode);
@@ -1600,6 +1602,62 @@
                 contentContainer.innerHTML = `<p>${getTranslation('modalDetails.airportError')}</p>`;
             }
         }
+		*/
+		
+		/**
+         * Ruft Details für einen Flughafen ab und zeigt sie im Modal an.
+         * @param {string} iataCode - Der IATA-Code des Flughafens (z.B. "DRS").
+		 * FR24
+         */
+		async function showAirportDetails(iataCode, silentCache = false) {
+    if (!silentCache) {
+        openInfoModal();
+        document.getElementById('info-modal-title').textContent = getTranslation('modalDetails.airportTitle').replace('{key}', iataCode);
+        const contentContainer = document.getElementById('info-modal-content');
+        contentContainer.innerHTML = `<p>${getTranslation('modalDetails.loading')}</p>`;
+    }
+
+    try {
+        // Wir verwenden unsere GFL-Funktion
+        const response = await fetch(`https://aesthetic-strudel-ecfe50.netlify.app/.netlify/functions/fetch-airport-details?code=${iataCode}`);
+        if (!response.ok) {
+            throw new Error('Netzwerk-Antwort war nicht OK');
+        }
+        const result = await response.json();
+
+        if (result.data && result.data.length > 0) {
+            const airport = result.data[0];
+
+            // Speichere die Infos (inkl. country_code) in DB & Cache
+            await cacheAndSaveAirport({
+                code: iataCode,
+                name: airport.name,
+                lat: airport.lat,
+                lon: airport.lng,
+                city: airport.city,
+                country_code: airport.country_code
+            });
+
+            if (!silentCache) {
+                const content = `
+                    <p><strong>${getTranslation('modalDetails.airportName')}</strong> ${airport.name}</p>
+                    <p><strong>${getTranslation('modalDetails.airportLocation')}</strong> ${airport.city}, ${airport.country_code}</p>
+                    <p><strong>${getTranslation('modalDetails.airportTimezone')}</strong> ${airport.timezone}</p>
+                    <p><strong>${getTranslation('modalDetails.airportCoords')}</strong> Lat: ${airport.lat}, Lng: ${airport.lng}</p>
+                    <p class="mt-2"><a href="${airport.website}" target="_blank" class="text-indigo-500 hover:underline">${getTranslation('modalDetails.airportWebsite')}</a></p>
+                `;
+                document.getElementById('info-modal-content').innerHTML = content;
+            }
+        } else if (!silentCache) {
+            document.getElementById('info-modal-content').innerHTML = `<p>${getTranslation('modalDetails.airportNoDetails')}</p>`;
+        }
+    } catch (error) {
+        console.error("Fehler beim Abrufen der Flughafen-Details:", error);
+        if (!silentCache) {
+            document.getElementById('info-modal-content').innerHTML = `<p>${getTranslation('modalDetails.airportError')}</p>`;
+        }
+    }
+}
 		
 		/**
          * Ruft Details für einen Flugzeugtyp ab und zeigt sie im Modal an.
@@ -2961,9 +3019,11 @@
             }
         };
 
-      /**
+		/**
          * Ruft Flugdaten per Flugnummer und Datum ab und füllt das Formular aus.
+		 * OLD
          */
+	/**	 
 	async function autofillFlightData() {
             const flightNumber = document.getElementById('auto-flight-number').value.replace(/\s/g, '').trim().toUpperCase();
             const flightDate = document.getElementById('auto-flight-date').value;
@@ -3035,6 +3095,87 @@
                 btn.disabled = false;
             }
         }
+		*/
+		
+		/**
+         * Ruft Flugdaten per Flugnummer und Datum ab und füllt das Formular aus.
+		 * FR24
+         */
+		async function autofillFlightData() {
+    const flightNumber = document.getElementById('auto-flight-number').value.replace(/\s/g, '').trim().toUpperCase();
+    const flightDate = document.getElementById('auto-flight-date').value;
+
+    if (!flightNumber || !flightDate) {
+        showMessage(getTranslation('form.autopilotError'), 'error');
+        return;
+    }
+
+    const btn = document.getElementById('autofill-btn');
+    btn.textContent = getTranslation('form.buttonFetching');
+    btn.disabled = true;
+
+    try {
+        // Wir übergeben 'flight_number' (wird von der Netlify-Funktion als 'flights' interpretiert)
+        const response = await fetch(`https://aesthetic-strudel-ecfe50.netlify.app/.netlify/functions/fetch-flight-by-number?flight_number=${flightNumber}&date=${flightDate}`);
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(errorText); 
+        }
+
+        const result = await response.json();
+
+        // KORRIGIERTE ANTWORT-STRUKTUR: 'result.data'
+        if (result.data && result.data.length > 0) {
+            // Finde den Flug, der am nächsten am Zieldatum liegt
+            const targetTimestamp = new Date(flightDate).getTime();
+            const flight = result.data.reduce((prev, curr) => {
+                const prevDiff = Math.abs(new Date(prev.first_seen).getTime() - targetTimestamp);
+                const currDiff = Math.abs(new Date(curr.first_seen).getTime() - targetTimestamp);
+                return (currDiff < prevDiff ? curr : prev);
+            });
+
+            // --- DATEN EXTRAHIEREN ---
+            const depIata = flight.orig_iata;
+            const arrIata = flight.dest_iata;
+            const airlineIata = flight.operating_as || flight.painted_as; // z.B. "LH" oder "DLH"
+            const aircraftModel = flight.type; // z.B. "B738"
+            const registration = flight.reg; // z.B. "D-AINY"
+
+            // Airline-Namen parallel abrufen (wir nutzen dafür unsere GFL-Funktion)
+            let airlineName = '';
+            if (airlineIata) {
+                airlineName = await fetchAirlineName(airlineIata);
+            }
+
+            // --- FORMULAR FÜLLEN ---
+            document.getElementById('departure').value = depIata;
+            document.getElementById('arrival').value = arrIata;
+            document.getElementById('aircraftType').value = aircraftModel || '';
+            document.getElementById('flightNumber').value = flight.flight;
+            document.getElementById('airline').value = airlineName || '';
+            document.getElementById('registration').value = registration || '';
+            document.getElementById('flightDate').value = flightDate; 
+
+            // Wir müssen die Flughafendaten noch schnell cachen, falls sie neu sind
+            // (Wir rufen die Detail-API auf, um alle Infos zu haben)
+            await showAirportDetails(depIata, true); // true = "nur cachen, nicht anzeigen"
+            await showAirportDetails(arrIata, true);
+
+            updateFlightDetails(); // Distanz, Zeit & CO2 berechnen
+            showMessage(getTranslation('form.autopilotSuccess'), 'success');
+        } else {
+            showMessage(getTranslation('messages.noDataFound'), 'error');
+        }
+    } catch (error) {
+        console.error("Fehler beim Abrufen der Flugdaten:", error);
+        showMessage(getTranslation('messages.fetchError') + `: ${error.message}`, 'error');
+    } finally {
+        btn.textContent = getTranslation('form.buttonFetch');
+        btn.disabled = false;
+    }
+}
+		
 		
 	  
 	  /**
