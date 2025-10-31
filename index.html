@@ -1663,6 +1663,7 @@
          * Ruft Details für einen Flugzeugtyp ab und zeigt sie im Modal an.
          * @param {string} model - Das Flugzeugmodell (z.B. "A320").
          */
+		 /**
         async function showAircraftDetails(model) {
             openInfoModal();
             document.getElementById('info-modal-title').textContent = getTranslation('modalDetails.aircraftTitle').replace('{key}', model);
@@ -1731,6 +1732,7 @@
                 contentContainer.innerHTML = `<p>${getTranslation('modalDetails.aircraftError')}</p>`;
             }
         }
+		 */
 		
 		/**
          * Ruft Details für einen Airline-Code ab und zeigt sie im Modal an.
@@ -2489,12 +2491,14 @@
        * @param {object} weather - Das Wetter-Objekt von der API.
        * @returns {string} Ein formatierter HTML-String oder ein leerer String.
        */
+	   /**
       function formatWeatherForPopup(weather) {
         if (weather && typeof weather.temp !== "undefined") {
           return `<br><hr class="my-1">🌡️ ${weather.temp}°C | 💨 ${weather.wind_speed} km/h`;
         }
         return ""; // Gibt nichts zurück, wenn keine Wetterdaten vorhanden sind
       }
+	  */
 
 		/**
          * Extrahiert einen IATA-Code aus einem String wie "Dresden (DRS)".
@@ -3268,7 +3272,8 @@
 						</button>
 					`;
 				} 
-                else if (isAircraftTypeView && key !== unknownKey) {
+              /**  
+				else if (isAircraftTypeView && key !== unknownKey) {
                     titleKey = getTranslation('logbook.detailsTitleAircraft').replace('{key}', key);
                     titleHtml = `
                         ${key}
@@ -3277,6 +3282,8 @@
                         </button>
                     `;
                 }
+			   */	
+				
                 else if (isAirlineView && key !== unknownKey) {
                     const firstFlightWithName = group.flights.find(f => f.airline && f.airline.trim() !== '');
                     const displayLabel = firstFlightWithName ? `${firstFlightWithName.airline} (${key})` : key;
@@ -4681,11 +4688,13 @@
             return;
         }
 
-        // NEU: Wetterdaten für Start und Ziel gleichzeitig abrufen
+        /**
+		// NEU: Wetterdaten für Start und Ziel gleichzeitig abrufen
         const [depWeather, arrWeather] = await Promise.all([
           window.fetchWeatherByCoords(depLat, depLon),
           window.fetchWeatherByCoords(arrLat, arrLon),
         ]);
+		
 
         // Popup-Inhalte mit Wetterinformationen erstellen
         const depPopupContent = `<b>Abflug:</b> ${depName} (${depCode})${formatWeatherForPopup(
@@ -4694,6 +4703,7 @@
         const arrPopupContent = `<b>Ankunft:</b> ${arrName} (${arrCode})${formatWeatherForPopup(
           arrWeather
         )}`;
+		*/
 
         const depMarker = L.marker([depLat, depLon]).bindPopup(depPopupContent);
         const arrMarker = L.marker([arrLat, arrLon]).bindPopup(arrPopupContent);
@@ -4845,6 +4855,7 @@
        * @param {number} lon - Longitude.
        * @returns {Promise<object|null>} Ein Promise, das mit dem Wetterobjekt oder null aufgelöst wird.
        */
+	   /**
       window.fetchWeatherByCoords = async function (lat, lon) {
         try {
           //          const response = await fetch(`/.netlify/functions/fetch-weather?lat=${lat}&lon=${lon}` );
@@ -4877,6 +4888,7 @@
           return null;
         }
       };
+	  */
 	  
 	  /**
          * Ruft Flughafendaten von der Netlify-Funktion ab.
