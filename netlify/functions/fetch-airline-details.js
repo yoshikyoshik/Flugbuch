@@ -1,4 +1,4 @@
-/**
+
 // netlify/functions/fetch-airline-details.js
 // KEIN 'require('node-fetch')'
 
@@ -34,7 +34,7 @@ exports.handler = async function(event, context) {
         return { statusCode: 500, body: JSON.stringify({ message: `Interner Serverfehler: ${error.message}` }) };
     }
 };
-*/
+
 
 /**
 // netlify/functions/fetch-airline-details.js
@@ -142,6 +142,7 @@ exports.handler = async function(event, context) {
 };
 */
 
+/**
 // netlify/functions/fetch-airline-details.js
 // KEIN 'require('node-fetch')'
 
@@ -195,3 +196,4 @@ exports.handler = async function(event, context) {
         return { statusCode: 500, body: JSON.stringify({ message: `Interner Serverfehler: ${error.message}` }) };
     }
 };
+*/
