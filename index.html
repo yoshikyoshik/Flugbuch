@@ -25,8 +25,10 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-	  <script src="https://unpkg.com/leaflet-polylinedecorator@1.6.0/dist/leaflet.polylineDecorator.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
+	<script src="https://unpkg.com/leaflet-polylinedecorator@1.6.0/dist/leaflet.polylineDecorator.js"></script>
+    <script src="//unpkg.com/three"></script>
+	<script src="//unpkg.com/globe.gl"></script>
+	<script src="https://cdn.tailwindcss.com"></script>
     
 
     <style>
@@ -760,6 +762,9 @@
                   >
                     Alle Routen zeigen
                   </button>
+				  <button id="show-globe-btn" class="text-sm font-medium text-purple-600 hover:text-purple-800 p-2 rounded-lg bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 transition" data-i18n="flights.show3DGlobe">
+					🌍 3D Globus
+				  </button>
                   <button
                     onclick="renderFlights()"
                     class="text-sm font-medium text-indigo-600 hover:text-indigo-800 flex items-center p-2 rounded-lg bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 transition" data-i18n="flights.refresh"
@@ -1251,6 +1256,14 @@
             </div>
         </div>
     </div>
+	
+	<div id="globe-modal" class="hidden fixed inset-0 w-full h-screen bg-black bg-opacity-70 z-40">
+		<div id="globe-container" class="w-full h-full"></div>
+
+		<button onclick="closeGlobeModal()" class="absolute top-4 right-4 text-white z-50 p-2 bg-black bg-opacity-30 rounded-full hover:bg-opacity-50 transition">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+		</button>
+	</div>
 
 	<input type="file" id="import-file-input" accept=".json" class="hidden">
 
@@ -1364,6 +1377,7 @@
       let isAppInitialized = false; // SCHUTZSCHALTER
 	  let currentLanguage = 'de'; // Standard-Sprache
       let translations = {}; // Leeres Objekt, das die geladene Sprache hält
+	  let globeInstance = null;
 	  
       var airportData = {
         FRA: {
@@ -1551,59 +1565,71 @@
             document.getElementById('info-modal-title').textContent = 'Lade...';
             document.getElementById('info-modal-content').innerHTML = '<p>Lade Details...</p>';
         }
-
-        /**
-         * Ruft Details für einen Flughafen ab und zeigt sie im Modal an.
-         * @param {string} iataCode - Der IATA-Code des Flughafens (z.B. "DRS").
-		 * OLD
-         */
-		 /**
-        async function showAirportDetails(iataCode) {
-            openInfoModal();
-            document.getElementById('info-modal-title').textContent = getTranslation('modalDetails.airportTitle').replace('{key}', iataCode);
-            const contentContainer = document.getElementById('info-modal-content');
-            contentContainer.innerHTML = `<p>${getTranslation('modalDetails.loading')}</p>`;
-
-            try {
-                const response = await fetch(`https://aesthetic-strudel-ecfe50.netlify.app/.netlify/functions/fetch-airport-details?code=${iataCode}`);
-                if (!response.ok) {
-                    throw new Error('Netzwerk-Antwort war nicht OK');
-                }
-                const result = await response.json();
-                
-                if (result.data && result.data.length > 0) {
-                    const airport = result.data[0];
-                    
-                    // --- HIER IST DEIN WICHTIGER CODE-BLOCK ---
-                    // Speichere die neuen Infos (inkl. country_code) in DB & Cache
-                    await cacheAndSaveAirport({
-                        code: iataCode,
-                        name: airport.name,
-                        lat: airport.lat,
-                        lon: airport.lng,
-                        city: airport.city,
-                        country_code: airport.country_code
-                    });
-                    // --- ENDE DES WICHTIGEN BLOCKS ---
-                    
-                    const content = `
-                        <p><strong>${getTranslation('modalDetails.airportName')}</strong> ${airport.name}</p>
-                        <p><strong>${getTranslation('modalDetails.airportLocation')}</strong> ${airport.city}, ${airport.country_code}</p>
-                        <p><strong>${getTranslation('modalDetails.airportTimezone')}</strong> ${airport.timezone}</p>
-                        <p><strong>${getTranslation('modalDetails.airportCoords')}</strong> Lat: ${airport.lat}, Lng: ${airport.lng}</p>
-                        <p class="mt-2"><a href="${airport.website}" target="_blank" class="text-indigo-500 hover:underline">${getTranslation('modalDetails.airportWebsite')}</a></p>
-                    `;
-                    contentContainer.innerHTML = content;
-                } else {
-                    contentContainer.innerHTML = `<p>${getTranslation('modalDetails.airportNoDetails')}</p>`;
-                }
-            } catch (error) {
-                console.error("Fehler beim Abrufen der Flughafen-Details:", error);
-                contentContainer.innerHTML = `<p>${getTranslation('modalDetails.airportError')}</p>`;
-            }
-        }
-		*/
 		
+		/**
+		 * Schließt das 3D-Globus-Modal.
+		 */
+		function closeGlobeModal() {
+			document.getElementById('globe-modal').classList.add('hidden');
+			// Stoppt die Animation, um CPU zu sparen
+			if (globeInstance) {
+				globeInstance.controls().autoRotate = false;
+			}
+		}
+
+		/**
+		 * Bereitet die Flugdaten für den 3D-Globus auf.
+		 */
+		async function getGlobeData() {
+			const allFlights = await getFlights();
+
+			// Verarbeite die Flüge: Wir brauchen nur Start- und End-Koordinaten
+			const arcData = allFlights
+				.filter(f => f.depLat && f.arrLat) // Nur Flüge mit Koordinaten
+				.map(flight => ({
+					startLat: flight.depLat,
+					startLng: flight.depLon,
+					endLat: flight.arrLat,
+					endLng: flight.arrLon,
+					name: `${flight.departure} → ${flight.arrival}` // Für Tooltips
+				}));
+			return arcData;
+		}
+
+		/**
+		 * Öffnet das Globus-Modal und initialisiert/aktualisiert den 3D-Globus.
+		 */
+		async function openGlobeModal() {
+			document.getElementById('globe-modal').classList.remove('hidden');
+
+			// Daten abrufen
+			const globeData = await getGlobeData();
+
+			// Globus nur beim ersten Mal initialisieren
+			if (!globeInstance) {
+				globeInstance = Globe()
+					(document.getElementById('globe-container'))
+					.backgroundColor('rgba(0,0,0,0)') // Transparenter Hintergrund
+					.globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg')
+					.arcLabel('name') // Zeigt den Namen beim Hovern
+					.arcColor(() => '#9333ea') // Lila Farbe (Tailwind purple-600)
+					.arcDashLength(0.4)      // Länge der gestrichelten Linie
+					.arcDashGap(0.2)         // Abstand
+					.arcDashAnimateTime(1500) // Animationsgeschwindigkeit
+					.arcStroke(0.5)          // Linienstärke
+					.arcsTransitionDuration(500); // Wie schnell neue Linien erscheinen
+
+				// Zoom-Steuerung und Rotation
+				globeInstance.controls().autoRotate = true;
+				globeInstance.controls().autoRotateSpeed = 0.2;
+				globeInstance.controls().enableZoom = true; // Zoomen erlauben
+			}
+
+			// Daten an den Globus übergeben und Animation starten
+			globeInstance.arcsData(globeData);
+			globeInstance.controls().autoRotate = true;
+		}
+	
 		/**
          * Ruft Details für einen Flughafen ab und zeigt sie im Modal an.
          * @param {string} iataCode - Der IATA-Code des Flughafens (z.B. "DRS").
@@ -1911,6 +1937,8 @@
 		  .addEventListener("click", () => renderLogbookView("registration"));
 		  
 		document.getElementById('import-file-input').addEventListener('change', handleImport);
+		
+		document.getElementById('show-globe-btn').addEventListener('click', openGlobeModal);
 
         // --- ENDE Event-Listener ---
 

@@ -177,7 +177,8 @@
         "flightDetails": "Flight: {flightNumber} | Airline: {airline} | Type: {aircraftType}",
         "co2Info": "🌍 {co2} kg CO₂",
         "mapOverview": "Overview: Displaying {count} unique routes.",
-        "mapNoFlights": "No flights available to display an overview."
+        "mapNoFlights": "No flights available to display an overview.",
+		"show3DGlobe": "🌍 3D Globe"
     },
 	"stats": {
         "totalFlights": "Total Flights",
