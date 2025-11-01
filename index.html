@@ -1745,47 +1745,52 @@
             contentContainer.innerHTML = `<p>${getTranslation('modalDetails.loading')}</p>`;
 
             try {
-                // Der Aufruf hier ist korrekt
                 const response = await fetch(`https://aesthetic-strudel-ecfe50.netlify.app/.netlify/functions/fetch-airline-details?iata_code=${iataCode}`);
                 if (!response.ok) {
                     throw new Error('Netzwerk-Antwort war nicht OK');
                 }
-                const result = await response.json();
-                
-                // KORREKTUR: Prüfe auf 'result.response.data'
-                if (result.response && result.response.data && result.response.data.length > 0) {
+                const result = await response.json(); // result ist { "success": true, "data": [...] }
+
+                // --- HIER IST DIE KORREKTUR ---
+                // Wir prüfen auf 'result.data', nicht 'result.response.data'
+                if (result.data && result.data.length > 0) {
                     let content = '';
                     const notAvailable = getTranslation('modalDetails.notAvailable');
                     
-                    // Nimm das erste (und einzige) Ergebnis
-                    const airline = result.response.data[0];
+                    // Die API kann mehrere Airlines zurückgeben (z.B. Lufthansa & Lufthansa Cargo)
+                    result.data.forEach((airline, index) => {
+                        if (index > 0) {
+                            content += '<hr class="my-4 dark:border-gray-700">';
+                        }
 
-                    content += `
-                        <div class="grid grid-cols-2 gap-x-4 gap-y-1">
-                            <p><strong>${getTranslation('modalDetails.airlineName')}</strong></p> 
-                            <p>${airline.name || notAvailable} <strong>(${airline.iata_code || '?'})</strong></p>
-                            
-                            <p><strong>${getTranslation('modalDetails.airlineCountry')}</strong></p> 
-                            <p>${airline.country_code || notAvailable}</p>
-                            
-                            <p><strong>${getTranslation('modalDetails.airlineIcao')}</strong></p> 
-                            <p>${airline.icao_code || notAvailable}</p>
-                            
-                            <p><strong>${getTranslation('modalDetails.airlineCallsign')}</strong></p> 
-                            <p>${airline.callsign || notAvailable}</p>
+                        content += `
+                            <div class="grid grid-cols-2 gap-x-4 gap-y-1">
+                                <p><strong>${getTranslation('modalDetails.airlineName')}</strong></p> 
+                                <p>${airline.name || notAvailable} <strong>(${airline.iata_code || '?'})</strong></p>
+                                
+                                <p><strong>${getTranslation('modalDetails.airlineCountry')}</strong></p> 
+                                <p>${airline.country_code || notAvailable}</p>
+                                
+                                <p><strong>${getTranslation('modalDetails.airlineIcao')}</strong></p> 
+                                <p>${airline.icao_code || notAvailable}</p>
+                                
+                                <p><strong>${getTranslation('modalDetails.airlineCallsign')}</strong></p> 
+                                <p>${airline.callsign || notAvailable}</p>
 
-                            <p><strong>${getTranslation('modalDetails.airlineFleetSize')}</strong></p> 
-                            <p>${airline.total_aircrafts || notAvailable}</p>
+                                <p><strong>${getTranslation('modalDetails.airlineFleetSize')}</strong></p> 
+                                <p>${airline.total_aircrafts || notAvailable}</p>
 
-                            <p><strong>${getTranslation('modalDetails.airlineFleetAge')}</strong></p> 
-                            <p>${airline.average_fleet_age ? `${airline.average_fleet_age} ${getTranslation('modalDetails.airlineAgeUnit')}` : notAvailable}</p>
-                            
-                            <p class="mt-2 col-span-2"><a href="https://www.${airline.website}" target="_blank" class="text-indigo-500 hover:underline">${getTranslation('modalDetails.airlineWebsite')}</a></p>
-                        </div>
-                    `;
+                                <p><strong>${getTranslation('modalDetails.airlineFleetAge')}</strong></p> 
+                                <p>${airline.average_fleet_age ? `${airline.average_fleet_age} ${getTranslation('modalDetails.airlineAgeUnit')}` : notAvailable}</p>
+                                
+                                <p class="mt-2 col-span-2"><a href="https://${airline.website}" target="_blank" class="text-indigo-500 hover:underline">${getTranslation('modalDetails.airlineWebsite')}</a></p>
+                            </div>
+                        `;
+                    });
                     
                     contentContainer.innerHTML = content;
                 } else {
+                    // Dieser Block wird jetzt nur noch ausgeführt, wenn 'result.data' leer ist
                     contentContainer.innerHTML = `<p>${getTranslation('modalDetails.airlineNoDetails')}</p>`;
                 }
             } catch (error) {
