@@ -28,6 +28,7 @@
     <script src="https://unpkg.com/leaflet-polylinedecorator@1.6.0/dist/leaflet.polylineDecorator.js"></script>
     <script src="//unpkg.com/three"></script>
     <script src="//unpkg.com/globe.gl"></script>
+	
     <script src="https://cdn.tailwindcss.com"></script>
 
     <style>
@@ -2172,58 +2173,110 @@
       }
 
       /**
-       * Bereitet die Flugdaten für den 3D-Globus auf.
-       */
-      async function getGlobeData() {
-        const allFlights = await getFlights();
+         * Bereitet die Flugdaten (Bögen) UND die Liste der besuchten Länder für den 3D-Globus auf.
+         */
+        async function getGlobeData() {
+            const allFlights = await getFlights();
+            const arcData = [];
+            const visitedCountries = new Set(); // Ein Set speichert jeden Ländercode nur einmal
 
-        // Verarbeite die Flüge: Wir brauchen nur Start- und End-Koordinaten
-        const arcData = allFlights
-          .filter((f) => f.depLat && f.arrLat) // Nur Flüge mit Koordinaten
-          .map((flight) => ({
-            startLat: flight.depLat,
-            startLng: flight.depLon,
-            endLat: flight.arrLat,
-            endLng: flight.arrLon,
-            name: `${flight.departure} → ${flight.arrival}`, // Für Tooltips
-          }));
-        return arcData;
-      }
+            console.log("DEBUG [getGlobeData]: Starte Datensammlung für", allFlights.length, "Flüge.");
 
-      /**
-       * Öffnet das Globus-Modal und initialisiert/aktualisiert den 3D-Globus.
-       */
-      async function openGlobeModal() {
-        document.getElementById("globe-modal").classList.remove("hidden");
+            allFlights
+                .filter((f) => f.depLat && f.arrLat) // Nur Flüge mit Koordinaten
+                .forEach((flight) => {
+                    // 1. Bogen-Daten erstellen (einfache Logik, keine Gruppierung)
+                    arcData.push({
+                        startLat: flight.depLat,
+                        startLng: flight.depLon,
+                        endLat: flight.arrLat,
+                        endLng: flight.arrLon,
+                        name: `${flight.departure || ''} → ${flight.arrival || ''}`, // 'name' für Hover
+                    });
 
-        // Daten abrufen
-        const globeData = await getGlobeData();
+                    // 2. Besuchte Länder sammeln
+                    const depCountry = airportData[flight.departure]?.country_code;
+                    const arrCountry = airportData[flight.arrival]?.country_code;
 
-        // Globus nur beim ersten Mal initialisieren
-        if (!globeInstance) {
-          globeInstance = Globe()(document.getElementById("globe-container"))
-            .backgroundColor("rgba(0,0,0,0)") // Transparenter Hintergrund
-            .globeImageUrl(
-              "//unpkg.com/three-globe/example/img/earth-night.jpg"
-            )
-            .arcLabel("name") // Zeigt den Namen beim Hovern
-            .arcColor(() => "#9333ea") // Lila Farbe (Tailwind purple-600)
-            .arcDashLength(0.4) // Länge der gestrichelten Linie
-            .arcDashGap(0.2) // Abstand
-            .arcDashAnimateTime(1500) // Animationsgeschwindigkeit
-            .arcStroke(0.8) // Linienstärke
-            .arcsTransitionDuration(500); // Wie schnell neue Linien erscheinen
-
-          // Zoom-Steuerung und Rotation
-          globeInstance.controls().autoRotate = true;
-          globeInstance.controls().autoRotateSpeed = 0.2;
-          globeInstance.controls().enableZoom = true; // Zoomen erlauben
+                    if (depCountry) visitedCountries.add(depCountry);
+                    if (arrCountry) visitedCountries.add(arrCountry);
+                });
+            
+            // --- DEBUGGING: Zeige uns die finale Liste ---
+            console.log("GESAMMELTE LÄNDERCODES (visitedCountries):", Array.from(visitedCountries));
+            // --- ENDE DEBUGGING ---
+            
+            // Gib die Bögen und die Länderliste zurück
+            return { arcData, visitedCountries: Array.from(visitedCountries) };
         }
 
-        // Daten an den Globus übergeben und Animation starten
-        globeInstance.arcsData(globeData);
-        globeInstance.controls().autoRotate = true;
-      }
+      /**
+         * Öffnet das Globus-Modal und initialisiert/aktualisiert den 3D-Globus.
+         */
+        async function openGlobeModal() {
+            document.getElementById("globe-modal").classList.remove("hidden");
+
+            // 1. Daten abrufen (Deine Funktion ist korrekt)
+            const { arcData, visitedCountries } = await getGlobeData();
+
+            // 2. Globus nur beim ersten Mal initialisieren
+            if (!globeInstance) {
+                console.log("DEBUG: Initialisiere Globus-Instanz zum ersten Mal...");
+                const countries = await (await fetch('https://raw.githubusercontent.com/vasturiano/globe.gl/master/example/datasets/ne_110m_admin_0_countries.geojson')).json();
+
+                if (countries.features && countries.features.length > 0) {
+                    console.log("EIGENSCHAFTEN EINES KARTEN-LANDES (feat.properties):", countries.features[0].properties);
+                }
+
+                globeInstance = Globe()(document.getElementById("globe-container"))
+                    .backgroundColor("#000000")
+                    .atmosphereColor("#000000")
+                    .globeImageUrl(
+                        "//unpkg.com/three-globe/example/img/earth-night.jpg"
+                    )
+                    
+                    // --- KORRIGIERTE REIHENFOLGE ---
+                    // 1. ZUERST die Bogen-Daten übergeben
+                    .arcsData(arcData)
+                    
+                    // 2. DANN die Regeln für die Bögen
+                    .arcLabel("name") 
+                    .arcColor(() => "#9333ea") // Deine einzelne, feste Farbe
+                    .arcDashLength(0.4)
+                    .arcDashGap(0.2)
+                    .arcDashAnimateTime(1500)
+                    .arcStroke(0.8)
+                    .arcsTransitionDuration(500)
+
+                    // 3. DANN die Polygon-Daten und -Regeln
+                    .polygonsData(countries.features) 
+                    .polygonCapColor(feat => {
+                        // KORREKTUR: Die Eigenschaft heißt ISO_A2 (Großbuchstaben)
+                        const isVisited = visitedCountries.includes(feat.properties.ISO_A2);
+                        return isVisited ? 'rgba(147, 51, 234, 0.5)' : 'rgba(100, 100, 100, 0.2)'; 
+                    })
+                    .polygonSideColor(() => 'rgba(255, 255, 255, 0.05)') 
+                    .polygonStrokeColor(() => '#ffffff') 
+                    .polygonAltitude(0.01);
+                
+                globeInstance.controls().autoRotate = true;
+                globeInstance.controls().autoRotateSpeed = 0.2;
+                globeInstance.controls().enableZoom = true;
+            }
+
+            // 3. Daten bei JEDEM Öffnen aktualisieren
+            console.log("DEBUG: Aktualisiere Globus-Daten...");
+            globeInstance.arcsData(arcData);
+            
+            // 4. Polygons-Farbe ebenfalls bei jedem Öffnen neu setzen
+            globeInstance.polygonCapColor(feat => {
+                const isVisited = visitedCountries.includes(feat.properties.ISO_A2);
+                return isVisited ? 'rgba(147, 51, 234, 0.5)' : 'rgba(100, 100, 100, 0.2)';
+            });
+
+            globeInstance.controls().autoRotate = true;
+            window.globeDebugLogged = false; 
+        }
 
       /**
        * Ruft Details für einen Flughafen ab und zeigt sie im Modal an.
