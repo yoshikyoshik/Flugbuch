@@ -26,8 +26,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet-polylinedecorator@1.6.0/dist/leaflet.polylineDecorator.js"></script>
-    <script src="//unpkg.com/three"></script>
-    <script src="//unpkg.com/globe.gl"></script>
+    <script src="//unpkg.com/three@latest"></script>
+    <script src="//unpkg.com/globe.gl@latest"></script>
 	
     <script src="https://cdn.tailwindcss.com"></script>
 
@@ -2176,9 +2176,23 @@
          * Bereitet die Flugdaten (Bögen) UND die Liste der besuchten Länder für den 3D-Globus auf.
          */
         async function getGlobeData() {
+		
+		// +++ NEUER FARB-POOL (Harmonisch & Kontrastreich) +++
+            const arcColorPool = [
+                '#ec4899', // Hot Pink
+                '#8b5cf6', // Violett
+                '#06b6d4', // Cyan
+                '#84cc16', // Limettengrün
+                '#e5e7eb'  // Kaltes Weiß
+            ];
+            		
             const allFlights = await getFlights();
             const arcData = [];
             const visitedCountries = new Set(); // Ein Set speichert jeden Ländercode nur einmal
+			
+			// +++ NEU: Objekt zum Zählen der Flughafenhäufigkeit +++
+            const airportUsage = {};
+            // +++ ENDE NEU +++
 
             console.log("DEBUG [getGlobeData]: Starte Datensammlung für", allFlights.length, "Flüge.");
 
@@ -2192,6 +2206,8 @@
                         endLat: flight.arrLat,
                         endLng: flight.arrLon,
                         name: `${flight.departure || ''} → ${flight.arrival || ''}`, // 'name' für Hover
+						// +++ Weise jedem Bogen eine zufällige Farbe aus dem Pool zu +++
+                        color: arcColorPool[Math.floor(Math.random() * arcColorPool.length)]
                     });
 
                     // 2. Besuchte Länder sammeln
@@ -2200,14 +2216,51 @@
 
                     if (depCountry) visitedCountries.add(depCountry);
                     if (arrCountry) visitedCountries.add(arrCountry);
+					
+					// +++ NEU: Flughafenhäufigkeit zählen +++
+                    // Wir verarbeiten Start- und Zielflughafen
+                    [flight.departure, flight.arrival].forEach((iata, index) => {
+                        const airport = airportData[iata]; // Holen der vollen Flughafen-Infos
+                        if (!airport) return; // Überspringen, falls Infos fehlen
+
+                        if (!airportUsage[iata]) {
+                            // Flughafen ist neu, wir legen ihn an
+                            airportUsage[iata] = {
+                                code: iata,
+                                name: airport.name || iata,
+                                lat: airport.lat,
+                                lon: airport.lon,
+                                count: 1 // Erster Besuch
+                            };
+                        } else {
+                            // Flughafen ist bekannt, Zähler erhöhen
+                            airportUsage[iata].count++;
+                        }
+                    });
+                    // +++ ENDE NEU +++
+					
                 });
+				
+			// +++ NEU: Daten für die Punkte aufbereiten +++
+            // 1. Das Objekt in ein Array umwandeln, das globe.gl versteht
+            const airportPointsData = Object.values(airportUsage);
+            
+            // 2. Den maximalen Zählwert finden (unseren "maxPop")
+            // Wir nutzen Math.max, falls keine Punkte da sind (ergibt 0)
+            const maxCount = Math.max(0, ...airportPointsData.map(d => d.count));
+            // +++ ENDE NEU +++
             
             // --- DEBUGGING: Zeige uns die finale Liste ---
             console.log("GESAMMELTE LÄNDERCODES (visitedCountries):", Array.from(visitedCountries));
             // --- ENDE DEBUGGING ---
             
-            // Gib die Bögen und die Länderliste zurück
-            return { arcData, visitedCountries: Array.from(visitedCountries) };
+            // Gib die Bögen, die Länder UND die neuen Punkt-Daten zurück
+            return { 
+                arcData, 
+                visitedCountries: Array.from(visitedCountries),
+                airportPointsData, // +++ NEU
+                maxCount           // +++ NEU
+            };
         }
 
       /**
@@ -2216,8 +2269,8 @@
         async function openGlobeModal() {
             document.getElementById("globe-modal").classList.remove("hidden");
 
-            // 1. Daten abrufen (Deine Funktion ist korrekt)
-            const { arcData, visitedCountries } = await getGlobeData();
+            // 1. Daten abrufen (bleibt gleich)
+            const { arcData, visitedCountries, airportPointsData, maxCount } = await getGlobeData();
 
             // 2. Globus nur beim ersten Mal initialisieren
             if (!globeInstance) {
@@ -2235,30 +2288,65 @@
                         "//unpkg.com/three-globe/example/img/earth-night.jpg"
                     )
                     
-                    // --- KORRIGIERTE REIHENFOLGE ---
-                    // 1. ZUERST die Bogen-Daten übergeben
+                    // --- Schicht 1: BÖGEN (Arcs) ---
                     .arcsData(arcData)
-                    
-                    // 2. DANN die Regeln für die Bögen
                     .arcLabel("name") 
-                    .arcColor(() => "#9333ea") // Deine einzelne, feste Farbe
+                    .arcColor('color') 
                     .arcDashLength(0.4)
                     .arcDashGap(0.2)
                     .arcDashAnimateTime(1500)
                     .arcStroke(0.8)
                     .arcsTransitionDuration(500)
 
-                    // 3. DANN die Polygon-Daten und -Regeln
+                    // --- Schicht 2: LÄNDER (Polygons) ---
                     .polygonsData(countries.features) 
                     .polygonCapColor(feat => {
-                        // KORREKTUR: Die Eigenschaft heißt ISO_A2 (Großbuchstaben)
                         const isVisited = visitedCountries.includes(feat.properties.ISO_A2);
                         return isVisited ? 'rgba(147, 51, 234, 0.5)' : 'rgba(100, 100, 100, 0.2)'; 
                     })
                     .polygonSideColor(() => 'rgba(255, 255, 255, 0.05)') 
                     .polygonStrokeColor(() => '#ffffff') 
-                    .polygonAltitude(0.01);
+                    .polygonAltitude(0.01)
+
+                    // --- Schicht 3: FLUGHÄFEN (Points/Säulen) ---
+                    .pointsData(airportPointsData)
+                    .pointLat('lat')
+                    .pointLng('lon')
+                    .pointLabel(d => `${d.name} (${d.count} ${d.count > 1 ? 'Besuche' : 'Besuch'})`)
+                    .pointColor(() => '#fde047') 
+                    .pointRadius(d => 0.1 + (maxCount > 0 ? (d.count / maxCount) * 0.4 : 0)) 
+                    .pointAltitude(d => (maxCount > 0 ? (d.count / maxCount) * 0.2 : 0.01)) 
+                    .pointsTransitionDuration(500)
+
+                    // +++ NEU: Schicht 4 als HTML-Elemente +++
+                    // (Die .labelsData()-Schicht wurde entfernt)
+                    .htmlElementsData(airportPointsData)
+                    .htmlLat('lat')
+                    .htmlLng('lon')
+                    // Höhe: Etwas über der Spitze der Säule
+                    .htmlAltitude(d => (maxCount > 0 ? (d.count / maxCount) * 0.2 : 0.01) + 0.03)
+                    .htmlElement(d => {
+                        // Erstelle ein echtes DIV-Element
+                        const el = document.createElement('div');
+                        
+                        // Hier wenden wir das CSS-Styling an
+                        el.innerHTML = d.code; // Der IATA-Code
+                        el.style.backgroundColor = 'rgba(0, 0, 0, 0.6)'; // Schwarzer Hintergrund
+                        el.style.color = 'white';
+                        el.style.padding = '1px 3px';
+                        el.style.borderRadius = '2px';
+                        el.style.fontSize = '10px'; // HTML skaliert anders als Labels
+                        el.style.fontFamily = '"Inter", sans-serif'; // Passend zur restlichen App
+                        
+                        // Wichtig: Verhindert, dass das Label Maus-Events "stiehlt"
+                        el.style.pointerEvents = 'none'; 
+                        
+                        return el;
+                    })
+                    .htmlTransitionDuration(500)
+                    ;
                 
+                // Dieser Teil wird jetzt wieder korrekt ausgeführt
                 globeInstance.controls().autoRotate = true;
                 globeInstance.controls().autoRotateSpeed = 0.2;
                 globeInstance.controls().enableZoom = true;
@@ -2266,13 +2354,26 @@
 
             // 3. Daten bei JEDEM Öffnen aktualisieren
             console.log("DEBUG: Aktualisiere Globus-Daten...");
+            
+            // Bögen aktualisieren
             globeInstance.arcsData(arcData);
             
-            // 4. Polygons-Farbe ebenfalls bei jedem Öffnen neu setzen
+            // Länder aktualisieren
             globeInstance.polygonCapColor(feat => {
                 const isVisited = visitedCountries.includes(feat.properties.ISO_A2);
                 return isVisited ? 'rgba(147, 51, 234, 0.5)' : 'rgba(100, 100, 100, 0.2)';
             });
+
+            // Punkte (Säulen) aktualisieren
+            globeInstance.pointsData(airportPointsData);
+            globeInstance.pointAltitude(d => (maxCount > 0 ? (d.count / maxCount) * 0.2 : 0.01));
+            globeInstance.pointRadius(d => 0.1 + (maxCount > 0 ? (d.count / maxCount) * 0.4 : 0));
+            
+            // +++ NEU: HTML-Elemente im Update-Block aktualisieren +++
+            // (Die .labelsData()-Zeilen wurden entfernt)
+            globeInstance.htmlElementsData(airportPointsData);
+            globeInstance.htmlAltitude(d => (maxCount > 0 ? (d.count / maxCount) * 0.2 : 0.01) + 0.03);
+            // +++ ENDE NEU +++
 
             globeInstance.controls().autoRotate = true;
             window.globeDebugLogged = false; 
