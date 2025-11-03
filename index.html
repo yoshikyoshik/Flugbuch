@@ -26,8 +26,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet-polylinedecorator@1.6.0/dist/leaflet.polylineDecorator.js"></script>
-    <script src="//unpkg.com/three@latest"></script>
-    <script src="//unpkg.com/globe.gl@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/globe.gl@1.54.4/dist/globe.gl.min.js"></script>
 	
     <script src="https://cdn.tailwindcss.com"></script>
 
@@ -2278,6 +2278,7 @@
 
       /**
          * Öffnet das Globus-Modal, initialisiert den Zeitstrahl und den 3D-Globus.
+         * (Stabiler Stand: Idee 1 + 2 + 3)
          */
         async function openGlobeModal() {
             document.getElementById("globe-modal").classList.remove("hidden");
@@ -2307,10 +2308,9 @@
                 labelEl.textContent = "Keine Flüge vorhanden";
             }
 
-            // 'initialData' enthält den vollen Satz aller Flüge
             const initialData = processGlobeData(sortedFlights);
 
-            let countries; // Variable für Länderdaten (wird im 'if' oder 'listener' gebraucht)
+            let countries; 
 
             // --- 2. GLOBUS-INITIALISIERUNG (Läuft nur einmal) ---
             if (!globeInstance) {
@@ -2322,6 +2322,7 @@
                     console.log("EIGENSCHAFTEN EINES KARTEN-LANDES (feat.properties):", countries.features[0].properties);
                 }
 
+                // Diese Kette ist jetzt fehlerfrei
                 globeInstance = Globe()(document.getElementById("globe-container"))
                     .backgroundColor("#000000")
                     .atmosphereColor("#000000")
@@ -2329,16 +2330,26 @@
                         "//unpkg.com/three-globe/example/img/earth-night.jpg"
                     )
                     
-                    // --- Schichten mit den ANFANGS-Daten füllen ---
+                    // --- Schicht 1: BÖGEN (Arcs) ---
                     .arcsData(initialData.arcData)
                     .arcLabel("name") 
                     .arcColor('color') 
-                    .arcDashLength(0.4)
-                    .arcDashGap(0.2)
-                    .arcDashAnimateTime(1500)
+                    // Striche verstecken (Länge 0), aber Animation (Zeit) anlassen
+                    .arcDashLength(0)
+                    .arcDashGap(1)
+                    .arcDashAnimateTime(1500) // Wichtig für Partikel!
                     .arcStroke(0.8)
                     .arcsTransitionDuration(0) 
 
+                    // --- Schicht 1.5: FLUGZEUG-PARTIKEL (Eigenschaften) ---
+                    // Diese Funktionen werden jetzt gefunden
+                    .arcParticleColor(d => d.color) 
+                    .arcParticleSpeed(0.006)
+                    .arcParticleWidth(0.7)
+                    .arcParticleLabel(() => '✈️') 
+                    .arcParticlesTransitionDuration(0)
+
+                    // --- Schicht 2: LÄNDER (Polygons) ---
                     .polygonsData(countries.features)
                     .polygonCapColor(feat => {
                         const isVisited = initialData.visitedCountries.includes(feat.properties.ISO_A2);
@@ -2348,6 +2359,7 @@
                     .polygonStrokeColor(() => '#ffffff') 
                     .polygonAltitude(0.01)
 
+                    // --- Schicht 3: FLUGHÄFEN (Points/Säulen) ---
                     .pointsData(initialData.airportPointsData)
                     .pointLat('lat')
                     .pointLng('lon')
@@ -2357,6 +2369,7 @@
                     .pointAltitude(d => (initialData.maxCount > 0 ? (d.count / initialData.maxCount) * 0.2 : 0.01)) 
                     .pointsTransitionDuration(0) 
 
+                    // --- Schicht 4: HTML-LABELS ---
                     .htmlElementsData(initialData.airportPointsData)
                     .htmlLat('lat')
                     .htmlLng('lon')
@@ -2375,28 +2388,19 @@
                     })
                     .htmlTransitionDuration(0)
                     
-                    // +++ NEU: EVENT-HANDLER FÜR FOKUS-MODUS +++
-
-                    /**
-                     * EVENT 1: Klick auf eine Flughafen-Säule (Point)
-                     */
+                    // --- Event-Handler (Fokus-Modus) ---
                     .onPointClick(point => {
                         console.log("Fokus auf:", point.code);
-                        // 1. Rotation stoppen & Slider deaktivieren
                         globeInstance.controls().autoRotate = false;
                         sliderEl.disabled = true;
                         labelEl.textContent = `Fokus: ${point.name} (${point.code})`;
 
-                        // 2. Zur Säule fliegen
                         globeInstance.pointOfView({ lat: point.lat, lng: point.lon, altitude: 1.5 }, 1000);
 
-                        // 3. Flüge nur für diesen Punkt filtern
                         const focusedFlights = sortedFlights.filter(f => f.departure === point.code || f.arrival === point.code);
-                        
-                        // 4. Daten neu verarbeiten (zeigt nur noch diesen Punkt und verbundene an)
                         const { arcData, visitedCountries, airportPointsData, maxCount } = processGlobeData(focusedFlights);
 
-                        // 5. Globus mit den FOKUSSIERTEN Daten aktualisieren
+                        // Globus mit FOKUSSIERTEN Daten aktualisieren
                         globeInstance.arcsData(arcData);
                         globeInstance.polygonsData(countries.features)
                             .polygonCapColor(feat => {
@@ -2410,19 +2414,15 @@
                             .htmlAltitude(d => (maxCount > 0 ? (d.count / maxCount) * 0.2 : 0.01) + 0.03);
                     })
 
-                    /**
-                     * EVENT 2: Klick auf den Globus-Hintergrund (Reset)
-                     */
                     .onGlobeClick(() => {
                         console.log("Fokus zurücksetzen");
-                        // 1. Slider aktivieren und auf MAX setzen
                         sliderEl.disabled = false;
                         sliderEl.value = sortedFlights.length - 1;
-                        if(lastFlight) { // Zeigt den Label-Text für den letzten Flug
+                        if(lastFlight) {
                             labelEl.textContent = `${lastFlight.date} (#${lastFlight.flightLogNumber})`;
                         }
 
-                        // 2. Globus mit den VOLLEN Daten (initialData) zurücksetzen
+                        // Globus mit VOLLEN Daten (initialData) zurücksetzen
                         globeInstance.arcsData(initialData.arcData);
                         globeInstance.polygonsData(countries.features)
                             .polygonCapColor(feat => {
@@ -2433,25 +2433,21 @@
                             .pointRadius(d => 0.1 + (initialData.maxCount > 0 ? (d.count / initialData.maxCount) * 0.4 : 0))
                             .pointAltitude(d => (initialData.maxCount > 0 ? (d.count / initialData.maxCount) * 0.2 : 0.01));
                         globeInstance.htmlElementsData(initialData.airportPointsData)
-                            .htmlAltitude(d => (initialData.maxCount > 0 ? (d.count / initialData.maxCount) * 0.2 : 0.01) + 0.03);
+                            .htmlAltitude(d => (maxCount > 0 ? (d.count / initialData.maxCount) * 0.2 : 0.01) + 0.03);
                         
-                        // 3. Ansicht herauszoomen und Rotation starten
-                        globeInstance.pointOfView({ altitude: 3.5 }, 1000); // Zoomt auf globale Ansicht
+                        globeInstance.pointOfView({ altitude: 3.5 }, 1000); 
                         globeInstance.controls().autoRotate = true;
                     })
                     ;
-                    // +++ ENDE EVENT-HANDLER +++
-                
                 
                 globeInstance.controls().autoRotate = true;
                 globeInstance.controls().autoRotateSpeed = 0.2;
                 globeInstance.controls().enableZoom = true;
 
-                // --- EVENT LISTENER FÜR SLIDER (Wird nur einmal hinzugefügt) ---
+                // --- EVENT LISTENER FÜR SLIDER ---
                 sliderEl.addEventListener('input', () => {
-                    // +++ ANPASSUNG: Slider-Bewegung bricht den Fokus-Modus +++
-                    globeInstance.controls().autoRotate = true; // Rotation wieder starten
-                    sliderEl.disabled = false; // Slider (falls deaktiviert) wieder aktivieren
+                    globeInstance.controls().autoRotate = true; 
+                    sliderEl.disabled = false; 
                     
                     const selectedIndex = parseInt(sliderEl.value, 10);
                     const currentFlight = sortedFlights[selectedIndex];
@@ -2460,7 +2456,7 @@
                     const filteredFlights = sortedFlights.slice(0, selectedIndex + 1);
                     const { arcData, visitedCountries, airportPointsData, maxCount } = processGlobeData(filteredFlights);
 
-                    // 4. Globus-Schichten mit den neuen Daten aktualisieren
+                    // Globus-Schichten aktualisieren
                     globeInstance.arcsData(arcData);
                     globeInstance.polygonsData(countries.features) 
                         .polygonCapColor(feat => {
@@ -2476,9 +2472,8 @@
             }
 
             // --- 3. DATEN-UPDATE (Läuft bei jedem Öffnen) ---
-            // Setzt den Globus auf den "vollen" Zustand zurück
-            sliderEl.disabled = false; // Sicherstellen, dass Slider aktiv ist
-            sliderEl.value = sortedFlights.length - 1; // Sicherstellen, dass Slider auf MAX steht
+            sliderEl.disabled = false;
+            sliderEl.value = sortedFlights.length - 1;
             if(lastFlight) { labelEl.textContent = `${lastFlight.date} (#${lastFlight.flightLogNumber})`; }
 
             globeInstance.arcsData(initialData.arcData);
@@ -2491,7 +2486,7 @@
                 .pointRadius(d => 0.1 + (initialData.maxCount > 0 ? (d.count / initialData.maxCount) * 0.4 : 0))
                 .pointAltitude(d => (initialData.maxCount > 0 ? (d.count / initialData.maxCount) * 0.2 : 0.01));
             globeInstance.htmlElementsData(initialData.airportPointsData)
-                .htmlAltitude(d => (initialData.maxCount > 0 ? (d.count / initialData.maxCount) * 0.2 : 0.01) + 0.03);
+                .htmlAltitude(d => (maxCount > 0 ? (d.count / initialData.maxCount) * 0.2 : 0.01) + 0.03);
 
             globeInstance.controls().autoRotate = true;
             window.globeDebugLogged = false; 
