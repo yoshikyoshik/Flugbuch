@@ -227,7 +227,17 @@
         "detailsTitleAirport": "Details für {key} anzeigen",
         "detailsTitleAircraft": "Details für {key} anzeigen",
         "detailsTitleAirline": "Details für {key} anzeigen",
-		"byRegistration": "Nach Registrierung"
+		"byRegistration": "Nach Registrierung",
+		"flightEntryDate": "Datum",
+		"flightEntryRoute": "Strecke",
+		"flightEntryDistance": "Distanz",
+		"flightEntryDuration": "Flugzeit",
+		"flightEntryAirline": "Airline/Flugnr",
+		"flightEntryAircraft": "Flugzeug/Reg",
+		"flightEntryNotes": "Notizen:",
+		"disambiguationTitle": "Route: {departure} → {arrival}",
+		"disambiguationIntro": "Auf dieser Route wurden {count} Flüge gefunden. Bitte wählen Sie einen aus:",
+		"disambiguationButton": "Flug #{number} (am {date})"
     },
 	"modalDetails": {
         "loading": "Lade Details...",

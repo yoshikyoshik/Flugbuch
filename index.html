@@ -2253,12 +2253,12 @@
     }
 	  
 	  /**
-     * NEU: Öffnet das Info-Modal und zeigt die Details eines geklickten Fluges an.
-     * (Wird von .onArcClick aufgerufen)
+     * ANGEPASST: Öffnet das Info-Modal und zeigt die Details eines geklickten Fluges an.
+     * (Verwendet jetzt i18n-Übersetzungen)
      */
     function showFlightDetailsInModal(flight) {
         
-        // 1. Titel des Modals setzen (verwendet die existierende Modal-ID)
+        // 1. Titel des Modals setzen
         document.getElementById("info-modal-title").textContent = 
             `Flug #${flight.flightLogNumber}: ${flight.departure} → ${flight.arrival}`;
         
@@ -2268,34 +2268,98 @@
         // 3. Foto(s) anzeigen, falls vorhanden
         let photoHtml = '';
         if (flight.photo_url && flight.photo_url.length > 0) {
-            // Zeigt das erste Foto groß an
             photoHtml = `<img src="${flight.photo_url[0]}" alt="Flugfoto" class="w-full h-48 object-cover rounded-md mb-3 shadow-md">`;
         }
 
-        // 4. HTML für den Inhalt zusammenbauen
+        // --- ✅ NEU: Übersetzungen abrufen (mit Fallback) ---
+        const keyDate = getTranslation("logbook.flightEntryDate") || 'Datum';
+        const keyRoute = getTranslation("logbook.flightEntryRoute") || 'Strecke';
+        const keyDistance = getTranslation("logbook.flightEntryDistance") || 'Distanz';
+        const keyDuration = getTranslation("logbook.flightEntryDuration") || 'Flugzeit';
+        const keyAirline = getTranslation("logbook.flightEntryAirline") || 'Airline/Flugnr';
+        const keyAircraft = getTranslation("logbook.flightEntryAircraft") || 'Flugzeug/Reg';
+        const keyNotes = getTranslation("logbook.flightEntryNotes") || 'Notizen:';
+        // --- Ende Neu ---
+
+        // 4. HTML für den Inhalt zusammenbauen (jetzt mit den Schlüssel-Variablen)
         contentContainer.innerHTML = `
             ${photoHtml}
             <div class="space-y-2 text-sm">
-                <p><strong>${getTranslation("logbook.flightEntryDate") || 'Datum'}:</strong> ${flight.date}</p>
-                <p><strong>${getTranslation("logbook.flightEntryRoute") || 'Strecke'}:</strong> ${flight.depName || flight.departure} nach ${flight.arrName || flight.arrival}</p>
-                <p><strong>${getTranslation("logbook.flightEntryDistance") || 'Distanz'}:</strong> ${flight.distance.toLocaleString('de-DE')} km</p>
-                <p><strong>${getTranslation("logbook.flightEntryDuration") || 'Flugzeit'}:</strong> ${flight.time}</p>
+                <p><strong>${keyDate}:</strong> ${flight.date}</p>
+                <p><strong>${keyRoute}:</strong> ${flight.depName || flight.departure} nach ${flight.arrName || flight.arrival}</p>
+                <p><strong>${keyDistance}:</strong> ${flight.distance.toLocaleString('de-DE')} km</p>
+                <p><strong>${keyDuration}:</strong> ${flight.time}</p>
                 <hr class="my-2 dark:border-gray-600">
-                <p><strong>Airline/Flugnr:</strong> ${flight.airline || '-'} (${flight.flightNumber || '-'})</p>
-                <p><strong>Flugzeug/Reg:</strong> ${flight.aircraftType || '-'} (${flight.registration || '-'})</p>
+                <p><strong>${keyAirline}:</strong> ${flight.airline || '-'} (${flight.flightNumber || '-'})</p>
+                <p><strong>${keyAircraft}:</strong> ${flight.aircraftType || '-'} (${flight.registration || '-'})</p>
                 
                 ${flight.notes ? `
                     <hr class="my-2 dark:border-gray-600">
-                    <p class="font-semibold">Notizen:</p>
+                    <p class="font-semibold">${keyNotes}</p>
                     <p class="italic text-gray-600 dark:text-gray-400 whitespace-pre-wrap">${flight.notes}</p>
                 ` : ''}
             </div>
         `;
         
-        // 5. Modal öffnen (Diese Funktion existiert bereits in Ihrer index.html)
+        // 5. Modal öffnen (Diese Funktion existiert bereits)
         openInfoModal();
     }
 
+	/**
+     * ANGEPASST: Öffnet das Info-Modal mit einer Auswahlliste für überlappende Flüge.
+     * (Verwendet jetzt i18n-Übersetzungen)
+     */
+    function showFlightDisambiguationModal(flights) {
+        
+        // 1. Titel setzen (JETZT MIT ÜBERSETZUNG)
+        const firstFlight = flights[0];
+        const titleTemplate = getTranslation("logbook.disambiguationTitle") || "Route: {departure} → {arrival}";
+        document.getElementById("info-modal-title").textContent = titleTemplate
+            .replace("{departure}", firstFlight.departure)
+            .replace("{arrival}", firstFlight.arrival);
+        
+        // 2. Inhalt-Container holen und leeren
+        const contentContainer = document.getElementById("info-modal-content");
+        contentContainer.innerHTML = ''; // Wichtig: Alten Inhalt löschen
+        
+        // 3. Beschreibung hinzufügen (JETZT MIT ÜBERSETZUNG)
+        const description = document.createElement('p');
+        description.className = 'text-sm text-gray-700 dark:text-gray-300 mb-4';
+        const introTemplate = getTranslation("logbook.disambiguationIntro") || "Auf dieser Route wurden {count} Flüge gefunden. Bitte wählen Sie einen aus:";
+        description.textContent = introTemplate.replace("{count}", flights.length);
+        contentContainer.appendChild(description);
+
+        // 4. Button-Liste erstellen
+        const listContainer = document.createElement('div');
+        listContainer.className = 'flex flex-col space-y-2';
+        
+        // Sortiere Flüge nach Datum, bevor sie angezeigt werden
+        flights.sort((a, b) => new Date(a.date) - new Date(b.date));
+        
+        flights.forEach(flight => {
+            const button = document.createElement('button');
+            button.className = 'text-left p-3 bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors w-full';
+            
+            // Text für den Button (JETZT MIT ÜBERSETZUNG)
+            const buttonTemplate = getTranslation("logbook.disambiguationButton") || "Flug #{number} (am {date})";
+            button.innerHTML = buttonTemplate
+                .replace("{number}", flight.flightLogNumber)
+                .replace("{date}", flight.date);
+            
+            // Klick-Aktion: Ruft die Detailansicht FÜR DIESEN FLUG auf
+            button.addEventListener('click', () => {
+                showFlightDetailsInModal(flight);
+                // WICHTIG: Die Funktion ändert nur den Inhalt des bereits geöffneten Modals
+            });
+            
+            listContainer.appendChild(button);
+        });
+        
+        contentContainer.appendChild(listContainer);
+        
+        // 5. Modal öffnen (Diese Funktion existiert bereits)
+        openInfoModal();
+    }
           
 /**
      * NEU: Gibt eine Farbe basierend auf der Flugdistanz zurück.
@@ -2333,82 +2397,86 @@
             const visitedCountries = new Set();
             const airportUsage = {};
 			
-			// ✅ NEU: Ein Zähler für Routen
-    const routeCounts = {};
+			// --- 1. SCHRITT: FLÜGE NACH ROUTE GRUPPIEREN ---
+        const routeGroups = {};
+        
+        flightsToShow
+            .filter((f) => f.depLat && f.arrLat)
+            .forEach((flight) => {
+                const routeKey = [flight.departure, flight.arrival].sort().join('-');
+                if (!routeGroups[routeKey]) {
+                    routeGroups[routeKey] = []; // Ein Array für alle Flüge auf dieser Route
+                }
+                routeGroups[routeKey].push(flight);
+            });
+
+        // --- 2. SCHRITT: BÖGEN (ARCS) AUS DEN GRUPPEN ERSTELLEN ---
+        // Wir iterieren jetzt über die Gruppen, nicht über die Einzelflüge
+        for (const routeKey in routeGroups) {
+            const flightsOnThisRoute = routeGroups[routeKey]; // z.B. [Flug1, Flug2, Flug3]
             
-            // WICHTIG: Wir verwenden jetzt die übergebene 'flightsToShow'-Liste
-            flightsToShow
-                .filter((f) => f.depLat && f.arrLat)
-                .forEach((flight) => {
+            // Wir iterieren über die Flüge in der Gruppe, um den offsetIndex zu bekommen
+            flightsOnThisRoute.forEach((flight, index) => {
+                
+                // (Logik, die wir vorher schon hatten)
+                const distance = calculateDistance(flight.depLat, flight.depLon, flight.arrLat, flight.arrLon);
+                const flightColor = getColorByDistance(distance);
+                const offsetIndex = index; // 0 für den ersten Flug, 1 für den zweiten...
+
+                // 1. Bogen-Daten erstellen
+                arcData.push({
+                    startLat: flight.depLat,
+                    startLng: flight.depLon,
+                    endLat: flight.arrLat,
+                    endLng: flight.arrLon,
+                    name: `${flight.departure || ''} → ${flight.arrival || ''}`, 
+                    color: flightColor, 
+                    offsetIndex: offsetIndex,
+                    distance: distance,
                     
-					// ✅ NEU: Distanz berechnen
-            //const distance = calculateDistance(flight.depLat, flight.depLon, flight.arrLat, flight.arrLon);
-			
-			// ✅ NEU: Schlüssel für die Route erstellen (z.B. "FRA-JFK")
-            const routeKey = [flight.departure, flight.arrival].sort().join('-');
-            if (!routeCounts[routeKey]) {
-                routeCounts[routeKey] = 0;
-            }
-            const offsetIndex = routeCounts[routeKey]; // 0 für den ersten Flug, 1 für den zweiten...
-            routeCounts[routeKey]++; // Zähler für nächsten Flug auf dieser Route erhöhen
-			
-			// ✅ NEU: Distanz hier berechnen (FEHLENDE ZEILE)
-            const distance = calculateDistance(flight.depLat, flight.depLon, flight.arrLat, flight.arrLon);
-			
-			// ✅ NEU: Farbe basierend auf der Distanz holen
-            const flightColor = getColorByDistance(distance);
-			
-                    // 1. Bogen-Daten erstellen
-                    arcData.push({
-                        startLat: flight.depLat,
-                        startLng: flight.depLon,
-                        endLat: flight.arrLat,
-                        endLng: flight.arrLon,
-                        name: `${flight.departure || ''} → ${flight.arrival || ''}`, 
-                        //color: arcColorPool[Math.floor(Math.random() * arcColorPool.length)],
-						color: flightColor, // ✅ HIER DIE NEUE FARBE EINSETZEN
-						offsetIndex: offsetIndex,
-						distance: distance, // ✅ KORREKT: Jetzt ist 'distance' bekannt
-						originalFlight: flight
-                    });
-
-                    // 2. Besuchte Länder sammeln
-                    const depCountry = airportData[flight.departure]?.country_code;
-                    const arrCountry = airportData[flight.arrival]?.country_code;
-                    if (depCountry) visitedCountries.add(depCountry);
-                    if (arrCountry) visitedCountries.add(arrCountry);
-
-                    // 3. Flughafenhäufigkeit zählen
-                    [flight.departure, flight.arrival].forEach((iata, index) => {
-                        const airport = airportData[iata]; 
-                        if (!airport) return; 
-
-                        if (!airportUsage[iata]) {
-                            airportUsage[iata] = {
-                                code: iata,
-                                name: airport.name || iata,
-                                lat: airport.lat,
-                                lon: airport.lon,
-                                count: 1 
-                            };
-                        } else {
-                            airportUsage[iata].count++;
-                        }
-                    });
+                    // --- HIER IST DIE WICHTIGSTE ÄNDERUNG ---
+                    originalFlight: flight, // Der spezifische Flug für diesen Bogen
+                    allFlightsOnRoute: flightsOnThisRoute // ✅ ALLE Flüge auf dieser Route
                 });
-            
-            // 4. Daten für die Punkte aufbereiten
-            const airportPointsData = Object.values(airportUsage);
-            const maxCount = Math.max(0, ...airportPointsData.map(d => d.count));
 
-            // Gib alle verarbeiteten Daten zurück
-            return { 
-                arcData, 
-                visitedCountries: Array.from(visitedCountries),
-                airportPointsData, 
-                maxCount           
-            };
+                // (Länder- und Flughafen-Logik bleibt gleich,
+                // wir müssen sie nur auch hier ausführen)
+                const depCountry = airportData[flight.departure]?.country_code;
+                const arrCountry = airportData[flight.arrival]?.country_code;
+                if (depCountry) visitedCountries.add(depCountry);
+                if (arrCountry) visitedCountries.add(arrCountry);
+
+                [flight.departure, flight.arrival].forEach((iata) => {
+                    const airport = airportData[iata]; 
+                    if (!airport) return; 
+
+                    if (!airportUsage[iata]) {
+                        airportUsage[iata] = {
+                            code: iata,
+                            name: airport.name || iata,
+                            lat: airport.lat,
+                            lon: airport.lon,
+                            count: 1 
+                        };
+                    } else {
+                        airportUsage[iata].count++;
+                    }
+                });
+            });
         }
+        
+        // 3. Daten für die Punkte aufbereiten (bleibt gleich)
+        const airportPointsData = Object.values(airportUsage);
+        const maxCount = Math.max(0, ...airportPointsData.map(d => d.count));
+
+        // Gib alle verarbeiteten Daten zurück
+        return { 
+            arcData, 
+            visitedCountries: Array.from(visitedCountries),
+            airportPointsData, 
+            maxCount           
+        };
+    }
 
       /**
          * ANGEPASST: Ruft jetzt nur noch die Daten ab und übergibt sie an den Prozessor.
@@ -2579,6 +2647,12 @@
                      * EVENT 2: Klick auf den Globus-Hintergrund (Reset)
                      */
                     .onGlobeClick(() => {
+						// ✅ NEUE KORREKTUR:
+                        // Wenn der Story-Modus aktiv war, beende ihn jetzt vollständig.
+                        if (isStoryModeActive) {
+                            toggleStoryMode(); // Setzt Button, Linien & Status zurück
+                        }
+						
                         console.log("Fokus zurücksetzen");
                         // 1. Slider aktivieren und auf MAX setzen
                         sliderEl.disabled = false;
@@ -2676,12 +2750,26 @@
                      * EVENT 4: Klick auf eine Flugroute (Arc)
                      */
                     .onArcClick(arc => {
-                        // 'arc' ist das Datenobjekt, das wir in Schritt 1 erstellt haben
-                        // 'arc.originalFlight' enthält alle Details (Datum, Notizen, etc.)
+					
+						// ✅ NEUE PRÜFUNG:
+                        // Im "Normalen Modus" (Präsentation) passiert bei Klick nichts.
+                        if (!isStoryModeActive) {
+                            return; 
+                        }
+					
+                        if (!arc) return; // Sicherheitsabfrage
+
+                        // Wir prüfen das neue Array, das wir in Schritt 1 hinzugefügt haben
+                        if (arc.allFlightsOnRoute && arc.allFlightsOnRoute.length > 1) {
+                            // --- MEHRERE FLÜGE (STAPEL) GEFUNDEN ---
+                            // Rufe eine neue Funktion auf, um die Auswahlliste zu zeigen
+                            showFlightDisambiguationModal(arc.allFlightsOnRoute);
                         
-                        // Überprüfen, ob die Daten vorhanden sind, bevor wir das Modal aufrufen
-                        if (arc && arc.originalFlight) {
+                        } else if (arc.originalFlight) {
+                            // --- NUR EIN FLUG GEFUNDEN ---
+                            // Rufe die normale Detail-Funktion auf
                             showFlightDetailsInModal(arc.originalFlight);
+                        
                         } else {
                             console.warn("Arc-Klick ohne originalFlight-Daten:", arc);
                         }
