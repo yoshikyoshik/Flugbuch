@@ -28,7 +28,6 @@
 	"flightClassFirst": "First",
 	"flightClassPrivat": "Privat",
 	"flightClassCargo": "Cargo",
-		
 	"register": "Registrieren",
 	"login": "Login",
 	"forgotPWD": "Passwort vergessen?",
@@ -38,7 +37,6 @@
 	"saveNewPWD": "Neues Passwort speichern",
 	"enterNewPWD": "Gib dein neues Passwort ein.",
 	"backToLogin": "Zurück zum Login",
-	
 	"mapVisualization": "Visualisierung: {depName} ({depCode}) → {arrName} ({arrCode}).",
 	
 	"placeholder": {
@@ -54,6 +52,7 @@
 		"egCurrency": "z.B. EUR",
 		"egRegistration": "z.B. D-AINC"
 	},
+	
     "tabs": {
         "newFlight": "Neuer Flug",
         "flights": "Flüge",
@@ -62,6 +61,7 @@
         "logbook": "Logbuch",
         "achievements": "Errungenschaften"
     },
+	
     "burgerMenu": {
         "newFlight": "Neuer Flug",
         "flights": "Flüge",
@@ -76,6 +76,7 @@
         "toggleMode": "Modus wechseln",
         "logout": "Logout"
     },
+	
     "form": {
         "autopilotTitle": "Autopilot: Flugdaten per Flugnummer laden",
         "flightNumber": "Flugnummer",
@@ -106,12 +107,14 @@
 		"filesSelected": "{count} Foto(s) ausgewählt.",
 		"registration": "Registrierung (Optional)"
     },
+	
     "messages": {
         "noDataFound": "Keine Flugdaten für diese Kombination gefunden.",
         "fetchError": "Ein Problem ist aufgetreten.",
         "importSuccess": "Flüge wurden importiert. Die Ansicht wird aktualisiert.",
         "importConfirm": "ACHTUNG! Du bist dabei, {count} Flüge zu importieren. Alle deine aktuellen Flüge werden gelöscht und ersetzt."
     },
+	
 	"records": {
         "longestFlight": "Längster Flug",
         "shortestFlight": "Kürzester Flug",
@@ -181,6 +184,7 @@
         "mapNoFlights": "Keine Flüge vorhanden, um eine Gesamtübersicht zu zeigen.",
 		"show3DGlobe": "🌍 3D Globus"
     },
+	
 	"stats": {
         "totalFlights": "Gesamte Flüge",
         "totalDistance": "Gesamtdistanz",
@@ -202,6 +206,7 @@
         "yearlySummaryContent": "{count} Flüge | {distance} km",
         "noYearlyData": "Keine Jahresdaten verfügbar."
     },
+	
 	"charts": {
         "title": "Visuelle Auswertungen",
         "perYear": "Pro Jahr",
@@ -214,6 +219,7 @@
         "labelDuration": "Gesamtflugzeit",
         "tooltipLabel": "{label}{hours} Std. {minutes} Min."
     },
+	
 	"logbook": {
         "title": "Logbuch-Ansichten",
         "byAircraft": "Nach Flugzeugtyp",
@@ -237,8 +243,21 @@
 		"flightEntryNotes": "Notizen:",
 		"disambiguationTitle": "Route: {departure} → {arrival}",
 		"disambiguationIntro": "Auf dieser Route wurden {count} Flüge gefunden. Bitte wählen Sie einen aus:",
-		"disambiguationButton": "Flug #{number} (am {date})"
+		"disambiguationButton": "Flug #{number} (am {date})",
+		"flightTitle": "Flug #{number}: {departure} → {arrival}",
+		"routeSeparator": "nach"
     },
+	"globe": {
+		"storyModeHint": "Story-Modus: Flüge anklicken, um Details zu sehen.",
+		"buttonStoryMode": "📖 Story-Modus",
+		"buttonNormalMode": "🚀 Normaler Modus"
+	},
+	
+	"units": {
+		"hoursShort": "Std.",
+		"minutesShort": "Min."
+	},
+	
 	"modalDetails": {
         "loading": "Lade Details...",
         "airportTitle": "Details für {key}",
@@ -277,6 +296,7 @@
         "airlineError": "Details konnten nicht geladen werden.",
         "airlineAgeUnit": "Jahre"
     },
+	
 	"achievements": {
         "title": "Deine Errungenschaften",
         "recordsTitle": "Persönliche Rekorde & \"Firsts\"",
@@ -288,55 +308,60 @@
         "unitAirports": "Flughäfen",
         "unitCo2": "kg CO₂",
 
-        "flights": {
-            "1": { "title": "Erster Eintrag", "description": "Dein erster Flug ist geloggt!" },
-            "10": { "title": "Vielflieger-Anwärter", "description": "10 Flüge geloggt" },
-            "25": { "title": "Bronze-Flieger", "description": "25 Flüge erreicht" },
-            "50": { "title": "Globetrotter", "description": "50 Flüge absolviert" },
-            "100": { "title": "Hunderter-Club", "description": "100 Flüge gemeistert!" },
-            "150": { "title": "Silber-Status", "description": "150 Flüge im Logbuch" },
-            "250": { "title": "Gold-Status", "description": "250 Flüge erreicht!" },
-            "500": { "title": "Luftfahrt-Legende", "description": "500 Flüge, unglaublich!" },
-            "750": { "title": "Diamant-Status", "description": "750 Flüge, der Himmel gehört dir!" },
-            "1000": { "title": "Meister der Lüfte", "description": "1.000 Flüge geloggt!" }
-        },
-        "distance": {
-            "10000": { "title": "Zehntausender-Marke", "description": "10.000 km zurückgelegt" },
-            "40075": { "title": "Weltumrunder", "description": "Einmal um den Äquator geflogen (40.075 km)" },
-            "100000": { "title": "Sechsstellige Distanz", "description": "100.000 km geknackt" },
-            "250000": { "title": "Viertelmillionär", "description": "250.000 km in der Luft" },
-            "384400": { "title": "Mond-Reisender", "description": "Die Distanz zum Mond zurückgelegt (384.400 km)" },
-            "500000": { "title": "Halbe Million", "description": "500.000 km gereist" },
-            "768800": { "title": "Hin und Zurück", "description": "Die Distanz zum Mond und zurück zur Erde (768.800 km)" },
-            "1000000": { "title": "Distanz-Millionär", "description": "Eine Million Kilometer geflogen!" }
-        },
-        "time": {
-            "24": { "title": "Rund um die Uhr", "description": "24 Stunden in der Luft verbracht" },
-            "100": { "title": "Hundert Stunden", "description": "Über 100 Stunden Flugzeit" },
-            "500": { "title": "500-Stunden-Marke", "description": "Mehr als 20 Tage im Flugzeug verbracht" },
-            "1000": { "title": "Tausend Stunden Flugzeit", "description": "Über 1.000 Stunden in der Luft" },
-            "2500": { "title": "Viertausend Stunden", "description": "Mehr als 100 Tage Flugzeit" },
-            "8760": { "title": "Ein Jahr im Himmel", "description": "Ein ganzes Jahr (8.760h) in der Luft verbracht" }
-        },
-        "uniqueAirports": {
-            "10": { "title": "Entdecker", "description": "10 verschiedene Flughäfen besucht" },
-            "25": { "title": "Weltenbummler", "description": "25 einzigartige Flughäfen im Logbuch" },
-            "50": { "title": "Kultursammler", "description": "50 verschiedene Flughäfen gesehen" },
-            "100": { "title": "Hub-Hopper", "description": "100 einzigartige Flughäfen angeflogen!" }
-        },
-        "longestFlight": {
-            "3000": { "title": "Langstrecken-Debüt", "description": "Ein Flug über 3.000 km" },
-            "5000": { "title": "Kontinentspringer", "description": "Einen Flug über 5.000 km absolviert" },
-            "8000": { "title": "Ozean-Überquerer", "description": "Ein Flug über 8.000 km" },
-            "12000": { "title": "Ultra-Langstrecke", "description": "Einen epischen Flug über 12.000 km gemeistert" }
-        },
-        "co2_total": {
-            "1000": { "title": "Bewusstsein: 1 Tonne", "description": "Du hast deine erste Tonne (1.000 kg) CO₂ erfasst." },
-            "5000": { "title": "Bewusstsein: 5 Tonnen", "description": "Du hast 5.000 kg CO₂ erfasst." },
-            "10000": { "title": "Bewusstsein: 10 Tonnen", "description": "Du hast 10.000 kg CO₂ erfasst." },
-            "50000": { "title": "Bewusstsein: 50 Tonnen", "description": "Du hast 50.000 kg CO₂ erfasst." },
-            "100000": { "title": "Bewusstsein: 100 Tonnen", "description": "Du hast 100.000 kg CO₂ erfasst." }
-        }
+		"flights": {
+			"1": { "title": "Erster Eintrag", "description": "Dein erster Flug ist geloggt!" },
+			"10": { "title": "Vielflieger-Anwärter", "description": "10 Flüge geloggt" },
+			"25": { "title": "Bronze-Flieger", "description": "25 Flüge erreicht" },
+			"50": { "title": "Globetrotter", "description": "50 Flüge absolviert" },
+			"100": { "title": "Hunderter-Club", "description": "100 Flüge gemeistert!" },
+			"150": { "title": "Silber-Status", "description": "150 Flüge im Logbuch" },
+			"250": { "title": "Gold-Status", "description": "250 Flüge erreicht!" },
+			"500": { "title": "Luftfahrt-Legende", "description": "500 Flüge, unglaublich!" },
+			"750": { "title": "Diamant-Status", "description": "750 Flüge, der Himmel gehört dir!" },
+			"1000": { "title": "Meister der Lüfte", "description": "1.000 Flüge geloggt!" }
+		},
+		
+		"distance": {
+			"10000": { "title": "Zehntausender-Marke", "description": "10.000 km zurückgelegt" },
+			"40075": { "title": "Weltumrunder", "description": "Einmal um den Äquator geflogen (40.075 km)" },
+			"100000": { "title": "Sechsstellige Distanz", "description": "100.000 km geknackt" },
+			"250000": { "title": "Viertelmillionär", "description": "250.000 km in der Luft" },
+			"384400": { "title": "Mond-Reisender", "description": "Die Distanz zum Mond zurückgelegt (384.400 km)" },
+			"500000": { "title": "Halbe Million", "description": "500.000 km gereist" },
+			"768800": { "title": "Hin und Zurück", "description": "Die Distanz zum Mond und zurück zur Erde (768.800 km)" },
+			"1000000": { "title": "Distanz-Millionär", "description": "Eine Million Kilometer geflogen!" }
+		},
+		
+		"time": {
+			"24": { "title": "Rund um die Uhr", "description": "24 Stunden in der Luft verbracht" },
+			"100": { "title": "Hundert Stunden", "description": "Über 100 Stunden Flugzeit" },
+			"500": { "title": "500-Stunden-Marke", "description": "Mehr als 20 Tage im Flugzeug verbracht" },
+			"1000": { "title": "Tausend Stunden Flugzeit", "description": "Über 1.000 Stunden in der Luft" },
+			"2500": { "title": "Viertausend Stunden", "description": "Mehr als 100 Tage Flugzeit" },
+			"8760": { "title": "Ein Jahr im Himmel", "description": "Ein ganzes Jahr (8.760h) in der Luft verbracht" }
+		},
+		
+		"uniqueAirports": {
+			"10": { "title": "Entdecker", "description": "10 verschiedene Flughäfen besucht" },
+			"25": { "title": "Weltenbummler", "description": "25 einzigartige Flughäfen im Logbuch" },
+			"50": { "title": "Kultursammler", "description": "50 verschiedene Flughäfen gesehen" },
+			"100": { "title": "Hub-Hopper", "description": "100 einzigartige Flughäfen angeflogen!" }
+		},
+		
+		"longestFlight": {
+			"3000": { "title": "Langstrecken-Debüt", "description": "Ein Flug über 3.000 km" },
+			"5000": { "title": "Kontinentspringer", "description": "Einen Flug über 5.000 km absolviert" },
+			"8000": { "title": "Ozean-Überquerer", "description": "Ein Flug über 8.000 km" },
+			"12000": { "title": "Ultra-Langstrecke", "description": "Einen epischen Flug über 12.000 km gemeistert" }
+		},
+		
+		"co2_total": {
+			"1000": { "title": "Bewusstsein: 1 Tonne", "description": "Du hast deine erste Tonne (1.000 kg) CO₂ erfasst." },
+			"5000": { "title": "Bewusstsein: 5 Tonnen", "description": "Du hast 5.000 kg CO₂ erfasst." },
+			"10000": { "title": "Bewusstsein: 10 Tonnen", "description": "Du hast 10.000 kg CO₂ erfasst." },
+			"50000": { "title": "Bewusstsein: 50 Tonnen", "description": "Du hast 50.000 kg CO₂ erfasst." },
+			"100000": { "title": "Bewusstsein: 100 Tonnen", "description": "Du hast 100.000 kg CO₂ erfasst." }
+		}
     }
 	
 }

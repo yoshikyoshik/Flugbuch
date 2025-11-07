@@ -28,7 +28,6 @@
 	"flightClassFirst": "First",
 	"flightClassPrivat": "Privat",
 	"flightClassCargo": "Cargo",
-	
 	"register": "Register",
 	"login": "Login",
 	"forgotPWD": "Forgot password?",
@@ -38,7 +37,6 @@
 	"saveNewPWD": "Save new password",
 	"enterNewPWD": "Enter your new password.",
 	"backToLogin": "Back to login",
-	
 	"mapVisualization": "Visualization: {depName} ({depCode}) → {arrName} ({arrCode}).",
 	
 	"placeholder": {
@@ -54,6 +52,7 @@
 		"egCurrency": "e.g. EUR",
 		"egRegistration": "e.g. D-AINC"
 	},
+	
     "tabs": {
         "newFlight": "New Flight",
         "flights": "Flights",
@@ -62,6 +61,7 @@
         "logbook": "Logbook",
         "achievements": "Achievements"
     },
+	
     "burgerMenu": {
         "newFlight": "New Flight",
 		"flights": "Flights",
@@ -76,6 +76,7 @@
         "toggleMode": "Toggle Mode",
         "logout": "Logout"
     },
+	
     "form": {
         "autopilotTitle": "Autopilot: Load Flight Data by Flight Number",
         "flightNumber": "Flight Number",
@@ -106,12 +107,14 @@
 		"filesSelected": "{count} file(s) selected.",
 		"registration": "Registration (Optional)"
     },
+	
     "messages": {
         "noDataFound": "No flight data found for this combination.",
         "fetchError": "An error occurred.",
         "importSuccess": "Flights were imported. The view will now refresh.",
         "importConfirm": "WARNING! You are about to import {count} flights. All your current cloud-saved flights will be deleted and replaced."
     },
+	
 	"records": {
         "longestFlight": "Longest Flight",
         "shortestFlight": "Shortest Flight",
@@ -139,7 +142,6 @@
         "firstVisitAfrica": "First visit to Africa",
         "firstVisitOceania": "First visit to Oceania",
         "firstVisitAntarctica": "First visit to Antarctica",
-        
         "firstVisitAsiaDesc": "Log a flight to a destination in Asia.",
         "firstVisitEuropeDesc": "Log a flight to a destination in Europe.",
         "firstVisitNorthAmericaDesc": "Log a flight to a destination in North America.",
@@ -148,6 +150,7 @@
         "firstVisitOceaniaDesc": "Log a flight to a destination in Oceania.",
         "firstVisitAntarcticaDesc": "Log a flight to a destination in Antarctica."
     },
+	
 	"flights": {
         "title": "Saved Flights",
         "playChronicle": "▶️ Play Chronicle",
@@ -180,6 +183,7 @@
         "mapNoFlights": "No flights available to display an overview.",
 		"show3DGlobe": "🌍 3D Globe"
     },
+	
 	"stats": {
         "totalFlights": "Total Flights",
         "totalDistance": "Total Distance",
@@ -201,6 +205,7 @@
         "yearlySummaryContent": "{count} flights | {distance} km",
         "noYearlyData": "No yearly data available."
     },
+	
 	"charts": {
         "title": "Visual Analytics",
         "perYear": "Per Year",
@@ -213,6 +218,7 @@
         "labelDuration": "Total Flight Time",
         "tooltipLabel": "{label}{hours}h {minutes}m"
     },
+	
 	"logbook": {
         "title": "Logbook Views",
         "byAircraft": "By Aircraft Type",
@@ -236,8 +242,22 @@
 		"flightEntryNotes": "Notes:",
 		"disambiguationTitle": "Route: {departure} → {arrival}",
 		"disambiguationIntro": "Found {count} flights on this route. Please select one:",
-		"disambiguationButton": "Flight #{number} (on {date})"
+		"disambiguationButton": "Flight #{number} (on {date})",
+		"flightTitle": "Flight #{number}: {departure} → {arrival}",
+		"routeSeparator": "to"
     },
+	
+	"globe": {
+		"storyModeHint": "Story Mode: Click flights to see details.",
+		"buttonStoryMode": "📖 Story Mode",
+		"buttonNormalMode": "🚀 Normal Mode"
+	},
+	
+	"units": {
+		"hoursShort": "hrs",
+		"minutesShort": "min"
+	},
+	
 	"modalDetails": {
         "loading": "Loading details...",
         "airportTitle": "Details for {key}",
@@ -276,6 +296,7 @@
         "airlineError": "Details could not be loaded.",
         "airlineAgeUnit": "years"
     },
+	
 	"achievements": {
         "title": "Your Achievements",
         "recordsTitle": "Personal Records & Firsts",
@@ -299,6 +320,7 @@
             "750": { "title": "Diamond Status", "description": "750 flights, the sky is yours!" },
             "1000": { "title": "Master of the Skies", "description": "1,000 flights logged!" }
         },
+		
         "distance": {
             "10000": { "title": "Ten Thousand Mark", "description": "10,000 km traveled" },
             "40075": { "title": "World Circumnavigator", "description": "Flown around the equator (40,075 km)" },
@@ -309,6 +331,7 @@
             "768800": { "title": "To the Moon and Back", "description": "The distance to the Moon and back to Earth (768,800 km)" },
             "1000000": { "title": "Distance Millionaire", "description": "One million kilometers flown!" }
         },
+		
         "time": {
             "24": { "title": "Around the Clock", "description": "Spent 24 hours in the air" },
             "100": { "title": "Hundred Hours", "description": "Over 100 hours of flight time" },
@@ -317,12 +340,14 @@
             "2500": { "title": "Four Thousand Hours", "description": "More than 100 days of flight time" },
             "8760": { "title": "A Year in the Sky", "description": "Spent a whole year (8,760h) in the air" }
         },
+		
         "uniqueAirports": {
             "10": { "title": "Explorer", "description": "10 different airports visited" },
             "25": { "title": "World-Trotter", "description": "25 unique airports in the logbook" },
             "50": { "title": "Culture Collector", "description": "50 different airports seen" },
             "100": { "title": "Hub-Hopper", "description": "Flown to 100 unique airports!" }
         },
+		
         "longestFlight": {
             "3000": { "title": "Long-Haul Debut", "description": "A flight over 3,000 km" },
             "5000": { "title": "Continent-Hopper", "description": "Completed a flight over 5,000 km" },

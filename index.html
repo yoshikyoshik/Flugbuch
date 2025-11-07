@@ -26,9 +26,9 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet-polylinedecorator@1.6.0/dist/leaflet.polylineDecorator.js"></script>
-  <script src="https://unpkg.com/three@0.157.0/build/three.min.js"></script>
-  <script src="https://unpkg.com/globe.gl@latest/dist/globe.gl.min.js"></script>
-	
+    <script src="https://unpkg.com/three@0.157.0/build/three.min.js"></script>
+    <script src="https://unpkg.com/globe.gl@latest/dist/globe.gl.min.js"></script>
+
     <script src="https://cdn.tailwindcss.com"></script>
 
     <style>
@@ -99,28 +99,28 @@
         background-color: #111827;
         color: #d1d5db;
       }
-	  
-	  /* --- REGELN FÜR GLOBE HIER EINFÜGEN --- */
+
+      /* --- REGELN FÜR GLOBE HIER EINFÜGEN --- */
       /* --- FINALE KORREKTUR FÜR GLOBUS-TOOLTIP (MIT KORREKTEM KLASSENNAMEN) --- */
       .float-tooltip-kap {
-          font-size: 14px !important;
-          padding: 6px 10px !important;
-          background-color: white !important;
-          color: #1f2937 !important;
-          border-radius: 4px !important;
-          box-shadow: 0 2px 5px rgba(0,0,0,0.2) !important;
-          border: none !important;
-          /* Wir setzen 'display: block', um die 'display: none' der Bibliothek zu überschreiben, wenn sie aktiv ist */
-          display: block !important; 
+        font-size: 14px !important;
+        padding: 6px 10px !important;
+        background-color: white !important;
+        color: #1f2937 !important;
+        border-radius: 4px !important;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2) !important;
+        border: none !important;
+        /* Wir setzen 'display: block', um die 'display: none' der Bibliothek zu überschreiben, wenn sie aktiv ist */
+        display: block !important;
       }
-      
+
       .dark .float-tooltip-kap {
-          background-color: #1f2937 !important;
-          color: #e5e7eb !important;
-          border: 1px solid #374151 !important;
+        background-color: #1f2937 !important;
+        color: #e5e7eb !important;
+        border: 1px solid #374151 !important;
       }
       /* --- ENDE DER REGELN FÜR GLOBE --- */
-	  
+
       .dark .bg-white {
         background-color: #1f2937;
         border-color: #374151;
@@ -1620,8 +1620,7 @@
       id="globe-modal"
       class="hidden fixed inset-0 w-full h-screen bg-black bg-opacity-70 z-40"
     >
-	
-	  <div 
+      <div
         id="globe-slider-container"
         class="absolute top-0 left-1/2 -translate-x-1/2 z-50 w-full max-w-xl p-4 hidden"
       >
@@ -1635,22 +1634,25 @@
             class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer range-lg"
           />
           <div class="text-center mt-2">
-            <span id="globe-time-label" class="text-xs font-medium text-white/80">
+            <span
+              id="globe-time-label"
+              class="text-xs font-medium text-white/80"
+            >
               Lade Zeitstrahl...
             </span>
           </div>
-		  <div class="text-center mt-3">
-            <button 
-              id="globe-story-mode-btn" 
+          <div class="text-center mt-3">
+            <button
+              id="globe-story-mode-btn"
               onclick="toggleStoryMode()"
-              class="text-xs text-white bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded-md transition-colors"
+              data-i18n="globe.buttonStoryMode" class="text-xs text-white bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded-md transition-colors"
             >
               📖 Story-Modus
             </button>
           </div>
         </div>
       </div>
-	
+
       <div id="globe-container" class="w-full h-full"></div>
 
       <button
@@ -2003,8 +2005,8 @@
       let currentLanguage = "de"; // Standard-Sprache
       let translations = {}; // Leeres Objekt, das die geladene Sprache hält
       let globeInstance = null;
-	  let isStoryModeActive = false; // ✅ NEU: Status des Story-Modus
-      let normalGlobeLabelText = ''; // ✅ NEU: Speicher für den Label-Text
+      let isStoryModeActive = false; // ✅ NEU: Status des Story-Modus
+      let normalGlobeLabelText = ""; // ✅ NEU: Speicher für den Label-Text
 
       var airportData = {
         FRA: {
@@ -2203,93 +2205,105 @@
         if (globeInstance) {
           globeInstance.controls().autoRotate = false;
         }
-		
-		// ✅ NEU: Story-Modus beim Schließen zurücksetzen
+
+        // ✅ NEU: Story-Modus beim Schließen zurücksetzen
         if (isStoryModeActive) {
-            toggleStoryMode(); // Schaltet den Modus zurück auf "Normal"
+          toggleStoryMode(); // Schaltet den Modus zurück auf "Normal"
         }
       }
-	  
-	  /**
-     * NEU: Schaltet den Story-Modus (Interaktionsmodus) um.
-     * Stoppt die Auto-Rotation und ändert den Label-Text.
-     */
-    function toggleStoryMode() {
+
+      /**
+       * NEU: Schaltet den Story-Modus (Interaktionsmodus) um.
+       * Stoppt die Auto-Rotation und ändert den Label-Text.
+       */
+      function toggleStoryMode() {
         if (!globeInstance) return; // Sicherheitsabfrage
 
         isStoryModeActive = !isStoryModeActive; // Zustand umkehren
-        const btn = document.getElementById('globe-story-mode-btn');
-        const label = document.getElementById('globe-time-label');
+        const btn = document.getElementById("globe-story-mode-btn");
+        const label = document.getElementById("globe-time-label");
 
         if (isStoryModeActive) {
-            // --- Story-Modus AKTIVIEREN ---
-            globeInstance.controls().autoRotate = false;
-            btn.textContent = '🚀 Normaler Modus';
+          // --- Story-Modus AKTIVIEREN ---
+          globeInstance.controls().autoRotate = false;
+		  
+          // ✅ NEU: Übersetzungen verwenden
+            btn.textContent = getTranslation("globe.buttonNormalMode") || '🚀 Normaler Modus';
+            label.textContent = getTranslation("globe.storyModeHint") || 'Story-Modus: Flüge anklicken...';
+            
             btn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
-            btn.classList.add('bg-green-600', 'hover:bg-green-700'); // Ändert Farbe zu Grün
+            btn.classList.add('bg-green-600', 'hover:bg-green-700'); 
             
-            // Aktuellen Label-Text speichern (z.B. "2024-10-10 (#142)...")
-            normalGlobeLabelText = label.textContent; 
-            
-            // Label als Hinweis-Text verwenden
-            label.textContent = 'Story-Modus: Flüge anklicken, um Details zu sehen.';
-			
-			// ✅ NEU: Dickere Linien für den Story-Modus setzen
-            globeInstance.arcStroke(d => (d.distance < 1000 ? 2.0 : 1.5)); // z.B. 2.0 / 1.5
+            normalGlobeLabelText = label.textContent; // Speichert den HINWEIS-Text
 
+          // ✅ NEU: Dickere Linien für den Story-Modus setzen
+          globeInstance.arcStroke((d) => (d.distance < 1000 ? 2.0 : 1.5)); // z.B. 2.0 / 1.5
+		  
         } else {
-            // --- Story-Modus DEAKTIVIEREN ---
-            globeInstance.controls().autoRotate = true;
-            btn.textContent = '📖 Story-Modus';
-            btn.classList.remove('bg-green-600', 'hover:bg-green-700');
-            btn.classList.add('bg-blue-600', 'hover:bg-blue-700'); // Ändert Farbe zurück zu Blau
+		
+          // --- Story-Modus DEAKTIVIEREN ---
+          globeInstance.controls().autoRotate = true;
+		  
+          // ✅ NEU: Übersetzungen verwenden
+            btn.textContent = getTranslation("globe.buttonStoryMode") || '📖 Story-Modus';
             
-            // Gespeicherten Label-Text wiederherstellen
-            label.textContent = normalGlobeLabelText; 
-			
-			// ✅ NEU: Dünne Linien (gemäß Standard) wiederherstellen
-            globeInstance.arcStroke(d => (d.distance < 1000 ? 0.6 : 0.5));
+            btn.classList.remove('bg-green-600', 'hover:bg-green-700');
+            btn.classList.add('bg-blue-600', 'hover:bg-blue-700'); 
+            
+            // HINWEIS: 'normalGlobeLabelText' wurde beim Slider/Fokus gesetzt
+            label.textContent = normalGlobeLabelText;
+
+          // ✅ NEU: Dünne Linien (gemäß Standard) wiederherstellen
+          globeInstance.arcStroke((d) => (d.distance < 1000 ? 0.6 : 0.5));
         }
-    }
-	  
-	  /**
-     * ANGEPASST: Öffnet das Info-Modal und zeigt die Details eines geklickten Fluges an.
-     * (Verwendet jetzt i18n-Übersetzungen)
-     */
-    function showFlightDetailsInModal(flight) {
-        
-        // 1. Titel des Modals setzen
-        document.getElementById("info-modal-title").textContent = 
-            `Flug #${flight.flightLogNumber}: ${flight.departure} → ${flight.arrival}`;
-        
+      }
+
+      /**
+       * ANGEPASST: Öffnet das Info-Modal und zeigt die Details eines geklickten Fluges an.
+       * (Verwendet jetzt i18n-Übersetzungen)
+       */
+      function showFlightDetailsInModal(flight) {
+        // 1. Titel des Modals setzen (JETZT MIT ÜBERSETZUNG)
+        const titleTemplate = getTranslation("logbook.flightTitle") || "Flug #{number}: {departure} → {arrival}";
+        document.getElementById("info-modal-title").textContent = titleTemplate
+            .replace("{number}", flight.flightLogNumber)
+            .replace("{departure}", flight.departure)
+            .replace("{arrival}", flight.arrival);
+
         // 2. Inhalt des Modals erstellen
         const contentContainer = document.getElementById("info-modal-content");
-        
+
         // 3. Foto(s) anzeigen, falls vorhanden
-        let photoHtml = '';
+        let photoHtml = "";
         if (flight.photo_url && flight.photo_url.length > 0) {
-            photoHtml = `<img src="${flight.photo_url[0]}" alt="Flugfoto" class="w-full h-48 object-cover rounded-md mb-3 shadow-md">`;
+          photoHtml = `<img src="${flight.photo_url[0]}" alt="Flugfoto" class="w-full h-48 object-cover rounded-md mb-3 shadow-md">`;
         }
 
-        // --- ✅ NEU: Übersetzungen abrufen (mit Fallback) ---
-        const keyDate = getTranslation("logbook.flightEntryDate") || 'Datum';
-        const keyRoute = getTranslation("logbook.flightEntryRoute") || 'Strecke';
-        const keyDistance = getTranslation("logbook.flightEntryDistance") || 'Distanz';
-        const keyDuration = getTranslation("logbook.flightEntryDuration") || 'Flugzeit';
-        const keyAirline = getTranslation("logbook.flightEntryAirline") || 'Airline/Flugnr';
-        const keyAircraft = getTranslation("logbook.flightEntryAircraft") || 'Flugzeug/Reg';
-        const keyNotes = getTranslation("logbook.flightEntryNotes") || 'Notizen:';
+        // --- 4. Übersetzungen abrufen (mit Fallback) ---
+        const keyDate = getTranslation("logbook.flightEntryDate") || "Datum";
+        const keyRoute =
+          getTranslation("logbook.flightEntryRoute") || "Strecke";
+        const keyDistance =
+          getTranslation("logbook.flightEntryDistance") || "Distanz";
+        const keyDuration =
+          getTranslation("logbook.flightEntryDuration") || "Flugzeit";
+        const keyAirline =
+          getTranslation("logbook.flightEntryAirline") || "Airline/Flugnr";
+        const keyAircraft =
+          getTranslation("logbook.flightEntryAircraft") || "Flugzeug/Reg";
+        const keyNotes =
+          getTranslation("logbook.flightEntryNotes") || "Notizen:";
+		const keySeparator = getTranslation("logbook.routeSeparator") || 'nach';
         // --- Ende Neu ---
 
-        // 4. HTML für den Inhalt zusammenbauen (jetzt mit den Schlüssel-Variablen)
+        // 5. HTML zusammenbauen
         contentContainer.innerHTML = `
             ${photoHtml}
             <div class="space-y-2 text-sm">
                 <p><strong>${keyDate}:</strong> ${flight.date}</p>
-                <p><strong>${keyRoute}:</strong> ${flight.depName || flight.departure} nach ${flight.arrName || flight.arrival}</p>
+                <p><strong>${keyRoute}:</strong> ${flight.depName || flight.departure} ${keySeparator} ${flight.arrName || flight.arrival}</p>
                 <p><strong>${keyDistance}:</strong> ${flight.distance.toLocaleString('de-DE')} km</p>
-                <p><strong>${keyDuration}:</strong> ${flight.time}</p>
-                <hr class="my-2 dark:border-gray-600">
+                <p><strong>${keyDuration}:</strong> ${estimateFlightTime(flight.distance)}</p> <hr class="my-2 dark:border-gray-600">
                 <p><strong>${keyAirline}:</strong> ${flight.airline || '-'} (${flight.flightNumber || '-'})</p>
                 <p><strong>${keyAircraft}:</strong> ${flight.aircraftType || '-'} (${flight.registration || '-'})</p>
                 
@@ -2300,575 +2314,720 @@
                 ` : ''}
             </div>
         `;
-        
-        // 5. Modal öffnen (Diese Funktion existiert bereits)
-        openInfoModal();
-    }
 
-	/**
-     * ANGEPASST: Öffnet das Info-Modal mit einer Auswahlliste für überlappende Flüge.
-     * (Verwendet jetzt i18n-Übersetzungen)
-     */
-    function showFlightDisambiguationModal(flights) {
-        
+        // 6. Modal öffnen (Diese Funktion existiert bereits)
+        openInfoModal();
+      }
+
+      /**
+       * ANGEPASST: Öffnet das Info-Modal mit einer Auswahlliste für überlappende Flüge.
+       * (Verwendet jetzt i18n-Übersetzungen)
+       */
+      function showFlightDisambiguationModal(flights) {
         // 1. Titel setzen (JETZT MIT ÜBERSETZUNG)
         const firstFlight = flights[0];
-        const titleTemplate = getTranslation("logbook.disambiguationTitle") || "Route: {departure} → {arrival}";
+        const titleTemplate =
+          getTranslation("logbook.disambiguationTitle") ||
+          "Route: {departure} → {arrival}";
         document.getElementById("info-modal-title").textContent = titleTemplate
-            .replace("{departure}", firstFlight.departure)
-            .replace("{arrival}", firstFlight.arrival);
-        
+          .replace("{departure}", firstFlight.departure)
+          .replace("{arrival}", firstFlight.arrival);
+
         // 2. Inhalt-Container holen und leeren
         const contentContainer = document.getElementById("info-modal-content");
-        contentContainer.innerHTML = ''; // Wichtig: Alten Inhalt löschen
-        
+        contentContainer.innerHTML = ""; // Wichtig: Alten Inhalt löschen
+
         // 3. Beschreibung hinzufügen (JETZT MIT ÜBERSETZUNG)
-        const description = document.createElement('p');
-        description.className = 'text-sm text-gray-700 dark:text-gray-300 mb-4';
-        const introTemplate = getTranslation("logbook.disambiguationIntro") || "Auf dieser Route wurden {count} Flüge gefunden. Bitte wählen Sie einen aus:";
-        description.textContent = introTemplate.replace("{count}", flights.length);
+        const description = document.createElement("p");
+        description.className = "text-sm text-gray-700 dark:text-gray-300 mb-4";
+        const introTemplate =
+          getTranslation("logbook.disambiguationIntro") ||
+          "Auf dieser Route wurden {count} Flüge gefunden. Bitte wählen Sie einen aus:";
+        description.textContent = introTemplate.replace(
+          "{count}",
+          flights.length
+        );
         contentContainer.appendChild(description);
 
         // 4. Button-Liste erstellen
-        const listContainer = document.createElement('div');
-        listContainer.className = 'flex flex-col space-y-2';
-        
+        const listContainer = document.createElement("div");
+        listContainer.className = "flex flex-col space-y-2";
+
         // Sortiere Flüge nach Datum, bevor sie angezeigt werden
         flights.sort((a, b) => new Date(a.date) - new Date(b.date));
-        
-        flights.forEach(flight => {
-            const button = document.createElement('button');
-            button.className = 'text-left p-3 bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors w-full';
-            
-            // Text für den Button (JETZT MIT ÜBERSETZUNG)
-            const buttonTemplate = getTranslation("logbook.disambiguationButton") || "Flug #{number} (am {date})";
-            button.innerHTML = buttonTemplate
-                .replace("{number}", flight.flightLogNumber)
-                .replace("{date}", flight.date);
-            
-            // Klick-Aktion: Ruft die Detailansicht FÜR DIESEN FLUG auf
-            button.addEventListener('click', () => {
-                showFlightDetailsInModal(flight);
-                // WICHTIG: Die Funktion ändert nur den Inhalt des bereits geöffneten Modals
-            });
-            
-            listContainer.appendChild(button);
+
+        flights.forEach((flight) => {
+          const button = document.createElement("button");
+          button.className =
+            "text-left p-3 bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors w-full";
+
+          // Text für den Button (JETZT MIT ÜBERSETZUNG)
+          const buttonTemplate =
+            getTranslation("logbook.disambiguationButton") ||
+            "Flug #{number} (am {date})";
+          button.innerHTML = buttonTemplate
+            .replace("{number}", flight.flightLogNumber)
+            .replace("{date}", flight.date);
+
+          // Klick-Aktion: Ruft die Detailansicht FÜR DIESEN FLUG auf
+          button.addEventListener("click", () => {
+            showFlightDetailsInModal(flight);
+            // WICHTIG: Die Funktion ändert nur den Inhalt des bereits geöffneten Modals
+          });
+
+          listContainer.appendChild(button);
         });
-        
+
         contentContainer.appendChild(listContainer);
-        
+
         // 5. Modal öffnen (Diese Funktion existiert bereits)
         openInfoModal();
-    }
-          
-/**
-     * NEU: Gibt eine Farbe basierend auf der Flugdistanz zurück.
-     */
-    function getColorByDistance(distance) {
-      if (distance < 1000) {
-        return '#60a5fa'; // Hellblau (Kurzstrecke, < 1000km)
-      } else if (distance < 2000) {
-        return '#22c55e'; // Grün (Mittelstrecke 1, 1000-2000km)
-      } else if (distance < 5000) {
-        return '#facc15'; // Gelb (Mittelstrecke 2, 2000-5000km)
-      } else if (distance < 9000) {
-        return '#f97316'; // Orange (Langstrecke, 5000-9000km)
-      } else {
-        return '#ec4899'; // Pink/Rot (Ultra-Langstrecke, > 9000km)
       }
-    }
 
-		  /**
-         * NEU: Verarbeitet eine gegebene Flugliste in Globus-Daten (synchron).
-         * Diese Funktion wird jetzt vom Slider aufgerufen.
-         * @param {Array} flightsToShow - Die (gefilterte) Liste von Flügen, die verarbeitet werden soll.
-         */
-        function processGlobeData(flightsToShow) {
-            // Farb-Pool (bleibt gleich)
-            const arcColorPool = [
-                '#ec4899', // Hot Pink
-                '#8b5cf6', // Violett
-                '#06b6d4', // Cyan
-                '#84cc16', // Limettengrün
-                '#e5e7eb'  // Kaltes Weiß
-            ];
+      /**
+       * NEU: Gibt eine Farbe basierend auf der Flugdistanz zurück.
+       */
+      function getColorByDistance(distance) {
+        if (distance < 1000) {
+          return "#60a5fa"; // Hellblau (Kurzstrecke, < 1000km)
+        } else if (distance < 2000) {
+          return "#22c55e"; // Grün (Mittelstrecke 1, 1000-2000km)
+        } else if (distance < 5000) {
+          return "#facc15"; // Gelb (Mittelstrecke 2, 2000-5000km)
+        } else if (distance < 9000) {
+          return "#f97316"; // Orange (Langstrecke, 5000-9000km)
+        } else {
+          return "#ec4899"; // Pink/Rot (Ultra-Langstrecke, > 9000km)
+        }
+      }
 
-            const arcData = [];
-            const visitedCountries = new Set();
-            const airportUsage = {};
-			
-			// --- 1. SCHRITT: FLÜGE NACH ROUTE GRUPPIEREN ---
+      /**
+       * NEU: Verarbeitet eine gegebene Flugliste in Globus-Daten (synchron).
+       * Diese Funktion wird jetzt vom Slider aufgerufen.
+       * @param {Array} flightsToShow - Die (gefilterte) Liste von Flügen, die verarbeitet werden soll.
+       */
+      function processGlobeData(flightsToShow) {
+        // Farb-Pool (bleibt gleich)
+        const arcColorPool = [
+          "#ec4899", // Hot Pink
+          "#8b5cf6", // Violett
+          "#06b6d4", // Cyan
+          "#84cc16", // Limettengrün
+          "#e5e7eb", // Kaltes Weiß
+        ];
+
+        const arcData = [];
+        const visitedCountries = new Set();
+        const airportUsage = {};
+
+        // --- 1. SCHRITT: FLÜGE NACH ROUTE GRUPPIEREN ---
         const routeGroups = {};
-        
+
         flightsToShow
-            .filter((f) => f.depLat && f.arrLat)
-            .forEach((flight) => {
-                const routeKey = [flight.departure, flight.arrival].sort().join('-');
-                if (!routeGroups[routeKey]) {
-                    routeGroups[routeKey] = []; // Ein Array für alle Flüge auf dieser Route
-                }
-                routeGroups[routeKey].push(flight);
-            });
+          .filter((f) => f.depLat && f.arrLat)
+          .forEach((flight) => {
+            const routeKey = [flight.departure, flight.arrival]
+              .sort()
+              .join("-");
+            if (!routeGroups[routeKey]) {
+              routeGroups[routeKey] = []; // Ein Array für alle Flüge auf dieser Route
+            }
+            routeGroups[routeKey].push(flight);
+          });
 
         // --- 2. SCHRITT: BÖGEN (ARCS) AUS DEN GRUPPEN ERSTELLEN ---
         // Wir iterieren jetzt über die Gruppen, nicht über die Einzelflüge
         for (const routeKey in routeGroups) {
-            const flightsOnThisRoute = routeGroups[routeKey]; // z.B. [Flug1, Flug2, Flug3]
-            
-            // Wir iterieren über die Flüge in der Gruppe, um den offsetIndex zu bekommen
-            flightsOnThisRoute.forEach((flight, index) => {
-                
-                // (Logik, die wir vorher schon hatten)
-                const distance = calculateDistance(flight.depLat, flight.depLon, flight.arrLat, flight.arrLon);
-                const flightColor = getColorByDistance(distance);
-                const offsetIndex = index; // 0 für den ersten Flug, 1 für den zweiten...
+          const flightsOnThisRoute = routeGroups[routeKey]; // z.B. [Flug1, Flug2, Flug3]
 
-                // 1. Bogen-Daten erstellen
-                arcData.push({
-                    startLat: flight.depLat,
-                    startLng: flight.depLon,
-                    endLat: flight.arrLat,
-                    endLng: flight.arrLon,
-                    name: `${flight.departure || ''} → ${flight.arrival || ''}`, 
-                    color: flightColor, 
-                    offsetIndex: offsetIndex,
-                    distance: distance,
-                    
-                    // --- HIER IST DIE WICHTIGSTE ÄNDERUNG ---
-                    originalFlight: flight, // Der spezifische Flug für diesen Bogen
-                    allFlightsOnRoute: flightsOnThisRoute // ✅ ALLE Flüge auf dieser Route
-                });
+          // Wir iterieren über die Flüge in der Gruppe, um den offsetIndex zu bekommen
+          flightsOnThisRoute.forEach((flight, index) => {
+            // (Logik, die wir vorher schon hatten)
+            const distance = calculateDistance(
+              flight.depLat,
+              flight.depLon,
+              flight.arrLat,
+              flight.arrLon
+            );
+            const flightColor = getColorByDistance(distance);
+            const offsetIndex = index; // 0 für den ersten Flug, 1 für den zweiten...
 
-                // (Länder- und Flughafen-Logik bleibt gleich,
-                // wir müssen sie nur auch hier ausführen)
-                const depCountry = airportData[flight.departure]?.country_code;
-                const arrCountry = airportData[flight.arrival]?.country_code;
-                if (depCountry) visitedCountries.add(depCountry);
-                if (arrCountry) visitedCountries.add(arrCountry);
+            // 1. Bogen-Daten erstellen
+            arcData.push({
+              startLat: flight.depLat,
+              startLng: flight.depLon,
+              endLat: flight.arrLat,
+              endLng: flight.arrLon,
+              name: `${flight.departure || ""} → ${flight.arrival || ""}`,
+              color: flightColor,
+              offsetIndex: offsetIndex,
+              distance: distance,
 
-                [flight.departure, flight.arrival].forEach((iata) => {
-                    const airport = airportData[iata]; 
-                    if (!airport) return; 
-
-                    if (!airportUsage[iata]) {
-                        airportUsage[iata] = {
-                            code: iata,
-                            name: airport.name || iata,
-                            lat: airport.lat,
-                            lon: airport.lon,
-                            count: 1 
-                        };
-                    } else {
-                        airportUsage[iata].count++;
-                    }
-                });
+              // --- HIER IST DIE WICHTIGSTE ÄNDERUNG ---
+              originalFlight: flight, // Der spezifische Flug für diesen Bogen
+              allFlightsOnRoute: flightsOnThisRoute, // ✅ ALLE Flüge auf dieser Route
             });
+
+            // (Länder- und Flughafen-Logik bleibt gleich,
+            // wir müssen sie nur auch hier ausführen)
+            const depCountry = airportData[flight.departure]?.country_code;
+            const arrCountry = airportData[flight.arrival]?.country_code;
+            if (depCountry) visitedCountries.add(depCountry);
+            if (arrCountry) visitedCountries.add(arrCountry);
+
+            [flight.departure, flight.arrival].forEach((iata) => {
+              const airport = airportData[iata];
+              if (!airport) return;
+
+              if (!airportUsage[iata]) {
+                airportUsage[iata] = {
+                  code: iata,
+                  name: airport.name || iata,
+                  lat: airport.lat,
+                  lon: airport.lon,
+                  count: 1,
+                };
+              } else {
+                airportUsage[iata].count++;
+              }
+            });
+          });
         }
-        
+
         // 3. Daten für die Punkte aufbereiten (bleibt gleich)
         const airportPointsData = Object.values(airportUsage);
-        const maxCount = Math.max(0, ...airportPointsData.map(d => d.count));
+        const maxCount = Math.max(0, ...airportPointsData.map((d) => d.count));
 
         // Gib alle verarbeiteten Daten zurück
-        return { 
-            arcData, 
-            visitedCountries: Array.from(visitedCountries),
-            airportPointsData, 
-            maxCount           
+        return {
+          arcData,
+          visitedCountries: Array.from(visitedCountries),
+          airportPointsData,
+          maxCount,
         };
-    }
-
-      /**
-         * ANGEPASST: Ruft jetzt nur noch die Daten ab und übergibt sie an den Prozessor.
-         */
-      async function getGlobeData() {
-          // 1. Alle Flüge abrufen
-          const allFlights = await getFlights();
-          // 2. Alle verarbeiten und zurückgeben
-          return processGlobeData(allFlights);
       }
 
       /**
-         * Öffnet das Globus-Modal, initialisiert den Zeitstrahl und den 3D-Globus.
-         */
-        async function openGlobeModal() {
-		let countries; // Variable für Länderdaten
-            document.getElementById("globe-modal").classList.remove("hidden");
+       * ANGEPASST: Ruft jetzt nur noch die Daten ab und übergibt sie an den Prozessor.
+       */
+      async function getGlobeData() {
+        // 1. Alle Flüge abrufen
+        const allFlights = await getFlights();
+        // 2. Alle verarbeiten und zurückgeben
+        return processGlobeData(allFlights);
+      }
 
-            // --- 1. SLIDER-SETUP (Läuft bei jedem Öffnen) ---
-            const sliderEl = document.getElementById('globe-time-slider');
-            const labelEl = document.getElementById('globe-time-label');
-            const sliderContainer = document.getElementById('globe-slider-container');
+      /**
+       * Öffnet das Globus-Modal, initialisiert den Zeitstrahl und den 3D-Globus.
+       */
+      async function openGlobeModal() {
+        let countries; // Variable für Länderdaten
+        document.getElementById("globe-modal").classList.remove("hidden");
 
-            const allFlightsUnfiltered = await getFlights();
-            const sortedFlights = resequenceAndAssignNumbers(allFlightsUnfiltered);
+        // --- 1. SLIDER-SETUP (Läuft bei jedem Öffnen) ---
+        const sliderEl = document.getElementById("globe-time-slider");
+        const labelEl = document.getElementById("globe-time-label");
+        const sliderContainer = document.getElementById(
+          "globe-slider-container"
+        );
 
-            if (sortedFlights.length === 0) {
-                sliderContainer.classList.add('hidden'); 
-            } else {
-                sliderContainer.classList.remove('hidden');
-            }
+        const allFlightsUnfiltered = await getFlights();
+        const sortedFlights = resequenceAndAssignNumbers(allFlightsUnfiltered);
 
-            sliderEl.min = 0;
-            sliderEl.max = sortedFlights.length - 1; 
-            sliderEl.value = sortedFlights.length - 1; 
-            
-            const lastFlight = sortedFlights[sortedFlights.length - 1];
-            if(lastFlight) {
-                labelEl.textContent = `${lastFlight.date} (#${lastFlight.flightLogNumber})`;
-            } else {
-                labelEl.textContent = "Keine Flüge vorhanden";
-            }
-
-            // 'initialData' enthält den vollen Satz aller Flüge
-            const initialData = processGlobeData(sortedFlights);
-
-            //let countries; // Variable für Länderdaten (wird im 'if' oder 'listener' gebraucht)
-
-            // --- 2. GLOBUS-INITIALISIERUNG (Läuft nur einmal) ---
-            if (!globeInstance) {
-                console.log("DEBUG: Initialisiere Globus-Instanz zum ersten Mal...");
-                
-                countries = await (await fetch('https://raw.githubusercontent.com/vasturiano/globe.gl/master/example/datasets/ne_110m_admin_0_countries.geojson')).json();
-
-                if (countries.features && countries.features.length > 0) {
-                    console.log("EIGENSCHAFTEN EINES KARTEN-LANDES (feat.properties):", countries.features[0].properties);
-                }
-
-                globeInstance = Globe()(document.getElementById("globe-container"))
-                    .backgroundColor("#000000")
-                    .atmosphereColor("#000000")
-                    .globeImageUrl(
-                        "//unpkg.com/three-globe/example/img/earth-night.jpg"
-                    )
-                    
-                    // --- Schichten mit den ANFANGS-Daten füllen ---
-                    .arcsData(initialData.arcData)
-                    .arcLabel("name") 
-                    .arcColor('color') 
-					
-                    // ✅ NEU: Dynamische Höhe
-                    .arcAltitudeAutoScale(d => {
-                        if (d.distance < 1000) return 1.3; // Kurzstrecke (flach)
-                        if (d.distance < 8000) return 0.4; // Mittelstrecke
-                        return 0.4; // Langstrecke (hoch)
-                    })
-                    
-                    // ✅ NEU: Dynamische Partikel-Größe/Abstand
-                    .arcDashLength(d => (d.distance < 1000 ? 0.08 : 0.025)) // Längere Striche für Kurzstrecke
-                    .arcDashGap(d => (d.distance < 1000 ? 0.02 : 0.025)) // Kürzere Lücken für Kurzstrecke
-                    
-                    // ✅ NEU: Dynamische Geschwindigkeit
-                    .arcDashAnimateTime(d => (d.distance < 1000 ? 8000 : 12000)) // Kürzere Flüge langsamer
-                    
-                    // Dünne Dicke für den "Normalen Modus"
-					.arcStroke(d => (d.distance < 1000 ? 0.6 : 0.5)) // z.B. Kurzstrecke minimal dicker
-                    
-					.arcDashInitialGap(d => d.offsetIndex * 0.1)
-					
-                    .arcsTransitionDuration(0) 
-
-                    .polygonsData(countries.features)
-                    .polygonCapColor(feat => {
-                        const isVisited = initialData.visitedCountries.includes(feat.properties.ISO_A2);
-                        return isVisited ? 'rgba(147, 51, 234, 0.5)' : 'rgba(100, 100, 100, 0.2)'; 
-                    })
-                    .polygonSideColor(() => 'rgba(255, 255, 255, 0.05)') 
-                    .polygonStrokeColor(() => '#ffffff') 
-                    .polygonAltitude(0.01)
-
-                    .pointsData(initialData.airportPointsData)
-                    .pointLat('lat')
-                    .pointLng('lon')
-                    .pointLabel(d => `${d.name} (${d.count} ${d.count > 1 ? 'Besuche' : 'Besuch'})`)
-                    .pointColor(() => '#fde047') 
-                    .pointRadius(d => 0.1 + (initialData.maxCount > 0 ? (d.count / initialData.maxCount) * 0.4 : 0)) 
-                    .pointAltitude(d => (initialData.maxCount > 0 ? (d.count / initialData.maxCount) * 0.2 : 0.01)) 
-                    .pointsTransitionDuration(0) 
-
-                    .htmlElementsData(initialData.airportPointsData)
-                    .htmlLat('lat')
-                    .htmlLng('lon')
-                    .htmlAltitude(d => (initialData.maxCount > 0 ? (d.count / initialData.maxCount) * 0.2 : 0.01) + 0.03)
-                    .htmlElement(d => {
-                        const el = document.createElement('div');
-                        el.innerHTML = d.code; 
-                        el.style.backgroundColor = 'rgba(0, 0, 0, 0.6)'; 
-                        el.style.color = 'white';
-                        el.style.padding = '1px 3px';
-                        el.style.borderRadius = '2px';
-                        el.style.fontSize = '10px'; 
-                        el.style.fontFamily = '"Inter", sans-serif'; 
-                        el.style.pointerEvents = 'none'; 
-                        return el;
-                    })
-                    .htmlTransitionDuration(0)
-                    
-                    // +++ NEU: EVENT-HANDLER FÜR FOKUS-MODUS +++
-
-                    /**
-                     * EVENT 1: Klick auf eine Flughafen-Säule (Point)
-                     */
-                    .onPointClick(point => {
-						// ✅ NEU: Story-Modus automatisch beenden
-                        if (isStoryModeActive) {
-                            toggleStoryMode(); 
-                        }
-                        console.log("Fokus auf:", point.code);
-                        // 1. Rotation stoppen & Slider deaktivieren
-                        globeInstance.controls().autoRotate = false;
-                        sliderEl.disabled = true;
-                        labelEl.textContent = `Fokus: ${point.name} (${point.code})`;
-
-                        // 2. Zur Säule fliegen
-                        globeInstance.pointOfView({ lat: point.lat, lng: point.lon, altitude: 1.5 }, 1000);
-
-                        // 3. Flüge nur für diesen Punkt filtern
-                        const focusedFlights = sortedFlights.filter(f => f.departure === point.code || f.arrival === point.code);
-                        
-                        // 4. Daten neu verarbeiten (zeigt nur noch diesen Punkt und verbundene an)
-                        const { arcData, visitedCountries, airportPointsData, maxCount } = processGlobeData(focusedFlights);
-
-                        // 5. Globus mit den FOKUSSIERTEN Daten aktualisieren
-                        globeInstance.arcsData(arcData);
-                        globeInstance.polygonsData(countries.features)
-                            .polygonCapColor(feat => {
-                                const isVisited = visitedCountries.includes(feat.properties.ISO_A2);
-                                return isVisited ? 'rgba(147, 51, 234, 0.5)' : 'rgba(100, 100, 100, 0.2)'; 
-                            });
-                        globeInstance.pointsData(airportPointsData)
-                            .pointRadius(d => 0.1 + (maxCount > 0 ? (d.count / maxCount) * 0.4 : 0))
-                            .pointAltitude(d => (maxCount > 0 ? (d.count / maxCount) * 0.2 : 0.01));
-                        globeInstance.htmlElementsData(airportPointsData)
-                            .htmlAltitude(d => (maxCount > 0 ? (d.count / maxCount) * 0.2 : 0.01) + 0.03);
-                    })
-
-                    /**
-                     * EVENT 2: Klick auf den Globus-Hintergrund (Reset)
-                     */
-                    .onGlobeClick(() => {
-						// ✅ NEUE KORREKTUR:
-                        // Wenn der Story-Modus aktiv war, beende ihn jetzt vollständig.
-                        if (isStoryModeActive) {
-                            toggleStoryMode(); // Setzt Button, Linien & Status zurück
-                        }
-						
-                        console.log("Fokus zurücksetzen");
-                        // 1. Slider aktivieren und auf MAX setzen
-                        sliderEl.disabled = false;
-                        sliderEl.value = sortedFlights.length - 1;
-                        if(lastFlight) { // Zeigt den Label-Text für den letzten Flug
-                            labelEl.textContent = `${lastFlight.date} (#${lastFlight.flightLogNumber})`;
-                        }
-
-                        // 2. Globus mit den VOLLEN Daten (initialData) zurücksetzen
-                        globeInstance.arcsData(initialData.arcData);
-                        globeInstance.polygonsData(countries.features)
-                            .polygonCapColor(feat => {
-                                const isVisited = initialData.visitedCountries.includes(feat.properties.ISO_A2);
-                                return isVisited ? 'rgba(147, 51, 234, 0.5)' : 'rgba(100, 100, 100, 0.2)'; 
-                            });
-                        globeInstance.pointsData(initialData.airportPointsData)
-                            .pointRadius(d => 0.1 + (initialData.maxCount > 0 ? (d.count / initialData.maxCount) * 0.4 : 0))
-                            .pointAltitude(d => (initialData.maxCount > 0 ? (d.count / initialData.maxCount) * 0.2 : 0.01));
-                        globeInstance.htmlElementsData(initialData.airportPointsData)
-                            .htmlAltitude(d => (initialData.maxCount > 0 ? (d.count / initialData.maxCount) * 0.2 : 0.01) + 0.03);
-                        
-                        // 3. Ansicht herauszoomen und Rotation starten
-                        globeInstance.pointOfView({ altitude: 3.5 }, 1000); // Zoomt auf globale Ansicht
-                        globeInstance.controls().autoRotate = true;
-                    })
-					
-					/**
-                     * EVENT 3: Klick auf ein Land (Polygon)
-                     */
-                    .onPolygonClick(polygon => {
-						// ✅ NEU: Story-Modus automatisch beenden
-                        if (isStoryModeActive) {
-                            toggleStoryMode();
-                        }
-                        console.log("Fokus auf Land:", polygon.properties.ADMIN);
-                        
-                        // 1. Rotation stoppen & Slider deaktivieren
-                        globeInstance.controls().autoRotate = false;
-                        sliderEl.disabled = true;
-                        
-                        const countryCode = polygon.properties.ISO_A2; // z.B. "ES" für Spanien
-                        const countryName = polygon.properties.ADMIN; // z.B. "Spain"
-                        labelEl.textContent = `Fokus: ${countryName} (${countryCode})`;
-
-                        // 2. Zur Polygon fliegen (Kamerasteuerung)
-                let centerCoords;
-                const geometryType = polygon.geometry.type;
-
-                if (geometryType === 'MultiPolygon') {
-                    // Nimm den ersten Punkt des ersten Polygons der Inselgruppe (z.B. für Japan)
-                    centerCoords = polygon.geometry.coordinates[0][0][0]; 
-                } else if (geometryType === 'Polygon') {
-                    // Nimm den ersten Punkt des Polygons (z.B. für Spanien)
-                    centerCoords = polygon.geometry.coordinates[0][0];
-                }
-
-                if (centerCoords && centerCoords.length === 2) {
-                    // WICHTIG: GeoJSON ist [lng, lat], pointOfView ist { lat, lng }
-                    globeInstance.pointOfView({ lat: centerCoords[1], lng: centerCoords[0], altitude: 2.5 }, 1000);
-                } else {
-                    // Fallback, falls die Koordinaten ungültig sind
-                    console.error("Konnte keinen Mittelpunkt für das Polygon finden:", polygon.properties.ADMIN);
-                }
-                        
-                        // 3. Flüge nur für dieses Land filtern
-                        // 'sortedFlights' ist die globale Liste aus openGlobeModal
-                        const focusedFlights = sortedFlights.filter(f => {
-                            // Prüfe, ob der Ländercode im airportData-Cache existiert
-                            const depCountry = airportData[f.departure]?.country_code;
-                            const arrCountry = airportData[f.arrival]?.country_code;
-                            return depCountry === countryCode || arrCountry === countryCode;
-                        });
-                        
-                        // 4. Daten neu verarbeiten (zeigt nur noch Flüge & Punkte für dieses Land an)
-                        const { arcData, visitedCountries, airportPointsData, maxCount } = processGlobeData(focusedFlights);
-
-                        // 5. Globus mit den FOKUSSIERTEN Daten aktualisieren
-                        globeInstance.arcsData(arcData);
-                        globeInstance.polygonsData(countries.features)
-                            .polygonCapColor(feat => {
-                                // Hebe das geklickte Land ODER besuchte Länder hervor
-                                const isClicked = feat.properties.ISO_A2 === countryCode;
-                                const isVisited = visitedCountries.includes(feat.properties.ISO_A2);
-                                // Geklicktes Land bekommt eine andere Farbe (z.B. Pink)
-                                return isClicked ? 'rgba(236, 72, 153, 0.7)' : (isVisited ? 'rgba(147, 51, 234, 0.5)' : 'rgba(100, 100, 100, 0.2)'); 
-                            });
-                        globeInstance.pointsData(airportPointsData)
-                            .pointRadius(d => 0.1 + (maxCount > 0 ? (d.count / maxCount) * 0.4 : 0))
-                            .pointAltitude(d => (maxCount > 0 ? (d.count / maxCount) * 0.2 : 0.01));
-                        globeInstance.htmlElementsData(airportPointsData)
-                            .htmlAltitude(d => (maxCount > 0 ? (d.count / maxCount) * 0.2 : 0.01) + 0.03);
-                    })
-					
-					/**
-                     * EVENT 4: Klick auf eine Flugroute (Arc)
-                     */
-                    .onArcClick(arc => {
-					
-						// ✅ NEUE PRÜFUNG:
-                        // Im "Normalen Modus" (Präsentation) passiert bei Klick nichts.
-                        if (!isStoryModeActive) {
-                            return; 
-                        }
-					
-                        if (!arc) return; // Sicherheitsabfrage
-
-                        // Wir prüfen das neue Array, das wir in Schritt 1 hinzugefügt haben
-                        if (arc.allFlightsOnRoute && arc.allFlightsOnRoute.length > 1) {
-                            // --- MEHRERE FLÜGE (STAPEL) GEFUNDEN ---
-                            // Rufe eine neue Funktion auf, um die Auswahlliste zu zeigen
-                            showFlightDisambiguationModal(arc.allFlightsOnRoute);
-                        
-                        } else if (arc.originalFlight) {
-                            // --- NUR EIN FLUG GEFUNDEN ---
-                            // Rufe die normale Detail-Funktion auf
-                            showFlightDetailsInModal(arc.originalFlight);
-                        
-                        } else {
-                            console.warn("Arc-Klick ohne originalFlight-Daten:", arc);
-                        }
-                    })
-					
-					/**
-                     * NEU: EVENT 5: Hover über eine Flugroute (Arc)
-                     */
-                    .onArcHover(arc => {
-                        // Ändere den Mauszeiger zu "Pointer", wenn wir über einem Bogen sind
-                        document.getElementById('globe-container').style.cursor = arc ? 'pointer' : 'grab';
-                        
-                        // (Optional) Hebe den Bogen hervor
-                        if (arc) {
-                            globeInstance.arcColor(d => 
-                                // 'd' ist der Bogen, den wir gerade prüfen
-                                // 'arc' ist der Bogen, über dem die Maus schwebt
-                                d === arc ? 'white' : getColorByDistance(d.distance)
-                            );
-                        } else {
-                            // Setze alle Farben zurück, wenn wir nicht mehr hovern
-                            globeInstance.arcColor(d => getColorByDistance(d.distance));
-                        }
-                    })
-					
-                    ;
-                    // +++ ENDE EVENT-HANDLER +++
-                
-                
-                globeInstance.controls().autoRotate = true;
-                globeInstance.controls().autoRotateSpeed = 0.2;
-                globeInstance.controls().enableZoom = true;
-
-                // --- EVENT LISTENER FÜR SLIDER (Wird nur einmal hinzugefügt) ---
-                sliderEl.addEventListener('input', () => {
-				
-					// ✅ NEUE KORREKTUR:
-                    // Wenn der Story-Modus aktiv war, beende ihn jetzt vollständig.
-                    if (isStoryModeActive) {
-                        toggleStoryMode(); // Dies setzt den Button-Text und den Status zurück
-                    }
-                    // ✅ ENDE KORREKTUR
-				
-                    // +++ ANPASSUNG: Slider-Bewegung bricht den Fokus-Modus +++
-                    globeInstance.controls().autoRotate = true; // Rotation wieder starten
-                    sliderEl.disabled = false; // Slider (falls deaktiviert) wieder aktivieren
-                    
-                    const selectedIndex = parseInt(sliderEl.value, 10);
-                    const currentFlight = sortedFlights[selectedIndex];
-                    
-					  const newLabelText = `${currentFlight.date} (#${currentFlight.flightLogNumber}: ${currentFlight.departure} → ${currentFlight.arrival})`;
-					
-						// Den "normalen" Text immer speichern, falls wir ihn brauchen
-						normalGlobeLabelText = newLabelText; 
-						
-						// Das Label nur aktualisieren, wenn der Story-Modus NICHT aktiv ist
-						if (!isStoryModeActive) {
-							labelEl.textContent = newLabelText;
-						}
-					
-                    const filteredFlights = sortedFlights.slice(0, selectedIndex + 1);
-                    const { arcData, visitedCountries, airportPointsData, maxCount } = processGlobeData(filteredFlights);
-
-                    // 4. Globus-Schichten mit den neuen Daten aktualisieren
-                    globeInstance.arcsData(arcData);
-                    globeInstance.polygonsData(countries.features) 
-                        .polygonCapColor(feat => {
-                            const isVisited = visitedCountries.includes(feat.properties.ISO_A2);
-                            return isVisited ? 'rgba(147, 51, 234, 0.5)' : 'rgba(100, 100, 100, 0.2)'; 
-                        });
-                    globeInstance.pointsData(airportPointsData)
-                        .pointRadius(d => 0.1 + (maxCount > 0 ? (d.count / maxCount) * 0.4 : 0))
-                        .pointAltitude(d => (maxCount > 0 ? (d.count / maxCount) * 0.2 : 0.01));
-                    globeInstance.htmlElementsData(airportPointsData)
-                        .htmlAltitude(d => (maxCount > 0 ? (d.count / maxCount) * 0.2 : 0.01) + 0.03);
-                });
-            }
-
-            // --- 3. DATEN-UPDATE (Läuft bei jedem Öffnen) ---
-            // Setzt den Globus auf den "vollen" Zustand zurück
-            sliderEl.disabled = false; // Sicherstellen, dass Slider aktiv ist
-            sliderEl.value = sortedFlights.length - 1; // Sicherstellen, dass Slider auf MAX steht
-            if(lastFlight) { labelEl.textContent = `${lastFlight.date} (#${lastFlight.flightLogNumber})`; }
-
-            globeInstance.arcsData(initialData.arcData);
-            globeInstance.polygonsData(countries.features)
-                .polygonCapColor(feat => {
-                    const isVisited = initialData.visitedCountries.includes(feat.properties.ISO_A2);
-                    return isVisited ? 'rgba(147, 51, 234, 0.5)' : 'rgba(100, 100, 100, 0.2)'; 
-                });
-            globeInstance.pointsData(initialData.airportPointsData)
-                .pointRadius(d => 0.1 + (initialData.maxCount > 0 ? (d.count / initialData.maxCount) * 0.4 : 0))
-                .pointAltitude(d => (initialData.maxCount > 0 ? (d.count / initialData.maxCount) * 0.2 : 0.01));
-            globeInstance.htmlElementsData(initialData.airportPointsData)
-                .htmlAltitude(d => (initialData.maxCount > 0 ? (d.count / initialData.maxCount) * 0.2 : 0.01) + 0.03);
-
-            globeInstance.controls().autoRotate = true;
-            window.globeDebugLogged = false; 
+        if (sortedFlights.length === 0) {
+          sliderContainer.classList.add("hidden");
+        } else {
+          sliderContainer.classList.remove("hidden");
         }
+
+        sliderEl.min = 0;
+        sliderEl.max = sortedFlights.length - 1;
+        sliderEl.value = sortedFlights.length - 1;
+
+        const lastFlight = sortedFlights[sortedFlights.length - 1];
+        if (lastFlight) {
+          labelEl.textContent = `${lastFlight.date} (#${lastFlight.flightLogNumber})`;
+        } else {
+          labelEl.textContent = "Keine Flüge vorhanden";
+        }
+
+        // 'initialData' enthält den vollen Satz aller Flüge
+        const initialData = processGlobeData(sortedFlights);
+
+        //let countries; // Variable für Länderdaten (wird im 'if' oder 'listener' gebraucht)
+
+        // --- 2. GLOBUS-INITIALISIERUNG (Läuft nur einmal) ---
+        if (!globeInstance) {
+          console.log("DEBUG: Initialisiere Globus-Instanz zum ersten Mal...");
+
+          countries = await (
+            await fetch(
+              "https://raw.githubusercontent.com/vasturiano/globe.gl/master/example/datasets/ne_110m_admin_0_countries.geojson"
+            )
+          ).json();
+
+          if (countries.features && countries.features.length > 0) {
+            console.log(
+              "EIGENSCHAFTEN EINES KARTEN-LANDES (feat.properties):",
+              countries.features[0].properties
+            );
+          }
+
+          globeInstance = Globe()(document.getElementById("globe-container"))
+            .backgroundColor("#000000")
+            .atmosphereColor("#000000")
+            .globeImageUrl(
+              "//unpkg.com/three-globe/example/img/earth-night.jpg"
+            )
+
+            // --- Schichten mit den ANFANGS-Daten füllen ---
+            .arcsData(initialData.arcData)
+            .arcLabel("name")
+            .arcColor("color")
+
+            // ✅ NEU: Dynamische Höhe
+            .arcAltitudeAutoScale((d) => {
+              if (d.distance < 1000) return 1.3; // Kurzstrecke (flach)
+              if (d.distance < 8000) return 0.4; // Mittelstrecke
+              return 0.4; // Langstrecke (hoch)
+            })
+
+            // ✅ NEU: Dynamische Partikel-Größe/Abstand
+            .arcDashLength((d) => (d.distance < 1000 ? 0.08 : 0.025)) // Längere Striche für Kurzstrecke
+            .arcDashGap((d) => (d.distance < 1000 ? 0.02 : 0.025)) // Kürzere Lücken für Kurzstrecke
+
+            // ✅ NEU: Dynamische Geschwindigkeit
+            .arcDashAnimateTime((d) => (d.distance < 1000 ? 8000 : 12000)) // Kürzere Flüge langsamer
+
+            // Dünne Dicke für den "Normalen Modus"
+            .arcStroke((d) => (d.distance < 1000 ? 0.6 : 0.5)) // z.B. Kurzstrecke minimal dicker
+
+            .arcDashInitialGap((d) => d.offsetIndex * 0.1)
+
+            .arcsTransitionDuration(0)
+
+            .polygonsData(countries.features)
+            .polygonCapColor((feat) => {
+              const isVisited = initialData.visitedCountries.includes(
+                feat.properties.ISO_A2
+              );
+              return isVisited
+                ? "rgba(147, 51, 234, 0.5)"
+                : "rgba(100, 100, 100, 0.2)";
+            })
+            .polygonSideColor(() => "rgba(255, 255, 255, 0.05)")
+            .polygonStrokeColor(() => "#ffffff")
+            .polygonAltitude(0.01)
+
+            .pointsData(initialData.airportPointsData)
+            .pointLat("lat")
+            .pointLng("lon")
+            .pointLabel(
+              (d) =>
+                `${d.name} (${d.count} ${d.count > 1 ? "Besuche" : "Besuch"})`
+            )
+            .pointColor(() => "#fde047")
+            .pointRadius(
+              (d) =>
+                0.1 +
+                (initialData.maxCount > 0
+                  ? (d.count / initialData.maxCount) * 0.4
+                  : 0)
+            )
+            .pointAltitude((d) =>
+              initialData.maxCount > 0
+                ? (d.count / initialData.maxCount) * 0.2
+                : 0.01
+            )
+            .pointsTransitionDuration(0)
+
+            .htmlElementsData(initialData.airportPointsData)
+            .htmlLat("lat")
+            .htmlLng("lon")
+            .htmlAltitude(
+              (d) =>
+                (initialData.maxCount > 0
+                  ? (d.count / initialData.maxCount) * 0.2
+                  : 0.01) + 0.03
+            )
+            .htmlElement((d) => {
+              const el = document.createElement("div");
+              el.innerHTML = d.code;
+              el.style.backgroundColor = "rgba(0, 0, 0, 0.6)";
+              el.style.color = "white";
+              el.style.padding = "1px 3px";
+              el.style.borderRadius = "2px";
+              el.style.fontSize = "10px";
+              el.style.fontFamily = '"Inter", sans-serif';
+              el.style.pointerEvents = "none";
+              return el;
+            })
+            .htmlTransitionDuration(0)
+
+            // +++ NEU: EVENT-HANDLER FÜR FOKUS-MODUS +++
+
+            /**
+             * EVENT 1: Klick auf eine Flughafen-Säule (Point)
+             */
+            .onPointClick((point) => {
+              // ✅ NEU: Story-Modus automatisch beenden
+              if (isStoryModeActive) {
+                toggleStoryMode();
+              }
+              console.log("Fokus auf:", point.code);
+              // 1. Rotation stoppen & Slider deaktivieren
+              globeInstance.controls().autoRotate = false;
+              sliderEl.disabled = true;
+              labelEl.textContent = `Fokus: ${point.name} (${point.code})`;
+
+              // 2. Zur Säule fliegen
+              globeInstance.pointOfView(
+                { lat: point.lat, lng: point.lon, altitude: 1.5 },
+                1000
+              );
+
+              // 3. Flüge nur für diesen Punkt filtern
+              const focusedFlights = sortedFlights.filter(
+                (f) => f.departure === point.code || f.arrival === point.code
+              );
+
+              // 4. Daten neu verarbeiten (zeigt nur noch diesen Punkt und verbundene an)
+              const { arcData, visitedCountries, airportPointsData, maxCount } =
+                processGlobeData(focusedFlights);
+
+              // 5. Globus mit den FOKUSSIERTEN Daten aktualisieren
+              globeInstance.arcsData(arcData);
+              globeInstance
+                .polygonsData(countries.features)
+                .polygonCapColor((feat) => {
+                  const isVisited = visitedCountries.includes(
+                    feat.properties.ISO_A2
+                  );
+                  return isVisited
+                    ? "rgba(147, 51, 234, 0.5)"
+                    : "rgba(100, 100, 100, 0.2)";
+                });
+              globeInstance
+                .pointsData(airportPointsData)
+                .pointRadius(
+                  (d) => 0.1 + (maxCount > 0 ? (d.count / maxCount) * 0.4 : 0)
+                )
+                .pointAltitude((d) =>
+                  maxCount > 0 ? (d.count / maxCount) * 0.2 : 0.01
+                );
+              globeInstance
+                .htmlElementsData(airportPointsData)
+                .htmlAltitude(
+                  (d) =>
+                    (maxCount > 0 ? (d.count / maxCount) * 0.2 : 0.01) + 0.03
+                );
+            })
+
+            /**
+             * EVENT 2: Klick auf den Globus-Hintergrund (Reset)
+             */
+            .onGlobeClick(() => {
+              // ✅ NEUE KORREKTUR:
+              // Wenn der Story-Modus aktiv war, beende ihn jetzt vollständig.
+              if (isStoryModeActive) {
+                toggleStoryMode(); // Setzt Button, Linien & Status zurück
+              }
+
+              console.log("Fokus zurücksetzen");
+              // 1. Slider aktivieren und auf MAX setzen
+              sliderEl.disabled = false;
+              sliderEl.value = sortedFlights.length - 1;
+              if (lastFlight) {
+                // Zeigt den Label-Text für den letzten Flug
+                labelEl.textContent = `${lastFlight.date} (#${lastFlight.flightLogNumber})`;
+              }
+
+              // 2. Globus mit den VOLLEN Daten (initialData) zurücksetzen
+              globeInstance.arcsData(initialData.arcData);
+              globeInstance
+                .polygonsData(countries.features)
+                .polygonCapColor((feat) => {
+                  const isVisited = initialData.visitedCountries.includes(
+                    feat.properties.ISO_A2
+                  );
+                  return isVisited
+                    ? "rgba(147, 51, 234, 0.5)"
+                    : "rgba(100, 100, 100, 0.2)";
+                });
+              globeInstance
+                .pointsData(initialData.airportPointsData)
+                .pointRadius(
+                  (d) =>
+                    0.1 +
+                    (initialData.maxCount > 0
+                      ? (d.count / initialData.maxCount) * 0.4
+                      : 0)
+                )
+                .pointAltitude((d) =>
+                  initialData.maxCount > 0
+                    ? (d.count / initialData.maxCount) * 0.2
+                    : 0.01
+                );
+              globeInstance
+                .htmlElementsData(initialData.airportPointsData)
+                .htmlAltitude(
+                  (d) =>
+                    (initialData.maxCount > 0
+                      ? (d.count / initialData.maxCount) * 0.2
+                      : 0.01) + 0.03
+                );
+
+              // 3. Ansicht herauszoomen und Rotation starten
+              globeInstance.pointOfView({ altitude: 3.5 }, 1000); // Zoomt auf globale Ansicht
+              globeInstance.controls().autoRotate = true;
+            })
+
+            /**
+             * EVENT 3: Klick auf ein Land (Polygon)
+             */
+            .onPolygonClick((polygon) => {
+              // ✅ NEU: Story-Modus automatisch beenden
+              if (isStoryModeActive) {
+                toggleStoryMode();
+              }
+              console.log("Fokus auf Land:", polygon.properties.ADMIN);
+
+              // 1. Rotation stoppen & Slider deaktivieren
+              globeInstance.controls().autoRotate = false;
+              sliderEl.disabled = true;
+
+              const countryCode = polygon.properties.ISO_A2; // z.B. "ES" für Spanien
+              const countryName = polygon.properties.ADMIN; // z.B. "Spain"
+              labelEl.textContent = `Fokus: ${countryName} (${countryCode})`;
+
+              // 2. Zur Polygon fliegen (Kamerasteuerung)
+              let centerCoords;
+              const geometryType = polygon.geometry.type;
+
+              if (geometryType === "MultiPolygon") {
+                // Nimm den ersten Punkt des ersten Polygons der Inselgruppe (z.B. für Japan)
+                centerCoords = polygon.geometry.coordinates[0][0][0];
+              } else if (geometryType === "Polygon") {
+                // Nimm den ersten Punkt des Polygons (z.B. für Spanien)
+                centerCoords = polygon.geometry.coordinates[0][0];
+              }
+
+              if (centerCoords && centerCoords.length === 2) {
+                // WICHTIG: GeoJSON ist [lng, lat], pointOfView ist { lat, lng }
+                globeInstance.pointOfView(
+                  { lat: centerCoords[1], lng: centerCoords[0], altitude: 2.5 },
+                  1000
+                );
+              } else {
+                // Fallback, falls die Koordinaten ungültig sind
+                console.error(
+                  "Konnte keinen Mittelpunkt für das Polygon finden:",
+                  polygon.properties.ADMIN
+                );
+              }
+
+              // 3. Flüge nur für dieses Land filtern
+              // 'sortedFlights' ist die globale Liste aus openGlobeModal
+              const focusedFlights = sortedFlights.filter((f) => {
+                // Prüfe, ob der Ländercode im airportData-Cache existiert
+                const depCountry = airportData[f.departure]?.country_code;
+                const arrCountry = airportData[f.arrival]?.country_code;
+                return depCountry === countryCode || arrCountry === countryCode;
+              });
+
+              // 4. Daten neu verarbeiten (zeigt nur noch Flüge & Punkte für dieses Land an)
+              const { arcData, visitedCountries, airportPointsData, maxCount } =
+                processGlobeData(focusedFlights);
+
+              // 5. Globus mit den FOKUSSIERTEN Daten aktualisieren
+              globeInstance.arcsData(arcData);
+              globeInstance
+                .polygonsData(countries.features)
+                .polygonCapColor((feat) => {
+                  // Hebe das geklickte Land ODER besuchte Länder hervor
+                  const isClicked = feat.properties.ISO_A2 === countryCode;
+                  const isVisited = visitedCountries.includes(
+                    feat.properties.ISO_A2
+                  );
+                  // Geklicktes Land bekommt eine andere Farbe (z.B. Pink)
+                  return isClicked
+                    ? "rgba(236, 72, 153, 0.7)"
+                    : isVisited
+                    ? "rgba(147, 51, 234, 0.5)"
+                    : "rgba(100, 100, 100, 0.2)";
+                });
+              globeInstance
+                .pointsData(airportPointsData)
+                .pointRadius(
+                  (d) => 0.1 + (maxCount > 0 ? (d.count / maxCount) * 0.4 : 0)
+                )
+                .pointAltitude((d) =>
+                  maxCount > 0 ? (d.count / maxCount) * 0.2 : 0.01
+                );
+              globeInstance
+                .htmlElementsData(airportPointsData)
+                .htmlAltitude(
+                  (d) =>
+                    (maxCount > 0 ? (d.count / maxCount) * 0.2 : 0.01) + 0.03
+                );
+            })
+
+            /**
+             * EVENT 4: Klick auf eine Flugroute (Arc)
+             */
+            .onArcClick((arc) => {
+              // ✅ NEUE PRÜFUNG:
+              // Im "Normalen Modus" (Präsentation) passiert bei Klick nichts.
+              if (!isStoryModeActive) {
+                return;
+              }
+
+              if (!arc) return; // Sicherheitsabfrage
+
+              // Wir prüfen das neue Array, das wir in Schritt 1 hinzugefügt haben
+              if (arc.allFlightsOnRoute && arc.allFlightsOnRoute.length > 1) {
+                // --- MEHRERE FLÜGE (STAPEL) GEFUNDEN ---
+                // Rufe eine neue Funktion auf, um die Auswahlliste zu zeigen
+                showFlightDisambiguationModal(arc.allFlightsOnRoute);
+              } else if (arc.originalFlight) {
+                // --- NUR EIN FLUG GEFUNDEN ---
+                // Rufe die normale Detail-Funktion auf
+                showFlightDetailsInModal(arc.originalFlight);
+              } else {
+                console.warn("Arc-Klick ohne originalFlight-Daten:", arc);
+              }
+            })
+
+            /**
+             * NEU: EVENT 5: Hover über eine Flugroute (Arc)
+             */
+            .onArcHover((arc) => {
+              // Ändere den Mauszeiger zu "Pointer", wenn wir über einem Bogen sind
+              document.getElementById("globe-container").style.cursor = arc
+                ? "pointer"
+                : "grab";
+
+              // (Optional) Hebe den Bogen hervor
+              if (arc) {
+                globeInstance.arcColor((d) =>
+                  // 'd' ist der Bogen, den wir gerade prüfen
+                  // 'arc' ist der Bogen, über dem die Maus schwebt
+                  d === arc ? "white" : getColorByDistance(d.distance)
+                );
+              } else {
+                // Setze alle Farben zurück, wenn wir nicht mehr hovern
+                globeInstance.arcColor((d) => getColorByDistance(d.distance));
+              }
+            });
+          // +++ ENDE EVENT-HANDLER +++
+
+          globeInstance.controls().autoRotate = true;
+          globeInstance.controls().autoRotateSpeed = 0.2;
+          globeInstance.controls().enableZoom = true;
+
+          // --- EVENT LISTENER FÜR SLIDER (Wird nur einmal hinzugefügt) ---
+          sliderEl.addEventListener("input", () => {
+            // ✅ NEUE KORREKTUR:
+            // Wenn der Story-Modus aktiv war, beende ihn jetzt vollständig.
+            if (isStoryModeActive) {
+              toggleStoryMode(); // Dies setzt den Button-Text und den Status zurück
+            }
+            // ✅ ENDE KORREKTUR
+
+            // +++ ANPASSUNG: Slider-Bewegung bricht den Fokus-Modus +++
+            globeInstance.controls().autoRotate = true; // Rotation wieder starten
+            sliderEl.disabled = false; // Slider (falls deaktiviert) wieder aktivieren
+
+            const selectedIndex = parseInt(sliderEl.value, 10);
+            const currentFlight = sortedFlights[selectedIndex];
+
+            const newLabelText = `${currentFlight.date} (#${currentFlight.flightLogNumber}: ${currentFlight.departure} → ${currentFlight.arrival})`;
+
+            // Den "normalen" Text immer speichern, falls wir ihn brauchen
+            normalGlobeLabelText = newLabelText;
+
+            // Das Label nur aktualisieren, wenn der Story-Modus NICHT aktiv ist
+            if (!isStoryModeActive) {
+              labelEl.textContent = newLabelText;
+            }
+
+            const filteredFlights = sortedFlights.slice(0, selectedIndex + 1);
+            const { arcData, visitedCountries, airportPointsData, maxCount } =
+              processGlobeData(filteredFlights);
+
+            // 4. Globus-Schichten mit den neuen Daten aktualisieren
+            globeInstance.arcsData(arcData);
+            globeInstance
+              .polygonsData(countries.features)
+              .polygonCapColor((feat) => {
+                const isVisited = visitedCountries.includes(
+                  feat.properties.ISO_A2
+                );
+                return isVisited
+                  ? "rgba(147, 51, 234, 0.5)"
+                  : "rgba(100, 100, 100, 0.2)";
+              });
+            globeInstance
+              .pointsData(airportPointsData)
+              .pointRadius(
+                (d) => 0.1 + (maxCount > 0 ? (d.count / maxCount) * 0.4 : 0)
+              )
+              .pointAltitude((d) =>
+                maxCount > 0 ? (d.count / maxCount) * 0.2 : 0.01
+              );
+            globeInstance
+              .htmlElementsData(airportPointsData)
+              .htmlAltitude(
+                (d) => (maxCount > 0 ? (d.count / maxCount) * 0.2 : 0.01) + 0.03
+              );
+          });
+        }
+
+        // --- 3. DATEN-UPDATE (Läuft bei jedem Öffnen) ---
+        // Setzt den Globus auf den "vollen" Zustand zurück
+        sliderEl.disabled = false; // Sicherstellen, dass Slider aktiv ist
+        sliderEl.value = sortedFlights.length - 1; // Sicherstellen, dass Slider auf MAX steht
+        if (lastFlight) {
+          labelEl.textContent = `${lastFlight.date} (#${lastFlight.flightLogNumber})`;
+        }
+
+        globeInstance.arcsData(initialData.arcData);
+        globeInstance
+          .polygonsData(countries.features)
+          .polygonCapColor((feat) => {
+            const isVisited = initialData.visitedCountries.includes(
+              feat.properties.ISO_A2
+            );
+            return isVisited
+              ? "rgba(147, 51, 234, 0.5)"
+              : "rgba(100, 100, 100, 0.2)";
+          });
+        globeInstance
+          .pointsData(initialData.airportPointsData)
+          .pointRadius(
+            (d) =>
+              0.1 +
+              (initialData.maxCount > 0
+                ? (d.count / initialData.maxCount) * 0.4
+                : 0)
+          )
+          .pointAltitude((d) =>
+            initialData.maxCount > 0
+              ? (d.count / initialData.maxCount) * 0.2
+              : 0.01
+          );
+        globeInstance
+          .htmlElementsData(initialData.airportPointsData)
+          .htmlAltitude(
+            (d) =>
+              (initialData.maxCount > 0
+                ? (d.count / initialData.maxCount) * 0.2
+                : 0.01) + 0.03
+          );
+
+        globeInstance.controls().autoRotate = true;
+        window.globeDebugLogged = false;
+      }
 
       /**
        * Ruft Details für einen Flughafen ab und zeigt sie im Modal an.
@@ -3748,7 +3907,14 @@
       var estimateFlightTime = function (distanceKm) {
         var hours = Math.floor(distanceKm / 850 + 0.5);
         var minutes = Math.round((distanceKm / 850 + 0.5 - hours) * 60);
-        return `${hours} Std. ${minutes} Min.`;
+
+        // ✅ KORREKTUR: Übersetzungen abrufen
+        // Holt "Std." oder "hrs" aus den JSON-Dateien
+        const hUnit = getTranslation("units.hoursShort") || 'Std.'; 
+        // Holt "Min." oder "min" aus den JSON-Dateien
+        const mUnit = getTranslation("units.minutesShort") || 'Min.'; 
+        
+        return `${hours} ${hUnit} ${minutes} ${mUnit}`;
       };
 
       async function uploadFlightPhotos(files) {
@@ -4861,7 +5027,7 @@
 						</button>
 					`;
           } else if (isAirlineView && key !== unknownKey) {
-          /**  
+            /**  
 				else if (isAircraftTypeView && key !== unknownKey) {
                     titleKey = getTranslation('logbook.detailsTitleAircraft').replace('{key}', key);
                     titleHtml = `
