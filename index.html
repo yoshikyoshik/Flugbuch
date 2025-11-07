@@ -6522,24 +6522,18 @@
                             : "k.A."
                         )}
                     </p>
-                    ${
-                      flight.flightNumber ||
-                      flight.airline ||
-                      flight.aircraftType
-                        ? `<p class="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                              ${getTranslation("flights.flightDetails")
-                                .replace(
-                                  "{flightNumber}",
-                                  flight.flightNumber || "-"
-                                )
-                                .replace("{airline}", flight.airline || "-")
-                                .replace(
-                                  "{aircraftType}",
-                                  flight.aircraftType || "-"
-                                )}
-                          </p>`
-                        : ""
-                    }
+                    <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                          ${getTranslation("flights.flightDetails")
+                            .replace(
+                              "{flightNumber}",
+                              flight.flightNumber || "-"
+                            )
+                            .replace("{airline}", flight.airline || "-")
+                            .replace(
+                              "{aircraftType}",
+                              flight.aircraftType || "-"
+                            )}
+                    </p>
                         ${
                           flight.photo_url && flight.photo_url.length > 0
                             ? `<div class="mt-2 flex gap-2">${flight.photo_url
