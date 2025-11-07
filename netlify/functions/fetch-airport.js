@@ -12,14 +12,16 @@ exports.handler = async function(event, context) {
         return { statusCode: 400, body: JSON.stringify({ message: 'Parameter "query" ist erforderlich.' }) };
     }
 
-    const apiEndpoint = `https://www.goflightlabs.com/retrieve-airports?access_key=${API_KEY}&query=${query}`;
+    // --- ✅ KORREKTUR 1: Der URL-Endpunkt ---
+    // Er lautet "retrieveAirport" (Singular, kein Bindestrich)
+    const apiEndpoint = `https://www.goflightlabs.com/retrieveAirport?access_key=${API_KEY}&query=${query}`;
     
     try {
         const response = await fetch(apiEndpoint); 
-        const responseBody = await response.text(); 
+        const responseBody = await response.text(); // Wir holen die Antwort als Text
 
         if (!response.ok) {
-            // Wenn GoFlightLabs selbst einen 500er oder 404er wirft
+            // Wenn GoFlightLabs selbst einen Fehler wirft
             return { 
                 statusCode: 200, // Für das Frontend ist das kein Fehler, nur keine Daten
                 headers: { "Access-Control-Allow-Origin": "*" },
@@ -27,28 +29,30 @@ exports.handler = async function(event, context) {
             };
         }
 
-        const data = JSON.parse(responseBody);
+        // --- ✅ KORREKTUR 2: Die Antwort-Verarbeitung ---
+        // Dein Test beweist, dass die API direkt ein Array "[{...}, {...}]" zurückgibt.
+        // Es gibt kein "data.data" oder "data.success".
+        // Der 'responseBody' IST das Array (als String).
         
-        // --- ✅ HIER IST DIE KORREKTUR ---
-        // Wir prüfen, ob die API-Antwort erfolgreich war UND das data-Array existiert.
-        if (data.success && data.data && Array.isArray(data.data)) {
+        if (responseBody && responseBody.startsWith('[')) {
+            // Wenn der Body mit "[" beginnt, ist es das Array, das wir wollen.
             return {
                 statusCode: 200,
                 headers: { "Access-Control-Allow-Origin": "*" },
-                body: JSON.stringify(data.data) // Nur das Array zurückgeben
+                body: responseBody // Wir geben den rohen Text (der das Array ist) direkt zurück
             };
         } else {
-            // Wenn die API 'success: false' oder kein 'data'-Array sendet (z.B. bei "Toro")
+            // Fallback, falls die API Müll schickt (z.B. eine Fehlermeldung ohne '[')
             return {
-                statusCode: 200, // Die Funktion selbst war erfolgreich
+                statusCode: 200, 
                 headers: { "Access-Control-Allow-Origin": "*" },
-                body: JSON.stringify([]) // Ein leeres Array zurückgeben
+                body: JSON.stringify([]) 
             };
         }
         // --- ✅ ENDE KORREKTUR ---
 
     } catch (error) {
-        // Falls JSON.parse fehlschlägt oder ein Netzwerkfehler auftritt
+        // Falls fetch fehlschlägt
         return { statusCode: 500, body: JSON.stringify({ message: `Interner Serverfehler: ${error.message}` }) };
     }
 };
