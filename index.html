@@ -6035,8 +6035,20 @@
           return;
         }
 
-        await cacheAndSaveAirport(departureAirport);
-        await cacheAndSaveAirport(arrivalAirport);
+        // --- ✅ HIER IST DIE KORREKTUR ---
+        // Statt cacheAndSaveAirport (das unvollständige Daten hat),
+        // rufen wir die Detail-Funktion auf, die *alle* Daten holt (inkl. country_code)
+        // und DIESE DANN in 'cacheAndSaveAirport' (innerhalb von showAirportDetails) speichert.
+        
+        // Das 'true' (silentCache) verhindert, dass sich das Info-Modal öffnet.
+        await showAirportDetails(departureAirport.code, true); 
+        await showAirportDetails(arrivalAirport.code, true);
+
+        // Jetzt, da die Details (inkl. country_code) im Cache (airportData) sind,
+        // holen wir sie uns *erneut*, um sicherzustellen, dass wir die vollständigen Daten haben.
+        departureAirport = findAirport(depCodeInput);
+        arrivalAirport = findAirport(arrCodeInput);
+        // --- ✅ ENDE KORREKTUR ---
 
         const distance = calculateDistance(
           departureAirport.lat,
