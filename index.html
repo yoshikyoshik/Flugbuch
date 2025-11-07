@@ -6745,38 +6745,67 @@
 				  */
 
       /**
-       * Ruft Flughafendaten von der Netlify-Funktion ab.
-       * Verwendet IMMER Standard-Browser-Fetch, da wir wissen, dass es funktioniert.
+       * ANGEPASST FÜR FR24: Ruft Flughafendaten von der Netlify-Funktion ab.
        */
       window.fetchExternalAirport = async function (input) {
         const normalizedInput = input.trim();
         if (normalizedInput.length < 3) return [];
 
+        // 1. URL bleibt gleich (ruft unsere Backend-Funktion)
         const url = `https://aesthetic-strudel-ecfe50.netlify.app/.netlify/functions/fetch-airport?query=${encodeURIComponent(
           normalizedInput
         )}`;
 
-        // Es gibt keinen "if (Capacitor)"-Check mehr. Wir verwenden immer fetch().
         try {
           const response = await fetch(url);
           if (!response.ok) {
-            console.warn(
-              `API-Abfrage für '${input}' fehlgeschlagen: Status ${response.status}`
+            console.error(
+              `API-Abfrage für '${input}' fehlgeschlagen: Status ${response.status}`,
+              await response.text()
             );
             return [];
           }
-          const apiData = await response.json(); // apiData ist [{iata: "...", name: "...", ...}]
+          
+          // 2. Die API-Antwort ist jetzt {"results": [...]}
+          const apiData = await response.json(); 
 
-          // Wir müssen die rohen API-Daten in unser {code: ...} Format umwandeln.
-          return apiData
-            .map((result) => ({
-              code: result.iata || result.icao, // Nimm IATA, ODER nimm ICAO
-              name: result.name,
-              city: result.city,
-              lat: parseFloat(result.latitude),
-              lon: parseFloat(result.longitude),
-            }))
-            .filter((airport) => airport.code);
+          // --- ✅ HIER IST DIE KORREKTUR für FR24 ---
+          // Wir prüfen, ob 'results' existiert und ein Array ist.
+          if (!apiData.results || !Array.isArray(apiData.results)) {
+              console.warn("FR24-Antwort hat kein 'results'-Array:", apiData);
+              return [];
+          }
+
+          // 3. Wir wandeln die FR24-Struktur in unser internes {code: ...} Format um.
+          return apiData.results
+              .map((result) => {
+                  // Ignoriere Einträge, die keine Flughäfen sind
+                  if (result.type !== 'airport' || !result.id || !result.lat || !result.lon) { 
+                      return null;
+                  }
+                  
+                  // FR24-Datenstruktur-Mapping:
+                  // result.id -> "YYZ" (IATA)
+                  // result.label -> "Toronto Pearson International (YYZ)"
+                  // result.name -> "Toronto Pearson International"
+                  // result.city -> "Toronto"
+                  // result.lat -> 43.67
+                  // result.lon -> -79.63
+                  // result.country.code -> "CA" 
+                  
+                  return {
+                      code: result.id, 
+                      name: result.name, 
+                      city: result.city || '', 
+                      lat: parseFloat(result.lat),
+                      lon: parseFloat(result.lon),
+                      // BONUS: Wir bekommen den country_code direkt von FR24!
+                      country_code: result.country ? result.country.code : null 
+                  };
+              })
+              .filter((airport) => airport !== null); // Entferne alle null-Einträge
+          // --- ✅ ENDE KORREKTUR ---
+
         } catch (error) {
           console.error(
             "Netzwerkfehler beim Aufruf der Flughafen-Funktion (Fetch):",

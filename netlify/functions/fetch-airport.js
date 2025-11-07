@@ -1,58 +1,49 @@
 // netlify/functions/fetch-airport.js
-// Diese Funktion ist für die AUTOCOMPLETE-SUCHE zuständig.
+// DIESE FUNKTION NUTZT JETZT FR24 FÜR DIE AUTOCOMPLETE-SUCHE
+
+const fetch = require('node-fetch');
 
 exports.handler = async function(event, context) {
-    const API_KEY = process.env.GOFLIGHTLABS_API_KEY; 
-    if (!API_KEY) {
-        return { statusCode: 500, body: JSON.stringify({ message: 'API-Schlüssel ist nicht konfiguriert.' }) };
+    const TOKEN = process.env.FLIGHTRADAR24_TOKEN; 
+    if (!TOKEN) {
+        console.log("FEHLER: FR24-Token ist nicht konfiguriert.");
+        return { statusCode: 500, body: JSON.stringify({ message: 'FR24-Token ist nicht konfiguriert.' }) };
     }
 
+    // 1. Wir erwarten den "?query=..." Parameter vom Frontend
     const { query } = event.queryStringParameters;
-    if (!query) {
-        return { statusCode: 400, body: JSON.stringify({ message: 'Parameter "query" ist erforderlich.' }) };
+    if (!query || query.length < 3) {
+        return { statusCode: 400, body: JSON.stringify({ message: 'Mindestens 3 Zeichen erforderlich.' }) };
     }
 
-    // --- ✅ KORREKTUR 1: Der URL-Endpunkt ---
-    // Er lautet "retrieveAirport" (Singular, kein Bindestrich)
-    const apiEndpoint = `https://www.goflightlabs.com/retrieveAirport?access_key=${API_KEY}&query=${query}`;
-    
+    // 2. Dies ist der korrekte FR24-Endpunkt für die Autocomplete-Suche
+    const API_ENDPOINT = `https://api.flightradar24.com/common/v1/search.json?query=${encodeURIComponent(query)}&limit=10&type=airport`;
+
     try {
-        const response = await fetch(apiEndpoint); 
-        const responseBody = await response.text(); // Wir holen die Antwort als Text
+        const response = await fetch(API_ENDPOINT, {
+            headers: {
+                'Accept': 'application/json',
+                // WICHTIG: Dieselbe Autorisierung wie bei deiner anderen FR24-Funktion
+                'Authorization': `Bearer ${TOKEN}` 
+            }
+        }); 
+        
+        const data = await response.json(); 
 
         if (!response.ok) {
-            // Wenn GoFlightLabs selbst einen Fehler wirft
-            return { 
-                statusCode: 200, // Für das Frontend ist das kein Fehler, nur keine Daten
-                headers: { "Access-Control-Allow-Origin": "*" },
-                body: JSON.stringify([]) // Leeres Array zurückgeben
-            };
+            console.error("FR24 API Fehler:", data);
+            return { statusCode: response.status, body: JSON.stringify(data) };
         }
 
-        // --- ✅ KORREKTUR 2: Die Antwort-Verarbeitung ---
-        // Dein Test beweist, dass die API direkt ein Array "[{...}, {...}]" zurückgibt.
-        // Es gibt kein "data.data" oder "data.success".
-        // Der 'responseBody' IST das Array (als String).
-        
-        if (responseBody && responseBody.startsWith('[')) {
-            // Wenn der Body mit "[" beginnt, ist es das Array, das wir wollen.
-            return {
-                statusCode: 200,
-                headers: { "Access-Control-Allow-Origin": "*" },
-                body: responseBody // Wir geben den rohen Text (der das Array ist) direkt zurück
-            };
-        } else {
-            // Fallback, falls die API Müll schickt (z.B. eine Fehlermeldung ohne '[')
-            return {
-                statusCode: 200, 
-                headers: { "Access-Control-Allow-Origin": "*" },
-                body: JSON.stringify([]) 
-            };
-        }
-        // --- ✅ ENDE KORREKTUR ---
-
+        // 3. Die FR24-Suche gibt {"results": [...]}. 
+        // Wir senden das ganze Objekt zurück, das Frontend kümmert sich um das Auspacken.
+        return {
+            statusCode: 200,
+            headers: { "Access-Control-Allow-Origin": "*" },
+            body: JSON.stringify(data) 
+        };
     } catch (error) {
-        // Falls fetch fehlschlägt
+        console.error(`Interner Serverfehler in fetch-airport: ${error.message}`);
         return { statusCode: 500, body: JSON.stringify({ message: `Interner Serverfehler: ${error.message}` }) };
     }
 };
