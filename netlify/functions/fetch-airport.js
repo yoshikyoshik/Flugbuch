@@ -13,8 +13,8 @@ exports.handler = async function(event, context) {
         return { statusCode: 400, body: JSON.stringify({ message: 'Parameter "query" ist erforderlich.' }) };
     }
 
-    // 2. Wir rufen den KORREKTEN GoFlightLabs-Such-Endpunkt auf (mit 'name=...')
-    const apiEndpoint = `https://www.goflightlabs.com/airports?access_key=${API_KEY}&name=${query}`;
+    // 2. Wir rufen den KORREKTEN Such-Endpunkt auf: "retrieve-airports"
+    const apiEndpoint = `https://www.goflightlabs.com/retrieve-airports?access_key=${API_KEY}&query=${query}`;
     
     try {
         const response = await fetch(apiEndpoint); 
