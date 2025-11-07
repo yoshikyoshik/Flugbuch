@@ -6751,7 +6751,6 @@
         const normalizedInput = input.trim();
         if (normalizedInput.length < 3) return [];
 
-        // 1. URL bleibt gleich (ruft unsere Backend-Funktion)
         const url = `https://aesthetic-strudel-ecfe50.netlify.app/.netlify/functions/fetch-airport?query=${encodeURIComponent(
           normalizedInput
         )}`;
@@ -6766,41 +6765,44 @@
             return [];
           }
           
-          // 2. Die API-Antwort ist jetzt {"results": [...]}
+          // 2. Die API-Antwort ist {result: {...}, _api: {...}}
           const apiData = await response.json(); 
 
           // --- ✅ HIER IST DIE KORREKTUR für FR24 ---
-          // Wir prüfen, ob 'results' existiert und ein Array ist.
-          if (!apiData.results || !Array.isArray(apiData.results)) {
-              console.warn("FR24-Antwort hat kein 'results'-Array:", apiData);
+          // Wir prüfen, ob 'result.suggestions' existiert und ein Array ist.
+          // (Basierend auf deinem Konsolen-Log, der {result: {...}} zeigt)
+          if (!apiData.result || !apiData.result.suggestions || !Array.isArray(apiData.result.suggestions)) { 
+              console.warn("FR24-Antwort hat kein 'result.suggestions'-Array:", apiData);
               return [];
           }
 
           // 3. Wir wandeln die FR24-Struktur in unser internes {code: ...} Format um.
-          return apiData.results
-              .map((result) => {
+          // WIR VERWENDEN JETZT 'apiData.result.suggestions'
+          return apiData.result.suggestions 
+              .map((suggestion) => {
+                  // FR24-Datenstruktur-Mapping für 'suggestions':
+                  // suggestion.type -> 'airport'
+                  // suggestion.id -> 'YYZ' (IATA)
+                  // suggestion.label -> "Toronto Pearson International (YYZ)"
+                  // suggestion.name -> "Toronto Pearson International"
+                  // suggestion.city -> "Toronto"
+                  // suggestion.position.lat -> 43.67
+                  // suggestion.position.lon -> -79.63
+                  // suggestion.country.code -> "CA" 
+                  
                   // Ignoriere Einträge, die keine Flughäfen sind
-                  if (result.type !== 'airport' || !result.id || !result.lat || !result.lon) { 
+                  if (suggestion.type !== 'airport' || !suggestion.id || !suggestion.position || !suggestion.position.lat || !suggestion.position.lon) { 
                       return null;
                   }
                   
-                  // FR24-Datenstruktur-Mapping:
-                  // result.id -> "YYZ" (IATA)
-                  // result.label -> "Toronto Pearson International (YYZ)"
-                  // result.name -> "Toronto Pearson International"
-                  // result.city -> "Toronto"
-                  // result.lat -> 43.67
-                  // result.lon -> -79.63
-                  // result.country.code -> "CA" 
-                  
                   return {
-                      code: result.id, 
-                      name: result.name, 
-                      city: result.city || '', 
-                      lat: parseFloat(result.lat),
-                      lon: parseFloat(result.lon),
+                      code: suggestion.id, // KORRIGIERT (war result.id)
+                      name: suggestion.name, // KORRIGIERT (war result.name)
+                      city: suggestion.city || '', // KORRIGIERT (war result.city)
+                      lat: parseFloat(suggestion.position.lat), // KORRIGIERT
+                      lon: parseFloat(suggestion.position.lon), // KORRIGIERT
                       // BONUS: Wir bekommen den country_code direkt von FR24!
-                      country_code: result.country ? result.country.code : null 
+                      country_code: suggestion.country ? suggestion.country.code : null 
                   };
               })
               .filter((airport) => airport !== null); // Entferne alle null-Einträge
