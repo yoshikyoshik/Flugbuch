@@ -6744,76 +6744,39 @@
 				  };
 				  */
 
-      /**
-       * ANGEPASST FÜR FR24 (Korrektur): Ruft Flughafendaten von der Netlify-Funktion ab.
-       */
-      window.fetchExternalAirport = async function (input) {
-        const normalizedInput = input.trim();
-        if (normalizedInput.length < 3) return [];
+	  /**
+         * Ruft Flughafendaten von der Netlify-Funktion ab.
+         * Verwendet IMMER Standard-Browser-Fetch, da wir wissen, dass es funktioniert.
+         */
+        window.fetchExternalAirport = async function(input) {
+            const normalizedInput = input.trim();
+            if (normalizedInput.length < 3) return [];
+            
+            const url = `https://aesthetic-strudel-ecfe50.netlify.app/.netlify/functions/fetch-airport?query=${encodeURIComponent(normalizedInput)}`;
 
-        // Ruft unser 'fetch-airport.js' Backend
-        const url = `https://aesthetic-strudel-ecfe50.netlify.app/.netlify/functions/fetch-airport?query=${encodeURIComponent(
-          normalizedInput
-        )}`;
+            // Es gibt keinen "if (Capacitor)"-Check mehr. Wir verwenden immer fetch().
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    console.warn(`API-Abfrage für '${input}' fehlgeschlagen: Status ${response.status}`);
+                    return [];
+                }
+                const apiData = await response.json(); // apiData ist [{iata: "...", name: "...", ...}]
 
-        try {
-          const response = await fetch(url);
-          if (!response.ok) {
-            console.error(
-              `API-Abfrage für '${input}' fehlgeschlagen: Status ${response.status}`,
-              await response.text()
-            );
-            return [];
-          }
-          
-          // Die API-Antwort ist {"results": [...]}
-          const apiData = await response.json(); 
-
-          // --- ✅ KORREKTE PRÜFUNG ---
-          // Wir prüfen, ob 'results' existiert und ein Array ist.
-          if (!apiData.results || !Array.isArray(apiData.results)) {
-              console.warn("FR24-Antwort hat kein 'results'-Array:", apiData);
-              return [];
-          }
-
-          // 3. Wir wandeln die FR24-Struktur in unser internes {code: ...} Format um.
-          return apiData.results
-              .map((result) => {
-                  // FR24-Datenstruktur-Mapping für 'search/airports':
-                  // result.code -> "YYZ" (IATA)
-                  // result.name -> "Toronto Pearson"
-                  // result.city -> "Toronto"
-                  // result.country -> "Canada" (Name, nicht Code)
-                  // result.coords.lat -> 43.67
-                  // result.coords.lon -> -79.63
-                  
-                  // Ignoriere Einträge ohne Koordinaten oder Code
-                  if (!result.code || !result.coords || !result.coords.lat || !result.coords.lon) { 
-                      return null;
-                  }
-                  
-                  return {
-                      code: result.code, // IATA-Code
-                      name: result.name, // Flughafen-Name
-                      city: result.city || '', 
-                      lat: parseFloat(result.coords.lat),
-                      lon: parseFloat(result.coords.lon),
-                      // Wir haben hier leider keinen Country-Code,
-                      // aber wir holen ihn jetzt beim Speichern (logFlight)!
-                      country_code: null 
-                  };
-              })
-              .filter((airport) => airport !== null); // Entferne alle null-Einträge
-          // --- ✅ ENDE KORREKTUR ---
-
-        } catch (error) {
-          console.error(
-            "Netzwerkfehler beim Aufruf der Flughafen-Funktion (Fetch):",
-            error
-          );
-          return [];
-        }
-      };
+                // Wir müssen die rohen API-Daten in unser {code: ...} Format umwandeln.
+                return apiData.map(result => ({
+                    code: result.iata || result.icao, // Nimm IATA, ODER nimm ICAO
+                        name: result.name,
+                        city: result.city,
+                        lat: parseFloat(result.latitude),
+                        lon: parseFloat(result.longitude)
+                }))
+				.filter(airport => airport.code);
+            } catch (error) {
+                console.error("Netzwerkfehler beim Aufruf der Flughafen-Funktion (Fetch):", error);
+                return [];
+            }
+        };
 
       /**
        * Ruft den Namen einer Airline anhand ihres IATA-Codes ab.
