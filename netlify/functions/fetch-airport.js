@@ -1,5 +1,5 @@
 // netlify/functions/fetch-airport.js
-// DIESE FUNKTION NUTZT JETZT FR24 FÜR DIE AUTOCOMPLETE-SUCHE
+// DIESE FUNKTION NUTZT JETZT DEN KORREKTEN FR24-SUCH-ENDPUNKT
 
 const fetch = require('node-fetch');
 
@@ -16,14 +16,13 @@ exports.handler = async function(event, context) {
         return { statusCode: 400, body: JSON.stringify({ message: 'Mindestens 3 Zeichen erforderlich.' }) };
     }
 
-    // 2. Dies ist der korrekte FR24-Endpunkt für die Autocomplete-Suche
-    const API_ENDPOINT = `https://api.flightradar24.com/common/v1/search.json?query=${encodeURIComponent(query)}&limit=10&type=airport`;
+    // 2. ✅ KORREKTER FR24-Endpunkt für die Autocomplete-Suche
+    const API_ENDPOINT = `https://fr24api.flightradar24.com/api/search/airports?query=${encodeURIComponent(query)}`;
 
     try {
         const response = await fetch(API_ENDPOINT, {
             headers: {
                 'Accept': 'application/json',
-                // WICHTIG: Dieselbe Autorisierung wie bei deiner anderen FR24-Funktion
                 'Authorization': `Bearer ${TOKEN}` 
             }
         }); 
@@ -36,7 +35,7 @@ exports.handler = async function(event, context) {
         }
 
         // 3. Die FR24-Suche gibt {"results": [...]}. 
-        // Wir senden das ganze Objekt zurück, das Frontend kümmert sich um das Auspacken.
+        // Wir senden das ganze Objekt zurück.
         return {
             statusCode: 200,
             headers: { "Access-Control-Allow-Origin": "*" },
