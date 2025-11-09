@@ -455,6 +455,13 @@
                   class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                   >Errungenschaften</a
                 >
+				<a
+                  href="#"
+                  onclick="event.preventDefault(); showTab('hilfe'); toggleBurgerMenu();"
+                  data-i18n="burgerMenu.help"
+                  class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  >Hilfe</a
+                >
               </div>
 
               <div
@@ -607,6 +614,14 @@
                 class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
               >
                 Errungenschaften
+              </button>
+			  <button
+                onclick="showTab('hilfe')"
+                id="tab-btn-hilfe"
+                data-i18n="tabs.help"
+                class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              >
+                Hilfe
               </button>
             </nav>
           </div>
@@ -1525,6 +1540,20 @@
                 ></div>
               </div>
             </div>
+			
+			<div id="tab-content-hilfe" class="hidden">
+              <div
+                class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700"
+              >
+                <h2 class="text-xl md:text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4" data-i18n="help.title">
+                  Hilfe & FAQ
+                </h2>
+                
+                <div id="help-content-container" class="prose dark:prose-invert max-w-none space-y-4 text-gray-700 dark:text-gray-300">
+                  </div>
+              </div>
+            </div>
+			
           </div>
         </div>
       </div>
@@ -2197,6 +2226,48 @@
         document.getElementById("info-modal-content").innerHTML =
           "<p>Lade Details...</p>";
       }
+	  
+	  /**
+     * NEU: Prüft, ob das Tutorial angezeigt werden soll.
+     */
+    function showFirstStepsTutorial() {
+      // Wir verwenden v2, falls wir das Tutorial später aktualisieren wollen
+      if (localStorage.getItem('hasSeenTutorial_v1') === 'true') {
+        return; // Nutzer hat es schon gesehen
+      }
+      
+      // Übersetzungen holen
+      const title = getTranslation("tutorial.title") || "Willkommen!";
+      const content = `
+        <p class="mb-4">${getTranslation("tutorial.intro")}</p>
+        <ul class="space-y-3 list-disc list-inside">
+          <li><strong>${getTranslation("tutorial.step1.title")}:</strong> ${getTranslation("tutorial.step1.desc")}</li>
+          <li><strong>${getTranslation("tutorial.step2.title")}:</strong> ${getTranslation("tutorial.step2.desc")}</li>
+          <li><strong>${getTranslation("tutorial.step3.title")}:</strong> ${getTranslation("tutorial.step3.desc")}</li>
+        </ul>
+        <button 
+          id="tutorial-close-btn" 
+          class="w-full py-2 px-4 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition mt-6">
+          ${getTranslation("tutorial.button")}
+        </button>
+      `;
+      
+      // Modal füllen und öffnen
+      document.getElementById("info-modal-title").textContent = title;
+      document.getElementById("info-modal-content").innerHTML = content;
+      openInfoModal(); // Öffnet das existierende Modal
+
+      // Event-Listener für den neuen Button
+      document.getElementById("tutorial-close-btn").addEventListener('click', closeFirstStepsTutorial);
+    }
+
+    /**
+     * NEU: Schließt das Tutorial und merkt sich, dass es gesehen wurde.
+     */
+    function closeFirstStepsTutorial() {
+      localStorage.setItem('hasSeenTutorial_v1', 'true');
+      closeInfoModal();
+    }
 
       /**
        * Schließt das 3D-Globus-Modal.
@@ -3430,6 +3501,10 @@
         showTab("neue-fluege");
         renderFlights();
         displayAppVersion();
+		
+		// Tutorial beim ersten Start anzeigen
+        showFirstStepsTutorial();
+		
       }
 
       function showAuth() {
@@ -3786,6 +3861,16 @@
             const flights = await getFlights();
             updateCharts(flights, currentChartTimeframe);
           }
+		  
+		  // Prüfen, ob der Hilfe-Tab aktiv ist
+          if (
+            !document
+              .getElementById("tab-content-hilfe")
+              .classList.contains("hidden")
+          ) {
+            renderHelpContent(); // Ruft die Funktion erneut auf
+          }
+          		  
           // --- ENDE NEUE LOGIK ---
         } catch (error) {
           console.error(
@@ -3922,6 +4007,9 @@
         document
           .getElementById("tab-content-achievements")
           .classList.add("hidden");
+		document
+          .getElementById("tab-content-hilfe")
+          .classList.add("hidden");
 
         document.querySelectorAll(".tab-btn").forEach((btn) => {
           btn.classList.remove("border-indigo-500", "text-indigo-600");
@@ -3952,7 +4040,35 @@
         if (tabName === "achievements") {
           updateAchievements();
         }
+		if (tabName === "hilfe") {
+          renderHelpContent();
+        }
       }
+	  
+	 /**
+     * NEU: Füllt den Hilfe-Tab mit übersetzbarem Inhalt.
+     */
+    function renderHelpContent() {
+      const container = document.getElementById("help-content-container");
+      
+      // Hilfetexte (mit i18n-Schlüsseln)
+      const sections = [
+        { key: "help.logging.title", contentKey: "help.logging.content" },
+        { key: "help.globe.title", contentKey: "help.globe.content" },
+        { key: "help.tabs.title", contentKey: "help.tabs.content" },
+        { key: "help.data.title", contentKey: "help.data.content" },
+      ];
+      
+      let html = "";
+      sections.forEach(section => {
+        html += `
+          <h3 class="text-lg font-semibold text-indigo-600 dark:text-indigo-400">${getTranslation(section.key)}</h3>
+          <p>${getTranslation(section.contentKey)}</p>
+        `;
+      });
+      
+      container.innerHTML = html;
+    }
 
       var findAirport = function (input) {
         const normalizedInput = input.trim().toUpperCase();

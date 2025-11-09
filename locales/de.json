@@ -59,7 +59,8 @@
         "stats": "Statistiken",
         "charts": "Charts",
         "logbook": "Logbuch",
-        "achievements": "Errungenschaften"
+        "achievements": "Errungenschaften",
+		"help": "Hilfe"
     },
 	
     "burgerMenu": {
@@ -69,6 +70,7 @@
         "charts": "Charts",
         "logbook": "Logbuch",
         "achievements": "Errungenschaften",
+		"help": "Hilfe",
 		"importJSON": "Daten Importieren (JSON)...",
         "exportJSON": "Daten Exportieren (JSON)",
         "exportCSV": "Daten Exportieren (CSV)",
@@ -373,6 +375,44 @@
 			"50000": { "title": "Bewusstsein: 50 Tonnen", "description": "Du hast 50.000 kg CO₂ erfasst." },
 			"100000": { "title": "Bewusstsein: 100 Tonnen", "description": "Du hast 100.000 kg CO₂ erfasst." }
 		}
+    },
+	
+	"tutorial": {
+    "title": "Willkommen beim Digitalen Flugbuch!",
+    "intro": "Hier sind ein paar Tipps für den Start:",
+    "step1": {
+      "title": "Flüge loggen",
+      "desc": "Im Tab 'Neuer Flug' kannst du Flüge manuell (z.B. 'FRA' nach 'JFK') oder über den 'Autopilot' mit Flugnummer (z.B. 'LH400') und Datum eintragen."
+    },
+    "step2": {
+      "title": "Flüge ansehen",
+      "desc": "Im Tab 'Flüge' siehst du deine Liste. Klicke auf 'Alle Routen zeigen' für eine 2D-Kartenübersicht."
+    },
+    "step3": {
+      "title": "Den Globus entdecken",
+      "desc": "Klicke im 'Flüge'-Tab auf '3D Globus'. Aktiviere den 'Story-Modus', um die Rotation zu stoppen und Details durch Klicken auf die Flugbahnen anzuzeigen."
+    },
+    "button": "Verstanden, los geht's!"
+  },
+  
+  "help": {
+    "title": "Hilfe & FAQ",
+    "logging": {
+      "title": "✈️ Flüge loggen (Manuell & Autopilot)",
+      "content": "Du kannst Flüge auf zwei Arten hinzufügen: 1. Manuell, indem du Flughafen-Codes (z.B. 'FRA') eingibst. Die App berechnet Distanz und Zeit. 2. Per 'Autopilot', indem du eine Flugnummer (z.B. 'LH202') und ein Datum eingibst. Dies füllt die meisten Daten automatisch aus. Klicke in der 'Flüge'-Liste auf den Bearbeiten-Stift (Edit), um einen Flug zu ändern."
+    },
+    "globe": {
+      "title": "🗺️ Der 3D Globus & Story-Modus",
+      "content": "Der 3D Globus ('Flüge' > '3D Globus') visualisiert alle deine Reisen. Klicke auf '📖 Story-Modus', um die Erdrotation zu stoppen. Die Flugbahnen werden dicker, und du kannst sie anklicken, um Details zu sehen (das 'Interaktive Flugbuch'). Klicke auf Flughafensäulen oder Länder, um auf diese Region zu fokussieren. Ein Klick auf den Ozean setzt den Fokus zurück."
+    },
+    "tabs": {
+      "title": "📊 Statistiken, Charts & Logbuch",
+      "content": "'Statistiken' zeigt dir deine Rekorde (längster Flug, häufigster Flughafen). 'Charts' visualisiert deine Flüge und Distanzen über die Zeit (pro Jahr oder Monat). 'Logbuch' gruppiert deine Flüge nach Kriterien wie Flugzeugtyp oder Airline. Klicke auf das (i)-Symbol, um Details zum jeweiligen Typ abzurufen."
+    },
+    "data": {
+      "title": "⚙️ Daten (Import/Export & Einstellungen)",
+      "content": "Im Burger-Menü (≡) oben rechts kannst du deine gesamten Flugdaten als JSON- oder CSV-Datei exportieren (Backup!). Du kannst auch eine JSON-Datei importieren (Achtung: Dies überschreibt alle aktuellen Daten). Dort findest du auch den Dark-Mode-Schalter und die Sprachauswahl."
     }
+  }
 	
 }

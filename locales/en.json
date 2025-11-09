@@ -59,7 +59,8 @@
         "stats": "Statistics",
         "charts": "Charts",
         "logbook": "Logbook",
-        "achievements": "Achievements"
+        "achievements": "Achievements",
+		"help": "Help"
     },
 	
     "burgerMenu": {
@@ -69,6 +70,7 @@
         "charts": "Charts",
         "logbook": "Logbook",
         "achievements": "Achievements",
+		"help": "Help",
 		"importJSON": "Import Data (JSON)...",
         "exportJSON": "Export Data (JSON)",
         "exportCSV": "Export Data (CSV)",
@@ -372,5 +374,44 @@
             "50000": { "title": "Awareness: 50 Tons", "description": "You have tracked 50,000 kg of CO₂." },
             "100000": { "title": "Awareness: 100 Tons", "description": "You have tracked 100,000 kg of CO₂." }
         }
+    },
+	
+	"tutorial": {
+    "title": "Welcome to your Digital Logbook!",
+    "intro": "Here are a few tips to get started:",
+    "step1": {
+      "title": "Log Flights",
+      "desc": "In the 'New Flight' tab, you can log flights manually (e.g., 'FRA' to 'JFK') or use the 'Autopilot' with a flight number (e.g., 'LH400') and date."
+    },
+    "step2": {
+      "title": "View Flights",
+      "desc": "The 'Flights' tab shows your list. Click 'Show All Routes' for a 2D map overview."
+    },
+    "step3": {
+      "title": "Explore the Globe",
+      "desc": "In the 'Flights' tab, click '3D Globe'. Activate 'Story Mode' to stop the rotation and click flight paths to see details."
+    },
+    "button": "Got it, let's start!"
+  },
+  
+  "help": {
+    "title": "Help & FAQ",
+    "logging": {
+      "title": "✈️ Logging Flights (Manual & Autopilot)",
+      "content": "You can add flights in two ways: 1. Manually, by entering airport codes (e.g., 'FRA'). The app calculates distance and time. 2. Via 'Autopilot', by entering a flight number (e.g., 'LH202') and date. This fills most data automatically. Click the edit-pencil in the 'Flights' list to modify a flight."
+    },
+    "globe": {
+      "title": "🗺️ The 3D Globe & Story Mode",
+      "content": "The 3D Globe ('Flights' > '3D Globe') visualizes all your travels. Click '📖 Story Mode' to stop the earth's rotation. The flight paths will get thicker, and you can click them to see details (the 'Interactive Logbook'). Click airport columns or countries to focus on that region. A click on the ocean resets the focus."
+    },
+    "tabs": {
+      "title": "📊 Stats, Charts & Logbook",
+      "content": "'Stats' shows your records (longest flight, most frequent airport). 'Charts' visualizes your flights and distances over time (per year or month). 'Logbook' groups your flights by criteria like aircraft type or airline. Click the (i) icon to get details about the respective type."
+    },
+    "data": {
+      "title": "⚙️ Data (Import/Export & Settings)",
+      "content": "In the burger menu (≡) at the top right, you can export all your flight data as a JSON or CSV file (Backup!). You can also import a JSON file (Warning: This will overwrite all current data). You will also find the dark mode toggle and language selection there."
     }
+  }
+	
 }
