@@ -184,7 +184,9 @@
         "co2Info": "🌍 {co2} kg CO₂",
         "mapOverview": "Gesamtübersicht: {count} einzigartige Routen werden angezeigt.",
         "mapNoFlights": "Keine Flüge vorhanden, um eine Gesamtübersicht zu zeigen.",
-		"show3DGlobe": "🌍 3D Globus"
+		"show3DGlobe": "🌍 3D Globus",
+		"showMore": "Details anzeigen...",
+		"hideMore": "Details ausblenden..."
     },
 	
 	"stats": {
@@ -412,7 +414,9 @@
     "data": {
       "title": "⚙️ Daten (Import/Export & Einstellungen)",
       "content": "Im Burger-Menü (≡) oben rechts kannst du deine gesamten Flugdaten als JSON- oder CSV-Datei exportieren (Backup!). Du kannst auch eine JSON-Datei importieren (Achtung: Dies überschreibt alle aktuellen Daten). Dort findest du auch den Dark-Mode-Schalter und die Sprachauswahl."
-    }
+    },
+	"expand": "Ausklappen",
+    "collapse": "Einklappen"
   }
 	
 }
