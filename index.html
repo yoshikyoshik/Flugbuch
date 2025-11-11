@@ -4171,7 +4171,7 @@
         }
         const photoUrls = [];
         for (const file of files) {
-          const filePath = `public/${Date.now()}-${file.name}`;
+          const filePath = `${Date.now()}-${file.name}`;
           const { error: uploadError } = await supabaseClient.storage
             .from("flight-photos")
             .upload(filePath, file);
