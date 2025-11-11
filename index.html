@@ -6294,8 +6294,12 @@
         // und DIESE DANN in 'cacheAndSaveAirport' (innerhalb von showAirportDetails) speichert.
         
         // Das 'true' (silentCache) verhindert, dass sich das Info-Modal öffnet.
-        await showAirportDetails(departureAirport.code, true); 
-        await showAirportDetails(arrivalAirport.code, true);
+        if (departureAirport.code.length === 3) {
+            await showAirportDetails(departureAirport.code, true); 
+        }
+        if (arrivalAirport.code.length === 3) {
+            await showAirportDetails(arrivalAirport.code, true);
+        }
 
         // Jetzt, da die Details (inkl. country_code) im Cache (airportData) sind,
         // holen wir sie uns *erneut*, um sicherzustellen, dass wir die vollständigen Daten haben.
