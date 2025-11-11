@@ -3152,6 +3152,34 @@
        * FR24
        */
       async function showAirportDetails(iataCode, silentCache = false) {
+	  
+	  const contentContainer = document.getElementById("info-modal-content");
+        
+        // ✅ NEU: Schutzabfrage für ICAO-Codes
+        if (iataCode.length === 4) {
+            if (!silentCache) {
+                openInfoModal();
+                document.getElementById("info-modal-title").textContent = 
+                    getTranslation("modalDetails.airportTitle").replace("{key}", iataCode);
+                
+                const cachedAirport = airportData[iataCode];
+                if (cachedAirport) {
+                    // Zeige die Infos an, die wir aus dem Cache (von API-Ninjas) haben
+                    contentContainer.innerHTML = `
+                        <p><strong>${getTranslation("modalDetails.airportName")}</strong> ${cachedAirport.name}</p>
+                        <p><strong>${getTranslation("modalDetails.airportLocation")}</strong> ${cachedAirport.city || 'N/A'}, ${cachedAirport.country_code || 'N/A'}</p>
+                        <p><strong>${getTranslation("modalDetails.airportCoords")}</strong> Lat: ${cachedAirport.lat}, Lng: ${cachedAirport.lon}</p>
+                        <hr class="my-2 dark:border-gray-600">
+                        <p class="text-xs italic">${getTranslation("logbook.icaoInfoNote")}</p>
+                    `;
+                } else {
+                     contentContainer.innerHTML = `<p>${getTranslation("modalDetails.airportNoDetails")}</p>`;
+                }
+            }
+            return; // Beende die Funktion HIER, bevor 'fetch' aufgerufen wird.
+        }
+        // ✅ ENDE NEU
+	  
         if (!silentCache) {
           openInfoModal();
           document.getElementById("info-modal-title").textContent =
@@ -6349,24 +6377,17 @@
           return;
         }
 
-        // --- ✅ HIER IST DIE KORREKTUR ---
-        // Statt cacheAndSaveAirport (das unvollständige Daten hat),
-        // rufen wir die Detail-Funktion auf, die *alle* Daten holt (inkl. country_code)
-        // und DIESE DANN in 'cacheAndSaveAirport' (innerhalb von showAirportDetails) speichert.
+        // (ca. Zeile 6297)
+        // KORREKTUR: Wir müssen 'showAirportDetails' hier NICHT MEHR aufrufen,
+        // da 'fetchExternalAirport' (API-Ninjas) bereits den country_code liefert.
         
-        // Das 'true' (silentCache) verhindert, dass sich das Info-Modal öffnet.
-        if (departureAirport.code.length === 3) {
-            await showAirportDetails(departureAirport.code, true); 
-        }
-        if (arrivalAirport.code.length === 3) {
-            await showAirportDetails(arrivalAirport.code, true);
-        }
+        // Wir müssen nur sicherstellen, dass die (jetzt vollständigen) Daten
+        // in der DB gespeichert werden:
+        await cacheAndSaveAirport(departureAirport);
+        await cacheAndSaveAirport(arrivalAirport);
 
-        // Jetzt, da die Details (inkl. country_code) im Cache (airportData) sind,
-        // holen wir sie uns *erneut*, um sicherzustellen, dass wir die vollständigen Daten haben.
-        departureAirport = findAirport(depCodeInput);
-        arrivalAirport = findAirport(arrCodeInput);
-        // --- ✅ ENDE KORREKTUR ---
+        // (Die Zeilen 'departureAirport = findAirport...' sind nicht mehr nötig,
+        // da wir die Daten bereits haben)
 
         const distance = calculateDistance(
           departureAirport.lat,
@@ -7113,35 +7134,60 @@
 				  };
 				  */
 
-	  /**
-         * Ruft Flughafendaten von der Netlify-Funktion ab.
-         * Verwendet IMMER Standard-Browser-Fetch, da wir wissen, dass es funktioniert.
-         */
-        window.fetchExternalAirport = async function(input) {
-            const normalizedInput = input.trim();
-            if (normalizedInput.length < 3) return [];
-            
-            const url = `https://aesthetic-strudel-ecfe50.netlify.app/.netlify/functions/fetch-airport?query=${encodeURIComponent(normalizedInput)}`;
+	    /**
+       * ANGEPASST FÜR API-NINJAS (MIT COUNTRY_CODE): 
+       * Ruft Flughafendaten von der Netlify-Funktion ab.
+       */
+      window.fetchExternalAirport = async function (input) {
+        const normalizedInput = input.trim();
+        if (normalizedInput.length < 3) return [];
+        
+        // Ruft unsere 'fetch-airport.js' (API-Ninjas) Backend-Funktion
+        const url = `https://aesthetic-strudel-ecfe50.netlify.app/.netlify/functions/fetch-airport?query=${encodeURIComponent(
+          normalizedInput
+        )}`;
 
-            // Es gibt keinen "if (Capacitor)"-Check mehr. Wir verwenden immer fetch().
-            try {
-                const response = await fetch(url);
-                if (!response.ok) {
-                    console.warn(`API-Abfrage für '${input}' fehlgeschlagen: Status ${response.status}`);
-                    return [];
-                }
-                const apiData = await response.json(); // apiData ist [{iata: "...", name: "...", ...}]
+        try {
+          const response = await fetch(url);
+          if (!response.ok) {
+            // API-Ninjas gibt 404 zurück, wenn nichts gefunden wird, das ist OK.
+            if (response.status === 404) {
+              return [];
+            }
+            console.error(
+              `API-Abfrage für '${input}' fehlgeschlagen: Status ${response.status}`,
+              await response.text()
+            );
+            return [];
+          }
+          
+          // Die API-Antwort ist [...]
+          const apiData = await response.json(); 
 
-                // Wir müssen die rohen API-Daten in unser {code: ...} Format umwandeln.
-                return apiData.map(result => ({
-                    code: result.iata || result.icao, // Nimm IATA, ODER nimm ICAO
-                        name: result.name,
-                        city: result.city,
-                        lat: parseFloat(result.latitude),
-                        lon: parseFloat(result.longitude)
-                }))
-				.filter(airport => airport.code);
-            } catch (error) {
+          // --- ✅ KORREKTUR FÜR API-NINJAS ---
+          // Wir wandeln die API-Ninjas-Struktur in unser internes Format um
+          return apiData
+              .map((result) => {
+                  
+                  // Ignoriere Einträge ohne IATA oder ICAO
+                  if (!result.iata && !result.icao) { 
+                      return null;
+                  }
+                  
+                  return {
+                      code: result.iata || result.icao, // Nimm IATA, ODER nimm ICAO
+                      name: result.name, 
+                      city: result.city || '', 
+                      lat: parseFloat(result.latitude),
+                      lon: parseFloat(result.longitude),
+                      // ✅ HIER IST DER FIX: Wir mappen das 'country'-Feld
+                      country_code: result.country || null 
+                  };
+              })
+              .filter((airport) => airport !== null); // Entferne alle null-Einträge
+          // --- ✅ ENDE KORREKTUR ---
+           
+		   } catch (error) {
                 console.error("Netzwerkfehler beim Aufruf der Flughafen-Funktion (Fetch):", error);
                 return [];
             }

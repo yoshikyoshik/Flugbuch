@@ -262,7 +262,8 @@
 		"disambiguationIntro": "Auf dieser Route wurden {count} Flüge gefunden. Bitte wählen Sie einen aus:",
 		"disambiguationButton": "Flug #{number} (am {date})",
 		"flightTitle": "Flug #{number}: {departure} → {arrival}",
-		"routeSeparator": "nach"
+		"routeSeparator": "nach",
+		"icaoInfoNote": "Detaillierte (i)-Informationen sind derzeit nur für 3-stellige IATA-Flughafencodes verfügbar."
     },
 	"globe": {
 		"storyModeHint": "Story-Modus: Flüge anklicken, um Details zu sehen.",

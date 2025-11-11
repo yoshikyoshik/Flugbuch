@@ -261,7 +261,8 @@
 		"disambiguationIntro": "Found {count} flights on this route. Please select one:",
 		"disambiguationButton": "Flight #{number} (on {date})",
 		"flightTitle": "Flight #{number}: {departure} → {arrival}",
-		"routeSeparator": "to"
+		"routeSeparator": "to",
+		"icaoInfoNote": "Detailed (i) information is currently only available for 3-letter IATA airport codes."
     },
 	
 	"globe": {
