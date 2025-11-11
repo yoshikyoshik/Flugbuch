@@ -114,7 +114,9 @@
         "noDataFound": "Keine Flugdaten für diese Kombination gefunden.",
         "fetchError": "Ein Problem ist aufgetreten.",
         "importSuccess": "Flüge wurden importiert. Die Ansicht wird aktualisiert.",
-        "importConfirm": "ACHTUNG! Du bist dabei, {count} Flüge zu importieren. Alle deine aktuellen Flüge werden gelöscht und ersetzt."
+        "importConfirm": "ACHTUNG! Du bist dabei, {count} Flüge zu importieren. Alle deine aktuellen Flüge werden gelöscht und ersetzt.",
+		"uploadLimitCount": "Limit erreicht: Es sind maximal {count} Fotos pro Flug erlaubt. Es werden nur die ersten {count} neuen Fotos hochgeladen.",
+		"uploadLimitSize": "Datei übersprungen: {fileName} ist zu groß (Max. 3 MB)."
     },
 	
 	"records": {

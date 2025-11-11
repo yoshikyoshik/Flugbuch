@@ -917,6 +917,8 @@
                       class="block text-sm font-medium text-gray-700 dark:text-gray-300"
                       >Foto (Optional)</label
                     >
+                    <div id="existing-photos-preview" class="mt-2 flex flex-wrap gap-2">
+                      </div>
                     <input
                       type="file"
                       id="flightPhoto"
@@ -2076,6 +2078,9 @@
       let isStoryModeActive = false; // ✅ NEU: Status des Story-Modus
       let normalGlobeLabelText = ""; // ✅ NEU: Speicher für den Label-Text
 	  let countriesGeoJSON = null; // ✅ NEU: Globale Variable für Länderdaten
+	  // ✅ NEU: Upload-Limits definieren
+      const MAX_PHOTOS_PER_FLIGHT = 5;
+      const MAX_FILE_SIZE_BYTES = 3 * 1024 * 1024; // 3 MB
 	  
 
       var airportData = {
@@ -4165,16 +4170,34 @@
         return `${hours} ${hUnit} ${minutes} ${mUnit}`;
       };
 
-      async function uploadFlightPhotos(files) {
-        if (!files || files.length === 0) {
+	  /**
+       * KORRIGIERT: Lädt Fotos hoch UND prüft die Dateigröße (MAX_FILE_SIZE_BYTES).
+       */
+      async function uploadFlightPhotos(filesToUpload) {
+        if (!filesToUpload || filesToUpload.length === 0) {
           return [];
         }
+
         const photoUrls = [];
-        for (const file of files) {
+        
+        // 'filesToUpload' ist bereits ein Array (wird von logFlight/updateFlight sichergestellt)
+        for (const file of filesToUpload) {
+          
+          // --- ✅ NEU: PRÜFUNG DER DATEIGRÖSSE ---
+          if (file.size > MAX_FILE_SIZE_BYTES) {
+            const errorMsg = (getTranslation("messages.uploadLimitSize") || "Datei übersprungen")
+                                .replace("{fileName}", file.name);
+            showMessage("Upload-Limit", errorMsg, "error");
+            
+            continue; // Überspringe diese Datei und mache mit der nächsten weiter
+          }
+          // --- ENDE GRÖSSEN-CHECK ---
+
           const filePath = `${Date.now()}-${file.name}`;
           const { error: uploadError } = await supabaseClient.storage
             .from("flight-photos")
             .upload(filePath, file);
+            
           if (uploadError) {
             console.error("Fehler beim Hochladen der Datei:", uploadError);
             showMessage(
@@ -4187,6 +4210,7 @@
           const { data } = supabaseClient.storage
             .from("flight-photos")
             .getPublicUrl(filePath);
+            
           if (data.publicUrl) {
             photoUrls.push(data.publicUrl);
           }
@@ -5815,6 +5839,9 @@
         // ✅ KORRIGIERT: Nur der Text wird zurückgesetzt
         document.getElementById("photo-preview-text").textContent =
           getTranslation("form.noFileSelected");
+		  
+		// ✅ NEU: Auch die "existing"-Vorschau löschen
+        document.getElementById("existing-photos-preview").innerHTML = '';
 
         // Zustand zurücksetzen
         currentlyEditingFlightData = null;
@@ -5849,16 +5876,39 @@
           return;
         }
 
-        const previewContainer = document.getElementById(
-          "photo-preview-container"
-        );
-        const previewText = document.getElementById("photo-preview-text");
+        // --- NEUE FOTO-VORSCHAU-LOGIK ---
+        const existingPreviewContainer = document.getElementById("existing-photos-preview");
+        existingPreviewContainer.innerHTML = ''; // Vorherige Previews löschen
+        
         if (flightToEdit.photo_url && flightToEdit.photo_url.length > 0) {
-          previewText.textContent = `Bereits ${flightToEdit.photo_url.length} Foto(s) zu diesem Flug gespeichert.`;
-          previewContainer.classList.remove("hidden");
-        } else {
-          previewContainer.classList.add("hidden");
+          // Erstelle eine "Foto-Karte" für jedes existierende Foto
+          flightToEdit.photo_url.forEach(url => {
+            const imgCard = document.createElement('div');
+            imgCard.className = 'relative inline-block h-16 w-16'; // Feste Größe für die Vorschau
+            
+            // Wir speichern die URL in einem data-Attribut,
+            // damit 'updateFlight' weiß, welche Fotos überlebt haben.
+            imgCard.dataset.url = url; 
+
+            imgCard.innerHTML = `
+              <img src="${url}" class="h-16 w-16 rounded-md object-cover shadow-sm">
+              
+              <button 
+                type="button" 
+                onclick="this.parentElement.remove()" 
+                class="absolute top-0 right-0 -mt-2 -mr-2 bg-red-600 text-white rounded-full w-5 h-5 
+                       flex items-center justify-center text-sm font-bold 
+                       hover:bg-red-700 transition-transform hover:scale-110"
+                title="Foto entfernen"
+              >
+                &times;
+              </button>
+            `;
+            existingPreviewContainer.appendChild(imgCard);
+          });
         }
+        // Der "photo-preview-text" für NEUE Dateien wird von resetForm/change gehandhabt
+        // --- ENDE NEUE LOGIK ---
 
         // Zeichne die Route des aktuell ausgewählten Flugs auf der Karte
         window.drawRouteOnMap(
@@ -6259,8 +6309,19 @@
           return;
         }
 
-        const photoFiles = document.getElementById("flightPhoto").files;
-        const photoUrls = await uploadFlightPhotos(photoFiles);
+        // --- ✅ NEU: ANZAHL-CHECK (Neuer Flug) ---
+        let filesToUpload = Array.from(document.getElementById("flightPhoto").files);
+        
+        if (filesToUpload.length > MAX_PHOTOS_PER_FLIGHT) {
+          const errorMsg = (getTranslation("messages.uploadLimitCount") || "Limit erreicht")
+                                .replace(/{count}/g, MAX_PHOTOS_PER_FLIGHT);
+          showMessage("Upload-Limit", errorMsg, "info");
+          
+          filesToUpload = filesToUpload.slice(0, MAX_PHOTOS_PER_FLIGHT);
+        }
+        
+        const photoUrls = await uploadFlightPhotos(filesToUpload); // Übergibt das (evtl. gekürzte) Array
+        // --- ENDE NEU ---
 
         const depCodeInput = document
           .getElementById("departure")
@@ -6428,27 +6489,76 @@
       }
 
       /**
-       * Speichert die Änderungen eines bestehenden Fluges in Supabase.
+       * KORRIGIERT: Speichert Änderungen, handhabt Hinzufügen UND Löschen von Fotos.
        */
       async function updateFlight() {
+        
+        // 1. Auth-Check (bleibt gleich)
+        const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+        if (userError || !user) {
+            showMessage("Fehler", "Sitzung abgelaufen. Bitte neu einloggen.", "error");
+            logout(); // Zurück zum Login
+            return;
+        }
+
         const logButton = document.getElementById("log-button");
         logButton.textContent = "Aktualisiere...";
         logButton.disabled = true;
 
-        let photoUrls = currentlyEditingFlightData.photo_url || [];
-        const newPhotoFiles = document.getElementById("flightPhoto").files;
+        // 2. Finde die "überlebenden" Fotos
+        const survivingUrls = Array.from(document.querySelectorAll("#existing-photos-preview [data-url]")).map(el => el.dataset.url);
 
-        if (newPhotoFiles.length > 0) {
-          if (photoUrls && photoUrls.length > 0) {
-            const oldFilePaths = photoUrls.map((url) =>
-              url.substring(url.lastIndexOf("public/") + 7)
-            );
-            await supabaseClient.storage
-              .from("flight-photos")
-              .remove(oldFilePaths);
-          }
-          photoUrls = await uploadFlightPhotos(newPhotoFiles);
+        // --- ✅ NEU: ANZAHL-CHECK (Bearbeiten) ---
+        let filesToUpload = Array.from(document.getElementById("flightPhoto").files);
+        const currentPhotoCount = survivingUrls.length;
+        const remainingSlots = MAX_PHOTOS_PER_FLIGHT - currentPhotoCount;
+
+        if (filesToUpload.length > 0 && remainingSlots <= 0) {
+            // Der Nutzer hat bereits 5 (oder mehr) Fotos und versucht, neue hinzuzufügen.
+            const errorMsg = (getTranslation("messages.uploadLimitCount") || "Limit erreicht")
+                                .replace(/{count}/g, MAX_PHOTOS_PER_FLIGHT);
+            showMessage("Upload-Limit", errorMsg, "error");
+            filesToUpload = []; // Keine neuen Uploads erlauben
         }
+        else if (filesToUpload.length > remainingSlots) {
+            // Der Nutzer hat 2 Fotos, lädt 4 hoch (nur 3 erlaubt)
+            const errorMsg = (getTranslation("messages.uploadLimitCount") || "Limit erreicht")
+                                .replace(/{count}/g, MAX_PHOTOS_PER_FLIGHT);
+            showMessage("Upload-Limit", errorMsg, "info");
+            
+            filesToUpload = filesToUpload.slice(0, remainingSlots); // Kürze auf die restlichen Plätze
+        }
+        
+        // 3. Lade die (evtl. gekürzten) NEUEN Fotos hoch
+        const newUploadedUrls = await uploadFlightPhotos(filesToUpload); 
+
+        // 4. Kombiniere die Listen
+        const finalPhotoUrls = survivingUrls.concat(newUploadedUrls);
+        // --- ENDE NEU ---
+
+        // ... (Rest der Funktion)
+
+        // 5. Finde die Fotos, die WIRKLICH gelöscht werden müssen
+        const originalUrls = currentlyEditingFlightData.photo_url || [];
+        const urlsToDelete = originalUrls.filter(url => !survivingUrls.includes(url));
+
+        // 6. Führe die Löschung auf Supabase aus (WENN es was zu löschen gibt)
+        if (urlsToDelete.length > 0) {
+            console.log("Lösche folgende Fotos:", urlsToDelete);
+            // Extrahiere nur die Dateipfade aus den vollen URLs
+            const filePathsToDelete = urlsToDelete.map(url => url.substring(url.lastIndexOf('/') + 1));
+            
+            const { error: deleteError } = await supabaseClient.storage
+              .from("flight-photos")
+              .remove(filePathsToDelete);
+              
+            if (deleteError) {
+                console.error("Fehler beim Löschen alter Fotos:", deleteError);
+                showMessage("Speicherfehler", "Alte Fotos konnten nicht gelöscht werden, die neuen wurden aber hinzugefügt.", "error");
+            }
+        }
+        
+        // --- ENDE DER NEUEN FOTO-LOGIK ---
 
         const depCodeInput = document
           .getElementById("departure")
@@ -6508,7 +6618,7 @@
           arrLon: arrivalAirport.lon,
           depName: departureAirport.name,
           arrName: arrivalAirport.name,
-          photo_url: photoUrls,
+          photo_url: finalPhotoUrls,
           price:
             priceInput !== "" && !isNaN(parseFloat(priceInput))
               ? parseFloat(priceInput)
