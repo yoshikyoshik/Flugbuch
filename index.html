@@ -6600,23 +6600,44 @@
           .getElementById("arrival")
           .value.trim()
           .toUpperCase();
-        let departureAirport =
-          findAirport(depCodeInput) ||
-          (await window.fetchExternalAirport(depCodeInput));
-        let arrivalAirport =
-          findAirport(arrCodeInput) ||
-          (await window.fetchExternalAirport(arrCodeInput));
+        
+        // --- ✅ KORRIGIERTE DATEN-ABFRAGE-LOGIK (identisch zu logFlight) ---
+
+        // 1. Versuche, Daten aus dem Cache zu holen
+        let departureAirport = findAirport(depCodeInput);
+        let arrivalAirport = findAirport(arrCodeInput);
+
+        // 2. Prüfe Abflughafen: Wenn er nicht im Cache ist ODER unvollständig (country_code fehlt)
+        if (!departureAirport || !departureAirport.country_code) {
+            const results = await window.fetchExternalAirport(depCodeInput);
+            if (results && results.length > 0) {
+                departureAirport = results[0]; 
+            }
+        }
+        
+        // 3. Prüfe Zielflughafen: Wenn er nicht im Cache ist ODER unvollständig
+        if (!arrivalAirport || !arrivalAirport.country_code) {
+            const results = await window.fetchExternalAirport(arrCodeInput);
+            if (results && results.length > 0) {
+                arrivalAirport = results[0];
+            }
+        }
+        
+        // --- ENDE KORRIGIERTE LOGIK ---
 
         if (!departureAirport || !arrivalAirport) {
           showMessage(
-            "Flug nicht speicherbar",
+            "Flug nicht speicherbar", // Bessere Fehlermeldung
             "Mindestens ein Flughafen-Code wurde nicht gefunden.",
             "error"
           );
-          resetForm();
+          // WICHTIG: resetForm() HIER NICHT AUFRUFEN, sonst verliert der User seine Eingaben
+          logButton.textContent = "Änderungen speichern"; // Button zurücksetzen
+          logButton.disabled = false; // Button wieder aktivieren
           return;
         }
 
+        // 4. Speichere die (jetzt hoffentlich vollständigen) Daten
         await cacheAndSaveAirport(departureAirport);
         await cacheAndSaveAirport(arrivalAirport);
 
