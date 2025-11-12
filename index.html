@@ -6359,12 +6359,31 @@
           .getElementById("arrival")
           .value.trim()
           .toUpperCase();
-        let departureAirport =
-          findAirport(depCodeInput) ||
-          (await window.fetchExternalAirport(depCodeInput));
-        let arrivalAirport =
-          findAirport(arrCodeInput) ||
-          (await window.fetchExternalAirport(arrCodeInput));
+        // --- ✅ KORRIGIERTE DATEN-ABFRAGE-LOGIK ---
+        
+        // 1. Versuche, Daten aus dem Cache zu holen
+        let departureAirport = findAirport(depCodeInput);
+        let arrivalAirport = findAirport(arrCodeInput);
+
+        // 2. Prüfe Abflughafen: Wenn er nicht im Cache ist ODER unvollständig (country_code fehlt)
+        if (!departureAirport || !departureAirport.country_code) {
+            // ...rufe die externe API (API-Ninjas) auf.
+            const results = await window.fetchExternalAirport(depCodeInput);
+            if (results && results.length > 0) {
+                departureAirport = results[0]; // Nimm das erste (und beste) Ergebnis
+            }
+        }
+        
+        // 3. Prüfe Zielflughafen: Wenn er nicht im Cache ist ODER unvollständig
+        if (!arrivalAirport || !arrivalAirport.country_code) {
+            const results = await window.fetchExternalAirport(arrCodeInput);
+            if (results && results.length > 0) {
+                arrivalAirport = results[0];
+            }
+        }
+        
+        // --- ENDE KORRIGIERTE LOGIK ---
+
 
         if (!departureAirport || !arrivalAirport) {
           showMessage(
@@ -6377,17 +6396,9 @@
           return;
         }
 
-        // (ca. Zeile 6297)
-        // KORREKTUR: Wir müssen 'showAirportDetails' hier NICHT MEHR aufrufen,
-        // da 'fetchExternalAirport' (API-Ninjas) bereits den country_code liefert.
-        
-        // Wir müssen nur sicherstellen, dass die (jetzt vollständigen) Daten
-        // in der DB gespeichert werden:
+        // 4. Speichere die (jetzt hoffentlich vollständigen) Daten
         await cacheAndSaveAirport(departureAirport);
         await cacheAndSaveAirport(arrivalAirport);
-
-        // (Die Zeilen 'departureAirport = findAirport...' sind nicht mehr nötig,
-        // da wir die Daten bereits haben)
 
         const distance = calculateDistance(
           departureAirport.lat,
@@ -7164,15 +7175,10 @@
           // Die API-Antwort ist [...]
           const apiData = await response.json(); 
 
-          // --- ✅ KORREKTUR FÜR API-NINJAS ---
-          // Wir wandeln die API-Ninjas-Struktur in unser internes Format um
+          // --- KORREKTE SCHLEIFE FÜR API-NINJAS ---
           return apiData
               .map((result) => {
-                  
-                  // Ignoriere Einträge ohne IATA oder ICAO
-                  if (!result.iata && !result.icao) { 
-                      return null;
-                  }
+                  if (!result.iata && !result.icao) { return null; }
                   
                   return {
                       code: result.iata || result.icao, // Nimm IATA, ODER nimm ICAO
@@ -7180,12 +7186,11 @@
                       city: result.city || '', 
                       lat: parseFloat(result.latitude),
                       lon: parseFloat(result.longitude),
-                      // ✅ HIER IST DER FIX: Wir mappen das 'country'-Feld
-                      country_code: result.country || null 
+                      country_code: result.country || null // ✅ HIER WIRD DER LÄNDERCODE GEMAPPT
                   };
               })
-              .filter((airport) => airport !== null); // Entferne alle null-Einträge
-          // --- ✅ ENDE KORREKTUR ---
+              .filter((airport) => airport !== null); 
+          // --- ENDE KORREKTUR ---
            
 		   } catch (error) {
                 console.error("Netzwerkfehler beim Aufruf der Flughafen-Funktion (Fetch):", error);
