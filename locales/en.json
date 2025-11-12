@@ -187,7 +187,8 @@
         "mapNoFlights": "No flights available to display an overview.",
 		"show3DGlobe": "🌍 3D Globe",
 		"showMore": "Show details...",
-		"hideMore": "Hide details..."
+		"hideMore": "Hide details...",
+		"logReturnFlight": "✈️ Log Return Flight"
     },
 	
 	"stats": {

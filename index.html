@@ -583,8 +583,18 @@
             >
               Flugroute wird visualisiert.
             </p>
-            <div
-              id="flight-map-container"
+			<div id="return-flight-container" class="text-center -mt-1 mb-3 hidden">
+            <button
+              id="return-flight-btn"
+              onclick="" 
+              data-i18n="flights.logReturnFlight"
+              class="py-1 px-3 text-xs bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition-colors shadow-md"
+            >
+              ✈️ Rückflug loggen
+            </button>
+          </div>
+          <div
+            id="flight-map-container"
               class="h-[300px] rounded-lg shadow-lg z-0" 
               ></div>
           </div>
@@ -2305,12 +2315,38 @@
       document.getElementById("tutorial-close-btn").addEventListener('click', closeFirstStepsTutorial);
     }
 
-    /**
-     * NEU: Schließt das Tutorial und merkt sich, dass es gesehen wurde.
+		/**
+		 * NEU: Schließt das Tutorial und merkt sich, dass es gesehen wurde.
+		 */
+		function closeFirstStepsTutorial() {
+		  localStorage.setItem('hasSeenTutorial_v1', 'true');
+		  closeInfoModal();
+		}
+	
+	/**
+     * NEU: Füllt das "Neuer Flug"-Formular für einen Rückflug aus.
+     * (Wird vom Button auf der 2D-Karte aufgerufen)
      */
-    function closeFirstStepsTutorial() {
-      localStorage.setItem('hasSeenTutorial_v1', 'true');
-      closeInfoModal();
+    function prefillReturnFlight(departureIata, arrivalIata) {
+        
+        // 1. Zum "Neuer Flug"-Tab wechseln
+        showTab('neue-fluege');
+        
+        // --- ✅ HIER IST DIE KORREKTUR ---
+        // 2. Setze das Formular ZUERST komplett zurück.
+        //    Dies löscht 'currentlyEditingFlightData' und beendet den Edit-Modus.
+        window.resetForm();
+        // --- ENDE KORREKTUR ---
+        
+        // 3. Felder (vertauscht) ausfüllen
+        document.getElementById('departure').value = departureIata;
+        document.getElementById('arrival').value = arrivalIata;
+        
+        // 4. Details (Distanz, CO2, etc.) aktualisieren und Button aktivieren
+        updateFlightDetails();
+        
+        // 5. (Optional) Zum Formular scrollen
+        document.getElementById('log-button').scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
       /**
@@ -7023,6 +7059,18 @@
 
         // 4. Setze den fertigen Text
         mapInfo.textContent = translatedText;
+		
+		// --- ✅ KORRIGIERTE Button-Logik ---
+        const returnFlightContainer = document.getElementById("return-flight-container");
+        const returnFlightBtn = document.getElementById("return-flight-btn");
+        
+        // Setze die Klick-Funktion auf den Button
+        returnFlightBtn.setAttribute("onclick", `prefillReturnFlight('${arrCode}', '${depCode}')`);
+        
+        // Mache den CONTAINER sichtbar
+        returnFlightContainer.classList.remove("hidden"); 
+        // --- ✅ ENDE KORREKTUR ---
+		
       };
 
       /**

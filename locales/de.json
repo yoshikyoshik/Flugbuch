@@ -188,7 +188,8 @@
         "mapNoFlights": "Keine Flüge vorhanden, um eine Gesamtübersicht zu zeigen.",
 		"show3DGlobe": "🌍 3D Globus",
 		"showMore": "Details anzeigen...",
-		"hideMore": "Details ausblenden..."
+		"hideMore": "Details ausblenden...",
+		"logReturnFlight": "✈️ Rückflug loggen"
     },
 	
 	"stats": {
