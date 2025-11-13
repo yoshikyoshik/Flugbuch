@@ -2917,8 +2917,8 @@
                 labelEl.textContent = `${lastFlight.date} (#${lastFlight.flightLogNumber})`;
               }
 
-              // 2. Globus mit den VOLLEN Daten (initialData) zurücksetzen
-              globeInstance.arcsData(initialData.arcData);
+              // 2. Globus mit den SCHNELLEN Daten (progressiveData) zurücksetzen
+              globeInstance.arcsData(progressiveData.arcData);
               globeInstance
                 .polygonsData(countries.features)
                 .polygonCapColor((feat) => {
@@ -2930,25 +2930,25 @@
                     : "rgba(100, 100, 100, 0.2)";
                 });
               globeInstance
-                .pointsData(initialData.airportPointsData)
+                .pointsData(progressiveData.airportPointsData) // <-- Korrekt
                 .pointRadius(
                   (d) =>
                     0.1 +
-                    (initialData.maxCount > 0
-                      ? (d.count / initialData.maxCount) * 0.4
+                    (progressiveData.maxCount > 0 // ✅ KORRIGIERT
+                      ? (d.count / progressiveData.maxCount) * 0.4 // ✅ KORRIGIERT
                       : 0)
                 )
                 .pointAltitude((d) =>
-                  initialData.maxCount > 0
-                    ? (d.count / initialData.maxCount) * 0.2
+                  progressiveData.maxCount > 0 // ✅ KORRIGIERT
+                    ? (d.count / progressiveData.maxCount) * 0.2 // ✅ KORRIGIERT
                     : 0.01
                 );
               globeInstance
-                .htmlElementsData(initialData.airportPointsData)
+                .htmlElementsData(progressiveData.airportPointsData) // <-- Korrekt
                 .htmlAltitude(
                   (d) =>
-                    (initialData.maxCount > 0
-                      ? (d.count / initialData.maxCount) * 0.2
+                    (progressiveData.maxCount > 0 // ✅ KORRIGIERT
+                      ? (d.count / progressiveData.maxCount) * 0.2 // ✅ KORRIGIERT
                       : 0.01) + 0.03
                 );
 
