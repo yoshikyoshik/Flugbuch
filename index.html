@@ -226,6 +226,53 @@
         margin-left: -15px; /* Manuelle Zentrierung */
         margin-top: -10px; /* Manuelle Zentrierung */
       }
+	  /* ✅ NEUE DRUCK-STILE */
+      @media print {
+        /* Verstecke absolut alles auf der Seite */
+        body * {
+          visibility: hidden;
+        }
+        
+        /* Mache den Druck-Container und seine Kinder sichtbar */
+        #print-view-content, #print-view-content * {
+          visibility: visible;
+        }
+        
+        /* Positioniere den Druck-Container an der Spitze */
+        #print-view-content {
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 100%;
+        }
+        
+        /* Sorge für saubere Seitenumbrüche */
+        .print-cover-page {
+          page-break-after: always; /* Deckblatt ist eine eigene Seite */
+        }
+        .print-flight-entry {
+          page-break-before: always; /* Jeder Flug beginnt auf einer neuen Seite */
+          padding-top: 1rem;
+        }
+        
+        /* Verhindere, dass Buttons (wie der "Löschen"-Button aus der Fotovorschau) gedruckt werden */
+        button, .no-print {
+          display: none !important;
+        }
+        
+        /* Stelle sicher, dass Bilder sauber skaliert werden */
+        img {
+          max-width: 100% !important;
+          height: auto !important;
+        }
+
+        /* Standard-Druck-Layout */
+        @page {
+          size: A4;
+          margin: 1in;
+        }
+      }
+      /* ✅ ENDE NEUE DRUCK-STILE */
     </style>
   </head>
 
@@ -1091,6 +1138,13 @@
                   >
                     🌍 3D Globus
                   </button>
+				  <button
+					id="print-book-btn"
+					class="w-full text-sm font-medium text-blue-600 hover:text-blue-800 p-2 rounded-lg bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 transition lg:w-auto"
+					data-i18n="flights.createBook"
+				  >
+					Buch erstellen
+				  </button>
                   <button
                     onclick="renderFlights()"
                     class="w-full text-sm font-medium text-indigo-600 hover:text-indigo-800 flex items-center justify-center p-2 rounded-lg bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 transition lg:w-auto"
@@ -1767,7 +1821,9 @@
     <input type="file" id="import-file-input" accept=".json" class="hidden" />
 
     <div id="toast-container" class="fixed top-5 right-5 z-50 space-y-2"></div>
-
+	
+	<div id="print-view-content" class="hidden print:block"></div>
+	
     <script>
       // (JavaScript content follows)
 
@@ -2089,6 +2145,7 @@
       let currentSort = { key: "flightLogNumber", direction: "asc" };
       let currentPage = 1;
       const ITEMS_PER_PAGE = 5;
+	  let currentlyFilteredFlights = null; // ✅ NEU: Speichert die gefilterte Liste
       let flightsChartInstance, distanceChartInstance, timeChartInstance;
       let currentChartTimeframe = "year";
       let isAppInitialized = false; // SCHUTZSCHALTER
@@ -3212,7 +3269,142 @@
         window.globeDebugLogged = false;
       } 
 
-      /**
+     /**
+     * NEU: Kernfunktion, die eine Flugliste entgegennimmt und das Druck-HTML generiert.
+     * @param {Array<Object>} flightsToPrint - Die vor-gefilterte Liste der Flüge.
+     * @param {string} title - Der Titel für das Deckblatt.
+     */
+    async function buildAndPrintHtml(flightsToPrint, title) {
+      
+      // 1. Prüfen, ob Flüge vorhanden sind
+      if (!flightsToPrint || flightsToPrint.length === 0) {
+        showMessage("Export-Fehler", "Keine Flüge im aktuellen Filter zum Drucken gefunden.", "error");
+        return;
+      }
+      
+      // 2. (BUGFIX von vorher) Stelle sicher, dass die Flüge nummeriert sind
+      // (Wir verwenden resequenceAndAssignNumbers für die *gefilterte* Liste)
+      const sequencedFlights = resequenceAndAssignNumbers([...flightsToPrint]);
+
+      // 3. Finde das ECHTE Start- und Enddatum VOR der UI-Sortierung
+      const dateSortedFlights = [...sequencedFlights].sort((a, b) => new Date(a.date) - new Date(b.date));
+      const firstDate = dateSortedFlights[0].date;
+      const lastDate = dateSortedFlights[dateSortedFlights.length - 1].date;
+
+      // 4. Wende die aktuelle UI-Sortierung (currentSort) für die Druck-Reihenfolge an
+      const sortKey = currentSort.key;
+      const direction = currentSort.direction === "asc" ? 1 : -1;
+      sequencedFlights.sort((a, b) => { 
+          // (Sortierlogik bleibt gleich)
+          const valA = a[sortKey]; const valB = b[sortKey];
+          let comparison = 0;
+          if (typeof valA === "number") comparison = valA - valB;
+          else if (sortKey === "date") comparison = new Date(a.date) - new Date(b.date);
+          else comparison = (valA || "").localeCompare(valB || "");
+          return comparison * direction;
+      });
+
+      // 5. Statistiken für das Deckblatt berechnen
+      const stats = calculateStatistics(sequencedFlights);
+      const totalMinutes = sequencedFlights.reduce((sum, f) => sum + parseFlightTimeToMinutes(f.time), 0);
+      const totalTimeStr = `${Math.floor(totalMinutes / 60)} ${getTranslation("units.hoursShort")} ${totalMinutes % 60} ${getTranslation("units.minutesShort")}`;
+
+      let html = '';
+
+      // 6. HTML für das Deckblatt
+      html += `
+        <div class="print-cover-page" style="font-family: 'Inter', sans-serif; padding: 1rem; text-align: center;">
+          <h1 style="font-size: 2.5rem; font-weight: 800; color: #4F46E5; margin-top: 4rem;">${getTranslation("print.coverTitle")}</h1>
+          <p style="font-size: 1.25rem; color: #374151; margin-bottom: 5rem;">${title}</p>
+          
+          <div style="text-align: left; max-width: 400px; margin: 0 auto; border-top: 1px solid #E5E7EB; padding-top: 2rem;">
+            <h2 style="font-size: 1.5rem; font-weight: 700; color: #1F2937; margin-bottom: 1.5rem;">
+              ${getTranslation("print.summaryFor").replace("{count}", sequencedFlights.length)}
+            </h2>
+            <p style="font-size: 1rem; margin-bottom: 0.5rem;"><strong>${getTranslation("print.dateRange")}:</strong> ${firstDate} – ${lastDate}</p>
+            <p style="font-size: 1rem; margin-bottom: 0.5rem;"><strong>${getTranslation("print.totalDistance")}:</strong> ${stats.totalDistance.toLocaleString('de-DE')} km</p>
+            <p style="font-size: 1rem; margin-bottom: 0.5rem;"><strong>${getTranslation("print.totalTime")}:</strong> ${totalTimeStr}</p>
+            <p style="font-size: 1rem; margin-bottom: 0.5rem;"><strong>${getTranslation("print.totalCO2")}:</strong> ${stats.totalCO2.toLocaleString('de-DE')} kg CO₂</p>
+          </div>
+        </div>
+      `;
+
+      // 7. HTML für jeden einzelnen Flug erstellen
+      sequencedFlights.forEach(flight => {
+        // (Rest der Funktion bleibt exakt gleich, verwendet 'flight.flightLogNumber')
+        const title = getTranslation("print.flightTitle")
+                        .replace("{number}", flight.flightLogNumber) 
+                        .replace("{departure}", flight.departure)
+                        .replace("{arrival}", flight.arrival);
+        
+        let photosHtml = '';
+        if (flight.photo_url && flight.photo_url.length > 0) {
+          photosHtml += '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">';
+          photosHtml += flight.photo_url.map(url => `<div><img src="${url}" alt="Flugfoto" style="width: 100%; border-radius: 0.375rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);"></div>`).join('');
+          photosHtml += '</div>';
+        }
+
+        html += `
+          <div class="print-flight-entry" style="font-family: 'Inter', sans-serif;">
+            <h2 style="font-size: 1.5rem; font-weight: 700; color: #4F46E5; border-bottom: 1px solid #E5E7EB; padding-bottom: 0.5rem;">
+              ${title}
+            </h2>
+            <div style="margin-top: 1rem; line-height: 1.75;">
+              <p><strong>${getTranslation("logbook.flightEntryDate")}:</strong> ${flight.date}</p>
+              <p><strong>${getTranslation("logbook.flightEntryRoute")}:</strong> ${flight.depName || flight.departure} ${getTranslation("logbook.routeSeparator")} ${flight.arrName || flight.arrival}</p>
+              <p><strong>${getTranslation("logbook.flightEntryDistance")}:</strong> ${flight.distance.toLocaleString('de-DE')} km</p>
+              <p><strong>${getTranslation("logbook.flightEntryDuration")}:</strong> ${flight.time}</p>
+              <hr style="margin: 0.75rem 0;">
+              <p><strong>${getTranslation("logbook.flightEntryAirline")}:</strong> ${flight.airline || '-'} (${flight.flightNumber || '-'})</p>
+              <p><strong>${getTranslation("logbook.flightEntryAircraft")}:</strong> ${flight.aircraftType || '-'} (${flight.registration || '-'})</p>
+              
+              ${flight.notes ? `
+                <div style="margin-top: 1rem; border-left: 4px solid #C7D2FE; padding-left: 1rem; font-style: italic;">
+                  <strong style="font-style: normal;">${getTranslation("logbook.flightEntryNotes")}</strong>
+                  <p style="white-space: pre-wrap;">${flight.notes}</p>
+                </div>
+              ` : ''}
+              
+              ${photosHtml}
+            </div>
+          </div>
+        `;
+      });
+      
+      // 8. Drucken (bleibt gleich)
+      document.getElementById('print-view-content').innerHTML = html;
+      
+      setTimeout(() => {
+        window.print();
+      }, 500); 
+    }
+
+    /**
+     * NEU: Trigger-Funktion für den "Flüge"-Tab.
+     * Liest die Filter aus und ruft die Kern-Druckfunktion auf.
+     */
+    async function triggerPrintView_FlightsTab() {
+      // 1. Alle Flüge abrufen
+      let allFlights = await getFlights();
+      
+      // 2. Flüge filtern (Logik aus der alten Funktion)
+      const depFilter = document.getElementById("filter-departure").value.trim().toUpperCase();
+      const arrFilter = document.getElementById("filter-arrival").value.trim().toUpperCase();
+      const dateFrom = document.getElementById("filter-date-from").value;
+      const dateTo = document.getElementById("filter-date-to").value;
+
+      let filteredFlights = allFlights;
+      if (depFilter) filteredFlights = filteredFlights.filter(f => f.departure.toUpperCase().includes(depFilter));
+      if (arrFilter) filteredFlights = filteredFlights.filter(f => f.arrival.toUpperCase().includes(arrFilter));
+      if (dateFrom) filteredFlights = filteredFlights.filter(f => f.date >= dateFrom);
+      if (dateTo) filteredFlights = filteredFlights.filter(f => f.date <= dateTo);
+      
+      // 3. Kernfunktion aufrufen
+      const title = getTranslation("print.filteredTitle") || "Gefilterte Flugliste";
+      await buildAndPrintHtml(filteredFlights, title);
+    }
+	  
+	  /**
        * Ruft Details für einen Flughafen ab und zeigt sie im Modal an.
        * @param {string} iataCode - Der IATA-Code des Flughafens (z.B. "DRS").
        * FR24
@@ -3636,6 +3828,11 @@
         document
           .getElementById("show-globe-btn")
           .addEventListener("click", openGlobeModal);
+		  
+		// ✅ NEUER LISTENER FÜR DEN DRUCK-BUTTON
+		document
+		  .getElementById("print-book-btn")
+		  .addEventListener("click", triggerPrintView_FlightsTab); // ✅ KORRIGIERT
 
         // --- ENDE Event-Listener ---
 
@@ -5349,22 +5546,37 @@
 		  
           // KEIN Info-Button für Registrierung, da es keine API dafür gibt
 
-          summaryElement.innerHTML = `
-                    ${titleHtml} 
-                    <span class="text-sm font-normal text-gray-500 dark:text-gray-400 ml-2">
-                        ${getTranslation("logbook.summary")
-                          .replace("{count}", group.count)
-                          .replace(
-                            "{distance}",
-                            group.totalDistance.toLocaleString("de-DE")
-                          )}
-                    </span>
-                `;
+          summaryElement.innerHTML = `${titleHtml}`; // Entfernt die (Anzahl/Distanz) aus dem Titel
 
           const flightListDiv = document.createElement("div");
           flightListDiv.className =
             "mt-4 space-y-2 border-t border-gray-200 dark:border-gray-600 pt-4";
 
+          // --- ✅ KORREKTUR: Wir verwenden NUR noch appendChild ---
+
+          // 1. Druck-Button erstellen und hinzufügen (Dein Code war hier korrekt)
+          const printButton = document.createElement("button");
+          printButton.className = "text-xs font-medium text-blue-600 hover:text-blue-800 p-2 rounded-lg bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-600 transition";
+          
+          const buttonTitle = (getTranslation("print.logbookTitle") || "Logbuch: {groupName}").replace("{groupName}", key);
+          printButton.innerHTML = (getTranslation("print.createBookForGroup") || "Buch für {groupName} erstellen").replace("{groupName}", key);
+          
+          printButton.onclick = async (event) => {
+              event.stopPropagation(); 
+              const sortedGroupFlights = [...group.flights].sort((a, b) => new Date(a.date) - new Date(b.date));
+              await buildAndPrintHtml(sortedGroupFlights, buttonTitle); 
+          };
+          
+          flightListDiv.appendChild(printButton);
+
+          // 2. Titel (Summary) erstellen und hinzufügen
+          const listTitle = document.createElement('p');
+          // (Ich habe eine Trennlinie hinzugefügt, um den Button von der Liste zu trennen)
+          listTitle.className = "text-sm font-semibold text-gray-700 dark:text-gray-300 pt-4 border-t dark:border-gray-700 mt-4"; 
+          listTitle.textContent = getTranslation("logbook.summary").replace("{count}", group.count).replace("{distance}", group.totalDistance.toLocaleString("de-DE"));
+          flightListDiv.appendChild(listTitle);
+
+          // 3. Flugliste als DOM-Elemente erstellen und hinzufügen
           group.flights
             .sort((a, b) => new Date(a.date) - new Date(b.date))
             .forEach((flight) => {
@@ -5373,9 +5585,16 @@
                 .replace("{departure}", flight.departure)
                 .replace("{arrival}", flight.arrival)
                 .replace("{distance}", flight.distance.toLocaleString("de-DE"));
-
-              flightListDiv.innerHTML += `<div class="text-sm text-gray-700 dark:text-gray-300">${flightText}</div>`;
+              
+              // Erstelle ein 'div' statt 'innerHTML +=' zu verwenden
+              const flightEntryDiv = document.createElement("div");
+			  flightEntryDiv.className = "text-sm text-gray-700 dark:text-gray-300";
+              flightEntryDiv.textContent = flightText; // Sicherer und erhält den Button-Listener
+              
+              flightListDiv.appendChild(flightEntryDiv); // Hängt den Flug hinzu
             });
+          
+          // --- ✅ ENDE KORREKTUR ---
 
           detailsElement.appendChild(summaryElement);
           detailsElement.appendChild(flightListDiv);
@@ -6801,7 +7020,18 @@
         document.getElementById("toggle-map-view-btn").textContent =
           getTranslation("flights.showAllRoutes");
 
-        let allFlights = flightsToRender || (await getFlights());
+        // let allFlights = flightsToRender || (await getFlights());
+		let allFlights;
+        if (flightsToRender) {
+          // Fall 1: Ein neuer Filter wird angewendet (aus applyFilters)
+          allFlights = flightsToRender;
+        } else if (currentlyFilteredFlights) {
+          // Fall 2: Wir paginieren (next/prev) durch ein GEFILTERTES Ergebnis
+          allFlights = currentlyFilteredFlights;
+        } else {
+          // Fall 3: Kein Filter aktiv (z.B. beim ersten Laden oder nach Reset)
+          allFlights = await getFlights();
+        }
 
         // NEU: Nummerierung nach dem Laden der Daten anwenden
         allFlights = resequenceAndAssignNumbers(allFlights);
@@ -7156,8 +7386,9 @@
             (flight) => flight.date <= dateTo
           );
         }
-
-        renderFlights(filteredFlights);
+		
+        currentlyFilteredFlights = filteredFlights; // ✅ NEU: Filter speichern
+        renderFlights(filteredFlights, null, 1); // ✅ NEU: Seite 1 erzwingen
       };
 
       /**
@@ -7172,7 +7403,8 @@
         document.getElementById("filter-date-to").value = "";
 
         // Rufe renderFlights ohne Argument auf, um alle Flüge anzuzeigen
-        renderFlights();
+        currentlyFilteredFlights = null; // ✅ NEU: Gespeicherten Filter löschen
+        renderFlights(null, null, 1); // ✅ NEU: Aufruf anpassen
       };
 
       /**

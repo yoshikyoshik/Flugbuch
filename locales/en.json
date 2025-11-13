@@ -188,8 +188,22 @@
 		"show3DGlobe": "🌍 3D Globe",
 		"showMore": "Show details...",
 		"hideMore": "Hide details...",
-		"logReturnFlight": "✈️ Log Return Flight"
+		"logReturnFlight": "✈️ Log Return Flight",
     },
+
+	"print": {
+		"coverTitle": "My Digital Flightbook",
+		"coverSubtitle": "An export of your logged flights",
+		"summaryFor": "Summary for {count} flights",
+		"totalDistance": "Total Distance",
+		"totalTime": "Total Flight Time",
+		"totalCO2": "Total CO₂ Footprint",
+		"dateRange": "Date Range",
+		"flightTitle": "Flight #{number}: {departure} ➔ {arrival}",
+		"filteredTitle": "Filtered Flight List", 
+		"logbookTitle": "Logbook: {groupName}", 
+		"createBookForGroup": "Create Book for {groupName} (PDF)" 
+	},
 	
 	"stats": {
         "totalFlights": "Total Flights",
