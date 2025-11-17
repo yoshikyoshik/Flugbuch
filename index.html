@@ -3392,12 +3392,55 @@
         `;
       });
       
-      // 8. Drucken (bleibt gleich)
+      // 8. HTML in den Container einfügen
       document.getElementById('print-view-content').innerHTML = html;
+
+      // --- HIER IST DIE "WEICHE" (CAPACITOR / WEB) ---
       
-      setTimeout(() => {
-        window.print();
-      }, 500); 
+      // 9. Prüfen, ob die App in einer Capacitor-Umgebung (Android/iOS) läuft
+      if (typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform()) {
+        
+        // --- FALL 1: CAPACITOR APP (Android) ---
+        
+        showMessage(
+          getTranslation("print.nativeTitle") || "PDF wird erstellt...", 
+          getTranslation("print.nativeMessage") || "Die App generiert das PDF. Bitte warten...", 
+          "info"
+        );
+        
+        try {
+          // Holt das 'Printer'-Plugin
+          // (Dieses wird jetzt von @gingersnapsoftware/capacitor-plugin-printer bereitgestellt)
+          const { Printer } = Capacitor.Plugins;
+
+          if (!Printer) {
+             throw new Error("Printer-Plugin nicht auf Capacitor.Plugins gefunden.");
+          }
+
+          // Das Plugin aufrufen
+          Printer.print({
+            content: html,
+            jobName: title // Der Titel, den wir schon haben
+          }).catch(error => {
+             // Fängt Fehler ab, falls das Drucken fehlschlägt
+             console.error("Fehler beim nativen Drucken:", error);
+             showMessage("Druckfehler", "Natives PDF konnte nicht erstellt werden.", "error");
+          });
+
+        } catch (e) {
+            console.error("Capacitor Printer-Plugin konnte nicht geladen werden:", e);
+            alert("Die native Druckfunktion ist auf diesem Gerät nicht verfügbar. (Plugin-Fehler)");
+        }
+        
+      } else {
+        
+        // --- FALL 2: NORMALER BROWSER (Windows, etc.) ---
+        // Wir verwenden die alte Methode mit window.print()
+        setTimeout(() => {
+          window.print();
+        }, 500); 
+      }
+      // --- ENDE DER WEICHE ---
     }
 
     /**
@@ -4597,6 +4640,19 @@
       function extractIata(text) {
         const match = text.match(/\(([^)]+)\)/);
         return match ? match[1] : null;
+      }
+	  
+	  /**
+       * NEU: Prüft, ob die App in einem Android WebView mit einer
+       * dedizierten Druck-Schnittstelle ("AndroidPrintInterface") läuft.
+       * @returns {boolean} True, wenn die Android-Schnittstelle existiert.
+       */
+      function isAndroidWebViewPrint() {
+        // Der Android-Entwickler muss 'AndroidPrintInterface'
+        // per addJavascriptInterface() im WebView bereitstellen.
+        // Wir prüfen, ob das Objekt UND die spezifische 'print'-Funktion existieren.
+        return typeof window.AndroidPrintInterface !== 'undefined' &&
+               typeof window.AndroidPrintInterface.print === 'function';
       }
 
       // =================================================================
