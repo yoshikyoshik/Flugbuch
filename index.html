@@ -231,13 +231,22 @@
 	  
       @media print {
 	  
-	  .page-break {
+	  /* *Jeder* Flug beginnt auf einer neuen Seite */
+    .print-table {
+        width: 100%;
+        height: auto;
+        page-break-before: always !important; /* Primärbefehl */
+        page-break-inside: avoid !important; 
+    }
+
+    /* Das Trennelement (Fallback) */
+    .page-break {
         display: block;
-        page-break-before: always !important; /* Der eigentliche Umbruch-Befehl */
+        page-break-before: always !important; 
         border: none;
         height: 0;
         margin: 0;
-		}
+    }
         
 		/* Verstecke absolut alles auf der Seite */
         body * {
@@ -263,12 +272,7 @@
           page-break-after: always !important; 
         }
 		
-        /* *Jeder* Flug beginnt auf einer neuen Seite */
-		  .print-flight-entry {
-			page-break-before: always !important; /* HIER IST DIE KORREKTUR */
-			page-break-inside: avoid !important; /* Verhindert, dass ein Eintrag geteilt wird */
-			padding-top: 1rem;
-		  }
+        
         
         /* Verhindere, dass Buttons (wie der "Löschen"-Button aus der Fotovorschau) gedruckt werden */
         button, .no-print {
@@ -3371,53 +3375,67 @@
 sequencedFlights.forEach((flight, index) => { // WICHTIG: 'index' zur Schleife hinzufügen!
     // (Rest der Funktion bleibt exakt gleich, verwendet 'flight.flightLogNumber')
     const title = getTranslation("print.flightTitle")
-                  .replace("{number}", flight.flightLogNumber) 
-                  .replace("{departure}", flight.departure)
-                  .replace("{arrival}", flight.arrival);
+        .replace("{number}", flight.flightLogNumber) 
+        .replace("{departure}", flight.departure)
+        .replace("{arrival}", flight.arrival);
     
     let photosHtml = '';
     if (flight.photo_url && flight.photo_url.length > 0) {
-      photosHtml += '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">';
-      photosHtml += flight.photo_url.map(url => `<div><img src="${url}" alt="Flugfoto" style="width: 100%; border-radius: 0.375rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);"></div>`).join('');
-      photosHtml += '</div>';
+        photosHtml += '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">';
+        photosHtml += flight.photo_url.map(url => `<div><img src="${url}" alt="Flugfoto" style="width: 100%; border-radius: 0.375rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);"></div>`).join('');
+        photosHtml += '</div>';
     }
 
-    html += `
-      <div class="print-flight-entry" style="font-family: 'Inter', sans-serif;">
-        <h2 style="font-size: 1.5rem; font-weight: 700; color: #4F46E5; border-bottom: 1px solid #E5E7EB; padding-bottom: 0.5rem;">
-          ${title}
-        </h2>
-        <div style="margin-top: 1rem; line-height: 1.75;">
-          <p><strong>${getTranslation("logbook.flightEntryDate")}:</strong> ${flight.date}</p>
-          <p><strong>${getTranslation("logbook.flightEntryRoute")}:</strong> ${flight.depName || flight.departure} ${getTranslation("logbook.routeSeparator")} ${flight.arrName || flight.arrival}</p>
-          <p><strong>${getTranslation("logbook.flightEntryDistance")}:</strong> ${flight.distance.toLocaleString('de-DE')} km</p>
-          <p><strong>${getTranslation("logbook.flightEntryDuration")}:</strong> ${flight.time}</p>
-          <hr style="margin: 0.75rem 0;">
-          <p><strong>${getTranslation("logbook.flightEntryAirline")}:</strong> ${flight.airline || '-'} (${flight.flightNumber || '-'})</p>
-          <p><strong>${getTranslation("logbook.flightEntryAircraft")}:</strong> ${flight.aircraftType || '-'} (${flight.registration || '-'})</p>
-          
-          ${flight.notes ? `
-            <div style="margin-top: 1rem; border-left: 4px solid #C7D2FE; padding-left: 1rem; font-style: italic;">
-              <strong style="font-style: normal;">${getTranslation("logbook.flightEntryNotes")}</strong>
-              <p style="white-space: pre-wrap;">${flight.notes}</p>
+    // ACHTUNG: Wir bauen den gesamten Flugeintrag in der Variablen 'flightEntryHtml'
+    // und fügen sie dann in die umhüllende Tabelle ein.
+    let flightEntryHtml = `
+        <div class="print-flight-entry" style="font-family: 'Inter', sans-serif;">
+            <h2 style="font-size: 1.5rem; font-weight: 700; color: #4F46E5; border-bottom: 1px solid #E5E7EB; padding-bottom: 0.5rem;">
+                ${title}
+            </h2>
+            <div style="margin-top: 1rem; line-height: 1.75;">
+                <p><strong>${getTranslation("logbook.flightEntryDate")}:</strong> ${flight.date}</p>
+                <p><strong>${getTranslation("logbook.flightEntryRoute")}:</strong> ${flight.depName || flight.departure} ${getTranslation("logbook.routeSeparator")} ${flight.arrName || flight.arrival}</p>
+                <p><strong>${getTranslation("logbook.flightEntryDistance")}:</strong> ${flight.distance.toLocaleString('de-DE')} km</p>
+                <p><strong>${getTranslation("logbook.flightEntryDuration")}:</strong> ${flight.time}</p>
+                <hr style="margin: 0.75rem 0;">
+                <p><strong>${getTranslation("logbook.flightEntryAirline")}:</strong> ${flight.airline || '-'} (${flight.flightNumber || '-'})</p>
+                <p><strong>${getTranslation("logbook.flightEntryAircraft")}:</strong> ${flight.aircraftType || '-'} (${flight.registration || '-'})</p>
+                
+                ${flight.notes ? `
+                    <div style="margin-top: 1rem; border-left: 4px solid #C7D2FE; padding-left: 1rem; font-style: italic;">
+                        <strong style="font-style: normal;">${getTranslation("logbook.flightEntryNotes")}</strong>
+                        <p style="white-space: pre-wrap;">${flight.notes}</p>
+                    </div>
+                ` : ''}
+                
+                ${photosHtml}
             </div>
-          ` : ''}
-          
-          ${photosHtml}
         </div>
-      </div>
+    `;
+
+    // ----------------------------------------------------------------------
+    // KORRIGIERTER HAUPT-BLOCK: Verpackt den Eintrag in eine Tabelle
+    // ----------------------------------------------------------------------
+    html += `
+        <table class="print-table" role="presentation" style="border-collapse: collapse; page-break-before: always !important;">
+            <tr>
+                <td style="width: 100%; vertical-align: top; padding: 0;">
+                    ${flightEntryHtml}
+                </td>
+            </tr>
+        </table>
     `;
     
     // ----------------------------------------------------------------------
-    // HIER IST DIE KORREKTUR: Fügen Sie das manuelle Umbruch-Element ein
+    // MANUELLER UMBRUCH NACH JEDEM FLUG (AUSSER DEM LETZTEN)
     // ----------------------------------------------------------------------
-    // Wir fügen das Umbruch-Element NACH dem Flug-Eintrag ein, aber NICHT nach dem letzten Flug.
     if (index < sequencedFlights.length - 1) {
         html += '<hr class="page-break">'; 
     }
     // ----------------------------------------------------------------------
 });
-       
+
 // 8. HTML in den Container einfügen
 document.getElementById('print-view-content').innerHTML = html;
 
