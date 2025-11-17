@@ -226,9 +226,12 @@
         margin-left: -15px; /* Manuelle Zentrierung */
         margin-top: -10px; /* Manuelle Zentrierung */
       }
+	  
 	  /* ✅ NEUE DRUCK-STILE */
+	  
       @media print {
-        /* Verstecke absolut alles auf der Seite */
+        
+		/* Verstecke absolut alles auf der Seite */
         body * {
           visibility: hidden;
         }
@@ -247,13 +250,17 @@
         }
         
         /* Sorge für saubere Seitenumbrüche */
+		/* Deckblatt ist eine eigene Seite */
         .print-cover-page {
-          page-break-after: always; /* Deckblatt ist eine eigene Seite */
+          page-break-after: always !important; 
         }
-        .print-flight-entry {
-          page-break-before: always; /* Jeder Flug beginnt auf einer neuen Seite */
-          padding-top: 1rem;
-        }
+		
+        /* *Jeder* Flug beginnt auf einer neuen Seite */
+		  .print-flight-entry {
+			page-break-before: always !important; /* HIER IST DIE KORREKTUR */
+			page-break-inside: avoid !important; /* Verhindert, dass ein Eintrag geteilt wird */
+			padding-top: 1rem;
+		  }
         
         /* Verhindere, dass Buttons (wie der "Löschen"-Button aus der Fotovorschau) gedruckt werden */
         button, .no-print {
@@ -272,7 +279,9 @@
           margin: 1in;
         }
       }
+	  
       /* ✅ ENDE NEUE DRUCK-STILE */
+	  
     </style>
   </head>
 
