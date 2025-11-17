@@ -21,6 +21,7 @@
     "@capacitor/android": "^7.4.3",
     "@capacitor/cli": "^7.4.3",
     "@capacitor/core": "^7.4.3",
+    "@my-plugins/capacitor-printer": "file:my-printer",
     "node-fetch": "^2.7.0"
   }
 }

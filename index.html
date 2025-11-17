@@ -3409,26 +3409,27 @@
         );
         
         try {
-          // Holt das 'Printer'-Plugin
-          // (Dieses wird jetzt von @gingersnapsoftware/capacitor-plugin-printer bereitgestellt)
-          const { Printer } = Capacitor.Plugins;
+          // 1. Hole unser EIGENES Plugin
+          const { MyPrinter } = Capacitor.Plugins;
 
-          if (!Printer) {
-             throw new Error("Printer-Plugin nicht auf Capacitor.Plugins gefunden.");
+          if (!MyPrinter) {
+             // Diese Meldung sehen Sie, wenn die Synchronisierung (sync) fehlgeschlagen ist
+             throw new Error("Eigenes 'MyPrinter'-Plugin nicht auf Capacitor.Plugins gefunden.");
           }
 
-          // Das Plugin aufrufen
-          Printer.print({
+          // 2. Rufe unsere EIGENE 'printHtml'-Funktion auf
+          // (Beachten Sie 'printHtml' und das 'content'-Objekt)
+          MyPrinter.printHtml({
             content: html,
-            jobName: title // Der Titel, den wir schon haben
+          jobName: title 
           }).catch(error => {
-             // Fängt Fehler ab, falls das Drucken fehlschlägt
+             // Fängt Fehler ab, falls das native Drucken fehlschlägt
              console.error("Fehler beim nativen Drucken:", error);
              showMessage("Druckfehler", "Natives PDF konnte nicht erstellt werden.", "error");
           });
 
         } catch (e) {
-            console.error("Capacitor Printer-Plugin konnte nicht geladen werden:", e);
+            console.error("Eigenes 'MyPrinter'-Plugin konnte nicht geladen werden:", e);
             alert("Die native Druckfunktion ist auf diesem Gerät nicht verfügbar. (Plugin-Fehler)");
         }
         
