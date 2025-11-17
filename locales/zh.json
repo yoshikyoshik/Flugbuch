@@ -185,7 +185,9 @@
     "createBook": "创建日志 (PDF)"
   },
   "print": {
-    "coverTitle": "我的数字飞行日志",
+    "nativeTitle": "正在创建 PDF...",
+	"nativeMessage": "应用程序正在生成 PDF 文件。请稍候。",
+	"coverTitle": "我的数字飞行日志",
     "coverSubtitle": "您的航班记录导出",
     "summaryFor": "{count} 次航班摘要",
     "totalDistance": "总距离",

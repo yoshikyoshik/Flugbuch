@@ -194,6 +194,8 @@
     },
 	
 	"print": {
+		"nativeTitle": "PDF wird erstellt...",
+		"nativeMessage": "Die App generiert das PDF. Bitte warten...",
 		"coverTitle": "Mein Digitales Flugbuch",
 		"coverSubtitle": "Ein Export deiner geloggten Flüge",
 		"summaryFor": "Zusammenfassung für {count} Flüge",

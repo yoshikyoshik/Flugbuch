@@ -185,7 +185,9 @@
     "createBook": "Crear libro (PDF)"
   },
   "print": {
-    "coverTitle": "Mi Diario de Vuelo Digital",
+    "nativeTitle": "Creando PDF...",
+	"nativeMessage": "La aplicación está generando el PDF. Por favor, espere.",
+	"coverTitle": "Mi Diario de Vuelo Digital",
     "coverSubtitle": "Una exportación de tus vuelos registrados",
     "summaryFor": "Resumen de {count} vuelos",
     "totalDistance": "Distancia Total",

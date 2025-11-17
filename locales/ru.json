@@ -185,7 +185,9 @@
     "createBook": "Создать книгу (PDF)"
   },
   "print": {
-    "coverTitle": "Мой цифровой лётный журнал",
+    "nativeTitle": "Создание PDF...",
+	"nativeMessage": "Приложение генерирует PDF-файл. Пожалуйста, подождите.",
+	"coverTitle": "Мой цифровой лётный журнал",
     "coverSubtitle": "Экспорт ваших записанных рейсов",
     "summaryFor": "Сводка по {count} рейсам",
     "totalDistance": "Общее расстояние",
