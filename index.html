@@ -240,12 +240,11 @@
 		}
 
 		/* Das Trennelement (Fallback) */
-			/* 🛑 KORREKTUR FÜR WINDOWS BROWSER: 
-		   Deaktiviert das Element, das die zweite Leerseite verursacht. 
-		   Das Tabellen-Element erzwingt den Umbruch bereits. */
+			/* KORREKTUR FÜR WINDOWS BROWSER */
+		   
 			.page-break {
-				display: none !important;        /* WICHTIG: Element komplett ausblenden */
-				page-break-before: auto !important; /* WICHTIG: Umbruch-Befehl entfernen */
+				display: none !important;
+				page-break-before: auto !important;
 				border: none;
 				height: 0;
 				margin: 0;
