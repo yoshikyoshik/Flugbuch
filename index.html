@@ -231,67 +231,65 @@
 	  
       @media print {
 	  
-		  /* *Jeder* Flug beginnt auf einer neuen Seite */
-		.print-table {
-			width: 100%;
-			height: auto;
-			page-break-before: always !important; /* Primärbefehl */
-			page-break-inside: avoid !important; 
-		}
+	  /* *Jeder* Flug beginnt auf einer neuen Seite */
+    .print-table {
+        width: 100%;
+        height: auto;
+        page-break-before: always !important; /* Primärbefehl */
+        page-break-inside: avoid !important; 
+    }
 
-		/* Das Trennelement (Fallback) */
-			/* KORREKTUR FÜR WINDOWS BROWSER */
-		   
-			.page-break {
-				display: none !important;
-				page-break-before: auto !important;
-				border: none;
-				height: 0;
-				margin: 0;
-			}
-			
-			/* Verstecke absolut alles auf der Seite */
-			body * {
-			  visibility: hidden;
-			}
-			
-			/* Mache den Druck-Container und seine Kinder sichtbar */
-			#print-view-content, #print-view-content * {
-			  visibility: visible;
-			}
-			
-			/* Positioniere den Druck-Container an der Spitze */
-			#print-view-content {
-			  position: absolute;
-			  left: 0;
-			  top: 0;
-			  width: 100%;
-			}
-			
-			/* Sorge für saubere Seitenumbrüche */
-			/* Deckblatt ist eine eigene Seite */
-			.print-cover-page {
-			  page-break-after: always !important; 
-			}
-			
-			
-			
-			/* Verhindere, dass Buttons (wie der "Löschen"-Button aus der Fotovorschau) gedruckt werden */
-			button, .no-print {
-			  display: none !important;
-			}
-			
-			/* Stelle sicher, dass Bilder sauber skaliert werden */
-			img {
-			  max-width: 100% !important;
-			  height: auto !important;
-			}
+    /* Das Trennelement (Fallback) */
+    .page-break {
+        display: block;
+        page-break-before: always !important; 
+        border: none;
+        height: 0;
+        margin: 0;
+    }
+        
+		/* Verstecke absolut alles auf der Seite */
+        body * {
+          visibility: hidden;
+        }
+        
+        /* Mache den Druck-Container und seine Kinder sichtbar */
+        #print-view-content, #print-view-content * {
+          visibility: visible;
+        }
+        
+        /* Positioniere den Druck-Container an der Spitze */
+        #print-view-content {
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 100%;
+        }
+        
+        /* Sorge für saubere Seitenumbrüche */
+		/* Deckblatt ist eine eigene Seite */
+        .print-cover-page {
+          page-break-after: always !important; 
+        }
+		
+        
+        
+        /* Verhindere, dass Buttons (wie der "Löschen"-Button aus der Fotovorschau) gedruckt werden */
+        button, .no-print {
+          display: none !important;
+        }
+        
+        /* Stelle sicher, dass Bilder sauber skaliert werden */
+        img {
+          max-width: 100% !important;
+          height: auto !important;
+        }
 
-			/* Standard-Druck-Layout */
-			@page {
-			  size: A4;
-			  margin: 1in;
-			}
+        /* Standard-Druck-Layout */
+        @page {
+          size: A4;
+          margin: 1in;
+        }
       }
 	  
       /* ✅ ENDE NEUE DRUCK-STILE */
