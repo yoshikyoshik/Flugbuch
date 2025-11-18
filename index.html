@@ -640,6 +640,11 @@
                   id="app-version"
                   class="block text-xs text-gray-400"
                 ></span>
+				<span id="subscription-status-badge"
+					class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mt-1 bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300"
+				>
+					Lade Status...
+				</span>
               </div>
             </div>
           </div>
@@ -2202,6 +2207,7 @@
 	  // ✅ NEU: Upload-Limits definieren
       const MAX_PHOTOS_PER_FLIGHT = 5;
       const MAX_FILE_SIZE_BYTES = 3 * 1024 * 1024; // 3 MB
+	  let currentUserSubscription = "free"; // ✅ NEU: Standardmäßig ist jeder "free"
 	  
 
       var airportData = {
@@ -3808,31 +3814,63 @@ document.getElementById('print-view-content').innerHTML = html;
     }
 
       async function initializeApp() {
-        if (isAppInitialized) return;
-        isAppInitialized = true;
+    if (isAppInitialized) return;
+    isAppInitialized = true;
 
-        // Kann wieder entfernt werden:
-        // const preferredLanguage = localStorage.getItem('preferredLanguage') || 'de';
-        // await setLanguage(preferredLanguage);
+    let user; 
 
-        document.getElementById("auth-container").classList.add("hidden");
-        document.getElementById("app-container").classList.remove("hidden");
+    document.getElementById("auth-container").classList.add("hidden");
+    document.getElementById("app-container").classList.remove("hidden");
 
-        try {
-          const {
-            data: { user },
-          } = await supabaseClient.auth.getUser();
-          if (user) {
+    try {
+        const { data, error } = await supabaseClient.auth.getUser();
+        if (error) throw error;
+        user = data.user; 
+
+        if (user) {
             const userDisplay = document.getElementById("user-display");
             if (userDisplay) {
-              userDisplay.textContent = user.email;
+                userDisplay.textContent = user.email;
             }
-          }
-        } catch (e) {
-          console.error("Fehler beim Abrufen des Benutzers:", e);
+
+            // --- STATUS-PRÜFUNG ---
+            if (user.user_metadata && user.user_metadata.subscription_status === 'pro') {
+                currentUserSubscription = "pro";
+                console.log("Status-Check: PRO-Benutzer erkannt.");
+            } else {
+                // currentUserSubscription = "free";
+				 currentUserSubscription = "pro";
+                // console.log("Status-Check: FREE-Benutzer.");
+				 console.warn("TEST-MODUS: PRO-STATUS ERZWUNGEN");
+            }
+
+            // --- ✅ NEU: STATUS IM BURGER-MENÜ ANZEIGEN ---
+            const statusBadge = document.getElementById("subscription-status-badge");
+            if (statusBadge) {
+                if (currentUserSubscription === "pro") {
+                    // Design für PRO (z.B. Indigo/Blau oder Gold)
+                    statusBadge.textContent = "PRO";
+                    // Tailwind Klassen für "Premium"-Look (Indigo Hintergrund, dunkler Text)
+                    statusBadge.className = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold mt-1 bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200 border border-indigo-200 dark:border-indigo-800";
+                } else {
+                    // Design für FREE (Grau/Dezent)
+                    statusBadge.textContent = "FREE";
+                    // Tailwind Klassen für Standard-Look
+                    statusBadge.className = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mt-1 bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400 border border-gray-200 dark:border-gray-600";
+                }
+            }
+            // --- ENDE NEU ---
+        } else {
+            // Falls kein User eingeloggt ist, sicherheitshalber auf Free setzen
+            currentUserSubscription = "free";
         }
 
-        await migrateAndLoadAirports();
+    } catch (e) {
+        console.error("Fehler beim Abrufen des Benutzers:", e);
+        currentUserSubscription = "free"; // Fallback bei Fehler
+    }
+
+    await migrateAndLoadAirports();
 
         if (!map) {
           map = L.map("flight-map-container").setView([20, 0], 2);
@@ -3954,6 +3992,42 @@ document.getElementById('print-view-content').innerHTML = html;
 		
 		// Tutorial beim ersten Start anzeigen
         showFirstStepsTutorial();
+		
+		// --- ✅ NEU: FEATURES SPERREN/ANZEIGEN ---
+        if (currentUserSubscription === "free") {
+            // Verstecke 3D-Globus
+            document.getElementById("show-globe-btn").classList.add("hidden");
+            
+            // Verstecke Autopilot
+            const autopilotBlock = document.querySelector('[data-i18n="autoPilot"]').closest('details');
+            if (autopilotBlock) autopilotBlock.classList.add("hidden");
+            
+            // Verstecke Foto-Upload
+            const photoLabel = document.querySelector('[data-i18n="form.photo"]');
+            if (photoLabel) photoLabel.parentElement.classList.add("hidden");
+
+            // Verstecke PDF-Druck
+            const printBtn = document.getElementById("print-book-btn");
+            if (printBtn) printBtn.classList.add("hidden");
+
+        } else {
+            // (Optional) Stelle sicher, dass sie für Pro-Nutzer sichtbar sind
+            document.getElementById("show-globe-btn").classList.remove("hidden");
+            // ... (und so weiter für die anderen Elemente) ...
+			// Verstecke Autopilot
+            const autopilotBlock = document.querySelector('[data-i18n="autoPilot"]').closest('details');
+            if (autopilotBlock) autopilotBlock.classList.remove("hidden");
+            
+            // Verstecke Foto-Upload
+            const photoLabel = document.querySelector('[data-i18n="form.photo"]');
+            if (photoLabel) photoLabel.parentElement.classList.remove("hidden");
+
+            // Verstecke PDF-Druck
+            const printBtn = document.getElementById("print-book-btn");
+            if (printBtn) printBtn.classList.remove("hidden");
+        }
+        // --- ENDE NEU ---
+
 		
       }
 
@@ -5622,49 +5696,74 @@ document.getElementById('print-view-content').innerHTML = html;
           let titleHtml = key;
           let titleKey = "";
 
-          if (isAirportView && key !== unknownKey) {
-            titleKey = getTranslation("logbook.detailsTitleAirport").replace(
-              "{key}",
-              key
-            );
-            // Der 'key' (Flughafen-Code) ist jetzt nur noch reiner Text.
-            // Nur der Button löst die showAirportDetails-Funktion aus.
-            titleHtml = `
+          // ... (Vorheriger Code in renderLogbookView)
+
+			if (isAirportView && key !== unknownKey) {
+				titleKey = getTranslation("logbook.detailsTitleAirport").replace(
+					"{key}",
+					key
+				);
+				
+				// ✅ NEU: Feature Gating für Airport-Details
+				if (currentUserSubscription === "pro") {
+					// PRO: Text + Button anzeigen
+					titleHtml = `
 						${key}
 						<button onclick="event.stopPropagation(); showAirportDetails('${key}')" class="ml-2 p-1 rounded-full text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors duration-150" title="${titleKey}">
 							<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z" /></svg>
 						</button>
 					`;
-          } else if (isAirlineView && key !== unknownKey) {
-            
-            const firstFlightWithName = group.flights.find(
-              (f) => f.airline && f.airline.trim() !== ""
-            );
-            const displayLabel = firstFlightWithName
-              ? `${firstFlightWithName.airline} (${key})`
-              : key;
-            titleKey = getTranslation("logbook.detailsTitleAirline").replace(
-              "{key}",
-              key
-            );
+				} else {
+					// FREE: Nur Text anzeigen
+					titleHtml = key;
+				}
 
-            titleHtml = `
-                        ${displayLabel}
-                        <button onclick="event.stopPropagation(); showAirlineDetails('${key}')" class="ml-2 p-1 rounded-full text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors duration-150" title="${titleKey}">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z" /></svg>
-                        </button>
-                    `;
-          }
-		  
-		  else if (isAircraftTypeView && key !== unknownKey) { // ✅ NEUER BLOCK
-                titleKey = getTranslation('logbook.detailsTitleAircraft').replace('{key}', key);
-                titleHtml = `
-                    ${key}
-                    <button onclick="event.stopPropagation(); showAircraftDetails('${key}')" class="ml-2 p-1 rounded-full text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors duration-150" title="${titleKey}">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z" /></svg>
-                    </button>
-                `;
-          }
+			} else if (isAirlineView && key !== unknownKey) {
+
+				const firstFlightWithName = group.flights.find(
+					(f) => f.airline && f.airline.trim() !== ""
+				);
+				const displayLabel = firstFlightWithName
+					? `${firstFlightWithName.airline} (${key})`
+					: key;
+				titleKey = getTranslation("logbook.detailsTitleAirline").replace(
+					"{key}",
+					key
+				);
+
+				// ✅ NEU: Feature Gating für Airline-Details
+				if (currentUserSubscription === "pro") {
+					// PRO: Text + Button anzeigen
+					titleHtml = `
+						${displayLabel}
+						<button onclick="event.stopPropagation(); showAirlineDetails('${key}')" class="ml-2 p-1 rounded-full text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors duration-150" title="${titleKey}">
+							<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z" /></svg>
+						</button>
+					`;
+				} else {
+					// FREE: Nur Text anzeigen
+					titleHtml = displayLabel;
+				}
+
+			} else if (isAircraftTypeView && key !== unknownKey) { 
+
+				titleKey = getTranslation('logbook.detailsTitleAircraft').replace('{key}', key);
+				
+				// ✅ NEU: Feature Gating für Aircraft-Details
+				if (currentUserSubscription === "pro") {
+					// PRO: Text + Button anzeigen
+					titleHtml = `
+						${key}
+						<button onclick="event.stopPropagation(); showAircraftDetails('${key}')" class="ml-2 p-1 rounded-full text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors duration-150" title="${titleKey}">
+							<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z" /></svg>
+						</button>
+					`;
+				} else {
+					// FREE: Nur Text anzeigen
+					titleHtml = key;
+				}
+			}
+			// ...
 		  
 		  
 		  
@@ -5673,28 +5772,33 @@ document.getElementById('print-view-content').innerHTML = html;
           summaryElement.innerHTML = `${titleHtml}`; // Entfernt die (Anzahl/Distanz) aus dem Titel
 
           const flightListDiv = document.createElement("div");
-          flightListDiv.className =
-            "mt-4 space-y-2 border-t border-gray-200 dark:border-gray-600 pt-4";
+			flightListDiv.className =
+				"mt-4 space-y-2 border-t border-gray-200 dark:border-gray-600 pt-4";
 
-          // --- ✅ KORREKTUR: Wir verwenden NUR noch appendChild ---
+			// --- ✅ NEU: Feature Gating für PDF-Druck im Logbuch ---
+			// Wir prüfen hier, ob der User PRO ist. Nur dann erstellen wir den Button.
+			if (currentUserSubscription === "pro") {
 
-          // 1. Druck-Button erstellen und hinzufügen (Dein Code war hier korrekt)
-          const printButton = document.createElement("button");
-          printButton.className = "text-xs font-medium text-blue-600 hover:text-blue-800 p-2 rounded-lg bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-600 transition";
-          
-          const buttonTitle = (getTranslation("print.logbookTitle") || "Logbuch: {groupName}").replace("{groupName}", key);
-          printButton.innerHTML = (getTranslation("print.createBookForGroup") || "Buch für {groupName} erstellen").replace("{groupName}", key);
-          
-          printButton.onclick = async (event) => {
-              event.stopPropagation(); 
-              const sortedGroupFlights = [...group.flights].sort((a, b) => new Date(a.date) - new Date(b.date));
-              await buildAndPrintHtml(sortedGroupFlights, buttonTitle); 
-          };
-          
-          flightListDiv.appendChild(printButton);
+				// 1. Druck-Button erstellen und konfigurieren
+				const printButton = document.createElement("button");
+				printButton.className = "text-xs font-medium text-blue-600 hover:text-blue-800 p-2 rounded-lg bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-600 transition";
+				
+				const buttonTitle = (getTranslation("print.logbookTitle") || "Logbuch: {groupName}").replace("{groupName}", key);
+				printButton.innerHTML = (getTranslation("print.createBookForGroup") || "Buch für {groupName} erstellen").replace("{groupName}", key);
+				
+				printButton.onclick = async (event) => {
+					event.stopPropagation(); 
+					const sortedGroupFlights = [...group.flights].sort((a, b) => new Date(a.date) - new Date(b.date));
+					await buildAndPrintHtml(sortedGroupFlights, buttonTitle); 
+				};
+				
+				// Button dem Container hinzufügen
+				flightListDiv.appendChild(printButton);
+			}
+			// --- ENDE NEU ---
 
-          // 2. Titel (Summary) erstellen und hinzufügen
-          const listTitle = document.createElement('p');
+			// 2. Titel (Summary) erstellen und hinzufügen
+			const listTitle = document.createElement('p');
           // (Ich habe eine Trennlinie hinzugefügt, um den Button von der Liste zu trennen)
           listTitle.className = "text-sm font-semibold text-gray-700 dark:text-gray-300 pt-4 border-t dark:border-gray-700 mt-4"; 
           listTitle.textContent = getTranslation("logbook.summary").replace("{count}", group.count).replace("{distance}", group.totalDistance.toLocaleString("de-DE"));
@@ -6712,161 +6816,185 @@ document.getElementById('print-view-content').innerHTML = html;
 
       // *** Hauptfunktion (jetzt für Loggen & Aktualisieren) ***
       window.logFlight = async function () {
-        if (currentlyEditingFlightData !== null) {
-          await updateFlight();
-          return;
-        }
+    if (currentlyEditingFlightData !== null) {
+        await updateFlight();
+        return;
+    }
 
-        const logButton = document.getElementById("log-button");
-        logButton.textContent = "Speichere...";
-        logButton.disabled = true;
+    const logButton = document.getElementById("log-button");
+    logButton.textContent = "Speichere...";
+    logButton.disabled = true;
 
-        const {
-          data: { user },
-        } = await supabaseClient.auth.getUser();
-        if (!user) {
-          showMessage("Fehler", "Nicht eingeloggt. Bitte neu laden.", "error");
-          logButton.disabled = false;
-          return;
-        }
+    const {
+        data: { user },
+    } = await supabaseClient.auth.getUser();
+    if (!user) {
+        showMessage("Fehler", "Nicht eingeloggt. Bitte neu laden.", "error");
+        logButton.disabled = false;
+        return;
+    }
 
-        // --- ✅ NEU: ANZAHL-CHECK (Neuer Flug) ---
-        let filesToUpload = Array.from(document.getElementById("flightPhoto").files);
+    // --- ✅ NEU: FLUG-LIMIT PRÜFEN ---
+    // Wir holen kurz die Liste der Flüge, um zu zählen
+    const allFlights = await getFlights(); 
+
+    if (currentUserSubscription === "free" && allFlights.length >= 15) {
+        showMessage(
+            getTranslation("messages.limitTitle") || "Limit erreicht", 
+            getTranslation("messages.limitBody") || "Bitte upgrade auf Pro für unbegrenzte Flüge.", 
+            "error"
+        );
+        // Button wieder freigeben
+        logButton.textContent = getTranslation("logFlightNewFlight") || "Flug loggen";
+        logButton.disabled = false;
+        return; // Funktion abbrechen
+    }
+    // --- ENDE NEU ---
+
+
+    // --- ✅ NEU: FOTO-UPLOAD (Nur für Pro) ---
+    let filesToUpload = Array.from(document.getElementById("flightPhoto").files);
+    let photoUrls = []; // Standardmäßig leer
+
+    if (currentUserSubscription === "pro") {
+        // Nur Pro-Nutzer dürfen diesen Block ausführen
         
         if (filesToUpload.length > MAX_PHOTOS_PER_FLIGHT) {
-          const errorMsg = (getTranslation("messages.uploadLimitCount") || "Limit erreicht")
-                                .replace(/{count}/g, MAX_PHOTOS_PER_FLIGHT);
-          showMessage("Upload-Limit", errorMsg, "info");
-          
-          filesToUpload = filesToUpload.slice(0, MAX_PHOTOS_PER_FLIGHT);
+            const errorMsg = (getTranslation("messages.uploadLimitCount") || "Limit erreicht")
+                .replace(/{count}/g, MAX_PHOTOS_PER_FLIGHT);
+            showMessage("Upload-Limit", errorMsg, "info");
+
+            filesToUpload = filesToUpload.slice(0, MAX_PHOTOS_PER_FLIGHT);
         }
-        
-        const photoUrls = await uploadFlightPhotos(filesToUpload); // Übergibt das (evtl. gekürzte) Array
-        // --- ENDE NEU ---
 
-        const depCodeInput = document
-          .getElementById("departure")
-          .value.trim()
-          .toUpperCase();
-        const arrCodeInput = document
-          .getElementById("arrival")
-          .value.trim()
-          .toUpperCase();
-        // --- ✅ KORRIGIERTE DATEN-ABFRAGE-LOGIK ---
-        
-        // 1. Versuche, Daten aus dem Cache zu holen
-        let departureAirport = findAirport(depCodeInput);
-        let arrivalAirport = findAirport(arrCodeInput);
+        photoUrls = await uploadFlightPhotos(filesToUpload); 
+    }
+    // Free-Nutzer überspringen den Upload, 'photoUrls' bleibt []
+    // --- ENDE NEU ---
 
-        // 2. Prüfe Abflughafen: Wenn er nicht im Cache ist ODER unvollständig (country_code fehlt)
-        if (!departureAirport || !departureAirport.country_code) {
-            // ...rufe die externe API (API-Ninjas) auf.
-            const results = await window.fetchExternalAirport(depCodeInput);
-            if (results && results.length > 0) {
-                departureAirport = results[0]; // Nimm das erste (und beste) Ergebnis
-            }
+
+    const depCodeInput = document
+        .getElementById("departure")
+        .value.trim()
+        .toUpperCase();
+    const arrCodeInput = document
+        .getElementById("arrival")
+        .value.trim()
+        .toUpperCase();
+
+    // --- ✅ KORRIGIERTE DATEN-ABFRAGE-LOGIK ---
+
+    // 1. Versuche, Daten aus dem Cache zu holen
+    let departureAirport = findAirport(depCodeInput);
+    let arrivalAirport = findAirport(arrCodeInput);
+
+    // 2. Prüfe Abflughafen
+    if (!departureAirport || !departureAirport.country_code) {
+        const results = await window.fetchExternalAirport(depCodeInput);
+        if (results && results.length > 0) {
+            departureAirport = results[0]; 
         }
-        
-        // 3. Prüfe Zielflughafen: Wenn er nicht im Cache ist ODER unvollständig
-        if (!arrivalAirport || !arrivalAirport.country_code) {
-            const results = await window.fetchExternalAirport(arrCodeInput);
-            if (results && results.length > 0) {
-                arrivalAirport = results[0];
-            }
+    }
+
+    // 3. Prüfe Zielflughafen
+    if (!arrivalAirport || !arrivalAirport.country_code) {
+        const results = await window.fetchExternalAirport(arrCodeInput);
+        if (results && results.length > 0) {
+            arrivalAirport = results[0];
         }
-        
-        // --- ENDE KORRIGIERTE LOGIK ---
+    }
+
+    // --- ENDE KORRIGIERTE LOGIK ---
 
 
-        if (!departureAirport || !arrivalAirport) {
-          showMessage(
+    if (!departureAirport || !arrivalAirport) {
+        showMessage(
             "Fehler",
             "Mindestens ein Flughafen-Code wurde nicht gefunden.",
             "error"
-          );
-          logButton.textContent = "Flug loggen und speichern";
-          logButton.disabled = false;
-          return;
-        }
-
-        // 4. Speichere die (jetzt hoffentlich vollständigen) Daten
-        await cacheAndSaveAirport(departureAirport);
-        await cacheAndSaveAirport(arrivalAirport);
-
-        const distance = calculateDistance(
-          departureAirport.lat,
-          departureAirport.lon,
-          arrivalAirport.lat,
-          arrivalAirport.lon
         );
-        const newFlightId = new Date().getTime();
+        logButton.textContent = "Flug loggen und speichern";
+        logButton.disabled = false;
+        return;
+    }
 
-        const flightClass = document.getElementById("flightClass").value;
-        const calculatedCO2 = calculateCO2(distance, flightClass);
+    // 4. Speichere die Daten
+    await cacheAndSaveAirport(departureAirport);
+    await cacheAndSaveAirport(arrivalAirport);
 
-        // KORREKTE LOGIK FÜR PREIS
-        const priceInput = document.getElementById("price").value;
+    const distance = calculateDistance(
+        departureAirport.lat,
+        departureAirport.lon,
+        arrivalAirport.lat,
+        arrivalAirport.lon
+    );
+    const newFlightId = new Date().getTime();
 
-        const newFlightForSupabase = {
-          flight_id: newFlightId,
-          user_id: user.id,
-          date:
+    const flightClass = document.getElementById("flightClass").value;
+    const calculatedCO2 = calculateCO2(distance, flightClass);
+
+    const priceInput = document.getElementById("price").value;
+
+    const newFlightForSupabase = {
+        flight_id: newFlightId,
+        user_id: user.id,
+        date:
             document.getElementById("flightDate").value ||
             new Date().toISOString().slice(0, 10),
-          departure: departureAirport.code,
-          arrival: arrivalAirport.code,
-          distance: Math.round(distance),
-          time: estimateFlightTime(distance),
-          class: document.getElementById("flightClass").value,
-          co2_kg: calculatedCO2,
-          flightNumber: document.getElementById("flightNumber").value.trim(),
-          airline: document.getElementById("airline").value.trim(),
-          aircraftType: document.getElementById("aircraftType").value.trim(),
-          notes: document.getElementById("notes").value.trim(),
-          depLat: departureAirport.lat,
-          depLon: departureAirport.lon,
-          arrLat: arrivalAirport.lat,
-          arrLon: arrivalAirport.lon,
-          depName: departureAirport.name,
-          arrName: arrivalAirport.name,
-          photo_url: photoUrls,
-          price:
+        departure: departureAirport.code,
+        arrival: arrivalAirport.code,
+        distance: Math.round(distance),
+        time: estimateFlightTime(distance),
+        class: document.getElementById("flightClass").value,
+        co2_kg: calculatedCO2,
+        flightNumber: document.getElementById("flightNumber").value.trim(),
+        airline: document.getElementById("airline").value.trim(),
+        aircraftType: document.getElementById("aircraftType").value.trim(),
+        notes: document.getElementById("notes").value.trim(),
+        depLat: departureAirport.lat,
+        depLon: departureAirport.lon,
+        arrLat: arrivalAirport.lat,
+        arrLon: arrivalAirport.lon,
+        depName: departureAirport.name,
+        arrName: arrivalAirport.name,
+        photo_url: photoUrls, // Hier wird entweder das Array oder [] übergeben
+        price:
             priceInput !== "" && !isNaN(parseFloat(priceInput))
-              ? parseFloat(priceInput)
-              : null,
-          currency:
+                ? parseFloat(priceInput)
+                : null,
+        currency:
             document.getElementById("currency").value.trim().toUpperCase() ||
             null,
-          registration:
+        registration:
             document
-              .getElementById("registration")
-              .value.trim()
-              .toUpperCase() || null,
-        };
+                .getElementById("registration")
+                .value.trim()
+                .toUpperCase() || null,
+    };
 
-        const { error } = await supabaseClient
-          .from("flights")
-          .insert(newFlightForSupabase);
+    const { error } = await supabaseClient
+        .from("flights")
+        .insert(newFlightForSupabase);
 
-        if (error) {
-          showMessage(
+    if (error) {
+        showMessage(
             "Speicherfehler",
             "Der Flug konnte nicht in der Datenbank gespeichert werden.",
             "error"
-          );
-          console.error("Supabase Insert Error:", error);
-        } else {
-          showMessage(
+        );
+        console.error("Supabase Insert Error:", error);
+    } else {
+        showMessage(
             "Erfolg!",
             `Flug von ${departureAirport.name} nach ${arrivalAirport.name} erfolgreich geloggt.`,
             "success"
-          );
-          resetForm();
-          renderFlights(null, newFlightId);
-        }
-        logButton.textContent = "Flug loggen und speichern";
-        logButton.disabled = true;
-      };
+        );
+        resetForm();
+        renderFlights(null, newFlightId);
+    }
+    logButton.textContent = "Flug loggen und speichern";
+    logButton.disabled = true;
+};
 
       /**
        * Aktualisiert die Paginierungs-UI (Button-Zustände, Seitenzahlanzeige).
@@ -6917,191 +7045,192 @@ document.getElementById('print-view-content').innerHTML = html;
        * KORRIGIERT: Speichert Änderungen, handhabt Hinzufügen UND Löschen von Fotos.
        */
       async function updateFlight() {
+
+    // 1. Auth-Check
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+    if (userError || !user) {
+        showMessage("Fehler", "Sitzung abgelaufen. Bitte neu einloggen.", "error");
+        logout(); 
+        return;
+    }
+
+    const logButton = document.getElementById("log-button");
+    logButton.textContent = "Aktualisiere...";
+    logButton.disabled = true;
+
+    // 2. Finde die "überlebenden" Fotos (bereits existierende)
+    const survivingUrls = Array.from(document.querySelectorAll("#existing-photos-preview [data-url]")).map(el => el.dataset.url);
+
+    // --- ✅ NEU: FOTO-UPDATE LOGIK (Nur Pro darf NEUE hochladen) ---
+    let filesToUpload = Array.from(document.getElementById("flightPhoto").files);
+    let newUploadedUrls = []; // Standardmäßig leer
+
+    if (currentUserSubscription === "pro") {
+        // Nur Pro-User durchlaufen die Logik für neue Uploads
         
-        // 1. Auth-Check (bleibt gleich)
-        const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
-        if (userError || !user) {
-            showMessage("Fehler", "Sitzung abgelaufen. Bitte neu einloggen.", "error");
-            logout(); // Zurück zum Login
-            return;
-        }
-
-        const logButton = document.getElementById("log-button");
-        logButton.textContent = "Aktualisiere...";
-        logButton.disabled = true;
-
-        // 2. Finde die "überlebenden" Fotos
-        const survivingUrls = Array.from(document.querySelectorAll("#existing-photos-preview [data-url]")).map(el => el.dataset.url);
-
-        // --- ✅ NEU: ANZAHL-CHECK (Bearbeiten) ---
-        let filesToUpload = Array.from(document.getElementById("flightPhoto").files);
         const currentPhotoCount = survivingUrls.length;
         const remainingSlots = MAX_PHOTOS_PER_FLIGHT - currentPhotoCount;
 
         if (filesToUpload.length > 0 && remainingSlots <= 0) {
-            // Der Nutzer hat bereits 5 (oder mehr) Fotos und versucht, neue hinzuzufügen.
             const errorMsg = (getTranslation("messages.uploadLimitCount") || "Limit erreicht")
-                                .replace(/{count}/g, MAX_PHOTOS_PER_FLIGHT);
+                .replace(/{count}/g, MAX_PHOTOS_PER_FLIGHT);
             showMessage("Upload-Limit", errorMsg, "error");
-            filesToUpload = []; // Keine neuen Uploads erlauben
+            filesToUpload = []; 
         }
         else if (filesToUpload.length > remainingSlots) {
-            // Der Nutzer hat 2 Fotos, lädt 4 hoch (nur 3 erlaubt)
             const errorMsg = (getTranslation("messages.uploadLimitCount") || "Limit erreicht")
-                                .replace(/{count}/g, MAX_PHOTOS_PER_FLIGHT);
+                .replace(/{count}/g, MAX_PHOTOS_PER_FLIGHT);
             showMessage("Upload-Limit", errorMsg, "info");
-            
-            filesToUpload = filesToUpload.slice(0, remainingSlots); // Kürze auf die restlichen Plätze
+            filesToUpload = filesToUpload.slice(0, remainingSlots); 
         }
         
-        // 3. Lade die (evtl. gekürzten) NEUEN Fotos hoch
-        const newUploadedUrls = await uploadFlightPhotos(filesToUpload); 
+        // Upload durchführen
+        newUploadedUrls = await uploadFlightPhotos(filesToUpload); 
+    } 
+    // Free-User: 'newUploadedUrls' bleibt leer, auch wenn Dateien ausgewählt wurden.
 
-        // 4. Kombiniere die Listen
-        const finalPhotoUrls = survivingUrls.concat(newUploadedUrls);
-        // --- ENDE NEU ---
+    // 4. Kombiniere die Listen
+    const finalPhotoUrls = survivingUrls.concat(newUploadedUrls);
+    // --- ENDE NEU ---
 
-        // ... (Rest der Funktion)
 
-        // 5. Finde die Fotos, die WIRKLICH gelöscht werden müssen
-        const originalUrls = currentlyEditingFlightData.photo_url || [];
-        const urlsToDelete = originalUrls.filter(url => !survivingUrls.includes(url));
+    // 5. Finde die Fotos, die WIRKLICH gelöscht werden müssen (vom Supabase Storage)
+    const originalUrls = currentlyEditingFlightData.photo_url || [];
+    const urlsToDelete = originalUrls.filter(url => !survivingUrls.includes(url));
 
-        // 6. Führe die Löschung auf Supabase aus (WENN es was zu löschen gibt)
-        if (urlsToDelete.length > 0) {
-            console.log("Lösche folgende Fotos:", urlsToDelete);
-            // Extrahiere nur die Dateipfade aus den vollen URLs
-            const filePathsToDelete = urlsToDelete.map(url => url.substring(url.lastIndexOf('/') + 1));
-            
-            const { error: deleteError } = await supabaseClient.storage
-              .from("flight-photos")
-              .remove(filePathsToDelete);
-              
-            if (deleteError) {
-                console.error("Fehler beim Löschen alter Fotos:", deleteError);
-                showMessage("Speicherfehler", "Alte Fotos konnten nicht gelöscht werden, die neuen wurden aber hinzugefügt.", "error");
-            }
+    // 6. Führe die Löschung auf Supabase aus
+    if (urlsToDelete.length > 0) {
+        console.log("Lösche folgende Fotos:", urlsToDelete);
+        const filePathsToDelete = urlsToDelete.map(url => url.substring(url.lastIndexOf('/') + 1));
+
+        const { error: deleteError } = await supabaseClient.storage
+            .from("flight-photos")
+            .remove(filePathsToDelete);
+
+        if (deleteError) {
+            console.error("Fehler beim Löschen alter Fotos:", deleteError);
+            showMessage("Speicherfehler", "Alte Fotos konnten nicht gelöscht werden, die neuen wurden aber hinzugefügt.", "error");
         }
-        
-        // --- ENDE DER NEUEN FOTO-LOGIK ---
+    }
 
-        const depCodeInput = document
-          .getElementById("departure")
-          .value.trim()
-          .toUpperCase();
-        const arrCodeInput = document
-          .getElementById("arrival")
-          .value.trim()
-          .toUpperCase();
-        
-        // --- ✅ KORRIGIERTE DATEN-ABFRAGE-LOGIK (identisch zu logFlight) ---
+    // --- ENDE DER FOTO-LOGIK ---
 
-        // 1. Versuche, Daten aus dem Cache zu holen
-        let departureAirport = findAirport(depCodeInput);
-        let arrivalAirport = findAirport(arrCodeInput);
+    const depCodeInput = document
+        .getElementById("departure")
+        .value.trim()
+        .toUpperCase();
+    const arrCodeInput = document
+        .getElementById("arrival")
+        .value.trim()
+        .toUpperCase();
 
-        // 2. Prüfe Abflughafen: Wenn er nicht im Cache ist ODER unvollständig (country_code fehlt)
-        if (!departureAirport || !departureAirport.country_code) {
-            const results = await window.fetchExternalAirport(depCodeInput);
-            if (results && results.length > 0) {
-                departureAirport = results[0]; 
-            }
+    // --- ✅ KORRIGIERTE DATEN-ABFRAGE-LOGIK ---
+
+    // 1. Versuche, Daten aus dem Cache zu holen
+    let departureAirport = findAirport(depCodeInput);
+    let arrivalAirport = findAirport(arrCodeInput);
+
+    // 2. Prüfe Abflughafen
+    if (!departureAirport || !departureAirport.country_code) {
+        const results = await window.fetchExternalAirport(depCodeInput);
+        if (results && results.length > 0) {
+            departureAirport = results[0]; 
         }
-        
-        // 3. Prüfe Zielflughafen: Wenn er nicht im Cache ist ODER unvollständig
-        if (!arrivalAirport || !arrivalAirport.country_code) {
-            const results = await window.fetchExternalAirport(arrCodeInput);
-            if (results && results.length > 0) {
-                arrivalAirport = results[0];
-            }
-        }
-        
-        // --- ENDE KORRIGIERTE LOGIK ---
+    }
 
-        if (!departureAirport || !arrivalAirport) {
-          showMessage(
-            "Flug nicht speicherbar", // Bessere Fehlermeldung
+    // 3. Prüfe Zielflughafen
+    if (!arrivalAirport || !arrivalAirport.country_code) {
+        const results = await window.fetchExternalAirport(arrCodeInput);
+        if (results && results.length > 0) {
+            arrivalAirport = results[0];
+        }
+    }
+
+    // --- ENDE KORRIGIERTE LOGIK ---
+
+    if (!departureAirport || !arrivalAirport) {
+        showMessage(
+            "Flug nicht speicherbar", 
             "Mindestens ein Flughafen-Code wurde nicht gefunden.",
             "error"
-          );
-          // WICHTIG: resetForm() HIER NICHT AUFRUFEN, sonst verliert der User seine Eingaben
-          logButton.textContent = "Änderungen speichern"; // Button zurücksetzen
-          logButton.disabled = false; // Button wieder aktivieren
-          return;
-        }
-
-        // 4. Speichere die (jetzt hoffentlich vollständigen) Daten
-        await cacheAndSaveAirport(departureAirport);
-        await cacheAndSaveAirport(arrivalAirport);
-
-        const distance = calculateDistance(
-          departureAirport.lat,
-          departureAirport.lon,
-          arrivalAirport.lat,
-          arrivalAirport.lon
         );
+        logButton.textContent = "Änderungen speichern"; 
+        logButton.disabled = false; 
+        return;
+    }
 
-        const flightClass = document.getElementById("flightClass").value;
-        const calculatedCO2 = calculateCO2(distance, flightClass);
+    // 4. Speichere die Daten
+    await cacheAndSaveAirport(departureAirport);
+    await cacheAndSaveAirport(arrivalAirport);
 
-        // KORREKTE LOGIK FÜR PREIS
-        const priceInput = document.getElementById("price").value;
+    const distance = calculateDistance(
+        departureAirport.lat,
+        departureAirport.lon,
+        arrivalAirport.lat,
+        arrivalAirport.lon
+    );
 
-        const updatedFlightForSupabase = {
-          date: document.getElementById("flightDate").value,
-          departure: departureAirport.code,
-          arrival: arrivalAirport.code,
-          distance: Math.round(distance),
-          time: estimateFlightTime(distance),
-          class: document.getElementById("flightClass").value,
-          co2_kg: calculatedCO2,
-          flightNumber: document.getElementById("flightNumber").value.trim(),
-          aircraftType: document.getElementById("aircraftType").value.trim(),
-          notes: document.getElementById("notes").value.trim(),
-          depLat: departureAirport.lat,
-          depLon: departureAirport.lon,
-          arrLat: arrivalAirport.lat,
-          arrLon: arrivalAirport.lon,
-          depName: departureAirport.name,
-          arrName: arrivalAirport.name,
-          photo_url: finalPhotoUrls,
-          price:
+    const flightClass = document.getElementById("flightClass").value;
+    const calculatedCO2 = calculateCO2(distance, flightClass);
+
+    const priceInput = document.getElementById("price").value;
+
+    const updatedFlightForSupabase = {
+        date: document.getElementById("flightDate").value,
+        departure: departureAirport.code,
+        arrival: arrivalAirport.code,
+        distance: Math.round(distance),
+        time: estimateFlightTime(distance),
+        class: document.getElementById("flightClass").value,
+        co2_kg: calculatedCO2,
+        flightNumber: document.getElementById("flightNumber").value.trim(),
+        airline: document.getElementById("airline").value.trim(),
+        aircraftType: document.getElementById("aircraftType").value.trim(),
+        notes: document.getElementById("notes").value.trim(),
+        depLat: departureAirport.lat,
+        depLon: departureAirport.lon,
+        arrLat: arrivalAirport.lat,
+        arrLon: arrivalAirport.lon,
+        depName: departureAirport.name,
+        arrName: arrivalAirport.name,
+        photo_url: finalPhotoUrls,
+        price:
             priceInput !== "" && !isNaN(parseFloat(priceInput))
-              ? parseFloat(priceInput)
-              : null,
-          currency:
+                ? parseFloat(priceInput)
+                : null,
+        currency:
             document.getElementById("currency").value.trim().toUpperCase() ||
             null,
-          registration:
+        registration:
             document
-              .getElementById("registration")
-              .value.trim()
-              .toUpperCase() || null,
-        };
+                .getElementById("registration")
+                .value.trim()
+                .toUpperCase() || null,
+    };
 
-        const { error } = await supabaseClient
-          .from("flights")
-          .update(updatedFlightForSupabase)
-          .eq("flight_id", currentlyEditingFlightData.id);
+    const { error } = await supabaseClient
+        .from("flights")
+        .update(updatedFlightForSupabase)
+        .eq("flight_id", currentlyEditingFlightData.id);
 
-        if (error) {
-          showMessage(
+    if (error) {
+        showMessage(
             "Update-Fehler",
             "Die Änderungen konnten nicht gespeichert werden.",
             "error"
-          );
-          console.error("Supabase Update Error:", error);
-        } else {
-          showMessage(
+        );
+        console.error("Supabase Update Error:", error);
+    } else {
+        showMessage(
             "Erfolg!",
             "Die Flugdaten wurden erfolgreich aktualisiert.",
             "success"
-          );
-        }
-        const flightIdToFocus = currentlyEditingFlightData.id;
-        resetForm();
-        renderFlights(null, flightIdToFocus);
-      }
+        );
+    }
+    const flightIdToFocus = currentlyEditingFlightData.id;
+    resetForm();
+    renderFlights(null, flightIdToFocus);
+}
 
       // *** Rendern und Löschen ***
       window.deleteFlight = async function (id) {
