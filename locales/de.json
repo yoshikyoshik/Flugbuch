@@ -444,10 +444,15 @@
       "title": "Werde ein Pro-Reisender 🚀",
       "subtitle": "Entferne alle Limits und schalte Premium-Features frei.",
       "feature1": "Unbegrenzte Flüge",
+	  "desc1": "Kein 15-Flüge-Limit mehr.",
       "feature2": "Interaktiver 3D-Globus",
+	  "desc2": "Interaktive 3D-Reisehistorie.",
       "feature3": "Foto-Uploads & PDF-Export",
+	  "desc3": "Speichere Erinnerungen & erstelle Bücher.",
       "cta": "Jetzt Upgraden",
-      "thankYou": "Danke für dein Interesse! Die Bezahlung folgt bald."
+	  "menuBtn": "🚀 Upgrade auf Pro",
+	  "perYear": "/ Jahr",
+	  "thankYou": "Danke für dein Interesse! Die Bezahlung folgt bald."
     }
 	
 }

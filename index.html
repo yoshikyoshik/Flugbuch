@@ -645,7 +645,7 @@
 				>
 					Lade Status...
 				</span>
-					<button id="menu-upgrade-btn" onclick="openPremiumModal()" class="hidden mt-3 w-full text-center text-xs font-semibold text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 py-2 rounded shadow transition-all">
+					<button id="menu-upgrade-btn" onclick="openPremiumModal()" class="hidden mt-3 w-full text-center text-xs font-semibold text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 py-2 rounded shadow transition-all" data-i18n="premium.menuBtn">
 					   🚀 Upgrade auf Pro
 					</button>
               </div>
@@ -1916,7 +1916,7 @@
             </div>
             <div class="ml-3">
               <p class="text-base font-medium text-gray-900 dark:text-white" data-i18n="premium.feature1">Unbegrenzte Flüge</p>
-              <p class="text-sm text-gray-500 dark:text-gray-400">Kein 15-Flüge-Limit mehr.</p>
+              <p class="text-sm text-gray-500 dark:text-gray-400" data-i18n="premium.desc1">Kein 15-Flüge-Limit mehr.</p>
             </div>
           </li>
 
@@ -1928,7 +1928,7 @@
             </div>
             <div class="ml-3">
               <p class="text-base font-medium text-gray-900 dark:text-white" data-i18n="premium.feature2">3D Globus Ansicht</p>
-              <p class="text-sm text-gray-500 dark:text-gray-400">Interaktive 3D-Reisehistorie.</p>
+              <p class="text-sm text-gray-500 dark:text-gray-400" data-i18n="premium.desc2">Interaktive 3D-Reisehistorie.</p>
             </div>
           </li>
 
@@ -1940,7 +1940,7 @@
             </div>
             <div class="ml-3">
               <p class="text-base font-medium text-gray-900 dark:text-white" data-i18n="premium.feature3">Foto Upload & PDF</p>
-              <p class="text-sm text-gray-500 dark:text-gray-400">Speichere Erinnerungen & erstelle Bücher.</p>
+              <p class="text-sm text-gray-500 dark:text-gray-400" data-i18n="premium.desc3">Speichere Erinnerungen & erstelle Bücher.</p>
             </div>
           </li>
         </ul>
@@ -1948,7 +1948,7 @@
 
       <div class="px-4 py-4 sm:px-6 bg-gray-50 dark:bg-gray-700/50 flex flex-col sm:flex-row justify-between items-center gap-3">
         <div class="text-sm text-gray-500 dark:text-gray-400 text-center sm:text-left">
-            <span class="font-bold text-lg text-gray-900 dark:text-white">14,99 €</span> / Jahr
+            <span class="font-bold text-lg text-gray-900 dark:text-white">14,99 €</span><span data-i18n="premium.perYear">/ Jahr</span>
         </div>
         <button id="buy-pro-btn" type="button" class="w-full sm:w-auto inline-flex justify-center rounded-lg border border-transparent shadow-sm px-6 py-3 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-transform transform hover:scale-105">
           <span data-i18n="premium.cta">Jetzt upgraden</span> ✨
@@ -3938,250 +3938,191 @@ document.getElementById('print-view-content').innerHTML = html;
                 currentUserSubscription = "pro";
                 console.log("Status-Check: PRO-Benutzer erkannt.");
             } else {
-                 currentUserSubscription = "free";
-				// currentUserSubscription = "pro";
-                 console.log("Status-Check: FREE-Benutzer.");
-				// console.warn("TEST-MODUS: PRO-STATUS ERZWUNGEN");
+                currentUserSubscription = "free";
+                // currentUserSubscription = "pro"; // DEBUG
+                console.log("Status-Check: FREE-Benutzer.");
+                // console.warn("TEST-MODUS: PRO-STATUS ERZWUNGEN");
             }
 
-            // --- ✅ NEU: STATUS IM BURGER-MENÜ ANZEIGEN ---
+            // --- STATUS IM BURGER-MENÜ ANZEIGEN ---
             const statusBadge = document.getElementById("subscription-status-badge");
             if (statusBadge) {
                 if (currentUserSubscription === "pro") {
-                    // Design für PRO (z.B. Indigo/Blau oder Gold)
+                    // Design für PRO
                     statusBadge.textContent = "PRO";
-                    // Tailwind Klassen für "Premium"-Look (Indigo Hintergrund, dunkler Text)
                     statusBadge.className = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold mt-1 bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200 border border-indigo-200 dark:border-indigo-800";
-					
-					// ✅ Button verstecken, wenn User schon Pro ist
-					document.getElementById("menu-upgrade-btn").classList.add("hidden");
-					
+                    
+                    // Button verstecken, wenn User schon Pro ist
+                    document.getElementById("menu-upgrade-btn").classList.add("hidden");
+                    
                 } else {
-                    // Design für FREE (Grau/Dezent)
+                    // Design für FREE
                     statusBadge.textContent = "FREE";
-                    // Tailwind Klassen für Standard-Look
                     statusBadge.className = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mt-1 bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400 border border-gray-200 dark:border-gray-600";
-					
-					// ✅ Button anzeigen, wenn User Free ist
-					document.getElementById("menu-upgrade-btn").classList.remove("hidden");
-					
+                    
+                    // Button anzeigen, wenn User Free ist
+                    document.getElementById("menu-upgrade-btn").classList.remove("hidden");
                 }
             }
             // --- ENDE NEU ---
         } else {
-            // Falls kein User eingeloggt ist, sicherheitshalber auf Free setzen
+            // Falls kein User eingeloggt ist
             currentUserSubscription = "free";
         }
 
     } catch (e) {
         console.error("Fehler beim Abrufen des Benutzers:", e);
-        currentUserSubscription = "free"; // Fallback bei Fehler
+        currentUserSubscription = "free"; 
     }
 
     await migrateAndLoadAirports();
 
-        if (!map) {
-          map = L.map("flight-map-container").setView([20, 0], 2);
-          L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-            attribution:
-              '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-          }).addTo(map);
-          routeLayer = L.layerGroup().addTo(map);
+    if (!map) {
+        map = L.map("flight-map-container").setView([20, 0], 2);
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution:
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        }).addTo(map);
+        routeLayer = L.layerGroup().addTo(map);
+    }
+
+    // --- Event-Listener: ---
+
+    // Listener für Flight-Number:
+    document
+        .getElementById("autofill-btn")
+        .addEventListener("click", autofillFlightData);
+
+    // Listener für das neue Burger-Menü
+    document
+        .getElementById("burger-menu-btn")
+        .addEventListener("click", toggleBurgerMenu);
+    document
+        .getElementById("menu-logout-btn")
+        .addEventListener("click", logout);
+    document
+        .getElementById("menu-theme-toggle")
+        .addEventListener("click", toggleDarkMode);
+
+    // Listener, um das Menü zu schließen, wenn man daneben klickt
+    document.addEventListener("click", function (event) {
+        const menu = document.getElementById("burger-menu");
+        const menuBtn = document.getElementById("burger-menu-btn");
+        if (
+        !menu.classList.contains("hidden") &&
+        !menu.contains(event.target) &&
+        !menuBtn.contains(event.target)
+        ) {
+        toggleBurgerMenu();
         }
+    });
 
-        // --- Event-Listener: ---
-
-        // Listener für Flight-Number:
-        document
-          .getElementById("autofill-btn")
-          .addEventListener("click", autofillFlightData);
-
-        // Listener für das neue Burger-Menü
-        document
-          .getElementById("burger-menu-btn")
-          .addEventListener("click", toggleBurgerMenu);
-        document
-          .getElementById("menu-logout-btn")
-          .addEventListener("click", logout);
-        document
-          .getElementById("menu-theme-toggle")
-          .addEventListener("click", toggleDarkMode);
-
-        // Listener, um das Menü zu schließen, wenn man daneben klickt
-        document.addEventListener("click", function (event) {
-          const menu = document.getElementById("burger-menu");
-          const menuBtn = document.getElementById("burger-menu-btn");
-          // Prüfe, ob das Menü offen ist UND der Klick außerhalb des Menüs und des Buttons war
-          if (
-            !menu.classList.contains("hidden") &&
-            !menu.contains(event.target) &&
-            !menuBtn.contains(event.target)
-          ) {
-            toggleBurgerMenu();
-          }
-        });
-
-        // Alle anderen, weiterhin gültigen Listener
-		
-		// Listener für Autopilot (Sperre)
-			const autopilotSummary = document.querySelector('[data-i18n="autoPilot"]')?.closest('summary'); // Oder selector anpassen
-			if (autopilotSummary) {
-				autopilotSummary.addEventListener("click", (e) => {
-					if (currentUserSubscription === "free") {
-						e.preventDefault(); // Verhindert das Öffnen des Menüs
-						openPremiumModal('autopilot');
-					}
-				});
-			}
-		
-        document
-          .getElementById("play-chronicle-btn")
-          .addEventListener("click", animateTravelChronicle);
-        document
-          .getElementById("flightClass")
-          .addEventListener("change", updateFlightDetails);
-        document
-          .getElementById("chart-view-year")
-          .addEventListener("click", () => setChartTimeframe("year"));
-        document
-          .getElementById("chart-view-month")
-          .addEventListener("click", () => setChartTimeframe("month"));
-        document
-          .getElementById("password-change-form")
-          .addEventListener("submit", changePassword);
-        document
-          .getElementById("flightPhoto")
-          .addEventListener("change", (event) => {
-            const files = event.target.files;
-            const previewText = document.getElementById("photo-preview-text");
-            // ✅ NEU: Den Container holen
-            const previewContainer = document.getElementById("photo-preview-container");
-
-            if (files && files.length > 0) {
-              previewText.textContent = getTranslation(
-                "form.filesSelected"
-              ).replace("{count}", files.length);
-              // ✅ NEU: Container sichtbar machen
-              previewContainer.classList.remove("hidden");
-            } else {
-              previewText.textContent = getTranslation("form.noFileSelected");
-              // ✅ NEU: Container verstecken, wenn Auswahl geleert wird
-              previewContainer.classList.add("hidden"); 
+    // Listener für Autopilot (Sperre)
+    const autopilotSummary = document.querySelector('[data-i18n="autoPilot"]')?.closest('summary');
+    if (autopilotSummary) {
+        autopilotSummary.addEventListener("click", (e) => {
+            if (currentUserSubscription === "free") {
+                e.preventDefault(); 
+                openPremiumModal('autopilot');
             }
-          });
-        document.getElementById("departure").addEventListener("input", () => {
-          updateAutocompleteList("departure", "departure-list");
-          updateFlightDetails();
         });
-        document.getElementById("arrival").addEventListener("input", () => {
-          updateAutocompleteList("arrival", "arrival-list");
-          updateFlightDetails();
+    }
+    
+    // ✅ NEU: Listener für Foto-Upload (Sperre / Gatekeeper)
+    // Wir hängen den Listener an das LABEL, da man darauf klickt, um Dateien zu wählen
+    const photoLabelInput = document.querySelector('label[for="flightPhoto"]');
+    if (photoLabelInput) {
+         photoLabelInput.addEventListener("click", (e) => {
+            // Wir prüfen den Status "live" beim Klick
+            if (currentUserSubscription === "free") {
+                e.preventDefault(); // 🛑 Verhindert das Öffnen des Datei-Managers
+                e.stopPropagation();
+                openPremiumModal('photos'); // Öffnet das Upsell-Modal
+            }
+            // Wenn Pro: Mach nichts, Browser öffnet Standard-Upload
         });
-        document
-          .getElementById("logbook-view-aircraft")
-          .addEventListener("click", () => renderLogbookView("aircraftType"));
-        document
-          .getElementById("logbook-view-airline")
-          .addEventListener("click", () => renderLogbookView("airline"));
-        document
-          .getElementById("logbook-view-airport")
-          .addEventListener("click", () => renderLogbookView("airport"));
-        document
-          .getElementById("logbook-view-registration")
-          .addEventListener("click", () => renderLogbookView("registration"));
+    }
 
-        document
-          .getElementById("import-file-input")
-          .addEventListener("change", handleImport);
+    document
+        .getElementById("play-chronicle-btn")
+        .addEventListener("click", animateTravelChronicle);
+    document
+        .getElementById("flightClass")
+        .addEventListener("change", updateFlightDetails);
+    document
+        .getElementById("chart-view-year")
+        .addEventListener("click", () => setChartTimeframe("year"));
+    document
+        .getElementById("chart-view-month")
+        .addEventListener("click", () => setChartTimeframe("month"));
+    document
+        .getElementById("password-change-form")
+        .addEventListener("submit", changePassword);
+    
+    // Listener für Foto-Vorschau (wenn Dateien gewählt wurden)
+    document
+        .getElementById("flightPhoto")
+        .addEventListener("change", (event) => {
+        const files = event.target.files;
+        const previewText = document.getElementById("photo-preview-text");
+        const previewContainer = document.getElementById("photo-preview-container");
 
-        document
-          .getElementById("show-globe-btn")
-          .addEventListener("click", openGlobeModal);
-		  
-		// ✅ NEUER LISTENER FÜR DEN DRUCK-BUTTON
-		document
-		  .getElementById("print-book-btn")
-		  .addEventListener("click", triggerPrintView_FlightsTab); // ✅ KORRIGIERT
+        if (files && files.length > 0) {
+            previewText.textContent = getTranslation(
+            "form.filesSelected"
+            ).replace("{count}", files.length);
+            previewContainer.classList.remove("hidden");
+        } else {
+            previewText.textContent = getTranslation("form.noFileSelected");
+            previewContainer.classList.add("hidden"); 
+        }
+        });
 
-        // --- ENDE Event-Listener ---
+    document.getElementById("departure").addEventListener("input", () => {
+        updateAutocompleteList("departure", "departure-list");
+        updateFlightDetails();
+    });
+    document.getElementById("arrival").addEventListener("input", () => {
+        updateAutocompleteList("arrival", "arrival-list");
+        updateFlightDetails();
+    });
+    document
+        .getElementById("logbook-view-aircraft")
+        .addEventListener("click", () => renderLogbookView("aircraftType"));
+    document
+        .getElementById("logbook-view-airline")
+        .addEventListener("click", () => renderLogbookView("airline"));
+    document
+        .getElementById("logbook-view-airport")
+        .addEventListener("click", () => renderLogbookView("airport"));
+    document
+        .getElementById("logbook-view-registration")
+        .addEventListener("click", () => renderLogbookView("registration"));
 
-        // Initiales Rendern der App
-        showTab("neue-fluege");
-        renderFlights();
-        displayAppVersion();
-		
-		// Tutorial beim ersten Start anzeigen
-        showFirstStepsTutorial();
-		
-		// --- ✅ NEU: FEATURES VISUALISIEREN STATT VERSTECKEN ---
-		const globeBtn = document.getElementById("show-globe-btn");
-		const autopilotDetails = document.querySelector('[data-i18n="autoPilot"]')?.closest('details'); // Selektor ggf. anpassen
-		const printBtn = document.getElementById("print-book-btn");
+    document
+        .getElementById("import-file-input")
+        .addEventListener("change", handleImport);
 
-		if (currentUserSubscription === "free") {
-			// Funktion zum "Sperren" eines Buttons (Visuell)
-			const lockElement = (element) => {
-				if (!element) return;
-				element.classList.remove("hidden"); // Sicherstellen, dass er sichtbar ist
-				
-				// Visueller Stil: Etwas ausgegraut, vielleicht ein Schloss
-				element.classList.add("opacity-70", "cursor-pointer"); 
-				
-				// Optional: Ein Schloss-Icon anhängen (wenn es noch keins hat)
-				if (!element.querySelector('.lock-icon')) {
-					const lockSpan = document.createElement('span');
-					lockSpan.className = "lock-icon ml-2 text-xs";
-					lockSpan.innerHTML = "🔒"; 
-					
-					// Bei Buttons direkt rein, bei Details/Summary etwas anders
-					if(element.tagName === 'BUTTON') {
-						element.appendChild(lockSpan);
-					} else if (element.tagName === 'DETAILS') {
-						const summary = element.querySelector('summary');
-						if(summary) summary.appendChild(lockSpan);
-					}
-				}
-			};
+    document
+        .getElementById("show-globe-btn")
+        .addEventListener("click", openGlobeModal);
+    
+    // Listener für den Druck-Button
+    document
+        .getElementById("print-book-btn")
+        .addEventListener("click", triggerPrintView_FlightsTab); 
 
-			lockElement(globeBtn);
-			lockElement(printBtn);
-			// Autopilot visuell sperren
-			if (autopilotDetails) {
-				autopilotDetails.classList.remove("hidden");
-				autopilotDetails.querySelector('summary').classList.add("opacity-70");
-				// Schloss in den Summary Text
-				const summary = autopilotDetails.querySelector('summary');
-				if (summary && !summary.querySelector('.lock-icon')) {
-					summary.innerHTML += ' <span class="lock-icon">🔒</span>';
-				}
-				// Inhalt deaktivieren oder beim Öffnen Modal zeigen (siehe Schritt 4)
-			}
+    // --- ENDE Event-Listener ---
 
-		} else {
-			// --- PRO USER: Aufräumen (falls nötig, z.B. bei Login nach Kauf) ---
-			const unlockElement = (element) => {
-				if (!element) return;
-				element.classList.remove("hidden", "opacity-70");
-				const lock = element.querySelector('.lock-icon');
-				if (lock) lock.remove();
-			};
-			
-			unlockElement(globeBtn);
-			unlockElement(printBtn);
-			if (autopilotDetails) {
-				autopilotDetails.classList.remove("hidden");
-				const summary = autopilotDetails.querySelector('summary');
-				if (summary) {
-					summary.classList.remove("opacity-70");
-					const lock = summary.querySelector('.lock-icon');
-					if (lock) lock.remove();
-				}
-			}
-		}
-		// --- ENDE NEU ---
-
-		
-      }
+    // Initiales Rendern der App
+    showTab("neue-fluege");
+    renderFlights();
+    displayAppVersion();
+    
+    showFirstStepsTutorial();
+    
+    updateLockVisuals();
+}
 
       function showAuth() {
         document.getElementById("auth-container").classList.remove("hidden");
@@ -4455,6 +4396,80 @@ document.getElementById('print-view-content').innerHTML = html;
           localStorage.setItem("theme", "light");
         }
       }
+	  
+	  // Aktualisiert die Schloss-Symbole basierend auf dem Status
+	function updateLockVisuals() {
+		const globeBtn = document.getElementById("show-globe-btn");
+		const autopilotDetails = document.querySelector('[data-i18n="autoPilot"]')?.closest('details'); 
+		const printBtn = document.getElementById("print-book-btn");
+		const photoLabel = document.querySelector('label[for="flightPhoto"]');
+
+		if (currentUserSubscription === "free") {
+			// --- SPERREN ---
+			
+			// Helper nur für diesen Scope
+			const lockElement = (element) => {
+				if (!element) return;
+				element.classList.remove("hidden"); 
+				element.classList.add("opacity-70", "cursor-pointer"); 
+				
+				// Schloss nur hinzufügen, wenn noch keins da ist
+				if (!element.querySelector('.lock-icon')) {
+					const lockSpan = document.createElement('span');
+					lockSpan.className = "lock-icon ml-2 text-xs";
+					lockSpan.innerHTML = "🔒"; 
+					
+					if(element.tagName === 'BUTTON' || element.tagName === 'LABEL') {
+						element.appendChild(lockSpan);
+					} else if (element.tagName === 'DETAILS') {
+						const summary = element.querySelector('summary');
+						if(summary) summary.appendChild(lockSpan);
+					}
+				}
+			};
+
+			lockElement(globeBtn);
+			lockElement(printBtn);
+			
+			if (photoLabel) {
+				lockElement(photoLabel);
+				photoLabel.classList.add("relative");
+			}
+
+			if (autopilotDetails) {
+				autopilotDetails.classList.remove("hidden");
+				autopilotDetails.querySelector('summary').classList.add("opacity-70");
+				const summary = autopilotDetails.querySelector('summary');
+				if (summary && !summary.querySelector('.lock-icon')) {
+					summary.innerHTML += ' <span class="lock-icon">🔒</span>';
+				}
+			}
+
+		} else {
+			// --- ENTSPERREN (Aufräumen) ---
+			
+			const unlockElement = (element) => {
+				if (!element) return;
+				element.classList.remove("hidden", "opacity-70", "relative");
+				const lock = element.querySelector('.lock-icon');
+				if (lock) lock.remove();
+			};
+			
+			unlockElement(globeBtn);
+			unlockElement(printBtn);
+			unlockElement(photoLabel);
+
+			if (autopilotDetails) {
+				autopilotDetails.classList.remove("hidden");
+				const summary = autopilotDetails.querySelector('summary');
+				if (summary) {
+					summary.classList.remove("opacity-70");
+					const lock = summary.querySelector('.lock-icon');
+					if (lock) lock.remove();
+				}
+			}
+		}
+	}
 
       /**
        * Lädt die Übersetzungsdatei und startet die Übersetzung der Seite.
@@ -4554,6 +4569,7 @@ document.getElementById('print-view-content').innerHTML = html;
             error
           );
         }
+		updateLockVisuals();
       }
 
       /**
@@ -4936,7 +4952,7 @@ document.getElementById('print-view-content').innerHTML = html;
 			globe: "./pictures/globe-teaser.jpg?q=80&w=1000&auto=format&fit=crop", 
 			print: "./pictures/print-teaser.jpg?q=80&w=1000&auto=format&fit=crop",
 			autopilot: "./pictures/autopilot-teaser.jpg?q=80&w=1000&auto=format&fit=crop",
-			
+			photos: "./pictures/photos-teaser.jpg?q=80&w=1000&auto=format&fit=crop",
 			// Fallback, falls kein spezieller Key übergeben wird
 			default: "./pictures/globe-teaser.jpg?q=80&w=1000&auto=format&fit=crop" 
 		};

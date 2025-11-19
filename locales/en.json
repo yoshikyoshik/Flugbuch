@@ -442,9 +442,14 @@
       "title": "Become a Pro Traveler 🚀",
       "subtitle": "Remove all limits and unlock premium features.",
       "feature1": "Unlimited Flights",
+	  "desc1": "No more 15-flight limit.",
       "feature2": "Interactive 3D Globe",
+	  "desc2": "Interactive 3D travel history.",
       "feature3": "Photo Uploads & PDF Export",
+	  "desc3": "Save memories & create books.",
       "cta": "Upgrade Now",
+	  "menuBtn": "🚀 Upgrade to Pro",
+	  "perYear": "/ year",
       "thankYou": "Thanks for your interest! Payment integration coming soon."
     }
 	

@@ -413,5 +413,20 @@
     },
     "expand": "Expandir",
     "collapse": "Contraer"
-  }
+  },
+  
+  "premium": {
+	  "title": "Conviértete en un Viajero Pro 🚀",
+	  "subtitle": "Elimina todos los límites y desbloquea funciones premium.",
+	  "feature1": "Vuelos ilimitados",
+	  "desc1": "Sin límite de 15 vuelos.",
+	  "feature2": "Globo 3D interactivo",
+	  "desc2": "Historial de viajes en 3D interactivo.",
+	  "feature3": "Subida de fotos y exportación a PDF",
+	  "desc3": "Guarda recuerdos y crea libros.",
+	  "cta": "Actualizar ahora",
+	  "menuBtn": "🚀 Actualizar a Pro",
+	  "perYear": "/ año",
+	  "thankYou": "¡Gracias por tu interés! El pago estará disponible pronto."
+	}
 }
