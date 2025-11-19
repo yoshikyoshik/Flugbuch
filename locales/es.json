@@ -73,7 +73,8 @@
     "exportCSV": "Exportar datos (CSV)",
     "changePassword": "Cambiar contraseña",
     "toggleMode": "Cambiar modo",
-    "logout": "Cerrar sesión"
+    "logout": "Cerrar sesión",
+	"manageSubscription": "⚙️ Gestionar suscripción"
   },
   "form": {
     "autopilotTitle": "Piloto automático: Cargar datos de vuelo por número de vuelo",
@@ -111,7 +112,8 @@
     "importSuccess": "Vuelos importados. La vista se actualizará.",
     "importConfirm": "¡ATENCIÓN! Estás a punto de importar {count} vuelos. Todos tus vuelos actuales guardados en la nube serán eliminados y reemplazados.",
     "uploadLimitCount": "Límite alcanzado: Se permite un máximo de {count} fotos por vuelo. Solo se cargarán las primeras {count} fotos nuevas.",
-    "uploadLimitSize": "Archivo omitido: {fileName} es demasiado grande (Máx. 3 MB)."
+    "uploadLimitSize": "Archivo omitido: {fileName} es demasiado grande (Máx. 3 MB).",
+	"subscriptionExpired": "Tu suscripción ha caducado. Has vuelto al modo gratuito."
   },
   "records": {
     "longestFlight": "Vuelo más largo",

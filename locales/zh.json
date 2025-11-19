@@ -73,7 +73,8 @@
     "exportCSV": "导出数据 (CSV)",
     "changePassword": "修改密码",
     "toggleMode": "切换模式",
-    "logout": "登出"
+    "logout": "登出",
+	"manageSubscription": "⚙️ 管理订阅"
   },
   "form": {
     "autopilotTitle": "自动驾驶：按航班号加载航班数据",
@@ -111,7 +112,8 @@
     "importSuccess": "航班已导入。视图将刷新。",
     "importConfirm": "警告！您将导入 {count} 个航班。您当前所有保存在云端的航班将被删除并替换。",
     "uploadLimitCount": "达到限制：每个航班最多允许 {count} 张照片。只会上传前 {count} 张新照片。",
-    "uploadLimitSize": "文件已跳过：{fileName} 太大 (最大 3 MB)。"
+    "uploadLimitSize": "文件已跳过：{fileName} 太大 (最大 3 MB)。",
+	"subscriptionExpired": "您的订阅已过期。您已回到免费模式。"
   },
   "records": {
     "longestFlight": "最长航班",
