@@ -76,7 +76,8 @@
         "exportCSV": "Daten Exportieren (CSV)",
         "changePassword": "Passwort ändern",
         "toggleMode": "Modus wechseln",
-        "logout": "Logout"
+        "logout": "Logout",
+		"manageSubscription": "⚙️ Manage Subscription"
     },
 	
     "form": {
@@ -116,7 +117,8 @@
         "importSuccess": "Flüge wurden importiert. Die Ansicht wird aktualisiert.",
         "importConfirm": "ACHTUNG! Du bist dabei, {count} Flüge zu importieren. Alle deine aktuellen Flüge werden gelöscht und ersetzt.",
 		"uploadLimitCount": "Limit erreicht: Es sind maximal {count} Fotos pro Flug erlaubt. Es werden nur die ersten {count} neuen Fotos hochgeladen.",
-		"uploadLimitSize": "Datei übersprungen: {fileName} ist zu groß (Max. 3 MB)."
+		"uploadLimitSize": "Datei übersprungen: {fileName} ist zu groß (Max. 3 MB).",
+		"subscriptionExpired": "Your subscription has expired. You are back to Free mode."
     },
 	
 	"records": {
@@ -451,6 +453,9 @@
 	  "desc3": "Speichere Erinnerungen & erstelle Bücher.",
       "cta": "Jetzt Upgraden",
 	  "menuBtn": "🚀 Upgrade auf Pro",
+	  "monthly": "Monatlich",
+	  "yearly": "Jährlich",
+      "perMonth": "/ Monat",
 	  "perYear": "/ Jahr",
 	  "thankYou": "Danke für dein Interesse! Die Bezahlung folgt bald."
     }

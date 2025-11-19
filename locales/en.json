@@ -76,7 +76,8 @@
         "exportCSV": "Export Data (CSV)",
         "changePassword": "Change Password",
         "toggleMode": "Toggle Mode",
-        "logout": "Logout"
+        "logout": "Logout",
+		"manageSubscription": "⚙️ Manage Subscription"
     },
 	
     "form": {
@@ -116,7 +117,8 @@
         "importSuccess": "Flights were imported. The view will now refresh.",
         "importConfirm": "WARNING! You are about to import {count} flights. All your current cloud-saved flights will be deleted and replaced.",
 		"uploadLimitCount": "Limit reached: A maximum of {count} photos per flight is allowed. Only the first {count} new photos will be uploaded.",
-		"uploadLimitSize": "File skipped: {fileName} is too large (Max 3MB)."
+		"uploadLimitSize": "File skipped: {fileName} is too large (Max 3MB).",
+		"subscriptionExpired": "Your subscription has expired. You are back to Free mode."
     },
 	
 	"records": {
@@ -449,6 +451,9 @@
 	  "desc3": "Save memories & create books.",
       "cta": "Upgrade Now",
 	  "menuBtn": "🚀 Upgrade to Pro",
+	  "monthly": "Monthly",
+      "yearly": "Yearly",
+      "perMonth": "/ month",
 	  "perYear": "/ year",
       "thankYou": "Thanks for your interest! Payment integration coming soon."
     }

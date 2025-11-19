@@ -426,6 +426,9 @@
 	  "desc3": "Guarda recuerdos y crea libros.",
 	  "cta": "Actualizar ahora",
 	  "menuBtn": "🚀 Actualizar a Pro",
+	  "monthly": "Mensual",
+      "yearly": "Anual",
+      "perMonth": "/ mes",
 	  "perYear": "/ año",
 	  "thankYou": "¡Gracias por tu interés! El pago estará disponible pronto."
 	}

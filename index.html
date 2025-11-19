@@ -648,6 +648,9 @@
 					<button id="menu-upgrade-btn" onclick="openPremiumModal()" class="hidden mt-3 w-full text-center text-xs font-semibold text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 py-2 rounded shadow transition-all" data-i18n="premium.menuBtn">
 					   🚀 Upgrade auf Pro
 					</button>
+					<button id="menu-manage-sub-btn" onclick="manageSubscription()" class="hidden mt-3 w-full text-center text-xs font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 py-2 rounded border border-gray-200 dark:border-gray-600 transition-all" data-i18n="burgerMenu.manageSubscription">
+					   ⚙️ Abo verwalten
+					</button>
               </div>
             </div>
           </div>
@@ -1905,6 +1908,21 @@
           </svg>
         </button>
       </div>
+	  
+<div class="px-4 pt-5 pb-2 sm:px-6">
+    <div class="relative bg-gray-100 dark:bg-gray-700 p-1 rounded-lg flex">
+        <button type="button" id="plan-monthly-btn" onclick="switchPlan('monthly')" class="w-1/2 py-2 text-sm font-medium rounded-md transition-all text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white focus:outline-none">
+            <span data-i18n="premium.monthly">Monatlich</span>
+        </button>
+
+        <button type="button" id="plan-yearly-btn" onclick="switchPlan('yearly')" class="w-1/2 py-2 text-sm font-medium rounded-md transition-all bg-white dark:bg-gray-600 shadow-sm text-gray-900 dark:text-white focus:outline-none relative">
+            <span data-i18n="premium.yearly">Jährlich</span>
+            <span class="absolute -top-2 -right-2 bg-green-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-sm">
+                -50%
+            </span>
+        </button>
+    </div>
+</div>	  
 
       <div class="px-4 py-5 sm:p-6">
         <ul class="space-y-4">
@@ -1948,8 +1966,9 @@
 
       <div class="px-4 py-4 sm:px-6 bg-gray-50 dark:bg-gray-700/50 flex flex-col sm:flex-row justify-between items-center gap-3">
         <div class="text-sm text-gray-500 dark:text-gray-400 text-center sm:text-left">
-            <span class="font-bold text-lg text-gray-900 dark:text-white">14,99 €</span><span data-i18n="premium.perYear">/ Jahr</span>
-        </div>
+        <span id="premium-price-amount" class="font-bold text-lg text-gray-900 dark:text-white">14,99 €</span> 
+        <span id="premium-price-period" data-i18n="premium.perYear">/ Jahr</span>
+    </div>
         <button id="buy-pro-btn" type="button" class="w-full sm:w-auto inline-flex justify-center rounded-lg border border-transparent shadow-sm px-6 py-3 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-transform transform hover:scale-105">
           <span data-i18n="premium.cta">Jetzt upgraden</span> ✨
         </button>
@@ -3933,40 +3952,65 @@ document.getElementById('print-view-content').innerHTML = html;
                 userDisplay.textContent = user.email;
             }
 
-            // --- STATUS-PRÜFUNG ---
-            if (user.user_metadata && user.user_metadata.subscription_status === 'pro') {
-                currentUserSubscription = "pro";
-                console.log("Status-Check: PRO-Benutzer erkannt.");
-            } else {
-                currentUserSubscription = "free";
-                // currentUserSubscription = "pro"; // DEBUG
-                console.log("Status-Check: FREE-Benutzer.");
-                // console.warn("TEST-MODUS: PRO-STATUS ERZWUNGEN");
+            // --- ✅ NEU: STATUS-PRÜFUNG (MIT ZEIT-CHECK) ---
+            const meta = user.user_metadata || {};
+            let isPro = false;
+
+            // 1. Prüfen, ob überhaupt "pro" flag gesetzt ist
+            if (meta.subscription_status === 'pro') {
+                
+                // 2. Zeit-Check: Gibt es ein Ablaufdatum?
+                if (meta.subscription_end) {
+                    const nowInSeconds = Math.floor(Date.now() / 1000); // Aktuelle Zeit in Unix-Timestamp
+                    
+                    if (meta.subscription_end > nowInSeconds) {
+                        // Datum liegt in der Zukunft -> Gültig
+                        isPro = true;
+                        console.log("Status: PRO (Gültig bis " + new Date(meta.subscription_end * 1000).toLocaleDateString() + ")");
+                    } else {
+                        // Datum liegt in der Vergangenheit -> Abgelaufen!
+                        isPro = false;
+                        console.warn("Status: Abgelaufen am " + new Date(meta.subscription_end * 1000).toLocaleDateString());
+                        // Optional: Dem Nutzer einmalig sagen, dass es vorbei ist (könnte man noch verfeinern)
+                    }
+                } else {
+                    // Kein Enddatum gesetzt -> Manuell freigeschaltet oder Lifetime -> Gültig
+                    isPro = true;
+                    console.log("Status: PRO (Manuell/Lifetime)");
+                }
             }
 
-            // --- STATUS IM BURGER-MENÜ ANZEIGEN ---
+            // Ergebnis setzen
+            currentUserSubscription = isPro ? "pro" : "free";
+            // --- ENDE STATUS-PRÜFUNG ---
+
+
+            // --- ✅ STATUS IM BURGER-MENÜ ANZEIGEN & BUTTONS SCHALTEN ---
             const statusBadge = document.getElementById("subscription-status-badge");
+            const upgradeBtn = document.getElementById("menu-upgrade-btn");
+            const manageBtn = document.getElementById("menu-manage-sub-btn");
+
             if (statusBadge) {
                 if (currentUserSubscription === "pro") {
-                    // Design für PRO
+                    // PRO Design
                     statusBadge.textContent = "PRO";
                     statusBadge.className = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold mt-1 bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200 border border-indigo-200 dark:border-indigo-800";
                     
-                    // Button verstecken, wenn User schon Pro ist
-                    document.getElementById("menu-upgrade-btn").classList.add("hidden");
+                    // Buttons umschalten
+                    if(upgradeBtn) upgradeBtn.classList.add("hidden");
+                    if(manageBtn) manageBtn.classList.remove("hidden"); // "Verwalten" zeigen
                     
                 } else {
-                    // Design für FREE
+                    // FREE Design
                     statusBadge.textContent = "FREE";
                     statusBadge.className = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mt-1 bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400 border border-gray-200 dark:border-gray-600";
                     
-                    // Button anzeigen, wenn User Free ist
-                    document.getElementById("menu-upgrade-btn").classList.remove("hidden");
+                    // Buttons umschalten
+                    if(upgradeBtn) upgradeBtn.classList.remove("hidden"); // "Upgrade" zeigen
+                    if(manageBtn) manageBtn.classList.add("hidden");
                 }
             }
-            // --- ENDE NEU ---
         } else {
-            // Falls kein User eingeloggt ist
             currentUserSubscription = "free";
         }
 
@@ -4470,6 +4514,11 @@ document.getElementById('print-view-content').innerHTML = html;
 			}
 		}
 	}
+	
+		function manageSubscription() {
+			// Später: window.location.href = "STRIPE_CUSTOMER_PORTAL_LINK";
+			showMessage("Info", "Hier wirst du später zu Stripe weitergeleitet, um zu kündigen oder Zahlungsdaten zu ändern.", "info");
+		}
 
       /**
        * Lädt die Übersetzungsdatei und startet die Übersetzung der Seite.
@@ -4982,7 +5031,74 @@ document.getElementById('print-view-content').innerHTML = html;
 			if(titleElement) titleElement.textContent = titleText;
 
 			modal.classList.remove('hidden');
+			
+			switchPlan('yearly');
 		}
+		
+		// --- PREIS / PLAN LOGIK ---
+
+let selectedPlan = 'yearly'; // Standard
+
+const pricingConfig = {
+    monthly: {
+        amount: "2,49 €",
+        periodKey: "premium.perMonth", 
+        fallbackPeriod: "/ Monat",
+        stripeProductId: "price_monthly_xyz" // Platzhalter für später
+    },
+    yearly: {
+        amount: "14,99 €",
+        periodKey: "premium.perYear",
+        fallbackPeriod: "/ Jahr",
+        stripeProductId: "price_yearly_xyz" // Platzhalter für später
+    }
+};
+
+function switchPlan(plan) {
+    selectedPlan = plan;
+    const config = pricingConfig[plan];
+
+    // 1. UI Update: Buttons
+    const monthlyBtn = document.getElementById('plan-monthly-btn');
+    const yearlyBtn = document.getElementById('plan-yearly-btn');
+
+    // Klassen für "Aktiv" (Weißer Hintergrund, Schatten)
+    const activeClasses = ["bg-white", "dark:bg-gray-600", "shadow-sm", "text-gray-900", "dark:text-white"];
+    // Klassen für "Inaktiv" (Transparent, grauer Text)
+    const inactiveClasses = ["text-gray-500", "dark:text-gray-400", "hover:text-gray-900", "dark:hover:text-white"];
+
+    if (plan === 'monthly') {
+        // Monthly Aktivieren
+        monthlyBtn.classList.add(...activeClasses);
+        monthlyBtn.classList.remove(...inactiveClasses);
+        // Yearly Deaktivieren (und Hintergrund entfernen)
+        yearlyBtn.classList.remove(...activeClasses); // WICHTIG: bg-white entfernen
+        yearlyBtn.classList.add("bg-transparent"); // Explizit transparent machen
+        yearlyBtn.classList.add(...inactiveClasses);
+    } else {
+        // Yearly Aktivieren
+        yearlyBtn.classList.remove("bg-transparent");
+        yearlyBtn.classList.add(...activeClasses);
+        yearlyBtn.classList.remove(...inactiveClasses);
+        // Monthly Deaktivieren
+        monthlyBtn.classList.remove(...activeClasses);
+        monthlyBtn.classList.add(...inactiveClasses);
+    }
+
+    // 2. Preis Update
+    const amountEl = document.getElementById('premium-price-amount');
+    const periodEl = document.getElementById('premium-price-period');
+
+    if(amountEl) amountEl.textContent = config.amount;
+    
+    if(periodEl) {
+        // Versuche Übersetzung zu holen, sonst Fallback
+        const translatedPeriod = getTranslation(config.periodKey);
+        periodEl.textContent = translatedPeriod || config.fallbackPeriod;
+        // Wichtig: data-i18n Attribut aktualisieren, damit Sprachwechsel funktioniert
+        periodEl.setAttribute('data-i18n', config.periodKey);
+    }
+}
 
 		function closePremiumModal() {
 			document.getElementById('premium-modal').classList.add('hidden');
