@@ -438,6 +438,16 @@
     },
 	"expand": "Ausklappen",
     "collapse": "Einklappen"
-  }
+  },
+  
+  "premium": {
+      "title": "Werde ein Pro-Reisender 🚀",
+      "subtitle": "Entferne alle Limits und schalte Premium-Features frei.",
+      "feature1": "Unbegrenzte Flüge",
+      "feature2": "Interaktiver 3D-Globus",
+      "feature3": "Foto-Uploads & PDF-Export",
+      "cta": "Jetzt Upgraden",
+      "thankYou": "Danke für dein Interesse! Die Bezahlung folgt bald."
+    }
 	
 }

@@ -645,6 +645,9 @@
 				>
 					Lade Status...
 				</span>
+					<button id="menu-upgrade-btn" onclick="openPremiumModal()" class="hidden mt-3 w-full text-center text-xs font-semibold text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 py-2 rounded shadow transition-all">
+					   🚀 Upgrade auf Pro
+					</button>
               </div>
             </div>
           </div>
@@ -1873,6 +1876,89 @@
 	
 	<div id="print-view-content" class="hidden print:block"></div>
 	
+	<div id="premium-modal" class="hidden fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+  <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity backdrop-blur-sm" aria-hidden="true" onclick="closePremiumModal()"></div>
+
+    <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+    <div class="relative inline-block align-bottom bg-white dark:bg-gray-800 rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full border-2 border-indigo-500 dark:border-indigo-400">
+      
+      <div id="premium-modal-image-container" class="hidden w-full h-48 bg-gray-100 dark:bg-gray-900 overflow-hidden flex items-center justify-center relative">
+          <img id="premium-modal-image" src="" alt="Feature Preview" class="w-full h-full object-cover opacity-90">
+          <div class="absolute inset-0 bg-gradient-to-t from-white dark:from-gray-800 via-transparent to-transparent opacity-50"></div>
+      </div>
+
+      <div class="bg-indigo-50 dark:bg-indigo-900/30 px-4 py-5 sm:px-6 flex items-center justify-between">
+        <div>
+            <h3 class="text-xl leading-6 font-bold text-gray-900 dark:text-white" id="modal-title" data-i18n="premium.title">
+              Unlock Full Potential 🚀
+            </h3>
+            <p class="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400" data-i18n="premium.subtitle">
+              Upgrade to Pro and remove all limits.
+            </p>
+        </div>
+        <button type="button" onclick="closePremiumModal()" class="bg-transparent rounded-md text-gray-400 hover:text-gray-500 focus:outline-none">
+          <span class="sr-only">Close</span>
+          <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="px-4 py-5 sm:p-6">
+        <ul class="space-y-4">
+          <li class="flex items-start">
+            <div class="flex-shrink-0">
+              <svg class="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <div class="ml-3">
+              <p class="text-base font-medium text-gray-900 dark:text-white" data-i18n="premium.feature1">Unbegrenzte Flüge</p>
+              <p class="text-sm text-gray-500 dark:text-gray-400">Kein 15-Flüge-Limit mehr.</p>
+            </div>
+          </li>
+
+          <li class="flex items-start">
+            <div class="flex-shrink-0">
+              <svg class="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <div class="ml-3">
+              <p class="text-base font-medium text-gray-900 dark:text-white" data-i18n="premium.feature2">3D Globus Ansicht</p>
+              <p class="text-sm text-gray-500 dark:text-gray-400">Interaktive 3D-Reisehistorie.</p>
+            </div>
+          </li>
+
+          <li class="flex items-start">
+            <div class="flex-shrink-0">
+              <svg class="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <div class="ml-3">
+              <p class="text-base font-medium text-gray-900 dark:text-white" data-i18n="premium.feature3">Foto Upload & PDF</p>
+              <p class="text-sm text-gray-500 dark:text-gray-400">Speichere Erinnerungen & erstelle Bücher.</p>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="px-4 py-4 sm:px-6 bg-gray-50 dark:bg-gray-700/50 flex flex-col sm:flex-row justify-between items-center gap-3">
+        <div class="text-sm text-gray-500 dark:text-gray-400 text-center sm:text-left">
+            <span class="font-bold text-lg text-gray-900 dark:text-white">14,99 €</span> / Jahr
+        </div>
+        <button id="buy-pro-btn" type="button" class="w-full sm:w-auto inline-flex justify-center rounded-lg border border-transparent shadow-sm px-6 py-3 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-transform transform hover:scale-105">
+          <span data-i18n="premium.cta">Jetzt upgraden</span> ✨
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+	
     <script>
       // (JavaScript content follows)
 
@@ -2791,6 +2877,13 @@
        * Öffnet das Globus-Modal, initialisiert den Zeitstrahl und den 3D-Globus.
        */
       async function openGlobeModal() {
+	  
+		// ✅ NEU: GATEKEEPER
+		if (currentUserSubscription === "free") {
+			openPremiumModal('globe'); // Öffnet Modal mit Globus-Bild
+			return; // Stoppt die Funktion hier!
+		}
+	  
         let countries; // Variable für Länderdaten
         document.getElementById("globe-modal").classList.remove("hidden");
 
@@ -3501,6 +3594,13 @@ document.getElementById('print-view-content').innerHTML = html;
      * Liest die Filter aus und ruft die Kern-Druckfunktion auf.
      */
     async function triggerPrintView_FlightsTab() {
+	
+		// ✅ NEU: GATEKEEPER
+		if (currentUserSubscription === "free") {
+			openPremiumModal('print');
+			return;
+		}
+	
       // 1. Alle Flüge abrufen
       let allFlights = await getFlights();
       
@@ -3838,10 +3938,10 @@ document.getElementById('print-view-content').innerHTML = html;
                 currentUserSubscription = "pro";
                 console.log("Status-Check: PRO-Benutzer erkannt.");
             } else {
-                // currentUserSubscription = "free";
-				 currentUserSubscription = "pro";
-                // console.log("Status-Check: FREE-Benutzer.");
-				 console.warn("TEST-MODUS: PRO-STATUS ERZWUNGEN");
+                 currentUserSubscription = "free";
+				// currentUserSubscription = "pro";
+                 console.log("Status-Check: FREE-Benutzer.");
+				// console.warn("TEST-MODUS: PRO-STATUS ERZWUNGEN");
             }
 
             // --- ✅ NEU: STATUS IM BURGER-MENÜ ANZEIGEN ---
@@ -3852,11 +3952,19 @@ document.getElementById('print-view-content').innerHTML = html;
                     statusBadge.textContent = "PRO";
                     // Tailwind Klassen für "Premium"-Look (Indigo Hintergrund, dunkler Text)
                     statusBadge.className = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold mt-1 bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200 border border-indigo-200 dark:border-indigo-800";
+					
+					// ✅ Button verstecken, wenn User schon Pro ist
+					document.getElementById("menu-upgrade-btn").classList.add("hidden");
+					
                 } else {
                     // Design für FREE (Grau/Dezent)
                     statusBadge.textContent = "FREE";
                     // Tailwind Klassen für Standard-Look
                     statusBadge.className = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mt-1 bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400 border border-gray-200 dark:border-gray-600";
+					
+					// ✅ Button anzeigen, wenn User Free ist
+					document.getElementById("menu-upgrade-btn").classList.remove("hidden");
+					
                 }
             }
             // --- ENDE NEU ---
@@ -3914,6 +4022,18 @@ document.getElementById('print-view-content').innerHTML = html;
         });
 
         // Alle anderen, weiterhin gültigen Listener
+		
+		// Listener für Autopilot (Sperre)
+			const autopilotSummary = document.querySelector('[data-i18n="autoPilot"]')?.closest('summary'); // Oder selector anpassen
+			if (autopilotSummary) {
+				autopilotSummary.addEventListener("click", (e) => {
+					if (currentUserSubscription === "free") {
+						e.preventDefault(); // Verhindert das Öffnen des Menüs
+						openPremiumModal('autopilot');
+					}
+				});
+			}
+		
         document
           .getElementById("play-chronicle-btn")
           .addEventListener("click", animateTravelChronicle);
@@ -3993,40 +4113,72 @@ document.getElementById('print-view-content').innerHTML = html;
 		// Tutorial beim ersten Start anzeigen
         showFirstStepsTutorial();
 		
-		// --- ✅ NEU: FEATURES SPERREN/ANZEIGEN ---
-        if (currentUserSubscription === "free") {
-            // Verstecke 3D-Globus
-            document.getElementById("show-globe-btn").classList.add("hidden");
-            
-            // Verstecke Autopilot
-            const autopilotBlock = document.querySelector('[data-i18n="autoPilot"]').closest('details');
-            if (autopilotBlock) autopilotBlock.classList.add("hidden");
-            
-            // Verstecke Foto-Upload
-            const photoLabel = document.querySelector('[data-i18n="form.photo"]');
-            if (photoLabel) photoLabel.parentElement.classList.add("hidden");
+		// --- ✅ NEU: FEATURES VISUALISIEREN STATT VERSTECKEN ---
+		const globeBtn = document.getElementById("show-globe-btn");
+		const autopilotDetails = document.querySelector('[data-i18n="autoPilot"]')?.closest('details'); // Selektor ggf. anpassen
+		const printBtn = document.getElementById("print-book-btn");
 
-            // Verstecke PDF-Druck
-            const printBtn = document.getElementById("print-book-btn");
-            if (printBtn) printBtn.classList.add("hidden");
+		if (currentUserSubscription === "free") {
+			// Funktion zum "Sperren" eines Buttons (Visuell)
+			const lockElement = (element) => {
+				if (!element) return;
+				element.classList.remove("hidden"); // Sicherstellen, dass er sichtbar ist
+				
+				// Visueller Stil: Etwas ausgegraut, vielleicht ein Schloss
+				element.classList.add("opacity-70", "cursor-pointer"); 
+				
+				// Optional: Ein Schloss-Icon anhängen (wenn es noch keins hat)
+				if (!element.querySelector('.lock-icon')) {
+					const lockSpan = document.createElement('span');
+					lockSpan.className = "lock-icon ml-2 text-xs";
+					lockSpan.innerHTML = "🔒"; 
+					
+					// Bei Buttons direkt rein, bei Details/Summary etwas anders
+					if(element.tagName === 'BUTTON') {
+						element.appendChild(lockSpan);
+					} else if (element.tagName === 'DETAILS') {
+						const summary = element.querySelector('summary');
+						if(summary) summary.appendChild(lockSpan);
+					}
+				}
+			};
 
-        } else {
-            // (Optional) Stelle sicher, dass sie für Pro-Nutzer sichtbar sind
-            document.getElementById("show-globe-btn").classList.remove("hidden");
-            // ... (und so weiter für die anderen Elemente) ...
-			// Verstecke Autopilot
-            const autopilotBlock = document.querySelector('[data-i18n="autoPilot"]').closest('details');
-            if (autopilotBlock) autopilotBlock.classList.remove("hidden");
-            
-            // Verstecke Foto-Upload
-            const photoLabel = document.querySelector('[data-i18n="form.photo"]');
-            if (photoLabel) photoLabel.parentElement.classList.remove("hidden");
+			lockElement(globeBtn);
+			lockElement(printBtn);
+			// Autopilot visuell sperren
+			if (autopilotDetails) {
+				autopilotDetails.classList.remove("hidden");
+				autopilotDetails.querySelector('summary').classList.add("opacity-70");
+				// Schloss in den Summary Text
+				const summary = autopilotDetails.querySelector('summary');
+				if (summary && !summary.querySelector('.lock-icon')) {
+					summary.innerHTML += ' <span class="lock-icon">🔒</span>';
+				}
+				// Inhalt deaktivieren oder beim Öffnen Modal zeigen (siehe Schritt 4)
+			}
 
-            // Verstecke PDF-Druck
-            const printBtn = document.getElementById("print-book-btn");
-            if (printBtn) printBtn.classList.remove("hidden");
-        }
-        // --- ENDE NEU ---
+		} else {
+			// --- PRO USER: Aufräumen (falls nötig, z.B. bei Login nach Kauf) ---
+			const unlockElement = (element) => {
+				if (!element) return;
+				element.classList.remove("hidden", "opacity-70");
+				const lock = element.querySelector('.lock-icon');
+				if (lock) lock.remove();
+			};
+			
+			unlockElement(globeBtn);
+			unlockElement(printBtn);
+			if (autopilotDetails) {
+				autopilotDetails.classList.remove("hidden");
+				const summary = autopilotDetails.querySelector('summary');
+				if (summary) {
+					summary.classList.remove("opacity-70");
+					const lock = summary.querySelector('.lock-icon');
+					if (lock) lock.remove();
+				}
+			}
+		}
+		// --- ENDE NEU ---
 
 		
       }
@@ -4775,6 +4927,68 @@ document.getElementById('print-view-content').innerHTML = html;
         return typeof window.AndroidPrintInterface !== 'undefined' &&
                typeof window.AndroidPrintInterface.print === 'function';
       }
+	  
+	  // --- PREMIUM MODAL LOGIC ---
+
+		// Konfiguration der Bilder für die Features
+			const premiumFeatureImages = {
+			// ./ bedeutet: "im gleichen Verzeichnis wie die index.html"
+			globe: "./pictures/globe-teaser.jpg?q=80&w=1000&auto=format&fit=crop", 
+			print: "./pictures/print-teaser.jpg?q=80&w=1000&auto=format&fit=crop",
+			autopilot: "./pictures/autopilot-teaser.jpg?q=80&w=1000&auto=format&fit=crop",
+			
+			// Fallback, falls kein spezieller Key übergeben wird
+			default: "./pictures/globe-teaser.jpg?q=80&w=1000&auto=format&fit=crop" 
+		};
+
+		function openPremiumModal(featureKey = null) {
+			const modal = document.getElementById('premium-modal');
+			const imgContainer = document.getElementById('premium-modal-image-container');
+			const imgElement = document.getElementById('premium-modal-image');
+			const titleElement = document.getElementById('modal-title');
+
+			// Standard-Titel
+			let titleText = getTranslation("premium.title") || "Unlock Full Potential 🚀";
+
+			// Bild Logik
+			if (featureKey && premiumFeatureImages[featureKey]) {
+				imgElement.src = premiumFeatureImages[featureKey];
+				imgContainer.classList.remove('hidden');
+				
+				// Optional: Titel anpassen je nach Feature
+				if (featureKey === 'globe') titleText = "Entdecke den 3D Globus 🌍";
+				if (featureKey === 'print') titleText = "Erstelle dein Logbuch als PDF 📚";
+				
+			} else {
+				imgContainer.classList.add('hidden');
+			}
+
+			if(titleElement) titleElement.textContent = titleText;
+
+			modal.classList.remove('hidden');
+		}
+
+		function closePremiumModal() {
+			document.getElementById('premium-modal').classList.add('hidden');
+		}
+
+		// Dummy-Funktion für den Kauf (später kommt hier Stripe hin)
+		document.getElementById('buy-pro-btn').addEventListener('click', async () => {
+			const btn = document.getElementById('buy-pro-btn');
+			const originalText = btn.innerHTML;
+			
+			btn.disabled = true;
+			btn.innerHTML = '<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Processing...';
+			
+			// Simuliere Netzwerk-Anfrage
+			await new Promise(r => setTimeout(r, 1500));
+			
+			showMessage("Bald verfügbar", getTranslation("premium.thankYou"), "success");
+			
+			btn.disabled = false;
+			btn.innerHTML = originalText;
+			closePremiumModal();
+		});
 
       // =================================================================
       // Hier sind alle weiteren, vollständigen Funktionen
@@ -5714,8 +5928,13 @@ document.getElementById('print-view-content').innerHTML = html;
 						</button>
 					`;
 				} else {
-					// FREE: Nur Text anzeigen
-					titleHtml = key;
+					// ✅ TEASER VERSION
+					titleHtml = `
+						${key}
+						<button onclick="event.stopPropagation(); openPremiumModal('default')" class="ml-2 p-1 rounded-full text-gray-400 hover:bg-gray-100 transition">
+							<span class="text-xs">🔒</span>
+						</button>
+					`;
 				}
 
 			} else if (isAirlineView && key !== unknownKey) {
@@ -5741,8 +5960,13 @@ document.getElementById('print-view-content').innerHTML = html;
 						</button>
 					`;
 				} else {
-					// FREE: Nur Text anzeigen
-					titleHtml = displayLabel;
+					// ✅ TEASER VERSION
+					titleHtml = `
+						${key}
+						<button onclick="event.stopPropagation(); openPremiumModal('default')" class="ml-2 p-1 rounded-full text-gray-400 hover:bg-gray-100 transition">
+							<span class="text-xs">🔒</span>
+						</button>
+					`;
 				}
 
 			} else if (isAircraftTypeView && key !== unknownKey) { 
@@ -5759,8 +5983,13 @@ document.getElementById('print-view-content').innerHTML = html;
 						</button>
 					`;
 				} else {
-					// FREE: Nur Text anzeigen
-					titleHtml = key;
+					// ✅ TEASER VERSION
+					titleHtml = `
+						${key}
+						<button onclick="event.stopPropagation(); openPremiumModal('default')" class="ml-2 p-1 rounded-full text-gray-400 hover:bg-gray-100 transition">
+							<span class="text-xs">🔒</span>
+						</button>
+					`;
 				}
 			}
 			// ...
@@ -6839,11 +7068,18 @@ document.getElementById('print-view-content').innerHTML = html;
     const allFlights = await getFlights(); 
 
     if (currentUserSubscription === "free" && allFlights.length >= 15) {
-        showMessage(
+        
+		/*
+		showMessage(
             getTranslation("messages.limitTitle") || "Limit erreicht", 
             getTranslation("messages.limitBody") || "Bitte upgrade auf Pro für unbegrenzte Flüge.", 
             "error"
         );
+		*/
+		
+		// ✅ NEUE VARIANTE: Modal öffnen!
+		openPremiumModal();
+		
         // Button wieder freigeben
         logButton.textContent = getTranslation("logFlightNewFlight") || "Flug loggen";
         logButton.disabled = false;

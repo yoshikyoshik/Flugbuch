@@ -436,6 +436,16 @@
     },
 	"expand": "Expand",
     "collapse": "Collapse"
-  }
+  },
+  
+  "premium": {
+      "title": "Become a Pro Traveler 🚀",
+      "subtitle": "Remove all limits and unlock premium features.",
+      "feature1": "Unlimited Flights",
+      "feature2": "Interactive 3D Globe",
+      "feature3": "Photo Uploads & PDF Export",
+      "cta": "Upgrade Now",
+      "thankYou": "Thanks for your interest! Payment integration coming soon."
+    }
 	
 }
