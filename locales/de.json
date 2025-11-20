@@ -77,7 +77,7 @@
         "changePassword": "Passwort ändern",
         "toggleMode": "Modus wechseln",
         "logout": "Logout",
-		"manageSubscription": "⚙️ Manage Subscription"
+		"manageSubscription": "⚙️ Abo verwalten"
     },
 	
     "form": {
@@ -118,7 +118,8 @@
         "importConfirm": "ACHTUNG! Du bist dabei, {count} Flüge zu importieren. Alle deine aktuellen Flüge werden gelöscht und ersetzt.",
 		"uploadLimitCount": "Limit erreicht: Es sind maximal {count} Fotos pro Flug erlaubt. Es werden nur die ersten {count} neuen Fotos hochgeladen.",
 		"uploadLimitSize": "Datei übersprungen: {fileName} ist zu groß (Max. 3 MB).",
-		"subscriptionExpired": "Your subscription has expired. You are back to Free mode."
+		"subscriptionExpired": "Dein Abo ist abgelaufen. Du bist nun wieder im Free-Modus.",
+		"statusUpdate": "Status-Update"
     },
 	
 	"records": {

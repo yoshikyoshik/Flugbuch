@@ -2313,6 +2313,7 @@
       const MAX_PHOTOS_PER_FLIGHT = 5;
       const MAX_FILE_SIZE_BYTES = 3 * 1024 * 1024; // 3 MB
 	  let currentUserSubscription = "free"; // ✅ NEU: Standardmäßig ist jeder "free"
+	  let currentSubscriptionEnd = null; // ✅ NEU: Speichert den Zeitstempel
 	  
 
       var airportData = {
@@ -3961,6 +3962,9 @@ document.getElementById('print-view-content').innerHTML = html;
                 
                 // 2. Zeit-Check: Gibt es ein Ablaufdatum?
                 if (meta.subscription_end) {
+				
+					currentSubscriptionEnd = meta.subscription_end; // ✅ NEU: Global speichern!
+					
                     const nowInSeconds = Math.floor(Date.now() / 1000); // Aktuelle Zeit in Unix-Timestamp
                     
                     if (meta.subscription_end > nowInSeconds) {
@@ -4166,6 +4170,46 @@ document.getElementById('print-view-content').innerHTML = html;
     showFirstStepsTutorial();
     
     updateLockVisuals();
+	
+	// --- ✅ NEU: LIVE-CHECK (Der Wächter) ---
+    // Prüft alle 60 Sekunden (60000 ms), ob das Abo während der Sitzung abläuft
+    setInterval(() => {
+        // Wir prüfen nur, wenn der User aktuell noch PRO ist und ein Enddatum hat
+        if (currentUserSubscription === 'pro' && currentSubscriptionEnd) {
+            
+            const now = Math.floor(Date.now() / 1000);
+            
+            if (now > currentSubscriptionEnd) {
+                console.warn("Subscription expired during session! Downgrading to FREE.");
+                
+                // 1. Status ändern
+                currentUserSubscription = 'free';
+                
+                // 2. UI aktualisieren (Schlösser anbringen)
+                updateLockVisuals();
+                
+                // 3. Badge und Buttons im Menü aktualisieren
+                const statusBadge = document.getElementById("subscription-status-badge");
+                const upgradeBtn = document.getElementById("menu-upgrade-btn");
+                const manageBtn = document.getElementById("menu-manage-sub-btn");
+                
+                if (statusBadge) {
+                    statusBadge.textContent = "FREE";
+                    statusBadge.className = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mt-1 bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400 border border-gray-200 dark:border-gray-600";
+                }
+                if(upgradeBtn) upgradeBtn.classList.remove("hidden");
+                if(manageBtn) manageBtn.classList.add("hidden");
+                
+                // 4. Nutzer informieren (Toast Nachricht)
+                showMessage(
+                    getTranslation("messages.statusUpdate"), 
+                    getTranslation("messages.subscriptionExpired") || "Dein Abo ist abgelaufen.", 
+                    "info"
+                );
+            }
+        }
+    }, 60000); // Alle 60 Sekunden
+	
 }
 
       function showAuth() {

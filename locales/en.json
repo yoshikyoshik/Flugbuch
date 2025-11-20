@@ -118,7 +118,8 @@
         "importConfirm": "WARNING! You are about to import {count} flights. All your current cloud-saved flights will be deleted and replaced.",
 		"uploadLimitCount": "Limit reached: A maximum of {count} photos per flight is allowed. Only the first {count} new photos will be uploaded.",
 		"uploadLimitSize": "File skipped: {fileName} is too large (Max 3MB).",
-		"subscriptionExpired": "Your subscription has expired. You are back to Free mode."
+		"subscriptionExpired": "Your subscription has expired. You are back to Free mode.",
+		"statusUpdate": "Status Update"
     },
 	
 	"records": {
