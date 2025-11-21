@@ -1338,6 +1338,7 @@ document.addEventListener("DOMContentLoaded", async function () {
       }
     });
 
+/*
   // Dummy-Funktion für den Kauf (später kommt hier Stripe hin)
   document.getElementById("buy-pro-btn").addEventListener("click", async () => {
     const btn = document.getElementById("buy-pro-btn");
@@ -1360,6 +1361,49 @@ document.addEventListener("DOMContentLoaded", async function () {
     btn.innerHTML = originalText;
     closePremiumModal();
   });
+*/  
+  
+    // Echte-Funktion für den Kauf (Stripe)
+  document.getElementById("buy-pro-btn").addEventListener("click", async () => {
+    const btn = document.getElementById("buy-pro-btn");
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '⏳ Lade Checkout...';
+
+    try {
+        // 1. Aktuellen User holen
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        if (!user) throw new Error("Nicht eingeloggt");
+
+        // 2. Gewählten Plan holen (selectedPlan kommt aus config/global state)
+        const priceId = pricingConfig[selectedPlan].stripeProductId;
+
+        // 3. Netlify Function aufrufen
+        const response = await fetch('/.netlify/functions/create-checkout', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                priceId: priceId,
+                userId: user.id,
+                userEmail: user.email
+            })
+        });
+
+        const result = await response.json();
+        
+        if (result.error) throw new Error(result.error);
+        if (result.url) {
+            // 4. Weiterleitung zu Stripe
+            window.location.href = result.url;
+        }
+
+    } catch (error) {
+        console.error("Checkout Fehler:", error);
+        showMessage("Fehler", "Konnte Checkout nicht starten.", "error");
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    }
+});
 
   // Haupt-Logik: Reagiere auf Änderungen des Login-Status
   supabaseClient.auth.onAuthStateChange(async (event, session) => {

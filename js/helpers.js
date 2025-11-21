@@ -219,7 +219,7 @@ function updateLockVisuals() {
   }
 }
 
-////
+/*
 function manageSubscription() {
   // Später: window.location.href = "STRIPE_CUSTOMER_PORTAL_LINK";
   showMessage(
@@ -227,6 +227,34 @@ function manageSubscription() {
     "Hier wirst du später zu Stripe weitergeleitet, um zu kündigen oder Zahlungsdaten zu ändern.",
     "info"
   );
+}
+*/
+
+async function manageSubscription() {
+    try {
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        // Die stripe_customer_id haben wir im Webhook gespeichert!
+        const customerId = user?.user_metadata?.stripe_customer_id;
+
+        if (!customerId) {
+            showMessage("Info", "Kein aktives Stripe-Konto gefunden.", "info");
+            return;
+        }
+
+        showMessage("Lade...", "Leite zum Kundenportal weiter...", "info");
+
+        const response = await fetch('/.netlify/functions/create-portal', {
+            method: 'POST',
+            body: JSON.stringify({ customerId })
+        });
+        
+        const result = await response.json();
+        if (result.url) window.location.href = result.url;
+
+    } catch (e) {
+        console.error(e);
+        showMessage("Fehler", "Konnte Portal nicht öffnen.", "error");
+    }
 }
 
 /**

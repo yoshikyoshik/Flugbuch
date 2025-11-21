@@ -514,13 +514,13 @@ const pricingConfig = {
     amount: "2,49 €",
     periodKey: "premium.perMonth",
     fallbackPeriod: "/ Monat",
-    stripeProductId: "price_monthly_xyz",
+    stripeProductId: "price_1SVxYkFoVhyNl27pCcMGjFAG",
   },
   yearly: {
     amount: "14,99 €",
     periodKey: "premium.perYear",
     fallbackPeriod: "/ Jahr",
-    stripeProductId: "price_yearly_xyz",
+    stripeProductId: "price_1SVxYkFoVhyNl27pwsXrWDu1",
   },
 };
 
