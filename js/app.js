@@ -1379,15 +1379,16 @@ document.addEventListener("DOMContentLoaded", async function () {
         const priceId = pricingConfig[selectedPlan].stripeProductId;
 
         // 3. Netlify Function aufrufen
-        const response = await fetch('/.netlify/functions/create-checkout', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                priceId: priceId,
-                userId: user.id,
-                userEmail: user.email
-            })
-        });
+// ✅ KORREKTUR: API_BASE_URL davor setzen
+const response = await fetch(`${API_BASE_URL}/.netlify/functions/create-checkout`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+        priceId: priceId,
+        userId: user.id,
+        userEmail: user.email
+    })
+});
 
         const result = await response.json();
         

@@ -135,7 +135,12 @@ async function claimExistingFlights() {
 window.fetchExternalAirport = async function (input) {
   const normalizedInput = input.trim();
   if (normalizedInput.length < 3) return [];
-  const url = `https://aesthetic-strudel-ecfe50.netlify.app/.netlify/functions/fetch-airport?query=${encodeURIComponent(normalizedInput)}`;
+  
+  /*const url = `https://aesthetic-strudel-ecfe50.netlify.app/.netlify/functions/fetch-airport?query=${encodeURIComponent(normalizedInput)}`;
+  */
+  
+  const url = `${API_BASE_URL}/.netlify/functions/fetch-airport?query=${encodeURIComponent(normalizedInput)}`;
+  
   try {
     const response = await fetch(url);
     if (!response.ok) return [];
@@ -161,9 +166,18 @@ window.fetchExternalAirport = async function (input) {
 
 async function fetchAirlineName(iataCode) {
   try {
-    const response = await fetch(
+    
+	/*
+	const response = await fetch(
       `https://aesthetic-strudel-ecfe50.netlify.app/.netlify/functions/fetch-airline-details?iata_code=${iataCode}`
     );
+	*/
+	
+	const response = await fetch(
+    `${API_BASE_URL}/.netlify/functions/fetch-airline-details?iata_code=${iataCode}`
+	);
+	
+	
     if (!response.ok) throw new Error("Fehler");
     const result = await response.json();
     if (result.data && result.data.length > 0) return result.data[0].name;

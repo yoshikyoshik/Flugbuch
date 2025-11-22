@@ -6,6 +6,14 @@ const SUPABASE_URL = "https://sbmjdwktxsnmukbooycu.supabase.co";
 const SUPABASE_ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNibWpkd2t0eHNubXVrYm9veWN1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAyOTczNDgsImV4cCI6MjA3NTg3MzM0OH0.NN9EHfS7iyAZvFm_UYs3PxEWj2pMbYmMduUeVA70rpo";
 
+// ✅ NEU: Automatische Erkennung der Backend-URL
+// Wenn wir auf localhost (Android App) sind, nutzen wir die echte Domain.
+// Wenn wir im Web sind, nutzen wir relative Pfade (leerer String).
+// BITTE HIER DEINE ECHTE NETLIFY-URL ODER AVIOSPHERE-DOMAIN EINTRAGEN:
+const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.protocol === 'file:')
+    ? 'https://aviosphere.com/' // <-- DEINE LIVE URL HIER!
+    : '';
+
 // Konstanten
 const MAX_PHOTOS_PER_FLIGHT = 5;
 const MAX_FILE_SIZE_BYTES = 3 * 1024 * 1024; // 3 MB

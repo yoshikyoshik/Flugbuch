@@ -233,23 +233,37 @@ function manageSubscription() {
 async function manageSubscription() {
     try {
         const { data: { user } } = await supabaseClient.auth.getUser();
-        // Die stripe_customer_id haben wir im Webhook gespeichert!
         const customerId = user?.user_metadata?.stripe_customer_id;
 
         if (!customerId) {
-            showMessage("Info", "Kein aktives Stripe-Konto gefunden.", "info");
+            showMessage("Info", getTranslation("messages.noStripeAccount") || "Kein aktives Abo-Konto gefunden.", "info");
             return;
         }
 
-        showMessage("Lade...", "Leite zum Kundenportal weiter...", "info");
+        showMessage("Lade...", getTranslation("messages.redirectingStripe") || "Leite zum Kundenportal weiter...", "info");
 
-        const response = await fetch('/.netlify/functions/create-portal', {
+        // ✅ KORREKTUR 1: Absolute URL verwenden
+        const response = await fetch(`${API_BASE_URL}/.netlify/functions/create-portal`, {
             method: 'POST',
+            headers: { 'Content-Type': 'application/json' }, // Header ist oft wichtig
             body: JSON.stringify({ customerId })
         });
         
+        if (!response.ok) throw new Error("Netzwerkfehler beim Portal-Aufruf");
+
         const result = await response.json();
-        if (result.url) window.location.href = result.url;
+        
+        if (result.url) {
+            // ✅ KORREKTUR 2: Capacitor Browser nutzen (falls verfügbar)
+            if (typeof Capacitor !== 'undefined' && Capacitor.Plugins && Capacitor.Plugins.Browser) {
+                await Capacitor.Plugins.Browser.open({ url: result.url });
+            } else {
+                // Fallback für Web
+                window.location.href = result.url;
+            }
+        } else {
+            throw new Error("Keine URL von Stripe erhalten");
+        }
 
     } catch (e) {
         console.error(e);
