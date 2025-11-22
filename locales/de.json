@@ -1,6 +1,6 @@
 {
-    "appName": "Digitales Flugbuch",
-    "tagline": "Wählen Sie einen Flughafen aus der Liste oder geben Sie einen Code/Namen manuell ein.",
+    "appName": "AvioSphere",
+    "tagline": "Dein Flugbuch, visualisiert in 3D.",
     "lastFlightMap": "Zuletzt geloggter/bearbeiteter Flug",
     "mapInfo": "Flugroute wird visualisiert.",
 	"autoPilot": "Autopilot: Flugdaten per Flugnummer laden",

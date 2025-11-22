@@ -19,11 +19,15 @@
   "homepage": "https://github.com/yoshikyoshik/Flugbuch#readme",
   "dependencies": {
     "@capacitor/android": "^7.4.3",
+    "@capacitor/browser": "^7.0.2",
     "@capacitor/cli": "^7.4.3",
     "@capacitor/core": "^7.4.3",
     "@my-plugins/capacitor-printer": "file:my-printer",
     "@supabase/supabase-js": "^2.84.0",
     "node-fetch": "^2.7.0",
     "stripe": "^20.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5"
   }
 }

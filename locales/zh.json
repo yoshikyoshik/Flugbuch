@@ -1,6 +1,6 @@
 {
-  "appName": "数字飞行日志",
-  "tagline": "请从列表中选择机场或手动输入代码/名称。",
+  "appName": "AvioSphere",
+  "tagline": "您的飞行日志，3D 可视化呈现。",
   "lastFlightMap": "最后记录/编辑的航班",
   "mapInfo": "正在显示航班路线。",
   "autoPilot": "自动驾驶：按航班号加载航班数据",

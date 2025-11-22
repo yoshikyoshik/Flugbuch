@@ -1,6 +1,6 @@
 {
-    "appName": "Digital Flightbook",
-    "tagline": "Select an airport from the list or enter a code/name manually.",
+    "appName": "AvioSphere",
+    "tagline": "Your flight log, visualized in 3D.",
     "lastFlightMap": "Last Logged/Edited Flight",
     "mapInfo": "Visualizing flight route.",
 	"autoPilot": "Autopilot: Load flight data by flight number",

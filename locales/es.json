@@ -1,6 +1,6 @@
 {
-  "appName": "Diario de Vuelo Digital",
-  "tagline": "Seleccione un aeropuerto de la lista o ingrese un código/nombre manualmente.",
+  "appName": "AvioSphere",
+  "tagline": "Tu registro de vuelos, visualizado en 3D.",
   "lastFlightMap": "Último vuelo registrado/editado",
   "mapInfo": "Visualizando ruta de vuelo.",
   "autoPilot": "Piloto automático: Cargar datos de vuelo por número de vuelo",
