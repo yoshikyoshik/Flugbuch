@@ -42,6 +42,11 @@
     <script src="https://unpkg.com/leaflet-polylinedecorator@1.6.0/dist/leaflet.polylineDecorator.js"></script>
     <script src="//unpkg.com/globe.gl@latest"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+	<script>
+	  tailwind.config = {
+		darkMode: 'class', // Zwingt Tailwind, auf class="dark" zu achten
+	  }
+	</script>
 	
 	<script src="js/config.js"></script>
 	<script src="js/helpers.js"></script>    
@@ -867,59 +872,40 @@
                   </div>
 
                   <div class="lg:col-span-6">
-                    <div
-                      class="grid grid-cols-2 md:grid-cols-3 gap-4 bg-indigo-100 dark:bg-gray-800 p-4 rounded-lg border border-indigo-200 dark:border-gray-700"
-                    >
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4 bg-indigo-100 dark:bg-slate-800 p-4 rounded-lg border border-indigo-200 dark:border-slate-700">
+                      
                       <div>
-                        <p
-                          data-i18n="estimatedDistanceNewFlight"
-                          class="text-xs font-medium text-indigo-700 dark:text-gray-400"
-                        >
+                        <p data-i18n="estimatedDistanceNewFlight" class="text-xs font-medium text-indigo-700 dark:text-gray-400">
                           Geschätzte Entfernung
                         </p>
-                        <p
-                          id="distance-display"
-                          class="text-xl font-bold text-indigo-800 dark:text-gray-200"
-                        >
+                        <p id="distance-display" class="text-xl font-bold text-indigo-800 dark:text-gray-200">
                           -
                         </p>
                       </div>
+
                       <div>
-                        <p
-                          data-i18n="estimatedFlightTimeNewFlight"
-                          class="text-xs font-medium text-indigo-700 dark:text-gray-400"
-                        >
+                        <p data-i18n="estimatedFlightTimeNewFlight" class="text-xs font-medium text-indigo-700 dark:text-gray-400">
                           Geschätzte Flugzeit
                         </p>
-                        <p
-                          id="time-display"
-                          class="text-xl font-bold text-indigo-800 dark:text-gray-200"
-                        >
+                        <p id="time-display" class="text-xl font-bold text-indigo-800 dark:text-gray-200">
                           -
                         </p>
                       </div>
+
                       <div class="col-span-2 md:col-span-1">
-                        <p
-                          data-i18n="estimatedCO2Emissions"
-                          class="text-xs font-medium text-red-700 dark:text-red-400"
-                        >
+                        <p data-i18n="estimatedCO2Emissions" class="text-xs font-medium text-red-700 dark:text-red-400">
                           Geschätzter CO₂-Ausstoß
                         </p>
-                        <p
-                          id="co2-display"
-                          class="text-xl font-bold text-red-800 dark:text-red-300"
-                        >
+                        <p id="co2-display" class="text-xl font-bold text-red-800 dark:text-red-300">
                           -
                         </p>
                       </div>
-                    </div>
-                  </div>
-                </div>
-              </details>
 
-              <div
-                class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mt-6"
-              >
+                    </div> 
+                  </div> 
+                  </div> </details> 
+
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mt-6">
                 <button
                   onclick="logFlight()"
                   id="log-button"
@@ -928,11 +914,11 @@
                   class="w-full py-3 px-4 rounded-lg transition-colors font-semibold 
                          bg-indigo-600 text-white hover:bg-indigo-700 
                          disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed
-                         dark:disabled:bg-gray-800 dark:disabled:text-gray-600 dark:disabled:border dark:disabled:border-gray-700"
+                         dark:disabled:bg-slate-800 dark:disabled:text-gray-500 dark:disabled:border dark:disabled:border-gray-700"
                 >
                   Flug loggen und speichern
                 </button>
-
+                
                 <button
                   onclick="resetForm()"
                   id="cancel-edit-button"
