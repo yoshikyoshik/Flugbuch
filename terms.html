@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AGB & Impressum - AvioSphere</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+<script>
+    // Prüft sofort beim Laden, ob Dark Mode aktiv sein soll
+    try {
+        const localTheme = localStorage.getItem('theme');
+        const sysTheme = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (localTheme === 'dark' || (!localTheme && sysTheme)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    } catch (e) {
+        console.error("Fehler beim Laden des Themes", e);
+    }
+</script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-300 p-6 md:p-12">
+
+    <div class="max-w-3xl mx-auto bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
+        
+        <div class="flex items-center gap-4 mb-8 border-b border-gray-200 dark:border-gray-700 pb-4">
+            <img src="pictures/logo.png" alt="Logo" class="w-12 h-12 rounded-lg shadow-sm">
+            <h1 class="text-2xl font-bold text-indigo-700 dark:text-indigo-400">AGB & Impressum</h1>
+        </div>
+
+        <div class="space-y-6">
+            
+            <section>
+                <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">Impressum</h2>
+                <p class="text-sm text-gray-500 mb-2">Angaben gemäß § 5 TMG</p>
+                <div class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded border dark:border-gray-600">
+                    <p><strong>Rico Böhme</strong></p>
+                    <p>Eibenstocker Straße 97A</p>
+                    <p>01277 Dresden</p>
+                    <p>Kontakt: support@aviosphere.app</p>
+                    </div>
+            </section>
+
+            <hr class="dark:border-gray-700">
+
+            <section>
+                <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">Allgemeine Geschäftsbedingungen</h2>
+                
+                <h3 class="font-bold mt-4">1. Geltungsbereich</h3>
+                <p>Diese Bedingungen gelten für die Nutzung der App "AvioSphere".</p>
+
+                <h3 class="font-bold mt-4">2. Abonnements & Zahlungen</h3>
+                <p>AvioSphere bietet ein Freemium-Modell an. Das Pro-Abonnement schaltet erweiterte Funktionen frei.</p>
+                <ul class="list-disc list-inside ml-4 mt-2">
+                    <li>Die Zahlung erfolgt sicher über <strong>Stripe</strong>.</li>
+                    <li>Abonnements verlängern sich automatisch (monatlich oder jährlich), sofern sie nicht gekündigt werden.</li>
+                    <li>Die Kündigung ist jederzeit über das Kundenportal in der App möglich und wird zum Ende des aktuellen Abrechnungszeitraums wirksam.</li>
+                </ul>
+
+                <h3 class="font-bold mt-4">3. Widerrufsrecht</h3>
+                <p>Sie haben das Recht, binnen vierzehn Tagen ohne Angabe von Gründen diesen Vertrag zu widerrufen. Um Ihr Widerrufsrecht auszuüben, kontaktieren Sie uns bitte unter der im Impressum angegebenen E-Mail-Adresse.</p>
+
+                <h3 class="font-bold mt-4">4. Haftungsausschluss</h3>
+                <p>AvioSphere übernimmt keine Gewähr für die Richtigkeit der angezeigten Flughafendaten, CO2-Berechnungen oder Karteninformationen. Die App dient der persönlichen Dokumentation und ist kein offizielles fliegerisches Dokument.</p>
+            </section>
+
+            <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700 text-center">
+                <a href="index.html" class="text-indigo-600 dark:text-indigo-400 hover:underline">Zurück zur App</a>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

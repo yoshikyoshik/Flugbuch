@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - AvioSphere</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+<script>
+    // Prüft sofort beim Laden, ob Dark Mode aktiv sein soll
+    try {
+        const localTheme = localStorage.getItem('theme');
+        const sysTheme = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (localTheme === 'dark' || (!localTheme && sysTheme)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    } catch (e) {
+        console.error("Fehler beim Laden des Themes", e);
+    }
+</script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-300 p-6 md:p-12">
+
+    <div class="max-w-3xl mx-auto bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
+        
+        <div class="flex items-center gap-4 mb-8 border-b border-gray-200 dark:border-gray-700 pb-4">
+            <img src="pictures/logo.png" alt="Logo" class="w-12 h-12 rounded-lg shadow-sm">
+            <h1 class="text-2xl font-bold text-indigo-700 dark:text-indigo-400">Privacy Policy</h1>
+        </div>
+
+        <div class="space-y-6">
+            <section>
+                <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">1. Controller</h2>
+                <p>Responsible for data processing:</p>
+                <div class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded border dark:border-gray-600 mt-2">
+                    <p><strong>Rico Böhme</strong></p>
+                    <p>Eibenstocker Straße 97A</p>
+                    <p>01277 Dresden, GERMANY</p>
+                    <p>Email: support@aviosphere.app</p>
+                </div>
+            </section>
+
+            <section>
+                <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">2. Data We Store</h2>
+                <p>The <strong>AvioSphere</strong> app stores the following user-related data to ensure functionality:</p>
+                <ul class="list-disc list-inside ml-4 mt-2 space-y-1">
+                    <li>Email address (for authentication)</li>
+                    <li>Flight data (Origin, Destination, Date, Aircraft type, etc.)</li>
+                    <li>Uploaded photos (stored in the cloud)</li>
+                    <li>Subscription status (Free/Pro)</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">3. Third-Party Services</h2>
+                <p>We use trusted third-party providers for our infrastructure:</p>
+                <ul class="list-disc list-inside ml-4 mt-2 space-y-1">
+                    <li><strong>Supabase:</strong> Database & Authentication (Server location: EU/Germany).</li>
+                    <li><strong>Netlify:</strong> Hosting of the web app and server functions.</li>
+                    <li><strong>Stripe:</strong> Payment processing. Credit card data is <strong>not</strong> stored on our servers but transmitted directly to Stripe.</li>
+                    <li><strong>API-Ninjas / FlightLabs:</strong> Retrieval of public airport data (no personal data).</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">4. Your Rights (GDPR)</h2>
+                <p>You have the right to access, rectification, deletion, and restriction of processing of your stored data at any time. You can delete your account and all data directly within the app.</p>
+            </section>
+
+            <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700 text-center">
+                <a href="index.html" class="text-indigo-600 dark:text-indigo-400 hover:underline">Back to App</a>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

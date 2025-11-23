@@ -553,12 +553,22 @@ window.renderFlights = async function (
   const paginatedFlights = allFlights.slice(startIndex, endIndex);
 
   let flightForMap = null;
-  if (flightIdToFocus) {
-    flightForMap = allFlights.find((f) => f.id === flightIdToFocus);
-  }
-  if (!flightForMap && allFlights.length > 0) {
-    flightForMap = paginatedFlights[0] || allFlights[0]; // Nimm den ersten der aktuellen Seite
-  }
+    
+    // 1. Wurde ein spezifischer Flug (z.B. nach dem Speichern) fokussiert?
+    if (flightIdToFocus) {
+        flightForMap = allFlights.find((f) => f.id === flightIdToFocus);
+    }
+    
+    // 2. Fallback: Wenn kein Fokus gesetzt ist, nimm den chronologisch NEUESTEN Flug
+    if (!flightForMap && allFlights.length > 0) {
+        // Wir sortieren eine Kopie der Liste nach Datum (absteigend) und nehmen den ersten
+        // Dies ignoriert die Sortierung der Tabelle unten und zeigt immer den aktuellsten Flug oben.
+        flightForMap = [...allFlights].sort((a, b) => {
+            const dateDiff = new Date(b.date) - new Date(a.date);
+            if (dateDiff !== 0) return dateDiff;
+            return b.id - a.id; // Bei gleichem Datum gewinnt die höhere ID (neuer eingetragen)
+        })[0];
+    }
 
   if (flightForMap) {
     window.drawRouteOnMap(
@@ -1535,25 +1545,49 @@ async function triggerPrintView_FlightsTab() {
  * NEU: Füllt den Hilfe-Tab mit übersetzbarem Inhalt.
  */
 function renderHelpContent() {
-  const container = document.getElementById("help-content-container");
+    const container = document.getElementById("help-content-container");
 
-  // Hilfetexte (mit i18n-Schlüsseln)
-  const sections = [
-    { key: "help.logging.title", contentKey: "help.logging.content" },
-    { key: "help.globe.title", contentKey: "help.globe.content" },
-    { key: "help.tabs.title", contentKey: "help.tabs.content" },
-    { key: "help.data.title", contentKey: "help.data.content" },
-  ];
+    // Hilfetexte (mit i18n-Schlüsseln)
+    const sections = [
+        { key: "help.logging.title", contentKey: "help.logging.content" },
+        { key: "help.globe.title", contentKey: "help.globe.content" },
+        { key: "help.tabs.title", contentKey: "help.tabs.content" },
+        { key: "help.data.title", contentKey: "help.data.content" },
+    ];
 
-  let html = "";
-  sections.forEach((section) => {
-    html += `
+    let html = "";
+    sections.forEach(section => {
+        html += `
           <h3 class="text-lg font-semibold text-indigo-600 dark:text-indigo-400">${getTranslation(section.key)}</h3>
           <p>${getTranslation(section.contentKey)}</p>
         `;
-  });
+    });
 
-  container.innerHTML = html;
+    // ✅ NEU: Intelligente Verlinkung basierend auf der Sprache
+    // currentLanguage kommt aus config.js
+    const isGerman = currentLanguage === 'de';
+    
+    const privacyLink = isGerman ? 'privacy.html' : 'privacy_en.html';
+    const termsLink = isGerman ? 'terms.html' : 'terms_en.html';
+
+    // Übersetzte Titel für die Links (optional, oder wir nehmen Symbole/Englisch als Standard)
+    const privacyTitle = isGerman ? 'Datenschutzerklärung' : 'Privacy Policy';
+    const termsTitle = isGerman ? 'AGB & Impressum' : 'Terms & Legal Notice';
+
+    html += `
+        <hr class="my-6 border-gray-300 dark:border-gray-600">
+        <h3 class="text-lg font-semibold text-indigo-600 dark:text-indigo-400 mb-2">${isGerman ? 'Rechtliches' : 'Legal'}</h3>
+        <div class="flex flex-col space-y-2">
+            <a href="${privacyLink}" target="_blank" class="text-indigo-500 hover:underline flex items-center gap-2">
+                🛡️ ${privacyTitle}
+            </a>
+            <a href="${termsLink}" target="_blank" class="text-indigo-500 hover:underline flex items-center gap-2">
+                ⚖️ ${termsTitle}
+            </a>
+        </div>
+    `;
+
+    container.innerHTML = html;
 }
 
 /**
