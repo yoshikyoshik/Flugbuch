@@ -122,8 +122,8 @@
 		"uploadLimitSize": "Datei übersprungen: {fileName} ist zu groß (Max. 3 MB).",
 		"subscriptionExpired": "Dein Abo ist abgelaufen. Du bist nun wieder im Free-Modus.",
 		"statusUpdate": "Status-Update",
-		"noStripeAccount:" "Kein aktives Abo-Konto gefunden.",
-		"redirectingStripe:" "Leite zum Kundenportal weiter..."
+		"noStripeAccount": "Kein aktives Abo-Konto gefunden.",
+		"redirectingStripe": "Leite zum Kundenportal weiter..."
     },
 	
 	"records": {
