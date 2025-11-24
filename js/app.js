@@ -24,6 +24,13 @@ async function initializeApp() {
 
       // --- ✅ NEU: STATUS-PRÜFUNG (MIT ZEIT-CHECK) ---
       const meta = user.user_metadata || {};
+	  
+	  // ✅ NEU: Letzte Flug-ID aus der Datenbank holen
+		if (meta.last_flight_id) {
+			globalLastFlightId = meta.last_flight_id;
+			console.log("Letzter bearbeiteter Flug geladen:", globalLastFlightId);
+		}
+	  
       let isPro = false;
 
       // 1. Prüfen, ob überhaupt "pro" flag gesetzt ist
@@ -119,9 +126,11 @@ async function initializeApp() {
     .getElementById("burger-menu-btn")
     .addEventListener("click", toggleBurgerMenu);
   document.getElementById("menu-logout-btn").addEventListener("click", logout);
-  document
-    .getElementById("menu-theme-toggle")
-    .addEventListener("click", toggleDarkMode);
+  document.getElementById("menu-theme-toggle").addEventListener("click", (e) => {
+    e.preventDefault(); // Verhindert, dass die Seite nach oben springt (wegen href="#")
+    toggleDarkMode();   // Schaltet Hell/Dunkel um
+    toggleBurgerMenu(); // Schließt das Menü
+});
 
   // Listener, um das Menü zu schließen, wenn man daneben klickt
   document.addEventListener("click", function (event) {
@@ -465,6 +474,16 @@ window.logFlight = async function () {
       "success"
     );
     resetForm();
+	
+	// ID in Supabase Metadaten speichern
+	// Wir machen das "im Hintergrund" (kein await nötig, damit die UI nicht blockiert)
+	supabaseClient.auth.updateUser({
+		data: { last_flight_id: newFlightId }
+	}).then(() => {
+		globalLastFlightId = newFlightId; // Auch lokal sofort updaten
+		console.log("Last Flight ID gespeichert:", newFlightId);
+	});
+	
     renderFlights(null, newFlightId);
   }
   logButton.textContent = "Flug loggen und speichern";
@@ -665,6 +684,16 @@ async function updateFlight() {
       "Die Flugdaten wurden erfolgreich aktualisiert.",
       "success"
     );
+	
+	// ID in Supabase Metadaten speichern
+	const currentId = currentlyEditingFlightData.id;
+	supabaseClient.auth.updateUser({
+		data: { last_flight_id: currentId }
+	}).then(() => {
+		globalLastFlightId = currentId; // Auch lokal sofort updaten
+		console.log("Last Flight ID aktualisiert:", currentId);
+	});
+	
   }
   const flightIdToFocus = currentlyEditingFlightData.id;
   resetForm();

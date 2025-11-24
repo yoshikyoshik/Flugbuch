@@ -104,7 +104,9 @@
     "chooseFile": "Выберите файл...",
     "noFileSelected": "Файл не выбран",
     "filesSelected": "Выбрано {count} фото.",
-    "registration": "Регистрация (необязательно)"
+    "registration": "Регистрация (необязательно)",
+	"reset": "Сбросить",
+    "cancel": "Отмена"
   },
   "messages": {
     "noDataFound": "Данные о рейсе для этой комбинации не найдены.",

@@ -104,7 +104,9 @@
     "chooseFile": "Seleccionar archivo...",
     "noFileSelected": "Ningún archivo seleccionado",
     "filesSelected": "{count} foto(s) seleccionada(s).",
-    "registration": "Matrícula (Opcional)"
+    "registration": "Matrícula (Opcional)",
+	"reset": "Restablecer",
+    "cancel": "Cancelar"
   },
   "messages": {
     "noDataFound": "No se encontraron datos de vuelo para esta combinación.",

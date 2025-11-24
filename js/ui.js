@@ -553,22 +553,27 @@ window.renderFlights = async function (
   const paginatedFlights = allFlights.slice(startIndex, endIndex);
 
   let flightForMap = null;
-    
-    // 1. Wurde ein spezifischer Flug (z.B. nach dem Speichern) fokussiert?
-    if (flightIdToFocus) {
-        flightForMap = allFlights.find((f) => f.id === flightIdToFocus);
-    }
-    
-    // 2. Fallback: Wenn kein Fokus gesetzt ist, nimm den chronologisch NEUESTEN Flug
-    if (!flightForMap && allFlights.length > 0) {
-        // Wir sortieren eine Kopie der Liste nach Datum (absteigend) und nehmen den ersten
-        // Dies ignoriert die Sortierung der Tabelle unten und zeigt immer den aktuellsten Flug oben.
-        flightForMap = [...allFlights].sort((a, b) => {
-            const dateDiff = new Date(b.date) - new Date(a.date);
-            if (dateDiff !== 0) return dateDiff;
-            return b.id - a.id; // Bei gleichem Datum gewinnt die höhere ID (neuer eingetragen)
-        })[0];
-    }
+
+  // 1. Wurde ein spezifischer Flug (direkt nach Speichern/Update) übergeben?
+  if (flightIdToFocus) {
+    flightForMap = allFlights.find((f) => f.id === flightIdToFocus);
+  }
+
+  // 2. Wenn kein direkter Fokus da ist, schauen wir in die globale Variable (aus Supabase geladen)
+  if (!flightForMap && globalLastFlightId) {
+      // '==' Vergleich, da IDs manchmal String/Number gemischt sein können
+      flightForMap = allFlights.find((f) => f.id == globalLastFlightId);
+  }
+
+  // 3. Fallback: Wenn immer noch nichts gefunden wurde (z.B. allererster Start)
+  // Dann nehmen wir den chronologisch NEUESTEN Flug
+  if (!flightForMap && allFlights.length > 0) {
+    flightForMap = [...allFlights].sort((a, b) => {
+        const dateDiff = new Date(b.date) - new Date(a.date);
+        if (dateDiff !== 0) return dateDiff;
+        return b.id - a.id;
+    })[0];
+  }
 
   if (flightForMap) {
     window.drawRouteOnMap(
@@ -724,10 +729,18 @@ async function renderLogbookView(groupBy) {
       if (type === "") type = unknownKey;
       keys.push(type);
     } else if (isAirlineView) {
-      const match = flight.flightNumber
-        ? flight.flightNumber.match(/^[A-Z0-9]{2}/)
-        : null;
-      const airline = match ? match[0].toUpperCase() : unknownKey;
+      // 1. Priorität: Das Feld "Airline", falls gefüllt
+      let airline = flight.airline ? flight.airline.trim() : "";
+
+      // 2. Fallback: Versuche Code aus Flugnummer zu extrahieren (z.B. "LH" aus "LH400")
+      if (!airline && flight.flightNumber) {
+          const match = flight.flightNumber.match(/^[A-Z0-9]{2}/);
+          if (match) airline = match[0].toUpperCase();
+      }
+
+      // 3. Wenn immer noch nichts gefunden -> Unbekannt
+      if (!airline) airline = unknownKey;
+
       keys.push(airline);
     } else if (isAirportView) {
       if (flight.departure) keys.push(flight.departure.toUpperCase());
@@ -802,9 +815,14 @@ async function renderLogbookView(groupBy) {
       const firstFlightWithName = group.flights.find(
         (f) => f.airline && f.airline.trim() !== ""
       );
-      const displayLabel = firstFlightWithName
-        ? `${firstFlightWithName.airline} (${key})`
-        : key;
+      
+      // Prüfen: Ist der Key (Gruppenname) ungleich dem vollen Namen? 
+      // Z.B. Key="LH", Name="Lufthansa" -> "Lufthansa (LH)"
+      // Aber: Key="Lufthansa", Name="Lufthansa" -> "Lufthansa"
+      let displayLabel = key;
+      if (firstFlightWithName && firstFlightWithName.airline !== key) {
+          displayLabel = `${firstFlightWithName.airline} (${key})`;
+      }
       titleKey = getTranslation("logbook.detailsTitleAirline").replace(
         "{key}",
         key

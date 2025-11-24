@@ -104,7 +104,9 @@
     "chooseFile": "选择文件...",
     "noFileSelected": "未选择文件",
     "filesSelected": "已选择 {count} 张照片。",
-    "registration": "注册号 (可选)"
+    "registration": "注册号 (可选)",
+	"reset": "重置",
+    "cancel": "取消"
   },
   "messages": {
     "noDataFound": "未找到此组合的航班数据。",

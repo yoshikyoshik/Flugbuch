@@ -6,7 +6,12 @@
     <title>Privacy Policy - AvioSphere</title>
     <script src="https://cdn.tailwindcss.com"></script>
 <script>
-    // Prüft sofort beim Laden, ob Dark Mode aktiv sein soll
+    // 1. Tailwind konfigurieren, damit es auf die Klasse 'dark' hört
+    tailwind.config = {
+        darkMode: 'class',
+    }
+
+    // 2. Theme laden und Klasse setzen
     try {
         const localTheme = localStorage.getItem('theme');
         const sysTheme = window.matchMedia('(prefers-color-scheme: dark)').matches;

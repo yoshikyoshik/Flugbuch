@@ -108,7 +108,9 @@
 		"chooseFile": "Datei auswählen...",
 		"noFileSelected": "Keine Datei ausgewählt",
 		"filesSelected": "{count} Foto(s) ausgewählt.",
-		"registration": "Registrierung (Optional)"
+		"registration": "Registrierung (Optional)",
+		"reset": "Zurücksetzen",
+		"cancel": "Abbrechen"
     },
 	
     "messages": {

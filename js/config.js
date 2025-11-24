@@ -42,6 +42,9 @@ let currentSubscriptionEnd = null;
 let animationState = "stopped";
 let animationStartIndex = 0;
 let selectedPlan = "yearly";
+// Speichert die ID des letzten Flugs global
+let globalLastFlightId = null;
+
 
 // Objekt zur Zuordnung von ISO-Ländercodes zu Kontinenten
 const countryToContinent = {

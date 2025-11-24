@@ -108,7 +108,9 @@
 		"chooseFile": "Choose file...",
 		"noFileSelected": "No file(s) selected",
 		"filesSelected": "{count} file(s) selected.",
-		"registration": "Registration (Optional)"
+		"registration": "Registration (Optional)",
+		"reset": "Reset Form",
+		"cancel": "Cancel"
     },
 	
     "messages": {

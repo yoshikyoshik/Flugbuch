@@ -906,17 +906,38 @@
                   </div> </details> 
 
               <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mt-6">
+                
                 <button
                   onclick="logFlight()"
                   id="log-button"
                   disabled
                   data-i18n="logFlightNewFlight"
-                  class="w-full py-3 px-4 rounded-lg transition-colors font-semibold 
-                         bg-indigo-600 text-white hover:bg-indigo-700 
-                         disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed
-                         dark:disabled:bg-slate-800 dark:disabled:text-gray-500 dark:disabled:border dark:disabled:border-gray-700"
+                  class="w-full py-3 px-4 rounded-lg transition-all duration-200 font-bold shadow-md
+                         
+                         /* LIGHT MODE (Aktiv) */
+                         bg-blue-600 text-white hover:bg-blue-700 hover:shadow-lg hover:-translate-y-0.5
+                         
+                         /* LIGHT MODE (Deaktiviert) */
+                         disabled:bg-blue-200 disabled:text-blue-50 disabled:shadow-none disabled:translate-y-0 disabled:cursor-not-allowed
+                         
+                         /* DARK MODE (Deaktiviert - Dein Wunsch: Bläulich hinterlegt) */
+                         dark:disabled:bg-blue-900/40 dark:disabled:text-blue-400/50 dark:disabled:border dark:disabled:border-blue-900/50
+                         
+                         /* DARK MODE (Aktiv) */
+                         dark:bg-blue-600 dark:text-white dark:hover:bg-blue-500"
                 >
                   Flug loggen und speichern
+                </button>
+				
+				<button
+                  onclick="resetForm()"
+                  id="reset-button"
+                  data-i18n="form.reset"
+                  class="w-full sm:w-auto py-3 px-6 rounded-lg transition-colors font-medium border
+                         bg-white border-gray-300 text-gray-700 hover:bg-gray-50
+                         dark:bg-transparent dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
+                >
+                  Zurücksetzen
                 </button>
                 
                 <button
