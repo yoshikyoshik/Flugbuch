@@ -121,7 +121,9 @@
 		"uploadLimitCount": "Limit erreicht: Es sind maximal {count} Fotos pro Flug erlaubt. Es werden nur die ersten {count} neuen Fotos hochgeladen.",
 		"uploadLimitSize": "Datei übersprungen: {fileName} ist zu groß (Max. 3 MB).",
 		"subscriptionExpired": "Dein Abo ist abgelaufen. Du bist nun wieder im Free-Modus.",
-		"statusUpdate": "Status-Update"
+		"statusUpdate": "Status-Update",
+		"noStripeAccount:" "Kein aktives Abo-Konto gefunden.",
+		"redirectingStripe:" "Leite zum Kundenportal weiter..."
     },
 	
 	"records": {

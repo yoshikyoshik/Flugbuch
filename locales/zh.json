@@ -116,7 +116,9 @@
     "uploadLimitCount": "达到限制：每个航班最多允许 {count} 张照片。只会上传前 {count} 张新照片。",
     "uploadLimitSize": "文件已跳过：{fileName} 太大 (最大 3 MB)。",
 	"subscriptionExpired": "您的订阅已过期。您已回到免费模式。",
-	"statusUpdate": "状态更新"
+	"statusUpdate": "状态更新",
+	"noStripeAccount": "未找到有效的订阅账户。",
+    "redirectingStripe": "正在跳转至客户门户..."
   },
   "records": {
     "longestFlight": "最长航班",

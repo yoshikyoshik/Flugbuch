@@ -116,7 +116,9 @@
     "uploadLimitCount": "Límite alcanzado: Se permite un máximo de {count} fotos por vuelo. Solo se cargarán las primeras {count} fotos nuevas.",
     "uploadLimitSize": "Archivo omitido: {fileName} es demasiado grande (Máx. 3 MB).",
 	"subscriptionExpired": "Tu suscripción ha caducado. Has vuelto al modo gratuito.",
-	"statusUpdate": "Actualización de estado"
+	"statusUpdate": "Actualización de estado",
+	"noStripeAccount": "No se encontró una cuenta de suscripción activa.",
+    "redirectingStripe": "Redirigiendo al portal del cliente..."
   },
   "records": {
     "longestFlight": "Vuelo más largo",
