@@ -171,24 +171,43 @@ async function showAirlineDetails(iataCode) {
             result.data.forEach((airline, index) => {
                 if (index > 0) content += '<hr class="my-4 dark:border-gray-700">';
 
-                // --- DATEN VORBEREITEN (API NINJAS FORMAT) ---
-                
-                // Flotten-Größe berechnen (API Ninjas gibt ein Objekt { "A320": 5, ... } zurück)
+                // --- 1. LOGOS & BILDER VORBEREITEN ---
+                let imagesHtml = "";
+                // Wir prüfen, ob Bilder da sind. Wir zeigen bevorzugt das volle Logo und das Tail-Logo.
+                if (airline.logo_url || airline.tail_logo_url || airline.brandmark_url) {
+                    imagesHtml = '<div class="flex flex-wrap gap-4 mb-4 justify-center items-center bg-gray-50 dark:bg-gray-900/50 p-3 rounded-lg border border-gray-100 dark:border-gray-700">';
+
+                    // Priorität 1: Volles Logo, sonst Brandmark (Icon)
+                    const mainLogo = airline.logo_url || airline.brandmark_url;
+                    if (mainLogo) {
+                        // Wir geben dem Bild einen weißen Hintergrund und Padding, da Airline-Logos oft transparent sind und auf Dark Mode untergehen würden
+                        imagesHtml += `<img src="${mainLogo}" alt="${airline.name} Logo" class="h-12 md:h-20 object-contain bg-white rounded-md p-1 shadow-sm" onerror="this.style.display='none'">`;
+                    }
+
+                    // Heckflossen-Logo (Tail) - sehr cool für Flug-Fans
+                    if (airline.tail_logo_url) {
+                        imagesHtml += `<img src="${airline.tail_logo_url}" alt="${airline.name} Tail" class="h-12 md:h-20 object-contain bg-white rounded-md p-1 shadow-sm" onerror="this.style.display='none'">`;
+                    }
+
+                    imagesHtml += '</div>';
+                }
+
+                // --- 2. FLOTTE BERECHNEN ---
                 let fleetSize = 0;
                 if (airline.fleet) {
-                    // Summiere alle Werte im fleet-Objekt
                     fleetSize = Object.values(airline.fleet).reduce((a, b) => a + b, 0);
                 }
                 const fleetDisplay = fleetSize > 0 ? fleetSize : notAvailable;
 
-                // Website aufbereiten (manchmal fehlt 'https://')
+                // --- 3. WEBSITE LINK FIXEN ---
                 let websiteUrl = airline.website;
                 if (websiteUrl && !websiteUrl.startsWith('http')) {
                     websiteUrl = 'https://' + websiteUrl;
                 }
 
+                // --- 4. HTML ZUSAMMENBAUEN ---
                 content += `
-                    <div class="grid grid-cols-2 gap-x-4 gap-y-1">
+                    ${imagesHtml} <div class="grid grid-cols-2 gap-x-4 gap-y-1">
                         <p><strong>${getTranslation("modalDetails.airlineName")}</strong></p> 
                         <p>${airline.name || notAvailable}</p>
                         
@@ -202,9 +221,9 @@ async function showAirlineDetails(iataCode) {
                         <p>${fleetDisplay}</p>
 
                         ${websiteUrl ? `
-                        <p class="mt-2 col-span-2">
-                            <a href="${websiteUrl}" target="_blank" class="text-indigo-500 hover:underline">
-                                ${getTranslation("modalDetails.airlineWebsite")}
+                        <p class="mt-2 col-span-2 text-center">
+                            <a href="${websiteUrl}" target="_blank" class="inline-block mt-2 px-4 py-2 bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 rounded-md text-sm font-medium hover:bg-indigo-200 dark:hover:bg-indigo-800 transition">
+                                🌐 ${getTranslation("modalDetails.airlineWebsite")}
                             </a>
                         </p>` : ''}
                     </div>
