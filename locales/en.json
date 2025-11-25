@@ -195,7 +195,8 @@
 		"show3DGlobe": "🌍 3D Globe",
 		"showMore": "Show details...",
 		"hideMore": "Hide details...",
-		"logReturnFlight": "✈️ Log Return Flight"
+		"logReturnFlight": "✈️ Log Return Flight",
+		"createBook": "Create book (PDF)"
     },
 
 	"print": {
