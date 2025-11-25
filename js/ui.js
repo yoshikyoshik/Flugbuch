@@ -171,61 +171,103 @@ async function showAirlineDetails(iataCode) {
             result.data.forEach((airline, index) => {
                 if (index > 0) content += '<hr class="my-4 dark:border-gray-700">';
 
-                // --- 1. LOGOS & BILDER VORBEREITEN ---
+                // --- 1. LOGOS (Wie vorher) ---
                 let imagesHtml = "";
-                // Wir prüfen, ob Bilder da sind. Wir zeigen bevorzugt das volle Logo und das Tail-Logo.
                 if (airline.logo_url || airline.tail_logo_url || airline.brandmark_url) {
                     imagesHtml = '<div class="flex flex-wrap gap-4 mb-4 justify-center items-center bg-gray-50 dark:bg-gray-900/50 p-3 rounded-lg border border-gray-100 dark:border-gray-700">';
-
-                    // Priorität 1: Volles Logo, sonst Brandmark (Icon)
                     const mainLogo = airline.logo_url || airline.brandmark_url;
                     if (mainLogo) {
-                        // Wir geben dem Bild einen weißen Hintergrund und Padding, da Airline-Logos oft transparent sind und auf Dark Mode untergehen würden
                         imagesHtml += `<img src="${mainLogo}" alt="${airline.name} Logo" class="h-12 md:h-20 object-contain bg-white rounded-md p-1 shadow-sm" onerror="this.style.display='none'">`;
                     }
-
-                    // Heckflossen-Logo (Tail) - sehr cool für Flug-Fans
                     if (airline.tail_logo_url) {
                         imagesHtml += `<img src="${airline.tail_logo_url}" alt="${airline.name} Tail" class="h-12 md:h-20 object-contain bg-white rounded-md p-1 shadow-sm" onerror="this.style.display='none'">`;
                     }
-
                     imagesHtml += '</div>';
                 }
 
-                // --- 2. FLOTTE BERECHNEN ---
+                // --- 2. FLOTTEN-DETAILS (NEU) ---
                 let fleetSize = 0;
+                let fleetDetailsString = "";
+                
                 if (airline.fleet) {
-                    fleetSize = Object.values(airline.fleet).reduce((a, b) => a + b, 0);
+                    // A) Gesamtgröße berechnen
+                    // Falls die API explizit "total" liefert, nehmen wir das. Sonst summieren wir.
+                    if (airline.fleet.total) {
+                        fleetSize = airline.fleet.total;
+                    } else {
+                        fleetSize = Object.values(airline.fleet).reduce((a, b) => a + b, 0);
+                    }
+
+                    // B) Detail-Liste erstellen (ohne den Key "total")
+                    const details = [];
+                    for (const [type, count] of Object.entries(airline.fleet)) {
+                        if (type.toLowerCase() !== 'total') {
+                            details.push(`${type}: ${count}`);
+                        }
+                    }
+                    // Verbinde mit Kommas (z.B. "A320: 5, B737: 2")
+                    fleetDetailsString = details.join(", ");
                 }
+                
                 const fleetDisplay = fleetSize > 0 ? fleetSize : notAvailable;
 
-                // --- 3. WEBSITE LINK FIXEN ---
+                // --- 3. WEBSITE FIX (Wie vorher) ---
                 let websiteUrl = airline.website;
                 if (websiteUrl && !websiteUrl.startsWith('http')) {
                     websiteUrl = 'https://' + websiteUrl;
                 }
 
-                // --- 4. HTML ZUSAMMENBAUEN ---
+                // --- 4. HTML ZUSAMMENBAUEN (ERWEITERT) ---
                 content += `
-                    ${imagesHtml} <div class="grid grid-cols-2 gap-x-4 gap-y-1">
-                        <p><strong>${getTranslation("modalDetails.airlineName")}</strong></p> 
-                        <p>${airline.name || notAvailable}</p>
+                    ${imagesHtml}
+                    
+                    <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
                         
-                        <p><strong>IATA / ICAO</strong></p> 
-                        <p>${airline.iata || "?"} / ${airline.icao || "?"}</p>
+                        <div class="col-span-2 sm:col-span-1">
+                            <p class="text-xs text-gray-500 dark:text-gray-400 uppercase font-bold">${getTranslation("modalDetails.airlineName")}</p> 
+                            <p class="font-medium text-gray-900 dark:text-white">${airline.name || notAvailable}</p>
+                        </div>
+
+                        <div class="col-span-2 sm:col-span-1">
+                            <p class="text-xs text-gray-500 dark:text-gray-400 uppercase font-bold">IATA / ICAO</p> 
+                            <p class="font-medium text-gray-900 dark:text-white">${airline.iata || "?"} / ${airline.icao || "?"}</p>
+                        </div>
                         
-                        <p><strong>${getTranslation("modalDetails.airlineCountry")}</strong></p> 
-                        <p>${airline.country || notAvailable}</p>
+                        <div class="col-span-2 sm:col-span-1">
+                            <p class="text-xs text-gray-500 dark:text-gray-400 uppercase font-bold">${getTranslation("modalDetails.airlineCountry")}</p> 
+                            <p class="font-medium text-gray-900 dark:text-white">${airline.country || notAvailable}</p>
+                        </div>
+
+                        <div class="col-span-2 sm:col-span-1">
+                            <p class="text-xs text-gray-500 dark:text-gray-400 uppercase font-bold">${getTranslation("modalDetails.airlineBase")}</p> 
+                            <p class="font-medium text-gray-900 dark:text-white">${airline.base || notAvailable}</p>
+                        </div>
+
+                        <div class="col-span-2 sm:col-span-1">
+                            <p class="text-xs text-gray-500 dark:text-gray-400 uppercase font-bold">${getTranslation("modalDetails.airlineYear")}</p> 
+                            <p class="font-medium text-gray-900 dark:text-white">${airline.year_created || notAvailable}</p>
+                        </div>
                         
-                        <p><strong>${getTranslation("modalDetails.airlineFleetSize")}</strong></p> 
-                        <p>${fleetDisplay}</p>
+                        <div class="col-span-2 sm:col-span-1">
+                            <p class="text-xs text-gray-500 dark:text-gray-400 uppercase font-bold">${getTranslation("modalDetails.airlineFleetSize")}</p> 
+                            <p class="font-medium text-gray-900 dark:text-white">${fleetDisplay} <span class="text-xs font-normal text-gray-500">(Gesamt)</span></p>
+                        </div>
+
+                        ${fleetDetailsString ? `
+                        <div class="col-span-2 mt-1 bg-gray-50 dark:bg-gray-800 p-2 rounded border border-gray-100 dark:border-gray-700">
+                            <p class="text-xs text-gray-500 dark:text-gray-400 uppercase font-bold mb-1">${getTranslation("modalDetails.airlineFleetDetail")}</p>
+                            <p class="text-xs font-mono text-gray-700 dark:text-gray-300 break-words leading-relaxed">
+                                ${fleetDetailsString}
+                            </p>
+                        </div>
+                        ` : ''}
 
                         ${websiteUrl ? `
-                        <p class="mt-2 col-span-2 text-center">
-                            <a href="${websiteUrl}" target="_blank" class="inline-block mt-2 px-4 py-2 bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 rounded-md text-sm font-medium hover:bg-indigo-200 dark:hover:bg-indigo-800 transition">
+                        <div class="col-span-2 text-center mt-3">
+                            <a href="${websiteUrl}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-300 rounded-full text-xs font-bold hover:bg-indigo-100 dark:hover:bg-indigo-900 transition">
                                 🌐 ${getTranslation("modalDetails.airlineWebsite")}
                             </a>
-                        </p>` : ''}
+                        </div>` : ''}
                     </div>
                 `;
             });
