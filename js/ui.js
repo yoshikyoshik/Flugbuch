@@ -9,6 +9,7 @@ function showMessage(title, message, type = "info") {
   let typeClass = "toast-info";
   if (type === "success") typeClass = "toast-success";
   if (type === "error") typeClass = "toast-error";
+  if (type === "easter-egg") typeClass = "toast-easteregg";
   toast.className = `toast ${typeClass}`;
   toast.innerHTML = `<strong class="block">${title}</strong> ${message}`;
   container.appendChild(toast);
@@ -1652,4 +1653,89 @@ function isAndroidWebViewPrint() {
     typeof window.AndroidPrintInterface !== "undefined" &&
     typeof window.AndroidPrintInterface.print === "function"
   );
+}
+
+// =================================================================
+// EASTER EGG
+// =================================================================
+
+let eggClickCount = 0;
+let eggClickTimer = null;
+let eggLevel = 0; // ✅ NEU: Zählt, wie oft das UFO schon geflogen ist
+
+function triggerEasterEgg() {
+    eggClickCount++;
+
+    if (eggClickTimer) clearTimeout(eggClickTimer);
+    eggClickTimer = setTimeout(() => {
+        eggClickCount = 0;
+    }, 500);
+
+    if (eggClickCount >= 5) {
+        eggLevel++; // Level hochzählen
+        launchPaperPlane();
+        eggClickCount = 0;
+    }
+}
+
+function launchPaperPlane() {
+    // 1. Größe berechnen
+    const baseSize = 60; // Startgröße in Pixel
+    const growthPerLevel = 40; // Wächst um 40px pro Flug
+    const maxSize = 400; // Maximalgröße (ruhig etwas größer für den Spaßfaktor)
+
+    // Formel: Basis + (Level-1 * Wachstum)
+    let currentSize = baseSize + ((eggLevel - 1) * growthPerLevel);
+    
+    // Cap (Limit) anwenden
+    if (currentSize > maxSize) currentSize = maxSize;
+
+    // 2. Element erstellen
+    const plane = document.createElement('div');
+    plane.className = 'paper-plane animate-fly';
+    
+    // ✅ FIX: Da Emojis Text sind, müssen wir die Schriftgröße ändern!
+    plane.style.fontSize = `${currentSize}px`;
+    
+    // Damit der Container um das Emoji herum auch passt (für Klicks/Layout)
+    plane.style.width = `${currentSize}px`;
+    plane.style.height = `${currentSize}px`;
+    
+    // Zentrierung, damit das Emoji schön in der Mitte der Animation sitzt
+    plane.style.display = 'flex';
+    plane.style.alignItems = 'center';
+    plane.style.justifyContent = 'center';
+    // WICHTIG: line-height 1 verhindert, dass das Emoji nach unten verschoben wird
+    plane.style.lineHeight = '1'; 
+
+    // Zentrierung und Line-Height (Wichtig für Emojis)
+    plane.style.display = 'flex';
+    plane.style.alignItems = 'center';
+    plane.style.justifyContent = 'center';
+    plane.style.lineHeight = '1'; 
+
+    // ✅ NEU: Emoji-Wechsel ab Level 10
+    let emojiIcon = '🛸'; // Standard: UFO
+    if (eggLevel >= 10) {
+        emojiIcon = '👽'; // Ab Level 10: Alien
+    }
+
+    plane.innerHTML = emojiIcon;
+
+    document.body.appendChild(plane);
+
+    // 3. Nachricht anpassen
+    let msg = "Whoosh! 🛸";
+    if (eggLevel > 3) msg = "Big Ufo Incoming! 🛸";
+    if (eggLevel > 6) msg = "ALIEN INVASION! 👽";
+
+    // Wir nutzen den Easter-Egg Style für den Toast
+    if (typeof showMessage === "function") {
+        showMessage(msg, `Level ${eggLevel} Pilot Mode unlocked!`, "easter-egg");
+    }
+
+    // 4. Aufräumen (Timer passend zum CSS, z.B. 7s)
+    setTimeout(() => {
+        plane.remove();
+    }, 7500);
 }

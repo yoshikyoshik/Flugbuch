@@ -278,3 +278,49 @@ body {
     margin: 1in;
   }
 }
+
+/* --- EASTER EGG: PAPER PLANE --- */
+.paper-plane {
+  position: fixed;
+  z-index: 20000 !important; /* Brutal nach vorne holen */
+  width: 60px;
+  height: 60px;
+  bottom: -100px; /* Startet außerhalb des Bildschirms */
+  left: -100px;
+  pointer-events: none; /* Damit man nicht versehentlich draufklickt */
+  filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.3));
+}
+
+/* Die Flugbahn: Von unten links nach oben rechts */
+@keyframes flyAcrossScreen {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+    /* Wir starten weiter draußen, damit auch große UFOs erst einfliegen */
+    left: -300px; 
+    bottom: -100px; 
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  100% {
+    /* Fliegt weit aus dem Bild raus (basierend auf Viewport Width/Height) */
+    transform: translate(120vw, -120vh) rotate(15deg);
+    left: 0;
+    bottom: 0;
+  }
+}
+
+.animate-fly {
+  animation: flyAcrossScreen 7s ease-in-out forwards;
+}
+
+/* --- EASTER EGG TOAST --- */
+.toast-easteregg {
+  /* Ein knalliger Verlauf von Hot-Pink zu Violett */
+  background: linear-gradient(135deg, #ec4899, #8b5cf6);
+  color: white;
+  font-weight: bold;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 10px 15px -3px rgba(236, 72, 153, 0.4); /* Pinker Schatten */
+}

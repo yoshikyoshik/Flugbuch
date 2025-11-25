@@ -1370,6 +1370,27 @@ document.addEventListener("DOMContentLoaded", async function () {
         backToLogin();
       }
     });
+	
+	// EASTER EGG LISTENER
+    const headerLogo = document.getElementById("app-header-logo");
+    
+    if (headerLogo) {
+        console.log("Easter Egg Listener wurde erfolgreich registriert!"); // 1. Check
+        
+        headerLogo.addEventListener("click", (e) => {
+            e.preventDefault(); 
+            console.log("Logo wurde geklickt! Zähler läuft..."); // 2. Check
+            
+            // Sicherheitsabfrage: Existiert die Funktion?
+            if (typeof triggerEasterEgg === "function") {
+                triggerEasterEgg();
+            } else {
+                console.error("Fehler: triggerEasterEgg Funktion nicht gefunden!");
+            }
+        });
+    } else {
+        console.error("Fehler: Element mit ID 'app-header-logo' nicht gefunden!");
+    }
 
 /*
   // Dummy-Funktion für den Kauf (später kommt hier Stripe hin)
