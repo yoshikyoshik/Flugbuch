@@ -697,6 +697,10 @@ async function updateFlight() {
   }
   const flightIdToFocus = currentlyEditingFlightData.id;
   resetForm();
+  
+  // Nach dem Bearbeiten automatisch zurück zur Liste springen
+    showTab("fluege");
+  
   renderFlights(null, flightIdToFocus);
 }
 
