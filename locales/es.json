@@ -321,7 +321,10 @@
     "airlineWebsite": "Visitar Sitio Web",
     "airlineNoDetails": "No se encontraron detalles para esta aerolínea.",
     "airlineError": "No se pudieron cargar los detalles.",
-    "airlineAgeUnit": "años"
+    "airlineAgeUnit": "años",
+	"airlineBase": "Base Principal",
+    "airlineYear": "Año de Fundación",
+    "airlineFleetDetail": "Composición de la Flota"
   },
   "achievements": {
     "title": "Tus Logros",

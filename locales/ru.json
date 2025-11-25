@@ -321,7 +321,10 @@
     "airlineWebsite": "Посетить веб-сайт",
     "airlineNoDetails": "Детали для этой авиакомпании не найдены.",
     "airlineError": "Не удалось загрузить детали.",
-    "airlineAgeUnit": "лет"
+    "airlineAgeUnit": "лет",
+	"airlineBase": "Базовый аэропорт",
+    "airlineYear": "Год основания",
+    "airlineFleetDetail": "Состав флота"
   },
   "achievements": {
     "title": "Ваши достижения",

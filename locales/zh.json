@@ -321,7 +321,10 @@
     "airlineWebsite": "访问网站",
     "airlineNoDetails": "未找到此航空公司的详情。",
     "airlineError": "无法加载详情。",
-    "airlineAgeUnit": "年"
+    "airlineAgeUnit": "年",
+	"airlineBase": "基地机场",
+    "airlineYear": "成立年份",
+    "airlineFleetDetail": "机队构成"
   },
   "achievements": {
     "title": "你的成就",

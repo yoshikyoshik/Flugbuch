@@ -337,7 +337,10 @@
         "airlineWebsite": "Website besuchen",
         "airlineNoDetails": "Keine Details für diese Airline gefunden.",
         "airlineError": "Details konnten nicht geladen werden.",
-        "airlineAgeUnit": "Jahre"
+        "airlineAgeUnit": "Jahre",
+		"airlineBase": "Heimatbasis",
+		"airlineYear": "Gründungsjahr",
+		"airlineFleetDetail": "Flotten-Zusammensetzung"
     },
 	
 	"achievements": {
