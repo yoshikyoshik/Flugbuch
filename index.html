@@ -1573,23 +1573,24 @@
 
     <div
       id="info-modal"
-      class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center p-4 z-50"
+      class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center p-4 z-50 backdrop-blur-sm"
     >
       <div
-        class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-full max-w-lg"
+        class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col border border-gray-200 dark:border-gray-700"
       >
+        
         <div
-          class="flex justify-between items-center border-b pb-3 mb-4 dark:border-gray-700"
+          class="flex justify-between items-center border-b p-4 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-t-xl shrink-0"
         >
           <h3
             id="info-modal-title"
-            class="text-xl font-bold text-gray-800 dark:text-white"
+            class="text-xl font-bold text-gray-800 dark:text-white truncate pr-4"
           >
             Modal-Titel
           </h3>
           <button
             onclick="closeInfoModal()"
-            class="text-gray-400 hover:text-gray-600 dark:hover:text-white"
+            class="text-gray-400 hover:text-gray-600 dark:hover:text-white p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition"
           >
             <svg
               class="w-6 h-6"
@@ -1606,12 +1607,14 @@
             </svg>
           </button>
         </div>
+
         <div
           id="info-modal-content"
-          class="text-sm text-gray-700 dark:text-gray-300"
+          class="p-6 overflow-y-auto text-sm text-gray-700 dark:text-gray-300"
         >
           <p>Lade Details...</p>
         </div>
+        
       </div>
     </div>
 
