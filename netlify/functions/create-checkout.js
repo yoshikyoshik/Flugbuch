@@ -23,6 +23,8 @@ exports.handler = async (event, context) => {
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'subscription',
+	  // Erlaubt die Eingabe von Gutscheinen
+      allow_promotion_codes: true,
       line_items: [
         {
           price: priceId,
