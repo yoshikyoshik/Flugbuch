@@ -1483,4 +1483,11 @@ const response = await fetch(`${API_BASE_URL}/.netlify/functions/create-checkout
       showAuth();
     }
   });
+  
+	// Copyright Jahr automatisch setzen
+	const yearSpan = document.getElementById('current-year');
+	if (yearSpan) {
+		yearSpan.textContent = new Date().getFullYear();
+	}
+  
 });

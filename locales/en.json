@@ -465,6 +465,19 @@
       "perMonth": "/ month",
 	  "perYear": "/ year",
       "thankYou": "Thanks for your interest! Payment integration coming soon."
-    }
+    },
+	
+	"landing": {
+    "headline": "Make your travels unforgettable.",
+    "subheadline": "The ultimate digital flight log for frequent flyers and aviation enthusiasts.",
+    "featureGlobus": "Interactive 3D Globe of your trips",
+    "featureStats": "Detailed Statistics & Charts",
+    "featureAutopilot": "Autopilot: Load data via flight number",
+    "featurePhotos": "Photo Upload & PDF Export",
+    "privacy": "Privacy Policy",
+    "terms": "Terms & Legal Notice"
+},
+"registerFree": "Sign up for free",
+"loginWelcome": "Welcome on board"
 	
 }

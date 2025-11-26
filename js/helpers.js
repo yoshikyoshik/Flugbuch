@@ -287,82 +287,62 @@ async function setLanguage(lang) {
     currentLanguage = lang;
     localStorage.setItem("preferredLanguage", lang);
 
-    // 1. Alle statischen Elemente (mit data-i18n) übersetzen
+    // 1. Alle Texte übersetzen
     translatePage();
 
-    // Schutzabfrage
-    // Wenn die App (Karte, etc.) noch nicht initialisiert ist, brich hier ab.
-    // Wir wollen nur den Login-Screen übersetzen.
+    // --- ✅ HIERHIN VERSCHOBEN (Vor den Auth-Check!) ---
+    // Damit die Links auch auf der Landing-Page (ausgeloggt) funktionieren
+    const isGerman = lang === 'de';
+    const privacyFile = isGerman ? 'privacy.html' : 'privacy_en.html';
+    const termsFile = isGerman ? 'terms.html' : 'terms_en.html';
+
+    // Links Update
+    const linkPrivacy = document.getElementById('link-privacy');
+    const linkTerms = document.getElementById('link-terms');
+    if (linkPrivacy) linkPrivacy.setAttribute('href', privacyFile);
+    if (linkTerms) linkTerms.setAttribute('href', termsFile);
+
+    const linkPrivacySmall = document.getElementById('link-privacy-small');
+    const linkTermsSmall = document.getElementById('link-terms-small');
+    if (linkPrivacySmall) linkPrivacySmall.setAttribute('href', privacyFile);
+    if (linkTermsSmall) linkTermsSmall.setAttribute('href', termsFile);
+    // --- ENDE VERSCHOBENER BLOCK ---
+
+
+    // Schutzabfrage: Ab hier nur weiter, wenn App initialisiert (User eingeloggt)
     if (!isAppInitialized) {
-      return;
+      return; 
     }
     // ENDE Schutzabfrage
 
-    // 2. Dynamische Inhalte des AKTIVEN Tabs neu laden,
-    //    damit sie die neuen Übersetzungen verwenden.
-
-    // Prüfen, ob der "Flüge"-Tab aktiv ist
-    if (
-      !document
-        .getElementById("tab-content-fluege")
-        .classList.contains("hidden")
-    ) {
-      // Ja -> Lade die Flugliste neu.
-      // renderFlights() behält die aktuelle Seite (currentPage) bei
-      // und baut die Liste mit getTranslation('flights.flightDetails') neu auf.
+    // 2. Dynamische Inhalte der App aktualisieren (nur wenn eingeloggt)
+    if (!document.getElementById("tab-content-fluege").classList.contains("hidden")) {
       renderFlights();
     }
-
-    // Prüfen, ob der Errungenschaften-Tab aktiv ist
-    if (
-      !document
-        .getElementById("tab-content-achievements")
-        .classList.contains("hidden")
-    ) {
-      // Ja -> Lade die Errungenschaften neu (diese rufen intern getTranslation auf)
+    if (!document.getElementById("tab-content-achievements").classList.contains("hidden")) {
       updateAchievements();
     }
-
-    // Prüfen, ob der Logbuch-Tab aktiv ist
-    if (
-      !document
-        .getElementById("tab-content-logbook")
-        .classList.contains("hidden")
-    ) {
-      // Ja -> Finde heraus, welche Ansicht aktiv ist und lade sie neu
+    if (!document.getElementById("tab-content-logbook").classList.contains("hidden")) {
       const activeBtn = document.querySelector(".logbook-view-btn.active");
-      let view = "aircraftType"; // Standard
+      let view = "aircraftType"; 
       if (activeBtn) {
         if (activeBtn.id.includes("airline")) view = "airline";
         if (activeBtn.id.includes("airport")) view = "airport";
       }
       renderLogbookView(view);
     }
-
-    // Prüfen, ob der Charts-Tab aktiv ist (für zukünftige Übersetzungen der Chart-Titel)
-    if (
-      !document
-        .getElementById("tab-content-charts")
-        .classList.contains("hidden")
-    ) {
+    if (!document.getElementById("tab-content-charts").classList.contains("hidden")) {
       const flights = await getFlights();
       updateCharts(flights, currentChartTimeframe);
     }
-
-    // Prüfen, ob der Hilfe-Tab aktiv ist
-    if (
-      !document.getElementById("tab-content-hilfe").classList.contains("hidden")
-    ) {
-      renderHelpContent(); // Ruft die Funktion erneut auf
+    if (!document.getElementById("tab-content-hilfe").classList.contains("hidden")) {
+      renderHelpContent(); 
     }
 
-    // --- ENDE NEUE LOGIK ---
   } catch (error) {
-    console.error(
-      `Sprachdatei ${lang}.json konnte nicht geladen werden:`,
-      error
-    );
+    console.error(`Sprachdatei ${lang}.json konnte nicht geladen werden:`, error);
   }
+  
   updateLockVisuals();
 }
 

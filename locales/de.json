@@ -466,6 +466,19 @@
       "perMonth": "/ Monat",
 	  "perYear": "/ Jahr",
 	  "thankYou": "Danke für dein Interesse! Die Bezahlung folgt bald."
-    }
+    },
+	
+	"landing": {
+    "headline": "Mache deine Reisen unvergesslich.",
+    "subheadline": "Das ultimative digitale Flugbuch für Vielflieger und Luftfahrt-Enthusiasten.",
+    "featureGlobus": "Interaktiver 3D-Globus deiner Reisen",
+    "featureStats": "Detaillierte Statistiken & Charts",
+    "featureAutopilot": "Autopilot: Daten per Flugnummer laden",
+    "featurePhotos": "Foto-Upload & PDF-Export",
+    "privacy": "Datenschutzerklärung",
+    "terms": "AGB & Impressum"
+},
+"registerFree": "Kostenlos Registrieren",
+"loginWelcome": "Willkommen an Bord"
 	
 }
