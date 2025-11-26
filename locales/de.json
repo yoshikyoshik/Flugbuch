@@ -479,6 +479,11 @@
     "terms": "AGB & Impressum"
 },
 "registerFree": "Kostenlos Registrieren",
-"loginWelcome": "Willkommen an Bord"
+"loginWelcome": "Willkommen an Bord",
+"loginSubtitle": "Melde dich an, um dein Logbuch zu starten.",
+"regTermsPrefix": "Mit der Registrierung akzeptierst du unsere",
+"and": "und",
+"terms": "AGB",
+"privacy": "Datenschutz"
 	
 }

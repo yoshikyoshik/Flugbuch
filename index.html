@@ -74,9 +74,17 @@
           <div class="absolute top-0 right-0 -mr-10 -mt-10 w-40 h-40 bg-white opacity-10 rounded-full blur-3xl"></div>
           
           <div class="relative z-10">
-            <div class="flex items-center gap-3 mb-8">
-               <img src="pictures/logo.png" alt="AvioSphere Logo" class="w-12 h-12 rounded-xl bg-white p-1 shadow-md">
-               <h1 class="text-3xl font-extrabold tracking-tight">AvioSphere</h1>
+            <div class="flex justify-between items-start mb-8">
+                <div class="flex items-center gap-3">
+                   <img src="pictures/logo.png" alt="AvioSphere Logo" class="w-12 h-12 rounded-xl bg-white p-1 shadow-md">
+                   <h1 class="text-3xl font-extrabold tracking-tight">AvioSphere</h1>
+                </div>
+
+                <div class="flex gap-2 text-indigo-200 text-sm font-bold bg-indigo-800/30 px-3 py-1 rounded-full backdrop-blur-sm border border-indigo-500/30">
+                    <button onclick="setLanguage('de')" class="hover:text-white transition">DE</button>
+                    <span class="opacity-50">|</span>
+                    <button onclick="setLanguage('en')" class="hover:text-white transition">EN</button>
+                </div>
             </div>
             
             <h2 class="text-2xl font-bold mb-4" data-i18n="landing.headline">Mache deine Reisen unvergesslich.</h2>
@@ -115,11 +123,7 @@
 
         <div class="md:w-1/2 p-8 md:p-12 bg-white dark:bg-gray-800 overflow-y-auto relative">
             
-            <div class="absolute top-4 right-4 flex gap-2">
-                <button onclick="setLanguage('de')" class="text-sm font-medium text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-white transition">DE</button>
-                <span class="text-gray-300">|</span>
-                <button onclick="setLanguage('en')" class="text-sm font-medium text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-white transition">EN</button>
-            </div>
+            
 
             <div class="md:hidden flex justify-center mb-6 mt-4">
                 <img src="pictures/logo.png" alt="Logo" class="w-16 h-16 rounded-xl shadow-md">
@@ -127,7 +131,7 @@
 
             <div class="text-center mb-8 mt-2">
                 <h2 class="text-2xl font-bold text-gray-800 dark:text-white" data-i18n="loginWelcome">Willkommen an Bord</h2>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">Melde dich an, um dein Logbuch zu starten.</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-2" data-i18n="loginSubtitle">Melde dich an, um dein Logbuch zu starten.</p>
             </div>
 
             <div id="auth-tabs" class="flex justify-center border-b border-gray-200 dark:border-gray-700 mb-6">
@@ -165,7 +169,10 @@
                 Kostenlos Registrieren
               </button>
               <p class="text-xs text-center text-gray-500 dark:text-gray-400 mt-4">
-                  Mit der Registrierung akzeptierst du unsere <a id="link-terms-small" href="terms.html" target="_blank" class="underline hover:text-indigo-600">AGB</a> und <a id="link-privacy-small" href="privacy.html" target="_blank" class="underline hover:text-indigo-600">Datenschutz</a>.
+                  <span data-i18n="regTermsPrefix">Mit der Registrierung akzeptierst du unsere</span> 
+                  <a id="link-terms-small" href="terms.html" target="_blank" class="underline hover:text-indigo-600" data-i18n="terms">AGB</a> 
+                  <span data-i18n="and">und</span> 
+                  <a id="link-privacy-small" href="privacy.html" target="_blank" class="underline hover:text-indigo-600" data-i18n="privacy">Datenschutz</a>.
               </p>
             </form>
 

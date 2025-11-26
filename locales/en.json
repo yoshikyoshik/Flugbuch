@@ -478,6 +478,11 @@
     "terms": "Terms & Legal Notice"
 },
 "registerFree": "Sign up for free",
-"loginWelcome": "Welcome on board"
+"loginWelcome": "Welcome on board",
+"loginSubtitle": "Log in to start your flight log.",
+"regTermsPrefix": "By registering you accept our",
+"and": "and",
+"terms": "Terms",
+"privacy": "Privacy Policy"
 	
 }
