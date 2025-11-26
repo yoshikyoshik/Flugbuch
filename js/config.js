@@ -522,16 +522,16 @@ const premiumFeatureImages = {
 // Pricing Config
 const pricingConfig = {
   monthly: {
-    amount: "2,49 €",
+    amount: "2,99 €",
     periodKey: "premium.perMonth",
     fallbackPeriod: "/ Monat",
-    stripeProductId: "price_1SVxYkFoVhyNl27pCcMGjFAG",
+    stripeProductId: "price_1SXpRZCKgOyj3mnlTHFi6sNI",
   },
   yearly: {
-    amount: "14,99 €",
+    amount: "17,99 €",
     periodKey: "premium.perYear",
     fallbackPeriod: "/ Jahr",
-    stripeProductId: "price_1SVxYkFoVhyNl27pwsXrWDu1",
+    stripeProductId: "price_1SXpSxCKgOyj3mnlkPLe6JUY",
   },
 };
 
