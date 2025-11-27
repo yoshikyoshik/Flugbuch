@@ -2,6 +2,19 @@
 // MAP & GLOBE LOGIC
 // =================================================================
 
+// Hilfsfunktion: Wandelt Hex (#RRGGBB) in RGBA mit Transparenz um
+function hexToRgba(hex, alpha) {
+    // Entferne das Hash #
+    hex = hex.replace('#', '');
+    
+    // Parse die Komponenten
+    var r = parseInt(hex.substring(0, 2), 16);
+    var g = parseInt(hex.substring(2, 4), 16);
+    var b = parseInt(hex.substring(4, 6), 16);
+
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 window.drawRouteOnMap = async function (
   depLat,
   depLon,
@@ -167,83 +180,76 @@ window.toggleAllRoutesView = async function () {
 
 // --- GLOBE LOGIC ---
 
-function processGlobeData(flightsToShow) {
-  const arcColorPool = [
-    "#ec4899", // Hot Pink
-    "#8b5cf6", // Violett
-    "#06b6d4", // Cyan
-    "#84cc16", // Limettengrün
-    "#e5e7eb", // Kaltes Weiß
-  ];
+function processGlobeData(flightsToShow, isStoryMode = false) {
+    const arcData = [];
+    const visitedCountries = new Set();
+    const airportUsage = {};
+    const routeGroups = {};
 
-  const arcData = [];
-  const visitedCountries = new Set();
-  const airportUsage = {};
-  const routeGroups = {};
-
-  flightsToShow
-    .filter((f) => f.depLat && f.arrLat)
-    .forEach((flight) => {
-      const routeKey = [flight.departure, flight.arrival].sort().join("-");
-      if (!routeGroups[routeKey]) routeGroups[routeKey] = [];
-      routeGroups[routeKey].push(flight);
+    // 1. Gruppieren, um Stapel zu berechnen
+    flightsToShow.filter((f) => f.depLat && f.arrLat).forEach((flight) => {
+        // Sortiere IATA-Codes alphabetisch, damit Hin- und Rückflug im selben Stapel landen
+        const routeKey = [flight.departure, flight.arrival].sort().join("-");
+        
+        if (!routeGroups[routeKey]) routeGroups[routeKey] = [];
+        routeGroups[routeKey].push(flight);
     });
 
-  for (const routeKey in routeGroups) {
-    const flightsOnThisRoute = routeGroups[routeKey];
-    flightsOnThisRoute.forEach((flight, index) => {
-      const distance = calculateDistance(
-        flight.depLat,
-        flight.depLon,
-        flight.arrLat,
-        flight.arrLon
-      );
-      const flightColor = getColorByDistance(distance);
+    // Wir brauchen die ID des Fluges, auf dem der Slider gerade steht (der allerletzte in der gefilterten Liste)
+    const currentSliderFlightId = flightsToShow.length > 0 ? flightsToShow[flightsToShow.length - 1].id : null;
 
-      arcData.push({
-        startLat: flight.depLat,
-        startLng: flight.depLon,
-        endLat: flight.arrLat,
-        endLng: flight.arrLon,
-        name: `${flight.departure || ""} → ${flight.arrival || ""}`,
-        color: flightColor,
-        offsetIndex: index,
-        distance: distance,
-        originalFlight: flight,
-        allFlightsOnRoute: flightsOnThisRoute,
-      });
+    // 2. Daten für den Globus bauen
+    for (const routeKey in routeGroups) {
+        const flightsOnThisRoute = routeGroups[routeKey];
+        
+        flightsOnThisRoute.forEach((flight, indexInRoute) => {
+            const distance = calculateDistance(flight.depLat, flight.depLon, flight.arrLat, flight.arrLon);
+            const flightColor = getColorByDistance(distance);
+            
+            // Ist dies der Flug, den der Slider gerade "berührt"?
+            const isActiveFlight = isStoryMode && (flight.id === currentSliderFlightId);
 
-      const depCountry = airportData[flight.departure]?.country_code;
-      const arrCountry = airportData[flight.arrival]?.country_code;
-      if (depCountry) visitedCountries.add(depCountry);
-      if (arrCountry) visitedCountries.add(arrCountry);
+            arcData.push({
+                startLat: flight.depLat, 
+                startLng: flight.depLon, 
+                endLat: flight.arrLat, 
+                endLng: flight.arrLon,
+                name: `${flight.departure} → ${flight.arrival}`,
+                color: flightColor,
+                distance: distance,
+                originalFlight: flight,
+                allFlightsOnRoute: flightsOnThisRoute,
+                
+                // ✅ WICHTIG: Das hier brauchen wir für die Entwirrung!
+                stackIndex: indexInRoute, 
+                // ✅ WICHTIG: Hash für verschiedene Routen, die ähnlich liegen
+                hash: (flight.arrival.charCodeAt(0) + flight.arrival.charCodeAt(1)) % 10,
+                
+                isActive: isActiveFlight
+            });
 
-      [flight.departure, flight.arrival].forEach((iata) => {
-        const airport = airportData[iata];
-        if (!airport) return;
-        if (!airportUsage[iata]) {
-          airportUsage[iata] = {
-            code: iata,
-            name: airport.name || iata,
-            lat: airport.lat,
-            lon: airport.lon,
-            count: 1,
-          };
-        } else {
-          airportUsage[iata].count++;
-        }
-      });
-    });
-  }
+            // (Länder & Airports Logik wie gehabt...)
+            const depCountry = airportData[flight.departure]?.country_code;
+            const arrCountry = airportData[flight.arrival]?.country_code;
+            if (depCountry) visitedCountries.add(depCountry);
+            if (arrCountry) visitedCountries.add(arrCountry);
 
-  const airportPointsData = Object.values(airportUsage);
-  const maxCount = Math.max(0, ...airportPointsData.map((d) => d.count));
-  return {
-    arcData,
-    visitedCountries: Array.from(visitedCountries),
-    airportPointsData,
-    maxCount,
-  };
+            [flight.departure, flight.arrival].forEach((iata) => {
+                const airport = airportData[iata];
+                if (!airport) return;
+                if (!airportUsage[iata]) {
+                    airportUsage[iata] = { code: iata, name: airport.name || iata, lat: airport.lat, lon: airport.lon, count: 1 };
+                } else {
+                    airportUsage[iata].count++;
+                }
+            });
+        });
+    }
+
+    const airportPointsData = Object.values(airportUsage);
+    const maxCount = Math.max(0, ...airportPointsData.map((d) => d.count));
+    
+    return { arcData, visitedCountries: Array.from(visitedCountries), airportPointsData, maxCount };
 }
 
 async function getGlobeData() {
@@ -298,18 +304,68 @@ async function openGlobeModal() {
       .globeImageUrl("//unpkg.com/three-globe/example/img/earth-night.jpg")
       .arcsData(progressiveData.arcData)
       .arcLabel("name")
-      .arcColor("color")
-      .arcAltitudeAutoScale((d) => {
-        if (d.distance < 1000) return 1.3;
-        if (d.distance < 8000) return 0.4;
-        return 0.4;
-      })
-      .arcDashLength((d) => (d.distance < 1000 ? 0.08 : 0.025))
-      .arcDashGap((d) => (d.distance < 1000 ? 0.02 : 0.025))
-      .arcDashAnimateTime((d) => (d.distance < 1000 ? 8000 : 12000))
-      .arcStroke((d) => (d.distance < 1000 ? 0.6 : 0.5))
-      .arcDashInitialGap((d) => d.offsetIndex * 0.1)
-      .arcsTransitionDuration(0)
+            
+            // --- 1. FARBE (Jetzt: Bunt aber Transparent) ---
+            .arcColor((d) => {
+                if (isStoryModeActive) {
+                    // AKTIV: Leuchtendes Cyan/Weiß (knallt raus)
+                    if (d.isActive) return "#00ffff"; 
+                    
+                    // INAKTIV (Ghost Trails):
+                    // Wir nehmen die Originalfarbe (d.color) und machen sie 40% deckend.
+                    // Das erhält die Information "Kurzstrecke/Langstrecke", ist aber dezent.
+                    return hexToRgba(d.color, 0.4); 
+                }
+                // NORMALER MODUS: Volle Farbe
+                return d.color;
+            })
+
+            // --- 2. HÖHE (Proportionale Bögen) ---
+            .arcAltitude((d) => {
+                // Natürliche Bogenhöhe
+                let naturalArch = d.distance < 1000 ? 0.05 : Math.min(0.5, d.distance / 15000);
+                
+                // Offsets
+                let stackOffset = d.stackIndex * 0.02; 
+                let routeVariation = d.hash * 0.01;
+
+                if (isStoryModeActive) {
+                    if (d.isActive) {
+                        // Hero: Hoch drüber
+                        return naturalArch + 0.25 + stackOffset;
+                    } else {
+                        // Ghosts: 60% Höhe + Sicherheitsabstand
+                        return (naturalArch * 0.6) + 0.05 + (d.stackIndex * 0.005);
+                    }
+                }
+                // Normal
+                return naturalArch + routeVariation + stackOffset;
+            })
+
+            // --- 3. DICKE (Konsistent halten!) ---
+            .arcStroke((d) => {
+                if (isStoryModeActive) {
+                    // Aktiv: 2.5 (Fett)
+                    // Inaktiv: 0.8 (Vorher 0.6 - etwas dicker für die Farbe)
+                    return d.isActive ? 2.5 : 0.8;
+                }
+                // Normal: 0.5
+                return 0.5;
+            })
+
+            // --- 4. ANIMATION ---
+            .arcDashLength((d) => {
+                if (isStoryModeActive) return d.isActive ? 0.4 : 1; 
+                return 0.1;
+            })
+            .arcDashGap((d) => {
+                if (isStoryModeActive) return d.isActive ? 0.1 : 0;
+                return 0.02; 
+            })
+            .arcDashAnimateTime((d) => {
+                if (isStoryModeActive) return d.isActive ? 4000 : 0; 
+                return d.distance < 1000 ? 8000 : 12000;
+            })
       .polygonsData(countries.features)
       .polygonCapColor((feat) => {
         const isVisited = initialData.visitedCountries.includes(
@@ -595,24 +651,45 @@ async function openGlobeModal() {
       /**
        * NEU: EVENT 5: Hover über eine Flugroute (Arc)
        */
-      .onArcHover((arc) => {
-        // Ändere den Mauszeiger zu "Pointer", wenn wir über einem Bogen sind
-        document.getElementById("globe-container").style.cursor = arc
-          ? "pointer"
-          : "grab";
+      // --- 5. HOVER EFFEKT (Bugfix: Reset muss identisch sein!) ---
+            .onArcHover((arc) => {
+                const globeContainer = document.getElementById("globe-container");
+                globeContainer.style.cursor = arc ? "pointer" : "grab";
 
-        // (Optional) Hebe den Bogen hervor
-        if (arc) {
-          globeInstance.arcColor((d) =>
-            // 'd' ist der Bogen, den wir gerade prüfen
-            // 'arc' ist der Bogen, über dem die Maus schwebt
-            d === arc ? "white" : getColorByDistance(d.distance)
-          );
-        } else {
-          // Setze alle Farben zurück, wenn wir nicht mehr hovern
-          globeInstance.arcColor((d) => getColorByDistance(d.distance));
-        }
-      });
+                if (arc) {
+                    // +++ HOVER (Maus drauf) +++
+                    globeInstance.arcColor((d) => d === arc ? "#ffffff" : (
+                        isStoryModeActive 
+                            ? (d.isActive ? "#00ffff" : hexToRgba(d.color, 0.4)) // ✅ Korrigiert
+                            : d.color
+                    ));
+                    
+                    globeInstance.arcStroke((d) => d === arc ? 1.5 : (
+                        isStoryModeActive ? (d.isActive ? 2.5 : 0.8) : 0.5 // ✅ Korrigiert (0.8 statt 0.3)
+                    ));
+
+                    globeInstance.arcLabel((d) => d === arc ? d.name : "");
+
+                } else {
+                    // +++ RESET (Maus weg) - HIER WAR DER FEHLER +++
+                    
+                    globeInstance.arcColor((d) => {
+                        if (isStoryModeActive) {
+                            return d.isActive ? "#00ffff" : hexToRgba(d.color, 0.4); // ✅ Jetzt identisch zu oben
+                        }
+                        return d.color;
+                    });
+                    
+                    globeInstance.arcStroke((d) => {
+                        if (isStoryModeActive) {
+                            return d.isActive ? 2.5 : 0.8; // ✅ Jetzt identisch zu oben (0.8)
+                        }
+                        return 0.5;
+                    });
+                    
+                    globeInstance.arcLabel((d) => d.name);
+                }
+            })
     // +++ ENDE EVENT-HANDLER +++
 
     globeInstance.controls().autoRotate = true;
