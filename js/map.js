@@ -266,6 +266,19 @@ async function openGlobeModal() {
   }
   let countries;
   document.getElementById("globe-modal").classList.remove("hidden");
+  
+  // CONTAINER GRÖSSE FIXEN ---
+    const container = document.getElementById("globe-container");
+    
+    // Wir warten einen winzigen Moment (10ms), damit der Browser das CSS (hidden removed) 
+    // verarbeitet hat und die wahre Größe des Containers kennt.
+    setTimeout(() => {
+        if (globeInstance) {
+            globeInstance.width(container.clientWidth);
+            globeInstance.height(container.clientHeight);
+        }
+    }, 10);
+    // --- ENDE ---
 
   const sliderEl = document.getElementById("globe-time-slider");
   const labelEl = document.getElementById("globe-time-label");
@@ -798,8 +811,25 @@ async function openGlobeModal() {
             : 0.01) + 0.03
       );
 
+	// RESPONSIVE RESIZE
+        // Passt den Globus an, wenn das Fenster (oder Tablet) gedreht wird
+        window.addEventListener('resize', () => {
+            const container = document.getElementById("globe-container");
+            if (globeInstance && container) {
+                // 1. Größe anpassen
+                globeInstance.width(container.clientWidth);
+                globeInstance.height(container.clientHeight);
+                
+                // 2. Kamera zentrieren (optional, aber hilfreich)
+                // Wir erzwingen ein kurzes Update der Kamera, damit sie sich neu ausrichtet
+                // Wir nutzen die aktuelle Position, setzen sie aber neu.
+                 const currentPos = globeInstance.pointOfView();
+                 globeInstance.pointOfView(currentPos); 
+            }
+        });
+
     globeInstance.controls().autoRotate = true;
-  } // ✅ NEU: Ende des 'else'
+  } // Ende des 'else'
   window.globeDebugLogged = false;
 }
 
