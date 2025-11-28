@@ -25,6 +25,12 @@ exports.handler = async (event, context) => {
       mode: 'subscription',
 	  // Erlaubt die Eingabe von Gutscheinen
       allow_promotion_codes: true,
+	  
+	  // STEUER-AUTOMATIK AKTIVIEREN
+      automatic_tax: {
+        enabled: true,
+      },
+	  
       line_items: [
         {
           price: priceId,
@@ -33,7 +39,12 @@ exports.handler = async (event, context) => {
       ],
       customer_email: userEmail,
       client_reference_id: userId,
-      subscription_data: {
+      
+	  customer_update: {
+        address: 'auto', // Fragt nach der Adresse, falls nötig für Steuer
+      },
+	  
+	  subscription_data: {
         metadata: {
           supabase_user_id: userId
         }
