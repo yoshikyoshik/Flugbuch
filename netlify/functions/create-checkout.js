@@ -23,14 +23,19 @@ exports.handler = async (event, context) => {
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'subscription',
-	  // Erlaubt die Eingabe von Gutscheinen
+      // Erlaubt Gutscheine
       allow_promotion_codes: true,
-	  
-	  // STEUER-AUTOMATIK AKTIVIEREN
+      
+      // ✅ STEUER-AUTOMATIK
       automatic_tax: {
         enabled: true,
       },
-	  
+
+      // ✅ KORREKTUR: Statt 'customer_update' nutzen wir das hier:
+      // Das sorgt dafür, dass Stripe die Adresse abfragt, wenn nötig (für Steuer),
+      // ohne dass eine Customer-ID zwingend vorher existieren muss.
+      billing_address_collection: 'auto',
+
       line_items: [
         {
           price: priceId,
@@ -40,11 +45,7 @@ exports.handler = async (event, context) => {
       customer_email: userEmail,
       client_reference_id: userId,
       
-	  customer_update: {
-        address: 'auto', // Fragt nach der Adresse, falls nötig für Steuer
-      },
-	  
-	  subscription_data: {
+      subscription_data: {
         metadata: {
           supabase_user_id: userId
         }
@@ -55,14 +56,14 @@ exports.handler = async (event, context) => {
 
     return {
       statusCode: 200,
-      headers, // ✅ Header mitsenden
+      headers, 
       body: JSON.stringify({ url: session.url }),
     };
   } catch (error) {
     console.error('Stripe Error:', error);
     return {
       statusCode: 500,
-      headers, // ✅ Header mitsenden
+      headers, 
       body: JSON.stringify({ error: error.message }),
     };
   }
