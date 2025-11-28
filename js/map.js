@@ -812,21 +812,30 @@ async function openGlobeModal() {
       );
 
 	// RESPONSIVE RESIZE
-        // Passt den Globus an, wenn das Fenster (oder Tablet) gedreht wird
-        window.addEventListener('resize', () => {
+        // ✅ NEU: Robuster Resize-Listener mit Delay & Zentrierung
+        const handleResize = () => {
             const container = document.getElementById("globe-container");
             if (globeInstance && container) {
-                // 1. Größe anpassen
-                globeInstance.width(container.clientWidth);
-                globeInstance.height(container.clientHeight);
+                // 1. Neue Dimensionen holen
+                const w = container.clientWidth;
+                const h = container.clientHeight;
+
+                // 2. Dem Globus die neuen Maße geben
+                globeInstance.width(w);
+                globeInstance.height(h);
                 
-                // 2. Kamera zentrieren (optional, aber hilfreich)
-                // Wir erzwingen ein kurzes Update der Kamera, damit sie sich neu ausrichtet
-                // Wir nutzen die aktuelle Position, setzen sie aber neu.
-                 const currentPos = globeInstance.pointOfView();
-                 globeInstance.pointOfView(currentPos); 
+                // 3. WICHTIG: Erzwinge ein Kamera-Update, um Verzerrungen zu vermeiden
+                // Wir lesen die aktuelle Position und setzen sie neu. Das triggert intern ein Update der Projektionsmatrix.
+                const currentPos = globeInstance.pointOfView();
+                globeInstance.pointOfView(currentPos); 
             }
-        });
+        };
+
+        // A) Event Listener für Fenster-Größenänderung (Drehen)
+        window.addEventListener('resize', handleResize);
+        
+        // B) Einmaliger Aufruf kurz nach dem Start (Fängt initiale Layout-Verschiebungen ab)
+        setTimeout(handleResize, 200);
 
     globeInstance.controls().autoRotate = true;
   } // Ende des 'else'
