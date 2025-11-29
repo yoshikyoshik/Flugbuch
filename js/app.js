@@ -1433,16 +1433,21 @@ document.addEventListener("DOMContentLoaded", async function () {
         const priceId = pricingConfig[selectedPlan].stripeProductId;
 
         // 3. Netlify Function aufrufen
-// ✅ KORREKTUR: API_BASE_URL davor setzen
-const response = await fetch(`${API_BASE_URL}/.netlify/functions/create-checkout`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-        priceId: priceId,
-        userId: user.id,
-        userEmail: user.email
-    })
-});
+        
+        // ✅ NEU: Plattform-Check auch hier
+        const isNative = typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform();
+        const returnUrl = isNative ? 'aviosphere://return' : null;
+
+        const response = await fetch(`${API_BASE_URL}/.netlify/functions/create-checkout`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                priceId: priceId,
+                userId: user.id,
+                userEmail: user.email,
+                returnUrl: returnUrl // ✅ Mitgeben
+            })
+        });
 
         const result = await response.json();
         
@@ -1489,5 +1494,22 @@ const response = await fetch(`${API_BASE_URL}/.netlify/functions/create-checkout
 	if (yearSpan) {
 		yearSpan.textContent = new Date().getFullYear();
 	}
+	
+	// Listener für Deep Links (Rückkehr von Stripe)
+    if (typeof Capacitor !== 'undefined') {
+        const { App } = Capacitor.Plugins;
+        App.addListener('appUrlOpen', data => {
+            console.log('App geöffnet via URL:', data.url);
+            if (data.url.includes('aviosphere://')) {
+                // Wir sind zurück!
+                // Browser Plugin schließen (falls es nicht automatisch zugeht)
+                if (Capacitor.Plugins.Browser) {
+                    Capacitor.Plugins.Browser.close();
+                }
+                // Optional: Nutzerdaten neu laden, um Pro-Status sofort zu prüfen
+                initializeApp(); 
+            }
+        });
+    }
   
 });

@@ -18,9 +18,27 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    const { priceId, userId, userEmail } = JSON.parse(event.body);
+    // ✅ NEU: 'returnUrl' auslesen
+    const { priceId, userId, userEmail, returnUrl } = JSON.parse(event.body);
+    
+    // ✅ NEU: Basis-URL bestimmen
+    // Wenn 'returnUrl' da ist (App), nimm sie als Basis. Sonst Web-URL.
+    // Wir hängen dann success/cancel Parameter an.
+    
+    const baseUrl = returnUrl || process.env.APP_URL;
+    
+    // Wenn es ein App-Link ist (aviosphere://), brauchen wir keine langen Pfade, 
+    // Parameter reichen.
+    const successUrl = returnUrl 
+        ? `${returnUrl}?session_id={CHECKOUT_SESSION_ID}&payment=success`
+        : `${process.env.APP_URL}?session_id={CHECKOUT_SESSION_ID}&payment=success`;
 
-    const session = await stripe.checkout.sessions.create({
+    const cancelUrl = returnUrl
+        ? `${returnUrl}?payment=cancelled`
+        : `${process.env.APP_URL}?payment=cancelled`;
+
+	
+	const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'subscription',
       // Erlaubt Gutscheine
@@ -50,8 +68,8 @@ exports.handler = async (event, context) => {
           supabase_user_id: userId
         }
       },
-      success_url: `${process.env.APP_URL}?session_id={CHECKOUT_SESSION_ID}&payment=success`,
-      cancel_url: `${process.env.APP_URL}?payment=cancelled`,
+      success_url: successUrl, // ✅ Neue Variable nutzen
+      cancel_url: cancelUrl,   // ✅ Neue Variable nutzen
     });
 
     return {

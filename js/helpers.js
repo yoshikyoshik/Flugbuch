@@ -240,13 +240,23 @@ async function manageSubscription() {
             return;
         }
 
-        showMessage("Lade...", getTranslation("messages.redirectingStripe") || "Leite zum Kundenportal weiter...", "info");
+        showMessage("Lade...", getTranslation("messages.redirectingStripe"), "info");
 
-        // ✅ KORREKTUR 1: Absolute URL verwenden
+        // ✅ NEU: Plattform-Check
+        // Wir prüfen, ob wir nativ (Android) sind.
+        const isNative = typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform();
+        
+        // Wenn Native: "aviosphere://return"
+        // Wenn Web: "https://aviosphere.com" (wird vom Backend Fallback erledigt, also null senden)
+        const returnUrl = isNative ? 'aviosphere://return' : null;
+
         const response = await fetch(`${API_BASE_URL}/.netlify/functions/create-portal`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' }, // Header ist oft wichtig
-            body: JSON.stringify({ customerId })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                customerId,
+                returnUrl // ✅ Wird mitgesendet
+            })
         });
         
         if (!response.ok) throw new Error("Netzwerkfehler beim Portal-Aufruf");

@@ -19,13 +19,17 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    const { customerId } = JSON.parse(event.body);
+    // ✅ Wir lesen 'returnUrl' aus dem Body, falls vorhanden
+    const { customerId, returnUrl } = JSON.parse(event.body);
     
     if (!customerId) throw new Error("Keine Customer ID vorhanden");
 
+    // ✅ Nutze die übergebene URL oder Fallback auf die Web-URL
+    const finalReturnUrl = returnUrl || process.env.APP_URL;
+
     const session = await stripe.billingPortal.sessions.create({
       customer: customerId,
-      return_url: process.env.APP_URL,
+      return_url: finalReturnUrl, // Hier nutzen wir die Variable
     });
 
     return {
