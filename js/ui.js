@@ -67,7 +67,8 @@ function openPremiumModal(featureKey = null) {
       nativeHint.id = "premium-native-hint";
       nativeHint.className = "p-6 text-center text-sm text-gray-600 dark:text-gray-300 hidden";
       // Der neutrale Text ohne Link:
-      nativeHint.innerHTML = "<p>Hinweis: Die Verwaltung deines Profils und Abos ist über unsere Webseite <strong>aviosphere.com</strong> möglich.</p>";
+      const hintText = getTranslation("premium.nativeHint") || "Note: You can manage your profile and subscription via our website <strong>aviosphere.com</strong>.";
+      nativeHint.innerHTML = `<p>${hintText}</p>`;
       // Einfügen VOR dem Footer
       footerContainer.parentNode.insertBefore(nativeHint, footerContainer);
   }

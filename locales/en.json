@@ -452,6 +452,7 @@
   "premium": {
       "title": "Become a Pro Traveler 🚀",
       "subtitle": "Remove all limits and unlock premium features.",
+      "nativeHint": "Note: You can manage your profile and subscription via our website <strong>aviosphere.com</strong>.",
       "feature1": "Unlimited Flights",
 	  "desc1": "No more 15-flight limit.",
       "feature2": "Interactive 3D Globe",

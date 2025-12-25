@@ -453,6 +453,7 @@
   "premium": {
       "title": "Werde ein Pro-Reisender 🚀",
       "subtitle": "Entferne alle Limits und schalte Premium-Features frei.",
+      "nativeHint": "Hinweis: Die Verwaltung deines Profils und Abos ist über unsere Webseite <strong>aviosphere.com</strong> möglich.",
       "feature1": "Unbegrenzte Flüge",
 	  "desc1": "Kein 15-Flüge-Limit mehr.",
       "feature2": "Interaktiver 3D-Globus",

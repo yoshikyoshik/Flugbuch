@@ -428,6 +428,7 @@
   "premium": {
 	  "title": "Conviértete en un Viajero Pro 🚀",
 	  "subtitle": "Elimina todos los límites y desbloquea funciones premium.",
+    "nativeHint": "Nota: Puedes gestionar tu perfil y suscripción a través de nuestro sitio web <strong>aviosphere.com</strong>.",
 	  "feature1": "Vuelos ilimitados",
 	  "desc1": "Sin límite de 15 vuelos.",
 	  "feature2": "Globo 3D interactivo",
