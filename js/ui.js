@@ -60,17 +60,20 @@ function openPremiumModal(featureKey = null) {
   
   const planSwitcher = document.getElementById("plan-monthly-btn")?.closest(".px-4.pt-5.pb-2"); // Die Toggle Buttons
 
-  // Hinweis-Container erstellen (falls noch nicht da)
+  // 1. Element suchen oder erstellen (NUR Struktur)
   let nativeHint = document.getElementById("premium-native-hint");
   if (!nativeHint && footerContainer && footerContainer.parentNode) {
       nativeHint = document.createElement("div");
       nativeHint.id = "premium-native-hint";
       nativeHint.className = "p-6 text-center text-sm text-gray-600 dark:text-gray-300 hidden";
-      // Der neutrale Text ohne Link:
+      // Hier fügen wir das Element nur ein, aber setzen den Text noch nicht final
+      footerContainer.parentNode.insertBefore(nativeHint, footerContainer);
+  }
+
+  // 2. Text IMMER aktualisieren (Egal ob das Element gerade neu erstellt wurde oder schon da war)
+  if (nativeHint) {
       const hintText = getTranslation("premium.nativeHint") || "Note: You can manage your profile and subscription via our website <strong>aviosphere.com</strong>.";
       nativeHint.innerHTML = `<p>${hintText}</p>`;
-      // Einfügen VOR dem Footer
-      footerContainer.parentNode.insertBefore(nativeHint, footerContainer);
   }
 
   if (isNative) {
