@@ -231,6 +231,11 @@ function manageSubscription() {
 */
 
 async function manageSubscription() {
+  // ✅ NEU: Blocker für Android/iOS
+    if (isNativeApp()) {
+        showMessage("Info", "Die Verwaltung deines Profils und Abos ist über unsere Webseite aviosphere.com möglich.", "info");
+        return;
+    }
     try {
         const { data: { user } } = await supabaseClient.auth.getUser();
         const customerId = user?.user_metadata?.stripe_customer_id;
@@ -394,4 +399,11 @@ function translatePage() {
       }
     }
   });
+}
+
+/**
+ * ✅ NEU: Prüft zuverlässig, ob wir in der nativen Android/iOS App laufen.
+ */
+function isNativeApp() {
+  return typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform();
 }

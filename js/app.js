@@ -91,7 +91,18 @@ async function initializeApp() {
             "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mt-1 bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400 border border-gray-200 dark:border-gray-600";
 
           // Buttons umschalten
-          if (upgradeBtn) upgradeBtn.classList.remove("hidden"); // "Upgrade" zeigen
+          if (upgradeBtn) {
+             // ✅ NEU: Button auf Android/iOS IMMER verstecken (Consumption Only)
+             // Falls isNativeApp() noch nicht geladen ist, nutzen wir den direkten Check
+             const isNative = typeof isNativeApp === 'function' ? isNativeApp() : (typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform());
+
+             if (isNative) {
+                 upgradeBtn.classList.add("hidden"); 
+             } else {
+                 upgradeBtn.classList.remove("hidden"); // Nur im Web zeigen
+             }
+          }
+          
           if (manageBtn) manageBtn.classList.add("hidden");
         }
       }

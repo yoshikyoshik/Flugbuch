@@ -47,6 +47,50 @@ function openPremiumModal(featureKey = null) {
     imgContainer.classList.add("hidden");
   }
   if (titleElement) titleElement.textContent = titleText;
+
+  // --- ✅ NEU: CONSUMPTION ONLY MODE (Android/iOS) ---
+  // Wir verstecken Preise & Kaufen-Button, wenn wir native sind
+  const isNative = typeof isNativeApp === 'function' ? isNativeApp() : false;
+  
+  const buyBtn = document.getElementById("buy-pro-btn");
+  const priceFooter = document.querySelector("#premium-modal .bg-gray-50"); // Der Footer mit Preis & Button
+  const darkPriceFooter = document.querySelector("#premium-modal .dark\\:bg-gray-700\\/50"); // Footer Dark Mode (falls Tailwind Klasse so greift)
+  // Besser: Wir suchen das Elternelement des Buy-Buttons
+  const footerContainer = buyBtn ? buyBtn.closest("div.flex-col") : null;
+  
+  const planSwitcher = document.getElementById("plan-monthly-btn")?.closest(".px-4.pt-5.pb-2"); // Die Toggle Buttons
+
+  // Hinweis-Container erstellen (falls noch nicht da)
+  let nativeHint = document.getElementById("premium-native-hint");
+  if (!nativeHint && footerContainer && footerContainer.parentNode) {
+      nativeHint = document.createElement("div");
+      nativeHint.id = "premium-native-hint";
+      nativeHint.className = "p-6 text-center text-sm text-gray-600 dark:text-gray-300 hidden";
+      // Der neutrale Text ohne Link:
+      nativeHint.innerHTML = "<p>Hinweis: Die Verwaltung deines Profils und Abos ist über unsere Webseite <strong>aviosphere.com</strong> möglich.</p>";
+      // Einfügen VOR dem Footer
+      footerContainer.parentNode.insertBefore(nativeHint, footerContainer);
+  }
+
+  if (isNative) {
+      // 📱 NATIVE APP: Verstecke Kauf-Elemente
+      if (footerContainer) footerContainer.classList.add("hidden");
+      if (planSwitcher) planSwitcher.classList.add("hidden");
+      
+      // Zeige Hinweis
+      if (nativeHint) nativeHint.classList.remove("hidden");
+      
+      // Titel neutraler machen
+      if(titleElement) titleElement.textContent = "Premium Feature 🔒";
+      
+  } else {
+      // 💻 WEB: Zeige alles normal
+      if (footerContainer) footerContainer.classList.remove("hidden");
+      if (planSwitcher) planSwitcher.classList.remove("hidden");
+      if (nativeHint) nativeHint.classList.add("hidden");
+  }
+  // --- ENDE NEU ---
+
   modal.classList.remove("hidden");
   switchPlan("yearly");
 }
