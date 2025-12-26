@@ -110,7 +110,10 @@
 		"filesSelected": "{count} Foto(s) ausgewählt.",
 		"registration": "Registrierung (Optional)",
 		"reset": "Zurücksetzen",
-		"cancel": "Abbrechen"
+		"cancel": "Abbrechen",
+    "buttonSaving": "Speichert...",
+    "buttonUpdating": "Aktualisiert..."
+    
     },
 	
     "messages": {
@@ -123,7 +126,8 @@
 		"subscriptionExpired": "Dein Abo ist abgelaufen. Du bist nun wieder im Free-Modus.",
 		"statusUpdate": "Status-Update",
 		"noStripeAccount": "Kein aktives Abo-Konto gefunden.",
-		"redirectingStripe": "Leite zum Kundenportal weiter..."
+		"redirectingStripe": "Leite zum Kundenportal weiter...",
+    "confirmDelete": "Möchtest du diesen Flug wirklich unwiderruflich löschen?"
     },
 	
 	"records": {
@@ -213,7 +217,9 @@
 		"flightTitle": "Flug #{number}: {departure} ➔ {arrival}",
 		"filteredTitle": "Gefilterte Flugliste",
 		"logbookTitle": "Logbuch: {groupName}", 
-		"createBookForGroup": "Buch für {groupName} erstellen (PDF)" 
+		"createBookForGroup": "Buch für {groupName} erstellen (PDF)",
+    "errorNoFlights": "Keine Flüge im aktuellen Filter zum Drucken gefunden.",
+    "errorNativeFailed": "Natives PDF konnte nicht erstellt werden." 
 	},
 	
 	"stats": {
@@ -235,7 +241,8 @@
         "flightRoutePrice": "{departure} → {arrival} ({price} {currency})",
         "aircraftTypeCount": "{type} ({count}x)",
         "yearlySummaryContent": "{count} Flüge | {distance} km",
-        "noYearlyData": "Keine Jahresdaten verfügbar."
+        "noYearlyData": "Keine Jahresdaten verfügbar.",
+        "total": "Total"
     },
 	
 	"charts": {
@@ -293,7 +300,11 @@
 	"globe": {
 		"storyModeHint": "Story-Modus: Flüge anklicken, um Details zu sehen.",
 		"buttonStoryMode": "📖 Story-Modus",
-		"buttonNormalMode": "🚀 Normaler Modus"
+		"buttonNormalMode": "🚀 Normaler Modus",
+    "noFlights": "Keine Flüge verfügbar",
+    "focus": "Fokus",
+    "visit": "Besuch",
+    "visits": "Besuche"
 	},
 	
 	"units": {
@@ -342,6 +353,12 @@
 		"airlineYear": "Gründungsjahr",
 		"airlineFleetDetail": "Flotten-Zusammensetzung"
     },
+
+  "modal": {
+      "loadingTitle": "Lade...",
+      "loadingBody": "Lade Details..."
+
+  },
 	
 	"achievements": {
         "title": "Deine Errungenschaften",
@@ -466,7 +483,10 @@
 	  "yearly": "Jährlich",
       "perMonth": "/ Monat",
 	  "perYear": "/ Jahr",
-	  "thankYou": "Danke für dein Interesse! Die Bezahlung folgt bald."
+	  "thankYou": "Danke für dein Interesse! Die Bezahlung folgt bald.",
+    "titleGlobe": "Entdecke den 3D Globus 🌍",
+    "titlePrint": "Erstelle dein Logbuch als PDF 📚",
+    "nativeTitle": "Premium Feature 🔒"
     },
 	
 	"landing": {
@@ -478,7 +498,55 @@
     "featurePhotos": "Foto-Upload & PDF-Export",
     "privacy": "Datenschutzerklärung",
     "terms": "AGB & Impressum"
-},
+  },
+
+  "toast": {
+    "errorTitle": "Fehler",
+    "successTitle": "Erfolg",
+    "infoTitle": "Info",
+    "notLoggedIn": "Nicht eingeloggt. Bitte neu laden.",
+    "airportNotFound": "Flughafencode nicht gefunden.",
+    "saveErrorTitle": "Speicherfehler",
+    "saveErrorBody": "Flug konnte nicht in der Datenbank gespeichert werden.",
+    "flightSaved": "Flug erfolgreich gespeichert.",
+    "sessionExpired": "Sitzung abgelaufen. Bitte neu einloggen.",
+    "updateErrorTitle": "Update-Fehler",
+    "updateErrorBody": "Änderungen konnten nicht gespeichert werden.",
+    "flightUpdated": "Flug erfolgreich aktualisiert.",
+    "deleteError": "Flug konnte nicht gelöscht werden.",
+    "flightDeleted": "Flug gelöscht."
+  },
+
+  "map": {
+    "departure": "Abflug",
+    "arrival": "Ankunft"
+  },
+
+  "anim": {
+    "noFlights": "Keine Flüge zum Animieren.",
+    "paused": "Animation pausiert.",
+    "finished": "Reisechronik beendet. {count} Flüge angezeigt."
+  },
+
+  "auth": {
+    "registerSuccessTitle": "Registrierung erfolgreich!",
+    "registerSuccessBody": "Bitte bestätige deine E-Mail-Adresse.",
+    "welcomeBack": "Willkommen zurück!",
+    "enterNewPassword": "Bitte gib dein neues Passwort ein."
+  },
+
+  "import": {
+    "confirmWarning": "WARNUNG! Du bist dabei, {count} Flüge zu importieren. Dies wird deine aktuellen Cloud-Daten ersetzen.",
+    "successTitle": "Import erfolgreich",
+    "successBody": "{count} Flüge importiert."
+  },
+  "export": {
+    "errorTitle": "Export-Fehler",
+    "noData": "Keine Daten zum Exportieren.",
+    "successTitle": "Export erfolgreich",
+    "successBody": "Daten als {file} exportiert."
+  },
+
 "registerFree": "Kostenlos Registrieren",
 "loginWelcome": "Willkommen an Bord",
 "loginSubtitle": "Melde dich an, um dein Logbuch zu starten.",

@@ -295,12 +295,7 @@ async function initializeApp() {
         if (manageBtn) manageBtn.classList.add("hidden");
 
         // 4. Nutzer informieren (Toast Nachricht)
-        showMessage(
-          getTranslation("messages.statusUpdate"),
-          getTranslation("messages.subscriptionExpired") ||
-            "Dein Abo ist abgelaufen.",
-          "info"
-        );
+        showMessage(getTranslation("messages.statusUpdate"), getTranslation("messages.subscriptionExpired"), "info");
       }
     }
   }, 60000); // Alle 60 Sekunden
@@ -315,14 +310,14 @@ window.logFlight = async function () {
   }
 
   const logButton = document.getElementById("log-button");
-  logButton.textContent = "Speichere...";
+  logButton.textContent = getTranslation("form.buttonSaving") || "Saving...";
   logButton.disabled = true;
 
   const {
     data: { user },
   } = await supabaseClient.auth.getUser();
   if (!user) {
-    showMessage("Fehler", "Nicht eingeloggt. Bitte neu laden.", "error");
+    showMessage(getTranslation("toast.errorTitle"), getTranslation("toast.notLoggedIn"), "error");
     logButton.disabled = false;
     return;
   }
@@ -406,11 +401,7 @@ window.logFlight = async function () {
   // --- ENDE KORRIGIERTE LOGIK ---
 
   if (!departureAirport || !arrivalAirport) {
-    showMessage(
-      "Fehler",
-      "Mindestens ein Flughafen-Code wurde nicht gefunden.",
-      "error"
-    );
+    showMessage(getTranslation("toast.errorTitle"), getTranslation("toast.airportNotFound"), "error");
     logButton.textContent = "Flug loggen und speichern";
     logButton.disabled = false;
     return;
@@ -472,18 +463,10 @@ window.logFlight = async function () {
     .insert(newFlightForSupabase);
 
   if (error) {
-    showMessage(
-      "Speicherfehler",
-      "Der Flug konnte nicht in der Datenbank gespeichert werden.",
-      "error"
-    );
+    showMessage(getTranslation("toast.saveErrorTitle"), getTranslation("toast.saveErrorBody"), "error");
     console.error("Supabase Insert Error:", error);
   } else {
-    showMessage(
-      "Erfolg!",
-      `Flug von ${departureAirport.name} nach ${arrivalAirport.name} erfolgreich geloggt.`,
-      "success"
-    );
+    showMessage(getTranslation("toast.successTitle"), getTranslation("toast.flightSaved"), "success");
     resetForm();
 	
 	// ID in Supabase Metadaten speichern
@@ -497,7 +480,7 @@ window.logFlight = async function () {
 	
     renderFlights(null, newFlightId);
   }
-  logButton.textContent = "Flug loggen und speichern";
+  logButton.textContent = getTranslation("form.buttonLogFlight") || "Log Flight";
   logButton.disabled = true;
 };
 
@@ -511,13 +494,13 @@ async function updateFlight() {
     error: userError,
   } = await supabaseClient.auth.getUser();
   if (userError || !user) {
-    showMessage("Fehler", "Sitzung abgelaufen. Bitte neu einloggen.", "error");
+    showMessage(getTranslation("toast.errorTitle"), getTranslation("toast.sessionExpired"), "error");
     logout();
     return;
   }
 
   const logButton = document.getElementById("log-button");
-  logButton.textContent = "Aktualisiere...";
+  logButton.textContent = getTranslation("form.buttonUpdating") || "Updating...";
   logButton.disabled = true;
 
   // 2. Finde die "überlebenden" Fotos (bereits existierende)
@@ -578,8 +561,8 @@ async function updateFlight() {
     if (deleteError) {
       console.error("Fehler beim Löschen alter Fotos:", deleteError);
       showMessage(
-        "Speicherfehler",
-        "Alte Fotos konnten nicht gelöscht werden, die neuen wurden aber hinzugefügt.",
+        "Save error",
+        "Old photos could not get deleted, but new ones added.",
         "error"
       );
     }
@@ -621,11 +604,7 @@ async function updateFlight() {
   // --- ENDE KORRIGIERTE LOGIK ---
 
   if (!departureAirport || !arrivalAirport) {
-    showMessage(
-      "Flug nicht speicherbar",
-      "Mindestens ein Flughafen-Code wurde nicht gefunden.",
-      "error"
-    );
+    showMessage(getTranslation("toast.errorTitle"), getTranslation("toast.airportNotFound"), "error");
     logButton.textContent = "Änderungen speichern";
     logButton.disabled = false;
     return;
@@ -683,18 +662,10 @@ async function updateFlight() {
     .eq("flight_id", currentlyEditingFlightData.id);
 
   if (error) {
-    showMessage(
-      "Update-Fehler",
-      "Die Änderungen konnten nicht gespeichert werden.",
-      "error"
-    );
+    showMessage(getTranslation("toast.updateErrorTitle"), getTranslation("toast.updateErrorBody"), "error");
     console.error("Supabase Update Error:", error);
   } else {
-    showMessage(
-      "Erfolg!",
-      "Die Flugdaten wurden erfolgreich aktualisiert.",
-      "success"
-    );
+    showMessage(getTranslation("toast.successTitle"), getTranslation("toast.flightUpdated"), "success");
 	
 	// ID in Supabase Metadaten speichern
 	const currentId = currentlyEditingFlightData.id;
@@ -718,11 +689,7 @@ async function updateFlight() {
 // *** Rendern und Löschen ***
 window.deleteFlight = async function (id) {
   // Eine Bestätigung ist bei Löschaktionen immer eine gute Idee
-  if (
-    !confirm("Sind Sie sicher, dass Sie diesen Flug endgültig löschen möchten?")
-  ) {
-    return;
-  }
+  if (!confirm(getTranslation("messages.confirmDelete") || "Are you sure?")) { return; }
 
   const { error } = await supabaseClient
     .from("flights")
@@ -730,14 +697,10 @@ window.deleteFlight = async function (id) {
     .eq("flight_id", id);
 
   if (error) {
-    showMessage(
-      "Löschfehler",
-      "Der Flug konnte nicht gelöscht werden.",
-      "error"
-    );
+    showMessage(getTranslation("toast.errorTitle"), getTranslation("toast.deleteError"), "error");
     console.error("Supabase Delete Error:", error);
   } else {
-    showMessage("Erfolg!", "Der Flug wurde gelöscht.", "success");
+    showMessage(getTranslation("toast.successTitle"), getTranslation("toast.flightDeleted"), "success");
     renderFlights(); // Lade die Liste einfach neu
   }
 };
@@ -969,11 +932,7 @@ window.exportData = async function (format) {
   let data, mimeType;
 
   if (allFlights.length === 0) {
-    showMessage(
-      "Export Fehler",
-      "Keine Daten zum Exportieren vorhanden.",
-      "error"
-    );
+    showMessage(getTranslation("export.errorTitle"), getTranslation("export.noData"), "error");
     return;
   }
 
@@ -1041,11 +1000,7 @@ window.exportData = async function (format) {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
-  showMessage(
-    "Export erfolgreich",
-    `Daten wurden als "${filename}" exportiert.`,
-    "success"
-  );
+  showMessage(getTranslation("export.successTitle"), getTranslation("export.successBody").replace("{file}", filename), "success");
 };
 
 /**
@@ -1084,10 +1039,7 @@ async function handleImport(event) {
     }
 
     // WICHTIGE SICHERHEITSABFRAGE
-    const confirmed = confirm(
-      `ACHTUNG!\n\nDu bist dabei, ${flightCount} Flüge zu importieren. \n\n'OK' klicken: ALLE deine aktuell in der Cloud gespeicherten Flüge werden gelöscht und durch die Flüge aus der Datei ersetzt.\n'Abbrechen' klicken: Der Vorgang wird abgebrochen.`
-    );
-
+    const confirmed = confirm(getTranslation("import.confirmWarning").replace("{count}", flightCount));
     if (!confirmed) {
       showMessage(
         "Import abgebrochen",
@@ -1127,11 +1079,7 @@ async function handleImport(event) {
 
       if (insertError) throw insertError;
 
-      showMessage(
-        "Import erfolgreich!",
-        `${flightCount} Flüge wurden importiert. Die Ansicht wird aktualisiert.`,
-        "success"
-      );
+      showMessage(getTranslation("import.successTitle"), getTranslation("import.successBody").replace("{count}", flightCount), "success");
       renderFlights(); // Lade die App neu
     } catch (error) {
       showMessage(
@@ -1177,7 +1125,7 @@ async function logout() {
   const { error } = await supabaseClient.auth.signOut();
   if (error) {
     console.error("Error logging out:", error);
-    showMessage("Logout-Fehler", error.message, "error");
+    showMessage(getTranslation("toast.errorTitle"), error.message, "error");
   } else {
     window.location.reload();
   }
@@ -1321,11 +1269,7 @@ document.addEventListener("DOMContentLoaded", async function () {
       if (error) {
         document.getElementById("auth-error").textContent = error.message;
       } else {
-        showMessage(
-          "Registrierung erfolgreich!",
-          "Bitte bestätige deine E-Mail-Adresse, um dich einzuloggen.",
-          "success"
-        );
+        showMessage(getTranslation("auth.registerSuccessTitle"), getTranslation("auth.registerSuccessBody"), "success");
       }
     });
 
@@ -1485,11 +1429,7 @@ document.addEventListener("DOMContentLoaded", async function () {
       document
         .getElementById("update-password-form")
         .classList.remove("hidden");
-      showMessage(
-        "Willkommen zurück!",
-        "Bitte gib jetzt dein neues Passwort ein.",
-        "info"
-      );
+      showMessage(getTranslation("auth.welcomeBack"), getTranslation("auth.enterNewPassword"), "info");
     } else if (session) {
       // Dieser Block wird bei INITIAL_SESSION (Seitenaufruf im eingeloggten Zustand)
       // UND bei SIGNED_IN (direkt nach dem Login) ausgeführt.

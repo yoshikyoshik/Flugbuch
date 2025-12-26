@@ -40,8 +40,8 @@ window.drawRouteOnMap = async function (
     return;
   }
 
-  const depPopupContent = `<b>Abflug:</b> ${depName} (${depCode})`;
-  const arrPopupContent = `<b>Ankunft:</b> ${arrName} (${arrCode})`;
+  const depPopupContent = `<b>${getTranslation("map.departure") || "Departure"}:</b> ${depName} (${depCode})`;
+  const arrPopupContent = `<b>${getTranslation("map.arrival") || "Arrival"}:</b> ${arrName} (${arrCode})`;
 
   const depMarker = L.marker([depLat, depLon]).bindPopup(depPopupContent);
   const arrMarker = L.marker([arrLat, arrLon]).bindPopup(arrPopupContent);
@@ -297,7 +297,7 @@ async function openGlobeModal() {
   const lastFlight = sortedFlights[sortedFlights.length - 1];
   if (lastFlight)
     labelEl.textContent = `${lastFlight.date} (#${lastFlight.flightLogNumber})`;
-  else labelEl.textContent = "Keine Flüge vorhanden";
+  else labelEl.textContent = getTranslation("globe.noFlights") || "No flights available";
 
   const initialData = processGlobeData(sortedFlights);
   const progressiveFlightSlice = sortedFlights.slice(-50);
@@ -394,9 +394,10 @@ async function openGlobeModal() {
       .pointsData(progressiveData.airportPointsData)
       .pointLat("lat")
       .pointLng("lon")
-      .pointLabel(
-        (d) => `${d.name} (${d.count} ${d.count > 1 ? "Besuche" : "Besuch"})`
-      )
+      .pointLabel((d) => {
+    const visitText = d.count > 1 ? getTranslation("globe.visits") : getTranslation("globe.visit");
+    return `${d.name} (${d.count} ${visitText})`;
+})
       .pointColor(() => "#fde047")
       .pointRadius(
         (d) =>
@@ -448,7 +449,7 @@ async function openGlobeModal() {
         // 1. Rotation stoppen & Slider deaktivieren
         globeInstance.controls().autoRotate = false;
         sliderEl.disabled = true;
-        labelEl.textContent = `Fokus: ${point.name} (${point.code})`;
+        labelEl.textContent = `${getTranslation("globe.focus") || "Focus"}: ${point.name} (${point.code})`;
 
         // 2. Zur Säule fliegen
         globeInstance.pointOfView(
@@ -564,7 +565,7 @@ async function openGlobeModal() {
 
         const countryCode = polygon.properties.ISO_A2; // z.B. "ES" für Spanien
         const countryName = polygon.properties.ADMIN; // z.B. "Spain"
-        labelEl.textContent = `Fokus: ${countryName} (${countryCode})`;
+        labelEl.textContent = `${getTranslation("globe.focus") || "Focus"}: ${countryName} (${countryCode})`;
 
         // 2. Zur Polygon fliegen (Kamerasteuerung)
         let centerCoords;
@@ -936,7 +937,7 @@ async function runAnimationLoop() {
 
   const allFlights = await getFlights();
   if (allFlights.length === 0) {
-    mapInfo.textContent = "Keine Flüge zum Animieren vorhanden.";
+    mapInfo.textContent = getTranslation("anim.noFlights");
     stopAnimation();
     return;
   }
@@ -959,7 +960,8 @@ async function runAnimationLoop() {
         animationStartIndex = i; // Speichere den Index des NÄCHSTEN Flugs
 
         if (animationState === "paused") {
-          mapInfo.textContent = `Animation pausiert. Bereit für Flug #${sortedFlights[i].flightLogNumber}.`;
+          //mapInfo.textContent = `Animation pausiert. Bereit für Flug #${sortedFlights[i].flightLogNumber}.`;
+          mapInfo.textContent = getTranslation("anim.paused").replace("{count}", sortedFlights[i].flightLogNumber);
         }
         return; // Beende die Funktion, die Schleife wird hier unterbrochen
       }
@@ -1035,7 +1037,7 @@ async function runAnimationLoop() {
     } // Ende der 'for'-Schleife
 
     if (animationState === "running") {
-      mapInfo.textContent = `Reise-Chronik abgeschlossen. ${sortedFlights.length} Flüge angezeigt.`;
+      mapInfo.textContent = getTranslation("anim.finished").replace("{count}", sortedFlights.length);
     }
   } catch (error) {
     console.error("Fehler bei der Reise-Chronik Animation:", error);

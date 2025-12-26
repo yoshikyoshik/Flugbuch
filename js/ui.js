@@ -26,9 +26,8 @@ function openInfoModal() {
 function closeInfoModal() {
   document.getElementById("info-modal").classList.add("hidden");
   document.getElementById("info-modal").classList.remove("flex");
-  document.getElementById("info-modal-title").textContent = "Lade...";
-  document.getElementById("info-modal-content").innerHTML =
-    "<p>Lade Details...</p>";
+  document.getElementById("info-modal-title").textContent = getTranslation("modal.loadingTitle") || "Loading...";
+  document.getElementById("info-modal-content").innerHTML = `<p>${getTranslation("modal.loadingBody") || "Loading details..."}</p>`;
 }
 
 function openPremiumModal(featureKey = null) {
@@ -41,8 +40,8 @@ function openPremiumModal(featureKey = null) {
   if (featureKey && premiumFeatureImages[featureKey]) {
     imgElement.src = premiumFeatureImages[featureKey];
     imgContainer.classList.remove("hidden");
-    if (featureKey === "globe") titleText = "Entdecke den 3D Globus 🌍";
-    if (featureKey === "print") titleText = "Erstelle dein Logbuch als PDF 📚";
+    if (featureKey === "globe") titleText = getTranslation("premium.titleGlobe");
+    if (featureKey === "print") titleText = getTranslation("premium.titlePrint");
   } else {
     imgContainer.classList.add("hidden");
   }
@@ -85,7 +84,7 @@ function openPremiumModal(featureKey = null) {
       if (nativeHint) nativeHint.classList.remove("hidden");
       
       // Titel neutraler machen
-      if(titleElement) titleElement.textContent = "Premium Feature 🔒";
+      if(titleElement) titleElement.textContent = getTranslation("premium.nativeTitle") || "Premium Feature 🔒";
       
   } else {
       // 💻 WEB: Zeige alles normal
@@ -299,7 +298,7 @@ async function showAirlineDetails(iataCode) {
                         
                         <div class="col-span-2 sm:col-span-1">
                             <p class="text-xs text-gray-500 dark:text-gray-400 uppercase font-bold">${getTranslation("modalDetails.airlineFleetSize")}</p> 
-                            <p class="font-medium text-gray-900 dark:text-white">${fleetDisplay} <span class="text-xs font-normal text-gray-500">(Gesamt)</span></p>
+                            <p class="font-medium text-gray-900 dark:text-white">${fleetDisplay} <span class="text-xs font-normal text-gray-500">(${getTranslation("stats.total") || "Total"})</span>
                         </div>
 
                         ${fleetDetailsString ? `
@@ -1397,11 +1396,7 @@ function renderAllCharts(labels, flightsData, distanceData, timeData) {
 async function buildAndPrintHtml(flightsToPrint, title) {
   // 1. Prüfen, ob Flüge vorhanden sind
   if (!flightsToPrint || flightsToPrint.length === 0) {
-    showMessage(
-      "Export-Fehler",
-      "Keine Flüge im aktuellen Filter zum Drucken gefunden.",
-      "error"
-    );
+    showMessage(getTranslation("print.errorTitle"), getTranslation("print.errorNoFlights"), "error");
     return;
   }
 
@@ -1570,11 +1565,7 @@ async function buildAndPrintHtml(flightsToPrint, title) {
       }).catch((error) => {
         // Fängt Fehler ab, falls das native Drucken fehlschlägt
         console.error("Fehler beim nativen Drucken:", error);
-        showMessage(
-          "Druckfehler",
-          "Natives PDF konnte nicht erstellt werden.",
-          "error"
-        );
+        showMessage(getTranslation("print.errorTitle"), getTranslation("print.errorNativeFailed"), "error");
       });
     } catch (e) {
       console.error(
