@@ -688,20 +688,46 @@ async function updateFlight() {
 
 // *** Rendern und Löschen ***
 window.deleteFlight = async function (id) {
-  // Eine Bestätigung ist bei Löschaktionen immer eine gute Idee
-  if (!confirm(getTranslation("messages.confirmDelete") || "Are you sure?")) { return; }
+  // 1. Sicherheitsabfrage (mit Übersetzung)
+  if (!confirm(getTranslation("messages.confirmDelete") || "Sind Sie sicher, dass Sie diesen Flug endgültig löschen möchten?")) {
+    return;
+  }
 
+  // 2. Löschen in Supabase
   const { error } = await supabaseClient
     .from("flights")
     .delete()
     .eq("flight_id", id);
 
   if (error) {
-    showMessage(getTranslation("toast.errorTitle"), getTranslation("toast.deleteError"), "error");
+    showMessage(
+      getTranslation("toast.errorTitle"), 
+      getTranslation("toast.deleteError"), 
+      "error"
+    );
     console.error("Supabase Delete Error:", error);
   } else {
-    showMessage(getTranslation("toast.successTitle"), getTranslation("toast.flightDeleted"), "success");
-    renderFlights(); // Lade die Liste einfach neu
+    showMessage(
+      getTranslation("toast.successTitle"), 
+      getTranslation("toast.flightDeleted"), 
+      "success"
+    );
+
+    // --- ✅ BUGFIX: Lokalen Cache aktualisieren ---
+    
+    if (currentlyFilteredFlights) {
+        // FALL A: Ein Filter ist aktiv (oder wurde mal benutzt)
+        // Wir entfernen den Flug manuell aus der lokalen Liste
+        currentlyFilteredFlights = currentlyFilteredFlights.filter(f => f.id !== id);
+        
+        // Rendern mit der aktualisierten Liste (ohne Neuladen vom Server)
+        // Wir behalten 'currentPage' bei, damit der User nicht auf Seite 1 springt
+        renderFlights(currentlyFilteredFlights, null, currentPage);
+    } else {
+        // FALL B: Kein Filter aktiv (Alles wird angezeigt)
+        // Wir rufen renderFlights() ohne Argumente auf -> Das erzwingt ein getFlights() vom Server
+        renderFlights(null, null, currentPage);
+    }
   }
 };
 
