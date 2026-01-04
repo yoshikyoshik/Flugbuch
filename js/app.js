@@ -16,6 +16,11 @@ async function initializeApp() {
     if (error) throw error;
     user = data.user;
 
+    // --- BILLING INIT ---
+    // Wir übergeben die ID, damit RevenueCat den User zuordnen kann
+    await initializeBilling(user.id);
+    // --------------------
+
     if (user) {
       const userDisplay = document.getElementById("user-display");
       if (userDisplay) {
@@ -92,15 +97,8 @@ async function initializeApp() {
 
           // Buttons umschalten
           if (upgradeBtn) {
-             // ✅ NEU: Button auf Android/iOS IMMER verstecken (Consumption Only)
-             // Falls isNativeApp() noch nicht geladen ist, nutzen wir den direkten Check
-             const isNative = typeof isNativeApp === 'function' ? isNativeApp() : (typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform());
-
-             if (isNative) {
-                 upgradeBtn.classList.add("hidden"); 
-             } else {
-                 upgradeBtn.classList.remove("hidden"); // Nur im Web zeigen
-             }
+             // ✅ KORREKTUR: Button IMMER zeigen (da wir jetzt In-App-Käufe haben)
+             upgradeBtn.classList.remove("hidden");
           }
           
           if (manageBtn) manageBtn.classList.add("hidden");
@@ -1400,6 +1398,15 @@ document.addEventListener("DOMContentLoaded", async function () {
   
     // Echte-Funktion für den Kauf (Stripe)
   document.getElementById("buy-pro-btn").addEventListener("click", async () => {
+
+    // 1. Plattform Check
+    if (isNativeApp()) {
+        // --- APP LOGIK (RevenueCat) ---
+        // selectedPlan ist global in config.js (z.B. "yearly")
+        // Wir mappen das auf unsere RevenueCat Logik
+        await buyNative(selectedPlan); 
+    } else {
+
     const btn = document.getElementById("buy-pro-btn");
     const originalText = btn.innerHTML;
     btn.disabled = true;
@@ -1444,7 +1451,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         btn.disabled = false;
         btn.innerHTML = originalText;
     }
-});
+}});
 
   // Haupt-Logik: Reagiere auf Änderungen des Login-Status
   supabaseClient.auth.onAuthStateChange(async (event, session) => {

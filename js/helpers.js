@@ -231,11 +231,12 @@ function manageSubscription() {
 */
 
 async function manageSubscription() {
-  // ✅ NEU: Blocker für Android/iOS
-    if (isNativeApp()) {
-        showMessage("Info", "Die Verwaltung deines Profils und Abos ist über unsere Webseite aviosphere.com möglich.", "info");
-        return;
-    }
+  // ✅ NEU: Für Android öffnen wir direkt die Play Store Abo-Verwaltung
+  if (isNativeApp()) {
+      // Deep Link zum Play Store (Subscriptions Bereich)
+      window.location.href = "https://play.google.com/store/account/subscriptions";
+      return;
+  }
     try {
         const { data: { user } } = await supabaseClient.auth.getUser();
         const customerId = user?.user_metadata?.stripe_customer_id;

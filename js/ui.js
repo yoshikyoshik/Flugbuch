@@ -35,8 +35,10 @@ function openPremiumModal(featureKey = null) {
   const imgContainer = document.getElementById("premium-modal-image-container");
   const imgElement = document.getElementById("premium-modal-image");
   const titleElement = document.getElementById("modal-title");
+  
   let titleText = getTranslation("premium.title") || "Unlock Full Potential 🚀";
 
+  // --- Bild & Titel Logik (Bestehend) ---
   if (featureKey && premiumFeatureImages[featureKey]) {
     imgElement.src = premiumFeatureImages[featureKey];
     imgContainer.classList.remove("hidden");
@@ -47,51 +49,28 @@ function openPremiumModal(featureKey = null) {
   }
   if (titleElement) titleElement.textContent = titleText;
 
-  // --- ✅ NEU: CONSUMPTION ONLY MODE (Android/iOS) ---
-  // Wir verstecken Preise & Kaufen-Button, wenn wir native sind
-  const isNative = typeof isNativeApp === 'function' ? isNativeApp() : false;
+  // --- ✅ NEU: HYBRID BILLING LOGIK ---
   
-  const buyBtn = document.getElementById("buy-pro-btn");
-  const priceFooter = document.querySelector("#premium-modal .bg-gray-50"); // Der Footer mit Preis & Button
-  const darkPriceFooter = document.querySelector("#premium-modal .dark\\:bg-gray-700\\/50"); // Footer Dark Mode (falls Tailwind Klasse so greift)
-  // Besser: Wir suchen das Elternelement des Buy-Buttons
-  const footerContainer = buyBtn ? buyBtn.closest("div.flex-col") : null;
+  // 1. Prüfen: Sind wir Native (App) oder Web?
+  // Wir nutzen deine Helper-Funktion oder den Capacitor-Check als Fallback
+  const isNative = typeof isNativeApp === 'function' ? isNativeApp() : (typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform());
+
+  // 2. Restore Button steuern
+  // Den Button zeigen wir NUR in der nativen App an, da Stripe im Web das nicht braucht.
+  const restoreContainer = document.getElementById("restore-container");
   
-  const planSwitcher = document.getElementById("plan-monthly-btn")?.closest(".px-4.pt-5.pb-2"); // Die Toggle Buttons
-
-  // 1. Element suchen oder erstellen (NUR Struktur)
-  let nativeHint = document.getElementById("premium-native-hint");
-  if (!nativeHint && footerContainer && footerContainer.parentNode) {
-      nativeHint = document.createElement("div");
-      nativeHint.id = "premium-native-hint";
-      nativeHint.className = "p-6 text-center text-sm text-gray-600 dark:text-gray-300 hidden";
-      // Hier fügen wir das Element nur ein, aber setzen den Text noch nicht final
-      footerContainer.parentNode.insertBefore(nativeHint, footerContainer);
+  if (restoreContainer) {
+      if (isNative) {
+          restoreContainer.classList.remove("hidden"); // Zeigen auf Android/iOS
+      } else {
+          restoreContainer.classList.add("hidden");    // Verstecken im Web
+      }
   }
 
-  // 2. Text IMMER aktualisieren (Egal ob das Element gerade neu erstellt wurde oder schon da war)
-  if (nativeHint) {
-      const hintText = getTranslation("premium.nativeHint") || "Note: You can manage your profile and subscription via our website <strong>aviosphere.com</strong>.";
-      nativeHint.innerHTML = `<p>${hintText}</p>`;
-  }
+  // 3. Hinweis: Wir verstecken die Kauf-Buttons JETZT NICHT MEHR!
+  // Der alte Code ("Consumption Only") wurde hier entfernt, damit der User
+  // über RevenueCat kaufen kann.
 
-  if (isNative) {
-      // 📱 NATIVE APP: Verstecke Kauf-Elemente
-      if (footerContainer) footerContainer.classList.add("hidden");
-      if (planSwitcher) planSwitcher.classList.add("hidden");
-      
-      // Zeige Hinweis
-      if (nativeHint) nativeHint.classList.remove("hidden");
-      
-      // Titel neutraler machen
-      if(titleElement) titleElement.textContent = getTranslation("premium.nativeTitle") || "Premium Feature 🔒";
-      
-  } else {
-      // 💻 WEB: Zeige alles normal
-      if (footerContainer) footerContainer.classList.remove("hidden");
-      if (planSwitcher) planSwitcher.classList.remove("hidden");
-      if (nativeHint) nativeHint.classList.add("hidden");
-  }
   // --- ENDE NEU ---
 
   modal.classList.remove("hidden");
