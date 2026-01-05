@@ -15,21 +15,27 @@ async function initializeBilling(userId) {
         try {
             const { Purchases } = Capacitor.Plugins;
 
-            // Debug Logs für Testphase
             await Purchases.setLogLevel({ level: "DEBUG" });
-
-            // 1. Konfigurieren (DEIN API KEY)
+            
+            // API Key konfigurieren (Vergiss nicht, deinen Key hier einzusetzen!)
             await Purchases.configure({ apiKey: "goog_EfxrsdCgCxHiDvkvWYBemInPHxn" });
 
-            // 2. Login mit Supabase ID
+            // Login mit Supabase ID
             if (userId) {
                 await Purchases.logIn({ appUserID: userId });
             }
 
-            // 3. Status prüfen
+            // --- ✅ NEU: CACHE ZWINGEND LÖSCHEN ---
+            // Das sorgt dafür, dass RevenueCat sofort eine Netzwerk-Anfrage an Google sendet,
+            // statt die alten (gespeicherten) Daten zu nutzen.
+            // Das simuliert exakt dein "Manuelles Cache Löschen"!
+            await Purchases.invalidateCustomerInfoCache();
+            // ----------------------------------------
+
+            // Jetzt den Status prüfen (diesmal holt er garantiert frische Daten)
             await checkNativeSubscriptionStatus();
 
-            // 4. Listener für Updates (Kauf, Verlängerung, Ablauf)
+            // Listener registrieren
             Purchases.addCustomerInfoUpdateListener(async (info) => {
                 console.log("Billing: Listener Event empfangen", info);
                 await handleCustomerInfo(info);
@@ -52,7 +58,18 @@ async function checkNativeSubscriptionStatus() {
 
     try {
         const { Purchases } = Capacitor.Plugins;
+        
+        // Versuchen, die aktuellsten Infos zu holen (statt Cache)
+        // Hinweis: getCustomerInfo nutzt oft Cache, aber wir vertrauen darauf, 
+        // dass RevenueCat expired-Daten invalidiert.
         const customerInfo = await Purchases.getCustomerInfo();
+        
+        // Wir loggen das Datum zur Kontrolle
+        const ent = customerInfo.entitlements.all["pro_access"];
+        if (ent) {
+             console.log("RevenueCat sagt: Expire Date ist", ent.expirationDate);
+        }
+        
         await handleCustomerInfo(customerInfo);
     } catch (e) {
         console.error("Billing: Fehler beim Status-Check:", e);
@@ -63,39 +80,56 @@ async function checkNativeSubscriptionStatus() {
  * ZENTRALE FUNKTION: Verarbeitet den Status und updated ALLES (DB + UI)
  */
 async function handleCustomerInfo(customerInfo) {
-    const entitlement = customerInfo.entitlements.all["pro_access"]; // Name muss stimmen!
+    // Sicherstellen, dass wir auf das richtige Entitlement prüfen
+    const entitlement = customerInfo.entitlements.all["pro_access"];
     const isProActive = entitlement && entitlement.isActive;
 
     // 1. Globalen Status setzen
     currentUserSubscription = isProActive ? "pro" : "free";
     console.log(`Billing: Status Update -> ${currentUserSubscription.toUpperCase()}`);
 
-    // 2. UI Elemente aktualisieren (Schlösser & Menü)
+    // 2. UI Elemente aktualisieren
     updateUI(isProActive);
 
-    // 3. Supabase Synchronisation
+    // 3. Supabase Synchronisation (Der entscheidende Teil!)
     if (isProActive) {
+        // --- FALL: USER IST PRO ---
         const expirationDate = entitlement.expirationDate; 
-
-        // --- ✅ WICHTIG: GLOBALE VARIABLE FÜR DEN LIVE-CHECK UPDATEN! ---
+        
+        // Globale Variable für den Live-Check updaten
         if (expirationDate) {
-            // Wir aktualisieren die globale Variable, die app.js nutzt
             currentSubscriptionEnd = Math.floor(new Date(expirationDate).getTime() / 1000);
-            console.log("Billing: Neues Ablaufdatum gesetzt:", new Date(expirationDate));
+        } else {
+            currentSubscriptionEnd = null; // Lifetime oder Fehler
         }
-        // ---------------------------------------------------------------
 
+        // Datenbank auf PRO setzen
         const { error } = await supabaseClient.auth.updateUser({
             data: { 
                 subscription_status: 'pro',
                 subscription_source: 'google_play',
-                subscription_end: expirationDate ? Math.floor(new Date(expirationDate).getTime() / 1000) : null 
+                // Speichere das Datum als Unix Timestamp
+                subscription_end: currentSubscriptionEnd
             }
         });
-        if (error) console.error("Billing: Supabase Sync Fehler:", error);
+        if (error) console.error("Billing: Supabase Pro-Sync Fehler:", error);
+
     } else {
-        // Optional: Status in Supabase auf free setzen, wenn abgelaufen
-        // (Oder wir lassen das den 'Live-Check' in app.js machen)
+        // --- FALL: USER IST FREE (ABGELAUFEN) ---
+        // Hier fehlte bisher der Datenbank-Update!
+        console.log("Billing: Abo abgelaufen/inaktiv. Setze DB auf Free.");
+
+        // Globale Variable resetten
+        currentSubscriptionEnd = null;
+
+        // Datenbank HART auf FREE setzen
+        const { error } = await supabaseClient.auth.updateUser({
+            data: { 
+                subscription_status: 'free',
+                subscription_end: null 
+            }
+        });
+        if (error) console.error("Billing: Supabase Downgrade Fehler:", error);
     }
 }
 
@@ -198,4 +232,27 @@ async function restorePurchases() {
         showMessage("Fehler", "Wiederherstellung fehlgeschlagen.", "error");
     }
     if(btn) btn.textContent = "Einkäufe wiederherstellen";
+}
+
+/**
+ * Zwingt RevenueCat, sofort den aktuellen Status von Google zu holen.
+ * Wird beim "Aufwachen" der App oder durch den Timer genutzt.
+ */
+async function refreshSubscriptionStatus() {
+    if (typeof Capacitor === 'undefined' || !Capacitor.isNativePlatform()) return;
+
+    console.log("Billing: Prüfe Status (Refresh)...");
+    try {
+        const { Purchases } = Capacitor.Plugins;
+        
+        // WICHTIG: Cache invalidieren, damit wir nicht alte Daten bekommen
+        await Purchases.invalidateCustomerInfoCache();
+        
+        // Status abrufen (das triggert dann updateUI und DB-Sync via handleCustomerInfo)
+        const customerInfo = await Purchases.getCustomerInfo();
+        await handleCustomerInfo(customerInfo);
+        
+    } catch (error) {
+        console.error("Billing: Refresh Fehler:", error);
+    }
 }

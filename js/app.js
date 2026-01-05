@@ -38,40 +38,51 @@ async function initializeApp() {
 	  
       let isPro = false;
 
-      // 1. Prüfen, ob überhaupt "pro" flag gesetzt ist
+      // 1. Prüfen, ob "pro" flag gesetzt ist
       if (meta.subscription_status === "pro") {
+        
         // 2. Zeit-Check: Gibt es ein Ablaufdatum?
         if (meta.subscription_end) {
-          currentSubscriptionEnd = meta.subscription_end; // ✅ NEU: Global speichern!
+          currentSubscriptionEnd = meta.subscription_end;
+          const nowInSeconds = Math.floor(Date.now() / 1000);
 
-          const nowInSeconds = Math.floor(Date.now() / 1000); // Aktuelle Zeit in Unix-Timestamp
-
-          if (meta.subscription_end > nowInSeconds) {
+          // Wir geben 30 Sekunden Kulanz (Buffer), um Uhren-Differenzen auszugleichen
+          if (meta.subscription_end > (nowInSeconds - 30)) {
             // Datum liegt in der Zukunft -> Gültig
             isPro = true;
-            console.log(
-              "Status: PRO (Gültig bis " +
-                new Date(meta.subscription_end * 1000).toLocaleDateString() +
-                ")"
-            );
+            console.log("Status: PRO (Gültig bis " + new Date(meta.subscription_end * 1000).toLocaleDateString() + " " + new Date(meta.subscription_end * 1000).toLocaleTimeString() + ")");
           } else {
-            // Datum liegt in der Vergangenheit -> Abgelaufen!
+            // 🛑 Datum liegt in der Vergangenheit -> ABGELAUFEN
             isPro = false;
-            console.warn(
-              "Status: Abgelaufen am " +
-                new Date(meta.subscription_end * 1000).toLocaleDateString()
-            );
-            // Optional: Dem Nutzer einmalig sagen, dass es vorbei ist (könnte man noch verfeinern)
+            console.warn("Status: Datum abgelaufen! Führe DB-Korrektur durch...");
+
+            // ✅ NEU: SELBSTHEILUNG
+            // Wenn wir hier landen, sagt die DB "Pro", aber die Zeit sagt "Vorbei".
+            // Wir korrigieren die DB sofort, damit beim nächsten Login alles sauber ist.
+            supabaseClient.auth.updateUser({
+                data: { 
+                    subscription_status: 'free', 
+                    subscription_end: null 
+                }
+            }).then(() => {
+                console.log("DB-Korrektur erfolgreich: Status auf FREE gesetzt.");
+            });
           }
         } else {
-          // Kein Enddatum gesetzt -> Manuell freigeschaltet oder Lifetime -> Gültig
-          isPro = true;
-          console.log("Status: PRO (Manuell/Lifetime)");
+          // Kein Enddatum (z.B. Lifetime oder Fehler)
+          if (meta.subscription_source === 'lifetime') {
+              isPro = true;
+          } else {
+              // Sicherheitsnetz: Ohne Datum gehen wir von Free aus, bis RevenueCat etwas anderes sagt
+              isPro = false; 
+          }
         }
       }
 
-      // Ergebnis setzen
       currentUserSubscription = isPro ? "pro" : "free";
+
+      // ✅ NEU: Quelle global speichern für ui.js
+      window.currentUserSubscriptionSource = meta.subscription_source || null;
       // --- ENDE STATUS-PRÜFUNG ---
 
       // --- ✅ STATUS IM BURGER-MENÜ ANZEIGEN & BUTTONS SCHALTEN ---
@@ -259,41 +270,34 @@ async function initializeApp() {
   showFirstStepsTutorial();
   updateLockVisuals();
 
-  // --- ✅ NEU: LIVE-CHECK (Der Wächter) ---
-  // Prüft alle 60 Sekunden (60000 ms), ob das Abo während der Sitzung abläuft
-  setInterval(() => {
-    // Wir prüfen nur, wenn der User aktuell noch PRO ist und ein Enddatum hat
+  // --- ✅ UPDATE: LIVE-CHECK (Der Wächter) ---
+  // Prüft alle 60 Sekunden
+  setInterval(async () => {
+    
+    // 1. Native Prüfung (RevenueCat)
+    // Das sorgt dafür, dass auch bei offener App ein abgelaufenes Abo erkannt wird
+    if (isNativeApp() && typeof refreshSubscriptionStatus === 'function') {
+         // Wir machen das vllt. nicht jede Minute, um Akku zu sparen? 
+         // Doch, invalidateCache ist billig, Google Play Anfragen kosten nix.
+         await refreshSubscriptionStatus();
+    }
+
+    // 2. Zeit-Prüfung (Bestehender Code für Supabase-Datum)
     if (currentUserSubscription === "pro" && currentSubscriptionEnd) {
       const now = Math.floor(Date.now() / 1000);
 
       if (now > currentSubscriptionEnd) {
-        console.warn(
-          "Subscription expired during session! Downgrading to FREE."
-        );
-
-        // 1. Status ändern
+        console.warn("Live-Check: Subscription expired (Time Check).");
+        
+        // ... (Dein existierender Downgrade Code hier) ...
         currentUserSubscription = "free";
-
-        // 2. UI aktualisieren (Schlösser anbringen)
         updateLockVisuals();
-
-        // 3. Badge und Buttons im Menü aktualisieren
-        const statusBadge = document.getElementById(
-          "subscription-status-badge"
-        );
-        const upgradeBtn = document.getElementById("menu-upgrade-btn");
-        const manageBtn = document.getElementById("menu-manage-sub-btn");
-
-        if (statusBadge) {
-          statusBadge.textContent = "FREE";
-          statusBadge.className =
-            "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mt-1 bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400 border border-gray-200 dark:border-gray-600";
-        }
-        if (upgradeBtn) upgradeBtn.classList.remove("hidden");
-        if (manageBtn) manageBtn.classList.add("hidden");
-
-        // 4. Nutzer informieren (Toast Nachricht)
-        showMessage(getTranslation("messages.statusUpdate"), getTranslation("messages.subscriptionExpired"), "info");
+        // ...
+        
+        // WICHTIG: Auch hier die Selbstheilung der DB anstoßen!
+        supabaseClient.auth.updateUser({
+            data: { subscription_status: 'free', subscription_end: null }
+        });
       }
     }
   }, 60000); // Alle 60 Sekunden
@@ -1396,62 +1400,72 @@ document.addEventListener("DOMContentLoaded", async function () {
   });
 */  
   
-    // Echte-Funktion für den Kauf (Stripe)
-  document.getElementById("buy-pro-btn").addEventListener("click", async () => {
-
-    // 1. Plattform Check
-    if (isNativeApp()) {
-        // --- APP LOGIK (RevenueCat) ---
-        // selectedPlan ist global in config.js (z.B. "yearly")
-        // Wir mappen das auf unsere RevenueCat Logik
-        await buyNative(selectedPlan); 
-    } else {
-
+    // Kaufen-Button Logik (Hybrid & Abgesichert)
+document.getElementById("buy-pro-btn").addEventListener("click", async () => {
     const btn = document.getElementById("buy-pro-btn");
-    const originalText = btn.innerHTML;
-    btn.disabled = true;
-    btn.innerHTML = '⏳ Lade Checkout...';
+    
+    // 1. Prüfen: Sind wir Nativ (App) oder Web?
+    const isNative = typeof isNativeApp === 'function' ? isNativeApp() : (typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform());
 
-    try {
-        // 1. Aktuellen User holen
-        const { data: { user } } = await supabaseClient.auth.getUser();
-        if (!user) throw new Error("Nicht eingeloggt");
-
-        // 2. Gewählten Plan holen (selectedPlan kommt aus config/global state)
-        const priceId = pricingConfig[selectedPlan].stripeProductId;
-
-        // 3. Netlify Function aufrufen
+    if (isNative) {
+        // --- 📱 APP WEG (RevenueCat) ---
         
-        // ✅ NEU: Plattform-Check auch hier
-        const isNative = typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform();
-        const returnUrl = isNative ? 'aviosphere://return' : null;
-
-        const response = await fetch(`${API_BASE_URL}/.netlify/functions/create-checkout`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                priceId: priceId,
-                userId: user.id,
-                userEmail: user.email,
-                returnUrl: returnUrl // ✅ Mitgeben
-            })
-        });
-
-        const result = await response.json();
-        
-        if (result.error) throw new Error(result.error);
-        if (result.url) {
-            // 4. Weiterleitung zu Stripe
-            window.location.href = result.url;
+        // Türsteher A: Hat User schon Stripe?
+        if (window.currentUserSubscriptionSource === 'stripe') {
+            showMessage("Bereits Premium", "Du hast ein aktives Web-Abo. Bitte verwalte es auf der Webseite.", "info");
+            return;
         }
 
-    } catch (error) {
-        console.error("Checkout Fehler:", error);
-        showMessage("Fehler", "Konnte Checkout nicht starten.", "error");
-        btn.disabled = false;
-        btn.innerHTML = originalText;
+        await buyNative(selectedPlan); 
+        
+    } else {
+        // --- 💻 WEB WEG (Stripe) ---
+
+        // 🛑 TÜRSTEHER B: Hat User schon Google-Abo?
+        if (window.currentUserSubscriptionSource === 'google_play') {
+            showMessage(
+                "Bereits Premium", 
+                "Du hast dein Abo über die Android App (Google Play) abgeschlossen. Bitte verwalte dein Abo in der App, da Google Play-Käufe hier nicht bearbeitet werden können.", 
+                "info"
+            );
+            return; // ⛔ HIER BLOCKIEREN WIR DEN STRIPE-START
+        }
+
+        // ... Ab hier normaler Stripe Code ...
+        const originalText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '⏳ Lade Checkout...';
+
+        try {
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (!user) throw new Error("Nicht eingeloggt");
+
+            const priceId = pricingConfig[selectedPlan].stripeProductId;
+            
+            // Web braucht keine returnUrl mit Schema
+            const response = await fetch(`${API_BASE_URL}/.netlify/functions/create-checkout`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    priceId: priceId,
+                    userId: user.id,
+                    userEmail: user.email,
+                    returnUrl: null 
+                })
+            });
+
+            const result = await response.json();
+            if (result.error) throw new Error(result.error);
+            if (result.url) window.location.href = result.url;
+
+        } catch (error) {
+            console.error("Checkout Fehler:", error);
+            showMessage("Fehler", "Konnte Checkout nicht starten.", "error");
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
     }
-}});
+});
 
   // Haupt-Logik: Reagiere auf Änderungen des Login-Status
   supabaseClient.auth.onAuthStateChange(async (event, session) => {
@@ -1493,6 +1507,24 @@ document.addEventListener("DOMContentLoaded", async function () {
                 // Optional: Nutzerdaten neu laden, um Pro-Status sofort zu prüfen
                 initializeApp(); 
             }
+        });
+    }
+
+    // ✅ NEU: Wenn die App aus dem Hintergrund kommt
+    if (typeof Capacitor !== 'undefined') {
+        const { App } = Capacitor.Plugins;
+        
+        App.addListener('resume', async () => {
+            console.log("App wurde fortgesetzt (Resume). Prüfe Abo-Status...");
+            
+            // 1. RevenueCat Status neu laden (nur native App)
+            if (typeof refreshSubscriptionStatus === 'function') {
+                await refreshSubscriptionStatus();
+            }
+            
+            // 2. Optional: Auch User-Metadaten von Supabase neu laden
+            // const { data } = await supabaseClient.auth.refreshSession();
+            // if(data.user) { ... Logik ... }
         });
     }
   

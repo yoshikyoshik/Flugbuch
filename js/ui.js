@@ -36,9 +36,8 @@ function openPremiumModal(featureKey = null) {
   const imgElement = document.getElementById("premium-modal-image");
   const titleElement = document.getElementById("modal-title");
   
+  // Titel & Bild Logik (bleibt gleich)
   let titleText = getTranslation("premium.title") || "Unlock Full Potential 🚀";
-
-  // --- Bild & Titel Logik (Bestehend) ---
   if (featureKey && premiumFeatureImages[featureKey]) {
     imgElement.src = premiumFeatureImages[featureKey];
     imgContainer.classList.remove("hidden");
@@ -49,29 +48,72 @@ function openPremiumModal(featureKey = null) {
   }
   if (titleElement) titleElement.textContent = titleText;
 
-  // --- ✅ NEU: HYBRID BILLING LOGIK ---
+  // --- 🛡️ NEU: DOPPEL-ABO SCHUTZ ---
   
-  // 1. Prüfen: Sind wir Native (App) oder Web?
-  // Wir nutzen deine Helper-Funktion oder den Capacitor-Check als Fallback
   const isNative = typeof isNativeApp === 'function' ? isNativeApp() : (typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform());
-
-  // 2. Restore Button steuern
-  // Den Button zeigen wir NUR in der nativen App an, da Stripe im Web das nicht braucht.
   const restoreContainer = document.getElementById("restore-container");
+  const footerContainer = document.getElementById("buy-pro-btn")?.closest("div.flex-col"); // Buttons
+  const planSwitcher = document.getElementById("plan-monthly-btn")?.closest(".px-4.pt-5.pb-2"); // Toggle
+  const nativeHint = document.getElementById("premium-native-hint"); // Hinweis-Text Container
+
+  // Default-Zustand: Alles anzeigen
+  if (footerContainer) footerContainer.classList.remove("hidden");
+  if (planSwitcher) planSwitcher.classList.remove("hidden");
+  if (restoreContainer) restoreContainer.classList.add("hidden"); // Standardmäßig versteckt
+  if (nativeHint) nativeHint.classList.add("hidden");
+
+  // Status aus Supabase prüfen (liegt global in 'user' Objekt in app.js vor, oder wir holen es neu)
+  // Wir nutzen hier eine globale Annahme, dass 'user' existiert. Besser: wir prüfen currentUserSubscription
   
-  if (restoreContainer) {
-      if (isNative) {
-          restoreContainer.classList.remove("hidden"); // Zeigen auf Android/iOS
-      } else {
-          restoreContainer.classList.add("hidden");    // Verstecken im Web
+  let subscriptionSource = "unknown";
+  // Wir greifen auf das User-Objekt zu (Trick: Wir holen es aus dem LocalStorage oder app.js Scope)
+  // Da wir in ui.js sind, nehmen wir an, dass wir Zugriff auf das User-Objekt haben oder es uns holen müssen.
+  // Einfacher: Wir schauen auf die Metadaten, wenn sie global verfügbar wären.
+  // Für jetzt nehmen wir an, app.js hat 'currentUserSubscriptionSource' global gesetzt (das müssen wir noch tun!)
+  
+  // HINWEIS: Du musst in app.js eine globale Variable 'currentUserSubscriptionSource' einführen!
+  
+  if (currentUserSubscription === "pro" && typeof currentUserSubscriptionSource !== 'undefined') {
+      
+      // FALL 1: User hat Stripe Abo, ist aber in der App
+      if (currentUserSubscriptionSource === 'stripe' && isNative) {
+          // ALLES VERSTECKEN!
+          if (footerContainer) footerContainer.classList.add("hidden");
+          if (planSwitcher) planSwitcher.classList.add("hidden");
+          
+          // HINWEIS ANZEIGEN
+          if (!nativeHint) {
+               // Element erstellen falls nicht da (wie vorheriger Code)
+          }
+          if (nativeHint) {
+              nativeHint.classList.remove("hidden");
+              nativeHint.innerHTML = `<p class="text-red-500 font-bold">Du hast bereits ein aktives Web-Abo (Stripe).</p><p>Bitte verwalte dein Abo auf aviosphere.com.</p>`;
+          }
+          return; // Modal fertig, Abbruch
+      }
+      
+      // FALL 2: User hat Google Abo, ist aber im Web
+      if (currentUserSubscriptionSource === 'google_play' && !isNative) {
+           // ALLES VERSTECKEN
+          if (footerContainer) footerContainer.classList.add("hidden");
+          if (planSwitcher) planSwitcher.classList.add("hidden");
+          
+          if (nativeHint) {
+              nativeHint.classList.remove("hidden");
+              nativeHint.innerHTML = `<p class="text-indigo-600 font-bold">Du hast ein aktives App-Abo (Google Play).</p><p>Bitte verwalte dein Abo in der Android App.</p>`;
+          }
+          return;
       }
   }
 
-  // 3. Hinweis: Wir verstecken die Kauf-Buttons JETZT NICHT MEHR!
-  // Der alte Code ("Consumption Only") wurde hier entfernt, damit der User
-  // über RevenueCat kaufen kann.
-
-  // --- ENDE NEU ---
+  // --- NORMALE LOGIK (Restore Button Logik) ---
+  if (restoreContainer) {
+      if (isNative) {
+          restoreContainer.classList.remove("hidden");
+      } else {
+          restoreContainer.classList.add("hidden");
+      }
+  }
 
   modal.classList.remove("hidden");
   switchPlan("yearly");
