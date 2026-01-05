@@ -27,62 +27,68 @@ async function initializeApp() {
         userDisplay.textContent = user.email;
       }
 
-      // --- ✅ NEU: STATUS-PRÜFUNG (MIT ZEIT-CHECK) ---
+      // --- ✅ STATUS-PRÜFUNG & SELBSTHEILUNG ---
       const meta = user.user_metadata || {};
 	  
-	  // ✅ NEU: Letzte Flug-ID aus der Datenbank holen
-		if (meta.last_flight_id) {
-			globalLastFlightId = meta.last_flight_id;
-			console.log("Letzter bearbeiteter Flug geladen:", globalLastFlightId);
-		}
+	  // Letzte Flug-ID laden
+      if (meta.last_flight_id) {
+          globalLastFlightId = meta.last_flight_id;
+      }
 	  
       let isPro = false;
+      let performDbCorrection = false; // Merker, ob wir die DB reparieren müssen
 
       // 1. Prüfen, ob "pro" flag gesetzt ist
       if (meta.subscription_status === "pro") {
         
         // 2. Zeit-Check: Gibt es ein Ablaufdatum?
         if (meta.subscription_end) {
-          currentSubscriptionEnd = meta.subscription_end;
+          currentSubscriptionEnd = Number(meta.subscription_end); // Sicherstellen, dass es eine Zahl ist
           const nowInSeconds = Math.floor(Date.now() / 1000);
 
-          // Wir geben 30 Sekunden Kulanz (Buffer), um Uhren-Differenzen auszugleichen
-          if (meta.subscription_end > (nowInSeconds - 30)) {
-            // Datum liegt in der Zukunft -> Gültig
+          // 30 Sekunden Kulanz
+          if (currentSubscriptionEnd > (nowInSeconds - 30)) {
+            // Datum liegt in der Zukunft -> GÜLTIG
             isPro = true;
-            console.log("Status: PRO (Gültig bis " + new Date(meta.subscription_end * 1000).toLocaleDateString() + " " + new Date(meta.subscription_end * 1000).toLocaleTimeString() + ")");
+            console.log("Status: PRO (Gültig bis " + new Date(currentSubscriptionEnd * 1000).toLocaleDateString() + ")");
           } else {
             // 🛑 Datum liegt in der Vergangenheit -> ABGELAUFEN
+            console.warn("Status: Datum abgelaufen! Markiere für DB-Korrektur...");
             isPro = false;
-            console.warn("Status: Datum abgelaufen! Führe DB-Korrektur durch...");
-
-            // ✅ NEU: SELBSTHEILUNG
-            // Wenn wir hier landen, sagt die DB "Pro", aber die Zeit sagt "Vorbei".
-            // Wir korrigieren die DB sofort, damit beim nächsten Login alles sauber ist.
-            supabaseClient.auth.updateUser({
-                data: { 
-                    subscription_status: 'free', 
-                    subscription_end: null 
-                }
-            }).then(() => {
-                console.log("DB-Korrektur erfolgreich: Status auf FREE gesetzt.");
-            });
+            performDbCorrection = true;
           }
         } else {
-          // Kein Enddatum (z.B. Lifetime oder Fehler)
+          // Fall B: "Pro" steht in DB, aber KEIN Datum vorhanden
           if (meta.subscription_source === 'lifetime') {
               isPro = true;
           } else {
-              // Sicherheitsnetz: Ohne Datum gehen wir von Free aus, bis RevenueCat etwas anderes sagt
-              isPro = false; 
+              // 🛑 FEHLERZUSTAND: Pro ohne Datum -> Das muss weg!
+              console.warn("Status Inkonsistenz: PRO ohne Datum. Setze auf FREE.");
+              isPro = false;
+              performDbCorrection = true;
           }
         }
       }
 
+      // Status global setzen
       currentUserSubscription = isPro ? "pro" : "free";
-
-      // ✅ NEU: Quelle global speichern für ui.js
+      
+      // Quelle global speichern (Wichtig für ui.js!)
       window.currentUserSubscriptionSource = meta.subscription_source || null;
+
+      // --- 🛠 DB REPARATUR DURCHFÜHREN ---
+      if (performDbCorrection) {
+          console.log("Führe DB-Korrektur durch (Setze Status auf FREE)...");
+          // Wir warten nicht auf das Ergebnis (await), damit die UI sofort lädt
+          supabaseClient.auth.updateUser({
+              data: { 
+                  subscription_status: 'free', 
+                  subscription_end: null 
+                  // Wir lassen die 'source' stehen, damit wir wissen, woher er kam,
+                  // oder wir könnten sie auf null setzen. Meist ist Status 'free' genug.
+              }
+          });
+      }
       // --- ENDE STATUS-PRÜFUNG ---
 
       // --- ✅ STATUS IM BURGER-MENÜ ANZEIGEN & BUTTONS SCHALTEN ---
@@ -1422,15 +1428,16 @@ document.getElementById("buy-pro-btn").addEventListener("click", async () => {
         // --- 💻 WEB WEG (Stripe) ---
 
         // 🛑 TÜRSTEHER B: Hat User Google-Abo UND ist aktuell PRO?
-        // ÄNDERUNG: Wir blockieren nur, wenn der Status auch wirklich 'pro' ist.
-        // Ist er 'free' (weil abgelaufen), darf der User hier neu kaufen.
+        // WICHTIG: Die Variable 'currentUserSubscription' kommt aus app.js. 
+        // Durch den Fix in app.js ist sie jetzt 'free', wenn das Abo abgelaufen ist, 
+        // auch wenn in der DB noch kurzzeitig 'pro' stand.
         if (window.currentUserSubscriptionSource === 'google_play' && currentUserSubscription === 'pro') {
             showMessage(
                 "Bereits Premium", 
-                "Du hast dein Abo über die Android App (Google Play) abgeschlossen. Bitte verwalte dein Abo in der App, da Google Play-Käufe hier nicht bearbeitet werden können.", 
+                "Du hast dein Abo über die Android App (Google Play) abgeschlossen. Bitte verwalte dein Abo in der App.", 
                 "info"
             );
-            return; // ⛔ HIER BLOCKIEREN WIR NUR AKTIVE GOOGLE ABOS
+            return; 
         }
 
         // ... Ab hier normaler Stripe Code ...
@@ -1444,7 +1451,6 @@ document.getElementById("buy-pro-btn").addEventListener("click", async () => {
 
             const priceId = pricingConfig[selectedPlan].stripeProductId;
             
-            // Web braucht keine returnUrl mit Schema
             const response = await fetch(`${API_BASE_URL}/.netlify/functions/create-checkout`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
