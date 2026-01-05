@@ -1,25 +1,27 @@
 // netlify/functions/rc-webhook.js
 const { createClient } = require('@supabase/supabase-js');
 
-// Init Supabase Admin Client
 const supabaseAdmin = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
 exports.handler = async (event, context) => {
+  console.log("RevenueCat Webhook aufgerufen!");
+
   // 1. Nur POST erlauben
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
 
-  // 2. Sicherheits-Check (Authorization Header prüfen)
-  // Du legst in RevenueCat einen Header fest, z.B. "Authorization: Bearer GEHEIMES_PASSWORT"
-  const authHeader = event.headers['authorization'] || event.headers['Authorization'];
-  const expectedSecret = `Bearer ${process.env.RC_WEBHOOK_SECRET}`;
+  // 2. Sicherheits-Check (Tolerant: Mit oder ohne "Bearer ")
+  const authHeader = event.headers['authorization'] || event.headers['Authorization'] || "";
+  const secret = process.env.RC_WEBHOOK_SECRET;
 
-  if (authHeader !== expectedSecret) {
-    console.error("Unauthorized RevenueCat Webhook Access");
+  // Wir prüfen, ob das Geheimnis im Header ENTHALTEN ist. 
+  // Das erlaubt "Bearer DEIN_CODE" oder einfach nur "DEIN_CODE".
+  if (!secret || !authHeader.includes(secret)) {
+    console.error(`Unauthorized: Header war '${authHeader}', erwartet wurde Teil von '${secret}'`);
     return { statusCode: 401, body: 'Unauthorized' };
   }
 
@@ -28,59 +30,66 @@ exports.handler = async (event, context) => {
     const { event: rcEvent } = body;
 
     if (!rcEvent) {
+      console.error("Keine Event-Daten im Body gefunden");
       return { statusCode: 400, body: 'No event data' };
     }
 
-    // Die User-ID, mit der du dich in der App eingeloggt hast (Purchases.logIn)
     const userId = rcEvent.app_user_id;
     const type = rcEvent.type;
 
     console.log(`RevenueCat Event: ${type} für User ${userId}`);
 
-    // Wir interessieren uns vor allem für das Ende eines Abos
-    // EXPIRATION = Abo ist normal abgelaufen
-    // CANCELLATION = Kann auch bedeuten, dass es gekündigt wurde, aber noch läuft (Vorsicht!)
-    // Wir reagieren hier hart auf EXPIRATION.
-    
-    if (type === 'EXPIRATION') {
-        
-        // Prüfung: Ist das Abo wirklich vorbei? 
-        // Manchmal kommen Events verzögert. Wir setzen es auf FREE.
-        
-        console.log(`Setze User ${userId} auf FREE (Status: expired)`);
+    // --- FALL A: TEST EVENT (Damit du den "Test"-Button nutzen kannst) ---
+    if (type === 'TEST') {
+        console.log("Test-Event empfangen. Verbindung steht!");
+        return { statusCode: 200, body: 'Test Successful' };
+    }
 
-        const { error } = await supabaseAdmin.auth.admin.updateUserById(userId, {
-          user_metadata: {
-            subscription_status: 'free',
-            subscription_end: null,
-            // Wir lassen die Source drin, damit wir wissen, woher er kam, 
-            // oder setzen sie auf null, wenn du ganz sauber sein willst:
-            // subscription_source: null 
-          }
-        });
+    // --- FALL B: ABO ABGELAUFEN (EXPIRATION) ---
+    // Auch auf 'PRODUCT_CHANGE' achten (Downgrade)
+    if (type === 'EXPIRATION' || type === 'CANCELLATION') {
+        
+        console.log(`Setze User ${userId} auf FREE (Grund: ${type})`);
 
-        if (error) {
-            console.error('Supabase Update Error:', error);
-            return { statusCode: 500, body: 'Db Update Failed' };
+        // Wir prüfen vorsichtshalber, ob die User-ID eine UUID ist (Supabase ID)
+        if (userId && userId.length > 10) { 
+            const { error } = await supabaseAdmin.auth.admin.updateUserById(userId, {
+              user_metadata: {
+                subscription_status: 'free',
+                subscription_end: null,
+                // Optional: Source auf null setzen, damit Web wieder "frei" ist
+                // subscription_source: null 
+              }
+            });
+
+            if (error) {
+                console.error('Supabase Update Error:', error);
+                return { statusCode: 500, body: 'Db Update Failed' };
+            }
+            console.log("Supabase Update erfolgreich: FREE");
+        } else {
+             console.warn("Ignoriere Event: Keine gültige Supabase User ID:", userId);
         }
     } 
     
-    // Optional: RENEWAL (Verlängerung)
-    // Falls sich das Abo automatisch verlängert, ohne dass die App offen ist
-    else if (type === 'RENEWAL') {
-        console.log(`Verlängerung für User ${userId}`);
+    // --- FALL C: VERLÄNGERUNG / KAUF (RENEWAL / INITIAL_PURCHASE) ---
+    else if (type === 'RENEWAL' || type === 'INITIAL_PURCHASE') {
+        console.log(`Verlängerung/Kauf für User ${userId}`);
         
-        // Das neue Ablaufdatum berechnen (RevenueCat liefert expiration_at_ms)
         const newExpiry = rcEvent.expiration_at_ms 
             ? Math.floor(rcEvent.expiration_at_ms / 1000) 
             : null;
 
-        await supabaseAdmin.auth.admin.updateUserById(userId, {
-            user_metadata: {
-                subscription_status: 'pro',
-                subscription_end: newExpiry
-            }
-        });
+        if (userId && userId.length > 10) {
+            await supabaseAdmin.auth.admin.updateUserById(userId, {
+                user_metadata: {
+                    subscription_status: 'pro',
+                    subscription_source: 'google_play', // Wir wissen, es kommt von RC
+                    subscription_end: newExpiry
+                }
+            });
+            console.log("Supabase Update erfolgreich: PRO");
+        }
     }
 
     return { statusCode: 200, body: 'OK' };
