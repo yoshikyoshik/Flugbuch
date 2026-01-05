@@ -1410,8 +1410,8 @@ document.getElementById("buy-pro-btn").addEventListener("click", async () => {
     if (isNative) {
         // --- 📱 APP WEG (RevenueCat) ---
         
-        // Türsteher A: Hat User schon Stripe?
-        if (window.currentUserSubscriptionSource === 'stripe') {
+        // Türsteher A: Hat User schon Stripe UND ist aktuell PRO?
+        if (window.currentUserSubscriptionSource === 'stripe' && currentUserSubscription === 'pro') {
             showMessage("Bereits Premium", "Du hast ein aktives Web-Abo. Bitte verwalte es auf der Webseite.", "info");
             return;
         }
@@ -1421,14 +1421,16 @@ document.getElementById("buy-pro-btn").addEventListener("click", async () => {
     } else {
         // --- 💻 WEB WEG (Stripe) ---
 
-        // 🛑 TÜRSTEHER B: Hat User schon Google-Abo?
-        if (window.currentUserSubscriptionSource === 'google_play') {
+        // 🛑 TÜRSTEHER B: Hat User Google-Abo UND ist aktuell PRO?
+        // ÄNDERUNG: Wir blockieren nur, wenn der Status auch wirklich 'pro' ist.
+        // Ist er 'free' (weil abgelaufen), darf der User hier neu kaufen.
+        if (window.currentUserSubscriptionSource === 'google_play' && currentUserSubscription === 'pro') {
             showMessage(
                 "Bereits Premium", 
                 "Du hast dein Abo über die Android App (Google Play) abgeschlossen. Bitte verwalte dein Abo in der App, da Google Play-Käufe hier nicht bearbeitet werden können.", 
                 "info"
             );
-            return; // ⛔ HIER BLOCKIEREN WIR DEN STRIPE-START
+            return; // ⛔ HIER BLOCKIEREN WIR NUR AKTIVE GOOGLE ABOS
         }
 
         // ... Ab hier normaler Stripe Code ...

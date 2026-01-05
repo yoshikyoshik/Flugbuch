@@ -66,6 +66,7 @@ exports.handler = async (event, context) => {
                 const { error } = await supabaseAdmin.auth.admin.updateUserById(userId, {
                   user_metadata: {
                     subscription_status: 'pro',
+                    subscription_source: 'stripe',
                     subscription_end: periodEnd, // Jetzt garantiert eine Zahl!
                     stripe_customer_id: customerId,
                     stripe_subscription_id: subscriptionId
