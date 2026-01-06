@@ -119,7 +119,7 @@
     "uploadLimitSize": "文件跳过：{fileName} 太大 (最大 3 MB)。",
     "subscriptionExpired": "您的订阅已过期。您现在回到了免费模式。",
     "statusUpdate": "状态更新",
-    "noStripeAccount": "未找到有效的订阅账户。",
+    "noStripeAccount": "已找到有效的 Play Store 订阅账户。",
     "redirectingStripe": "正在重定向到客户门户...",
     "confirmDelete": "您确定要永久删除此航班吗？"
   },

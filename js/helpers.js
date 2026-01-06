@@ -242,7 +242,7 @@ async function manageSubscription() {
         const customerId = user?.user_metadata?.stripe_customer_id;
 
         if (!customerId) {
-            showMessage("Info", getTranslation("messages.noStripeAccount") || "Kein aktives Abo-Konto gefunden.", "info");
+            showMessage("Info", getTranslation("messages.noStripeAccount") || "Aktives Play Store-Abo-Konto gefunden.", "info");
             return;
         }
 

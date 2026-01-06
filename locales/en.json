@@ -119,7 +119,7 @@
     "uploadLimitSize": "File skipped: {fileName} is too large (Max. 3 MB).",
     "subscriptionExpired": "Your subscription has expired. You are now back in Free Mode.",
     "statusUpdate": "Status Update",
-    "noStripeAccount": "No active subscription account found.",
+    "noStripeAccount": "Active Play Store subscription account found.",
     "redirectingStripe": "Redirecting to customer portal...",
     "confirmDelete": "Are you sure you want to permanently delete this flight?"
   },

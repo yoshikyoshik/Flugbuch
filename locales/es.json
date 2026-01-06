@@ -119,7 +119,7 @@
     "uploadLimitSize": "Archivo omitido: {fileName} es demasiado grande (Máx. 3 MB).",
     "subscriptionExpired": "Tu suscripción ha caducado. Ahora estás de nuevo en el Modo Gratuito.",
     "statusUpdate": "Actualización de estado",
-    "noStripeAccount": "No se encontró ninguna cuenta de suscripción activa.",
+    "noStripeAccount": "Se ha encontrado una cuenta de suscripción activa de Play Store.",
     "redirectingStripe": "Redirigiendo al portal de clientes...",
     "confirmDelete": "¿Estás seguro de que quieres eliminar este vuelo permanentemente?"
   },
