@@ -291,7 +291,15 @@
     "noFlights": "无可用航班",
     "focus": "聚焦",
     "visit": "访问",
-    "visits": "访问"
+    "visits": "访问",
+    "screenshotWaitTitle": "请稍候...",
+    "screenshotWaitMsg": "正在生成截图... 📸",
+    "screenshotSuccessTitle": "已保存",
+    "screenshotSuccessMsg": "截图已下载。",
+    "screenshotErrorTitle": "错误",
+    "screenshotErrorSupport": "此设备不支持分享功能。",
+    "screenshotErrorGenericTitle": "哎呀",
+    "screenshotErrorGenericMsg": "无法分享图片。"
   },
   "units": {
     "hoursShort": "小时",

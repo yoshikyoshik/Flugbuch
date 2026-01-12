@@ -304,7 +304,15 @@
     "noFlights": "Keine Flüge verfügbar",
     "focus": "Fokus",
     "visit": "Besuch",
-    "visits": "Besuche"
+    "visits": "Besuche",
+    "screenshotWaitTitle": "Moment...",
+    "screenshotWaitMsg": "Screenshot wird erstellt 📸",
+    "screenshotSuccessTitle": "Gespeichert",
+    "screenshotSuccessMsg": "Screenshot wurde heruntergeladen.",
+    "screenshotErrorTitle": "Fehler",
+    "screenshotErrorSupport": "Teilen wird auf diesem Gerät nicht unterstützt.",
+    "screenshotErrorGenericTitle": "Ups",
+    "screenshotErrorGenericMsg": "Konnte das Bild nicht teilen."
 	},
 	
 	"units": {

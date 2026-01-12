@@ -291,7 +291,15 @@
     "noFlights": "Нет доступных рейсов",
     "focus": "Фокус",
     "visit": "Посещение",
-    "visits": "Посещения"
+    "visits": "Посещения",
+    "screenshotWaitTitle": "Один момент...",
+    "screenshotWaitMsg": "Создаю скриншот... 📸",
+    "screenshotSuccessTitle": "Сохранено",
+    "screenshotSuccessMsg": "Скриншот скачан.",
+    "screenshotErrorTitle": "Ошибка",
+    "screenshotErrorSupport": "Функция «Поделиться» не поддерживается на этом устройстве.",
+    "screenshotErrorGenericTitle": "Упс",
+    "screenshotErrorGenericMsg": "Не удалось поделиться изображением."
   },
   "units": {
     "hoursShort": "ч",

@@ -291,7 +291,15 @@
     "noFlights": "No hay vuelos disponibles",
     "focus": "Enfocar",
     "visit": "Visita",
-    "visits": "Visitas"
+    "visits": "Visitas",
+    "screenshotWaitTitle": "Un momento...",
+    "screenshotWaitMsg": "Creando captura... 📸",
+    "screenshotSuccessTitle": "Guardado",
+    "screenshotSuccessMsg": "Captura descargada.",
+    "screenshotErrorTitle": "Error",
+    "screenshotErrorSupport": "Este dispositivo no soporta la función de compartir.",
+    "screenshotErrorGenericTitle": "Ups",
+    "screenshotErrorGenericMsg": "No se pudo compartir la imagen."
   },
   "units": {
     "hoursShort": "h",

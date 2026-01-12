@@ -291,7 +291,15 @@
     "noFlights": "No flights available",
     "focus": "Focus",
     "visit": "Visit",
-    "visits": "Visits"
+    "visits": "Visits",
+    "screenshotWaitTitle": "Just a moment...",
+    "screenshotWaitMsg": "Creating screenshot... 📸",
+    "screenshotSuccessTitle": "Saved",
+    "screenshotSuccessMsg": "Screenshot downloaded.",
+    "screenshotErrorTitle": "Error",
+    "screenshotErrorSupport": "Sharing is not supported on this device.",
+    "screenshotErrorGenericTitle": "Oops",
+    "screenshotErrorGenericMsg": "Could not share the image."
   },
   "units": {
     "hoursShort": "h",

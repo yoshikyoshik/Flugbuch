@@ -329,7 +329,7 @@ async function openGlobeModal() {
     ).json();
     countriesGeoJSON = countries;
 
-    globeInstance = Globe()(document.getElementById("globe-container"))
+    globeInstance = Globe({ rendererConfig: { preserveDrawingBuffer: true } })(document.getElementById("globe-container"))
       .backgroundColor("#000000")
       .atmosphereColor("#000000")
       .globeImageUrl("//unpkg.com/three-globe/example/img/earth-night.jpg")
@@ -1065,5 +1065,71 @@ async function runAnimationLoop() {
     if (animationState !== "paused") {
       stopAnimation();
     }
+  }
+}
+
+// map.js - Am Ende der Datei einfügen
+
+async function takeGlobeScreenshot() {
+  if (!globeInstance) return;
+
+  // 1. Visuelles Feedback (Übersetzt)
+  showMessage(
+      getTranslation("globe.screenshotWaitTitle") || "Moment...", 
+      getTranslation("globe.screenshotWaitMsg") || "Screenshot wird erstellt 📸", 
+      "info"
+  );
+
+  // 2. Kurz warten / Rendern erzwingen
+  globeInstance.renderer().render(globeInstance.scene(), globeInstance.camera());
+
+  // 3. Bilddaten holen (Base64)
+  const dataURL = globeInstance.renderer().domElement.toDataURL("image/png");
+
+  // 4. Prüfen: Sind wir Native (Android) oder Web?
+  const isNative = typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform();
+
+  if (isNative) {
+    // --- ANDROID / NATIVE ---
+    try {
+        const blob = await (await fetch(dataURL)).blob();
+        const file = new File([blob], "aviosphere_globe.png", { type: "image/png" });
+
+        if (navigator.share && navigator.canShare({ files: [file] })) {
+            await navigator.share({
+                files: [file],
+                title: 'AvioSphere 3D',
+                text: 'Check out my flights on AvioSphere! ✈️🌍'
+            });
+        } else {
+             showMessage(
+                 getTranslation("globe.screenshotErrorTitle") || "Fehler", 
+                 getTranslation("globe.screenshotErrorSupport") || "Teilen wird nicht unterstützt.", 
+                 "error"
+             );
+        }
+    } catch (e) {
+        console.error("Fehler beim Teilen:", e);
+        showMessage(
+            getTranslation("globe.screenshotErrorGenericTitle") || "Ups", 
+            getTranslation("globe.screenshotErrorGenericMsg") || "Konnte das Bild nicht teilen.", 
+            "error"
+        );
+    }
+
+  } else {
+    // --- WEB: DOWNLOAD ---
+    const link = document.createElement("a");
+    link.download = `aviosphere_globe_${new Date().toISOString().slice(0,10)}.png`;
+    link.href = dataURL;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    showMessage(
+        getTranslation("globe.screenshotSuccessTitle") || "Gespeichert", 
+        getTranslation("globe.screenshotSuccessMsg") || "Screenshot wurde heruntergeladen.", 
+        "success"
+    );
   }
 }
