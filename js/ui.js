@@ -699,17 +699,46 @@ window.renderFlights = async function (
     )}</p>`;
   } else {
     paginatedFlights.forEach((flight) => {
-      const depName = airportData[flight.departure]?.name || flight.departure;
-      const arrName = airportData[flight.arrival]?.name || flight.arrival;
+      // Sichere Datenabfrage (Fallback, falls airportData noch lädt)
+      const depName = (airportData && airportData[flight.departure]) ? airportData[flight.departure].name : flight.departure;
+      const arrName = (airportData && airportData[flight.arrival]) ? airportData[flight.arrival].name : flight.arrival;
 
-      // Rufe die Hilfsfunktion auf, um die Farbe zu bestimmen
+      // Farbe für den Meilenstein-Kreis bestimmen
       const milestoneColor = getMilestoneColor(flight.flightLogNumber);
 
       const flightElement = document.createElement("div");
       flightElement.className =
         "bg-white dark:bg-gray-800 p-3 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 hover:shadow-lg transition flex justify-between items-start";
 
-      // KORRIGIERTER innerHTML Block (Jetzt einklappbar)
+      // --- 1. NEUER TEIL: Buttons vorab definieren ---
+      // KORREKTUR: Wir prüfen die Variable direkt, ohne "window."
+      const isDemo = (typeof isDemoMode !== 'undefined' && isDemoMode);
+      
+      let actionButtonsHtml = "";
+
+      // Nur wenn NICHT Demo-Modus: Buttons generieren
+      if (!isDemo) {
+          actionButtonsHtml = `
+            <div class="flex flex-col md:flex-row items-center ml-2">
+                <button 
+                  onclick="event.stopPropagation(); editFlight(${flight.id})" 
+                  class="p-2 text-blue-500 hover:text-blue-700 transition" 
+                  title="${getTranslation("flights.editTitle") || "Bearbeiten"}"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" /><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" /></svg>
+                </button>
+                <button 
+                  onclick="event.stopPropagation(); deleteFlight(${flight.id})" 
+                  class="p-2 text-red-500 hover:text-red-700 transition" 
+                  title="${getTranslation("flights.deleteTitle") || "Löschen"}"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
+                </button>
+            </div>
+          `;
+      }
+      // --- ENDE NEUER TEIL ---
+
       flightElement.innerHTML = `
             <div class="flex items-start gap-4 flex-grow">
                 <div class="flex-shrink-0 ${milestoneColor} text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm" title="${getTranslation("flights.flightNumberTitle")}">
@@ -723,16 +752,15 @@ window.renderFlights = async function (
                         </p>
                         <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
                             📅 ${flight.date} | ⏱️ ${flight.time} | 📏 ${flight.distance.toLocaleString("de-DE")} km
-                        </F>
+                        </p>
                         
                         <p class="text-xs text-gray-400 dark:text-gray-500 mt-1 group-open:hidden">
                             ${getTranslation("flights.showMore") || "Details anzeigen..."}
                         </p>
-						
-						<p class="text-xs text-gray-400 dark:text-gray-500 mt-1 hidden group-open:block">
+                        
+                        <p class="text-xs text-gray-400 dark:text-gray-500 mt-1 hidden group-open:block">
                             ${getTranslation("flights.hideMore") || "Details ausblenden..."}
                         </p>
-						
                     </summary>
 
                     <div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
@@ -747,27 +775,20 @@ window.renderFlights = async function (
                         
                         <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">
                               ${getTranslation("flights.flightDetails")
-                                .replace(
-                                  "{flightNumber}",
-                                  flight.flightNumber || "-"
-                                )
+                                .replace("{flightNumber}", flight.flightNumber || "-")
                                 .replace("{airline}", flight.airline || "-")
-                                .replace(
-                                  "{aircraftType}",
-                                  flight.aircraftType || "-"
-                                )}
+                                .replace("{aircraftType}", flight.aircraftType || "-")
+                              }
                         </p>
                         
                         ${
                           flight.photo_url && flight.photo_url.length > 0
                             ? `<div class="mt-2 flex gap-2">${flight.photo_url
-                                .map(
-                                  (url) => `
+                                .map((url) => `
                                 <a href="${url}" target="_blank">
                                     <img src="${url}" alt="Flugfoto" class="h-12 w-12 rounded-md object-cover shadow-sm hover:scale-110 transition">
                                 </a>`
-                                )
-                                .join("")}
+                                ).join("")}
                                </div>`
                             : ""
                         }
@@ -779,22 +800,12 @@ window.renderFlights = async function (
                             : ""
                         }
                     </div>
-                    </details>
-                </div>
-            
-            <div class="flex flex-col md:flex-row items-center ml-2">
-            <button onclick="editFlight(${
-              flight.id
-            })" class="p-2 text-blue-500 hover:text-blue-700 transition" title="${getTranslation("flights.editTitle")}">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" /><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" /></svg>
-                </button>
-                <button onclick="deleteFlight(${
-                  flight.id
-                })" class="p-2 text-red-500 hover:text-red-700 transition" title="${getTranslation("flights.deleteTitle")}">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
-                </button>
+                </details>
             </div>
+            
+            ${actionButtonsHtml}
             `;
+      
       flightList.appendChild(flightElement);
     });
   }

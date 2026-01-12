@@ -547,6 +547,17 @@
     "successBody": "Daten als {file} exportiert."
   },
 
+  "demo": {
+    "or": "oder",
+    "btn": "Ohne Account ausprobieren (Demo)",
+    "userBadge": "Demo Pilot 🚀",
+    "welcomeTitle": "Demo-Modus",
+    "welcomeBody": "Willkommen an Bord! Du siehst nun Beispieldaten.",
+    "errorTitle": "Fehler",
+    "errorBody": "Demo-Daten konnten nicht geladen werden.",
+    "exit": "🚪 Demo Beenden"
+  },
+
 "registerFree": "Kostenlos Registrieren",
 "loginWelcome": "Willkommen an Bord",
 "loginSubtitle": "Melde dich an, um dein Logbuch zu starten.",

@@ -511,6 +511,18 @@
     "successTitle": "Export successful",
     "successBody": "Data exported as {file}."
   },
+
+  "demo": {
+    "or": "or",
+    "btn": "Try without account (Demo)",
+    "userBadge": "Demo Pilot 🚀",
+    "welcomeTitle": "Demo Mode",
+    "welcomeBody": "Welcome aboard! You are viewing sample data.",
+    "errorTitle": "Error",
+    "errorBody": "Could not load demo data.",
+    "exit": "🚪 Exit Demo"
+  },
+
   "registerFree": "Register for Free",
   "loginWelcome": "Welcome Aboard",
   "loginSubtitle": "Log in to start your logbook.",

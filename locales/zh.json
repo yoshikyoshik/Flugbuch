@@ -511,6 +511,16 @@
     "successTitle": "导出成功",
     "successBody": "数据已导出为 {file}。"
   },
+
+  "demo": {
+  "or": "或",
+  "btn": "无账户试用 (演示)",
+  "userBadge": "演示飞行员 🚀",
+  "welcomeTitle": "演示模式",
+  "welcomeBody": "欢迎登机！您正在查看示例数据。",
+  "exit": "🚪 退出演示"
+},
+
   "registerFree": "免费注册",
   "loginWelcome": "欢迎登机",
   "loginSubtitle": "登录以开始您的日志。",

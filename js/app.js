@@ -2,12 +2,14 @@
 // MAIN APP LOGIC
 // =================================================================
 
+let isDemoMode = false; // Neue Flagge
+
 async function initializeApp() {
   if (isAppInitialized) return;
   isAppInitialized = true;
 
   let user;
-
+  
   document.getElementById("auth-container").classList.add("hidden");
   document.getElementById("app-container").classList.remove("hidden");
 
@@ -148,9 +150,9 @@ async function initializeApp() {
     .addEventListener("click", autofillFlightData);
 
   // Listener für das neue Burger-Menü
-  document
-    .getElementById("burger-menu-btn")
-    .addEventListener("click", toggleBurgerMenu);
+  ////document
+    ////.getElementById("burger-menu-btn")
+    ////.addEventListener("click", toggleBurgerMenu);
   document.getElementById("menu-logout-btn").addEventListener("click", logout);
   document.getElementById("menu-theme-toggle").addEventListener("click", (e) => {
     e.preventDefault(); // Verhindert, dass die Seite nach oben springt (wegen href="#")
@@ -309,9 +311,275 @@ async function initializeApp() {
   }, 60000); // Alle 60 Sekunden
 }
 
+// =================================================================
+// DEMO MODE LOGIC (FIXED)
+// =================================================================
+
+function getDemoData() {
+    // KORRIGIERTE STRUKTUR: Keys entsprechen jetzt exakt dem, was ui.js erwartet!
+    return [
+      {
+        id: 9001,
+        date: "2024-03-10",
+        departure: "FRA",
+        arrival: "JFK",
+        depName: "Frankfurt am Main",
+        arrName: "New York JFK",
+        depLat: 50.0333,
+        depLon: 8.5706,
+        arrLat: 40.6397,
+        arrLon: -73.7789,
+        distance: 6200,
+        time: "8h 30m",
+        flightNumber: "LH400",
+        airline: "Lufthansa",
+        aircraftType: "Boeing 747-8",
+        registration: "D-ABYA",
+        class: "First",
+        co2_kg: 1200,
+        notes: "Start of the world trip! Fantastic service on the upper deck. *** Start der Weltreise! Fantastischer Service im Oberdeck.",
+        photo_url: []
+      },
+      {
+        id: 9002,
+        date: "2024-03-15",
+        departure: "JFK",
+        arrival: "SFO",
+        depName: "New York JFK",
+        arrName: "San Francisco",
+        depLat: 40.6397,
+        depLon: -73.7789,
+        arrLat: 37.6188,
+        arrLon: -122.375,
+        distance: 4150,
+        time: "6h 25m",
+        flightNumber: "UA1543",
+        airline: "United Airlines",
+        aircraftType: "Boeing 737 MAX 9",
+        registration: "N37532",
+        class: "Economy",
+        co2_kg: 350,
+        notes: "Transcontinental flight. Great view over the Rockies. *** Transkontinentalflug. Tolle Aussicht über die Rockies.",
+        photo_url: []
+      },
+      {
+        id: 9003,
+        date: "2024-03-20",
+        departure: "SFO",
+        arrival: "SIN",
+        depName: "San Francisco",
+        arrName: "Singapore Changi",
+        depLat: 37.6188,
+        depLon: -122.375,
+        arrLat: 1.3644,
+        arrLon: 103.991,
+        distance: 13600,
+        time: "17h 10m",
+        flightNumber: "SQ31",
+        airline: "Singapore Airlines",
+        aircraftType: "Airbus A350-900ULR",
+        registration: "9V-SGB",
+        class: "Business",
+        co2_kg: 980,
+        notes: "One of the longest flights in the world! *** Einer der längsten Flüge der Welt!",
+        photo_url: []
+      },
+      {
+        id: 9004,
+        date: "2024-03-25",
+        departure: "SIN",
+        arrival: "DXB",
+        depName: "Singapore Changi",
+        arrName: "Dubai Intl",
+        depLat: 1.3644,
+        depLon: 103.991,
+        arrLat: 25.2532,
+        arrLon: 55.3657,
+        distance: 5850,
+        time: "7h 20m",
+        flightNumber: "EK405",
+        airline: "Emirates",
+        aircraftType: "Airbus A380-800",
+        registration: "A6-EEO",
+        class: "Economy",
+        co2_kg: 420,
+        notes: "Stopover in the desert. *** Zwischenstopp in der Wüste.",
+        photo_url: []
+      },
+      {
+        id: 9005,
+        date: "2024-03-28",
+        departure: "DXB",
+        arrival: "FRA",
+        depName: "Dubai Intl",
+        arrName: "Frankfurt am Main",
+        depLat: 25.2532,
+        depLon: 55.3657,
+        arrLat: 50.0333,
+        arrLon: 8.5706,
+        distance: 4850,
+        time: "6h 45m",
+        flightNumber: "LH631",
+        airline: "Lufthansa",
+        aircraftType: "Airbus A330-300",
+        registration: "D-AIKO",
+        class: "Premium Eco",
+        co2_kg: 400,
+        notes: "Back home. Journey complete. *** Zurück zu Hause. Reise beendet.",
+        photo_url: []
+      }
+    ];
+}
+
+async function startDemoMode() {
+    console.log("Starte Demo-Modus...");
+    isDemoMode = true;
+    
+    // Globale Variablen setzen
+    currentUserSubscription = "free"; 
+    window.currentUserSubscriptionSource = "demo";
+
+    // 1. UI umschalten
+    document.getElementById("auth-container").classList.add("hidden");
+    document.getElementById("app-container").classList.remove("hidden");
+    
+    // User-Display anpassen
+    const userDisplay = document.getElementById("user-display");
+    if (userDisplay) {
+        userDisplay.textContent = getTranslation("demo.userBadge") || "Demo Pilot 🚀";
+    }
+
+    // 2. Demo-Daten laden (Interne Funktion statt externe Datei)
+    let demoData = getDemoData();
+    
+    // Daten vorbereiten (Nummerierung #1, #2, etc.)
+    demoData = resequenceAndAssignNumbers(demoData);
+    
+    // WICHTIG: Global speichern für Globus & Map
+    window.flights = demoData; 
+
+    // 🔥 NEU: Cache für Länder-Highlights manuell füllen
+    // Damit der Globus weiß, welche Länder er einfärben muss
+    window.airportData = window.airportData || {};
+    Object.assign(window.airportData, {
+        "FRA": { name: "Frankfurt am Main", lat: 50.0333, lon: 8.5706, country_code: "DE" },
+        "JFK": { name: "New York JFK", lat: 40.6397, lon: -73.7789, country_code: "US" },
+        "SFO": { name: "San Francisco", lat: 37.6188, lon: -122.375, country_code: "US" },
+        "SIN": { name: "Singapore Changi", lat: 1.3644, lon: 103.991, country_code: "SG" },
+        "DXB": { name: "Dubai Intl", lat: 25.2532, lon: 55.3657, country_code: "AE" }
+    });
+    // ---------------------------------------------------
+
+    // 3. Tab wechseln (Direkt zur Liste)
+    showTab('fluege'); 
+
+    // --- KARTE INITIALISIEREN (Wichtig, sonst Crash!) ---
+    if (!map) {
+        try {
+            map = L.map("flight-map-container").setView([20, 0], 2);
+            L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+              attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            }).addTo(map);
+            routeLayer = L.layerGroup().addTo(map);
+            console.log("Karte für Demo-Modus initialisiert.");
+        } catch (e) {
+            console.error("Fehler beim Initialisieren der Karte:", e);
+        }
+    }
+    
+    // 4. Listen rendern
+    if (typeof renderFlights === 'function') {
+        await renderFlights(demoData); 
+        
+        // Karte auf alle Routen zoomen
+        setTimeout(() => {
+             if(typeof drawAllRoutesOnMap === 'function') {
+                 drawAllRoutesOnMap(demoData);
+                 // Button Text anpassen
+                 const btn = document.getElementById("toggle-map-view-btn");
+                 if(btn) btn.textContent = getTranslation("flights.showSingleRoute");
+                 isAllRoutesViewActive = true;
+             }
+        }, 500);
+    }
+    
+    // UI sperren (kein Löschen/Speichern)
+    lockUiForDemo();
+
+    showMessage(
+        getTranslation("demo.welcomeTitle") || "Demo-Modus", 
+        getTranslation("demo.welcomeBody") || "Willkommen! Du siehst nun Beispieldaten.", 
+        "success"
+    );
+}
+
+function lockUiForDemo() {
+    // 1. Floating Action Button (Neuer Flug) verstecken
+    const fab = document.getElementById('add-flight-fab');
+    if (fab) fab.classList.add('hidden');
+
+    // 2. Gefährliche Buttons in der Liste verstecken
+    // EINFÜGEN: 'return-flight-btn' in dieses Array aufnehmen!
+    const dangerousButtons = [
+        'play-chronicle-btn', 
+        'toggle-map-view-btn', 
+        'print-book-btn', 
+        'return-flight-btn' // <--- NEU
+    ];
+    
+    dangerousButtons.forEach(id => {
+        const btn = document.getElementById(id);
+        // Wir nutzen 'style.display = none', das ist stärker als classList bei manchen UI-Logiken
+        if (btn) {
+            btn.classList.add('hidden');
+            btn.style.display = 'none'; // Zur Sicherheit, falls JS es wieder einblenden will
+        }
+    });
+    
+    // 3. Refresh-Button verstecken
+    const refreshBtn = document.querySelector('button[data-i18n="flights.refresh"]');
+    if (refreshBtn) refreshBtn.classList.add('hidden');
+
+    // 4. Burger-Menü: ALLES verstecken außer Exit
+    const burgerMenu = document.getElementById('burger-menu');
+    if (burgerMenu) {
+        // A) Sektionen verstecken
+        const sections = burgerMenu.querySelectorAll('div.border-b, div.border-t, div.md\\:hidden');
+        sections.forEach(el => el.classList.add('hidden'));
+
+        // B) Alle Links/Buttons verstecken
+        const allInteractives = burgerMenu.querySelectorAll('a, button');
+        allInteractives.forEach(el => {
+            if (el.id !== 'menu-exit-demo-btn') {
+                el.classList.add('hidden');
+            }
+        });
+
+        // C) Exit Button anzeigen
+        const exitBtn = document.getElementById('menu-exit-demo-btn');
+        if (exitBtn) {
+            exitBtn.classList.remove('hidden');
+            // Container sichtbar machen
+            if (exitBtn.parentElement) exitBtn.parentElement.classList.remove('hidden');
+            exitBtn.textContent = getTranslation("demo.exit") || "🚪 Demo Beenden";
+        }
+    }
+
+    // 5. Import Label verstecken
+    const importLabel = document.querySelector('label[for="import-file-input"]');
+    if (importLabel) importLabel.classList.add('hidden');
+}
+
 // Globale Funktionen für HTML-Aufrufe
 // *** Hauptfunktion (jetzt für Loggen & Aktualisieren) ***
 window.logFlight = async function () {
+  // --- NEU: DEMO CHECK ---
+    if (isDemoMode) {
+        showMessage("Demo-Modus", "Im Demo-Modus können keine Daten gespeichert werden.", "info");
+        return;
+    }
+    // -----------------------
+
   if (currentlyEditingFlightData !== null) {
     await updateFlight();
     return;
@@ -496,6 +764,13 @@ window.logFlight = async function () {
  * KORRIGIERT: Speichert Änderungen, handhabt Hinzufügen UND Löschen von Fotos.
  */
 async function updateFlight() {
+  // --- NEU: DEMO CHECK ---
+    if (isDemoMode) {
+        showMessage("Demo-Modus", "Im Demo-Modus können keine Änderungen gespeichert werden.", "info");
+        return;
+    }
+    // -----------------------
+
   // 1. Auth-Check
   const {
     data: { user },
@@ -696,6 +971,13 @@ async function updateFlight() {
 
 // *** Rendern und Löschen ***
 window.deleteFlight = async function (id) {
+  // --- NEU: DEMO CHECK ---
+    if (isDemoMode) {
+        showMessage("Demo-Modus", "Im Demo-Modus können keine Daten gelöscht werden.", "info");
+        return;
+    }
+    // -----------------------
+
   // 1. Sicherheitsabfrage (mit Übersetzung)
   if (!confirm(getTranslation("messages.confirmDelete") || "Sind Sie sicher, dass Sie diesen Flug endgültig löschen möchten?")) {
     return;
@@ -1042,6 +1324,15 @@ window.exportData = async function (format) {
  */
 async function handleImport(event) {
   toggleBurgerMenu();
+
+  // --- NEU: DEMO CHECK ---
+    if (isDemoMode) {
+        showMessage("Demo-Modus", "Import im Demo-Modus deaktiviert.", "info");
+        event.target.value = null; // Reset Input
+        return;
+    }
+    // -----------------------
+
   const file = event.target.files[0];
   if (!file) {
     return; // Abbruch, wenn keine Datei gewählt wurde
@@ -1273,6 +1564,27 @@ document.addEventListener("DOMContentLoaded", async function () {
   const preferredLanguage = localStorage.getItem("preferredLanguage") || "de";
   await setLanguage(preferredLanguage);
 
+  // FÜGE DIESEN BLOCK HIER EIN:
+  const burgerBtn = document.getElementById('burger-menu-btn');
+  if (burgerBtn) {
+      burgerBtn.addEventListener('click', toggleBurgerMenu);
+  }
+  // ENDE EINFÜGEN
+
+  // --- HIER EINFÜGEN (damit der Button auch ohne Login geht) ---
+  const demoBtn = document.getElementById('demo-btn');
+  if (demoBtn) {
+      demoBtn.addEventListener('click', startDemoMode);
+  }
+  // -------------------------------------------------------------
+  // --- 🔥 WICHTIG: Globus Button Listener HIERHIN verschieben! ---
+  // Damit er auch im Demo-Modus (ohne initializeApp) funktioniert.
+  const globeBtn = document.getElementById("show-globe-btn");
+  if (globeBtn) {
+      globeBtn.addEventListener("click", openGlobeModal);
+  }
+  // -------------------------------------------------------------
+
   // Event-Listener NUR für die Auth-Formulare
   document
     .getElementById("login-form")
@@ -1360,6 +1672,15 @@ document.addEventListener("DOMContentLoaded", async function () {
       }
     });
 	
+    // NEU: Listener für Demo Exit
+  const exitDemoBtn = document.getElementById('menu-exit-demo-btn');
+  if (exitDemoBtn) {
+      exitDemoBtn.addEventListener('click', () => {
+          // Page Reload ist der sauberste Weg, um alles zurückzusetzen
+          window.location.reload();
+      });
+  }
+
 	// EASTER EGG LISTENER
     const headerLogo = document.getElementById("app-header-logo");
     

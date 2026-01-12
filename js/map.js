@@ -260,10 +260,20 @@ async function getGlobeData() {
 }
 
 async function openGlobeModal() {
-  if (currentUserSubscription === "free") {
-    openPremiumModal("globe");
+  // --- 1. PAYWALL CHECK ANPASSEN ---
+  // Vorher: Blockiert alle Free-User
+  // if (currentUserSubscription === "free") { ... }
+  
+  // Neu: Wir lassen Demo-User IMMER durch.
+  // (Wenn du später Step 2 "Globus für alle" machst, löschen wir diesen Block ganz)
+  if (currentUserSubscription === "free" && !isDemoMode) {
+    // Optional: Wenn du willst, dass Free-User den Globus sehen (Step 2),
+    // kommentiere diese Zeilen einfach aus!
+    openPremiumModal("globe"); 
     return;
   }
+  // ----------------------------------
+
   let countries;
   document.getElementById("globe-modal").classList.remove("hidden");
   
@@ -284,7 +294,15 @@ async function openGlobeModal() {
   const labelEl = document.getElementById("globe-time-label");
   const sliderContainer = document.getElementById("globe-slider-container");
 
-  const allFlightsUnfiltered = await getFlights();
+  // Wenn Demo-Modus: Nimm die Daten aus der globalen Variable (die startDemoMode gefüllt hat)
+  if (isDemoMode && typeof flights !== 'undefined') {
+      console.log("Globus: Nutze Demo-Daten");
+      allFlightsUnfiltered = flights; 
+  } else {
+      // Sonst: Lade frisch vom Server (oder Cache)
+      allFlightsUnfiltered = await getFlights();
+  }
+  // ------------------------------------------
   const sortedFlights = resequenceAndAssignNumbers(allFlightsUnfiltered);
 
   if (sortedFlights.length === 0) sliderContainer.classList.add("hidden");

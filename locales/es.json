@@ -511,6 +511,16 @@
     "successTitle": "Exportación exitosa",
     "successBody": "Datos exportados como {file}."
   },
+
+  "demo": {
+  "or": "o",
+  "btn": "Probar sin cuenta (Demo)",
+  "userBadge": "Piloto Demo 🚀",
+  "welcomeTitle": "Modo Demo",
+  "welcomeBody": "¡Bienvenido a bordo! Estás viendo datos de ejemplo.",
+  "exit": "🚪 Salir de la demo"
+},
+
   "registerFree": "Registro Gratuito",
   "loginWelcome": "Bienvenido a Bordo",
   "loginSubtitle": "Inicia sesión para comenzar tu bitácora.",
