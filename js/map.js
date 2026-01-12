@@ -1073,52 +1073,64 @@ async function runAnimationLoop() {
 async function takeGlobeScreenshot() {
   if (!globeInstance) return;
 
-  // 1. Visuelles Feedback (Übersetzt)
+  // 1. Visuelles Feedback
   showMessage(
       getTranslation("globe.screenshotWaitTitle") || "Moment...", 
       getTranslation("globe.screenshotWaitMsg") || "Screenshot wird erstellt 📸", 
       "info"
   );
 
-  // 2. Kurz warten / Rendern erzwingen
+  // 2. Kurz warten & Rendern erzwingen
+  // (Verhindert schwarze Bilder bei preserveDrawingBuffer)
   globeInstance.renderer().render(globeInstance.scene(), globeInstance.camera());
 
-  // 3. Bilddaten holen (Base64)
+  // 3. Bilddaten holen
   const dataURL = globeInstance.renderer().domElement.toDataURL("image/png");
 
-  // 4. Prüfen: Sind wir Native (Android) oder Web?
+  // 4. Prüfen: Native App oder Browser?
   const isNative = typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform();
 
   if (isNative) {
-    // --- ANDROID / NATIVE ---
+    // --- ANDROID / NATIVE: ÜBER DATEISYSTEM TEILEN ---
     try {
-        const blob = await (await fetch(dataURL)).blob();
-        const file = new File([blob], "aviosphere_globe.png", { type: "image/png" });
+        const { Share, Filesystem } = Capacitor.Plugins;
 
-        if (navigator.share && navigator.canShare({ files: [file] })) {
-            await navigator.share({
-                files: [file],
-                title: 'AvioSphere 3D',
-                text: 'Check out my flights on AvioSphere! ✈️🌍'
-            });
-        } else {
-             showMessage(
-                 getTranslation("globe.screenshotErrorTitle") || "Fehler", 
-                 getTranslation("globe.screenshotErrorSupport") || "Teilen wird nicht unterstützt.", 
-                 "error"
-             );
+        if (!Filesystem) {
+            throw new Error("Filesystem Plugin fehlt. Bitte installieren.");
         }
+
+        // A) Base64 Header entfernen, um reine Daten zu bekommen
+        const base64Data = dataURL.split(',')[1];
+        const fileName = 'aviosphere_' + new Date().getTime() + '.png';
+
+        // B) Bild als Datei in den Cache schreiben
+        const result = await Filesystem.writeFile({
+            path: fileName,
+            data: base64Data,
+            directory: 'CACHE' // Speichert im temporären Cache-Ordner der App
+        });
+
+        // C) Den Pfad (URI) dieser Datei teilen
+        await Share.share({
+            title: 'AvioSphere 3D',
+            text: 'Schau dir meine Flüge auf AvioSphere an! ✈️🌍',
+            files: [result.uri] 
+        });
+
     } catch (e) {
-        console.error("Fehler beim Teilen:", e);
-        showMessage(
-            getTranslation("globe.screenshotErrorGenericTitle") || "Ups", 
-            getTranslation("globe.screenshotErrorGenericMsg") || "Konnte das Bild nicht teilen.", 
-            "error"
-        );
+        console.error("Fehler beim nativen Teilen:", e);
+        // Nur Fehler anzeigen, wenn es nicht der User selbst abgebrochen hat
+        if (e.message !== 'Share canceled') {
+             showMessage(
+                getTranslation("globe.screenshotErrorGenericTitle") || "Ups", 
+                "Fehler beim Teilen: " + e.message, // Zeigt den echten Grund an
+                "error"
+            );
+        }
     }
 
   } else {
-    // --- WEB: DOWNLOAD ---
+    // --- WEB BROWSER: EINFACHER DOWNLOAD ---
     const link = document.createElement("a");
     link.download = `aviosphere_globe_${new Date().toISOString().slice(0,10)}.png`;
     link.href = dataURL;
