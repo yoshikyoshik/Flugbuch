@@ -531,6 +531,14 @@
     "exit": "🚪 Exit Demo"
   },
 
+  "review": {
+    "title": "Enjoying AvioSphere?",
+    "body": "You've already logged 5 flights! ✈️\nWe'd love it if you left us a review on the Play Store.",
+    "yesButton": "Yes, sure! ⭐",
+    "feedbackButton": "Give Feedback",
+    "noButton": "No, thanks"
+},
+
   "registerFree": "Register for Free",
   "loginWelcome": "Welcome Aboard",
   "loginSubtitle": "Log in to start your logbook.",

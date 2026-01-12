@@ -1836,3 +1836,57 @@ window.togglePasswordVisibility = function(inputId, btn) {
         btn.classList.remove("text-indigo-600");
     }
 }
+
+// ui.js - Am Ende einfügen
+
+// --- RATING / REVIEW LOGIC ---
+
+function checkAndAskForReview(flightCount) {
+    // 1. Prüfen, ob schon mal gefragt wurde (Local Storage)
+    const hasRated = localStorage.getItem("aviosphere_has_rated");
+    if (hasRated === "true") return;
+
+    // 2. Trigger-Bedingung: Genau 5 Flüge (oder ein Vielfaches, wenn du willst)
+    // Wir fragen nur einmalig bei Erreichen der 5.
+    if (flightCount === 5) {
+        setTimeout(() => {
+            document.getElementById("rating-modal").classList.remove("hidden");
+        }, 2000); // 2 Sekunden Verzögerung nach dem Speichern für besseren Effekt
+    }
+}
+
+function handleRatingAction(action) {
+    const modal = document.getElementById("rating-modal");
+    
+    // Dein Android Package Name (MUSS ANGEPASST WERDEN!)
+    const ANDROID_PACKAGE_NAME = "com.manab.flightbook"; // <--- HIER DEINE ID EINTRAGEN!
+    const SUPPORT_EMAIL = "support@aviosphere.com"; // <--- DEINE EMAIL
+
+    if (action === 'rate') {
+        // Fall A: User will bewerten -> Play Store öffnen
+        localStorage.setItem("aviosphere_has_rated", "true"); // Nicht mehr fragen
+        
+        // Versuche nativen Market-Link, Fallback auf HTTPS
+        const isAndroid = /Android/i.test(navigator.userAgent);
+        if (isAndroid) {
+            window.location.href = `market://details?id=${ANDROID_PACKAGE_NAME}`;
+        } else {
+            window.open(`https://play.google.com/store/apps/details?id=${ANDROID_PACKAGE_NAME}`, '_blank');
+        }
+        modal.classList.add("hidden");
+
+    } else if (action === 'feedback') {
+        // Fall B: User hat Kritik -> Email öffnen
+        localStorage.setItem("aviosphere_has_rated", "true"); // Auch hier nicht nerven
+        window.location.href = `mailto:${SUPPORT_EMAIL}?subject=Feedback AvioSphere App`;
+        modal.classList.add("hidden");
+
+    } else {
+        // Fall C: Schließen (Später vielleicht nochmal fragen? Hier: erstmal merken "gefragt")
+        // Wenn du willst, dass er später nochmal gefragt wird (z.B. bei 10 Flügen), 
+        // setze hier NICHT "aviosphere_has_rated".
+        // Wir setzen es hier auf "true", damit er Ruhe hat.
+        localStorage.setItem("aviosphere_has_rated", "true"); 
+        modal.classList.add("hidden");
+    }
+}

@@ -1718,6 +1718,34 @@
 	
 	<div id="print-view-content" class="hidden print:block"></div>
 	
+  <div id="rating-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center border-2 border-indigo-100 dark:border-gray-700 transform transition-all scale-100">
+            
+            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-indigo-100 dark:bg-indigo-900/50 mb-4">
+                <span class="text-3xl">⭐</span>
+            </div>
+
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2" data-i18n="review.title">Gefällt dir AvioSphere?</h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-6 whitespace-pre-line" data-i18n="review.body">
+                Du hast schon einige Flüge geloggt. Unterstütze uns mit einer Bewertung!
+            </p>
+
+            <div class="space-y-3">
+                <button onclick="handleRatingAction('rate')" class="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 flex justify-center items-center gap-2">
+                    <span data-i18n="review.yesButton">Ja, gerne! ⭐</span>
+                </button>
+                
+                <button onclick="handleRatingAction('feedback')" class="w-full py-3 px-4 bg-indigo-50 hover:bg-indigo-100 dark:bg-gray-700 dark:hover:bg-gray-600 text-indigo-700 dark:text-indigo-300 font-semibold rounded-xl transition-colors">
+                    <span data-i18n="review.feedbackButton">Feedback geben</span>
+                </button>
+
+                <button onclick="handleRatingAction('close')" class="text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 font-medium py-2">
+                    <span data-i18n="review.noButton">Nein, danke</span>
+                </button>
+            </div>
+        </div>
+    </div>  
+
 	<div id="premium-modal" class="hidden fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
   <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
     <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity backdrop-blur-sm" aria-hidden="true" onclick="closePremiumModal()"></div>

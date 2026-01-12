@@ -566,6 +566,14 @@
     "exit": "🚪 Demo Beenden"
   },
 
+  "review": {
+    "title": "Gefällt dir AvioSphere?",
+    "body": "Du hast bereits 5 Flüge geloggt! ✈️\nWir würden uns riesig freuen, wenn du uns eine Bewertung im Play Store hinterlässt.",
+    "yesButton": "Ja, gerne! ⭐",
+    "feedbackButton": "Feedback geben",
+    "noButton": "Nein, danke"
+  },
+
 "registerFree": "Kostenlos Registrieren",
 "loginWelcome": "Willkommen an Bord",
 "loginSubtitle": "Melde dich an, um dein Logbuch zu starten.",

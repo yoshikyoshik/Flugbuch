@@ -529,6 +529,14 @@
   "exit": "🚪 退出演示"
 },
 
+"review": {
+    "title": "喜欢 AvioSphere 吗？",
+    "body": "你已经记录了 5 次航班！✈️\n如果你能在 Play Store 给我们要给好评，我们会非常高兴。",
+    "yesButton": "好呀！ ⭐",
+    "feedbackButton": "提供反馈",
+    "noButton": "不，谢谢"
+},
+
   "registerFree": "免费注册",
   "loginWelcome": "欢迎登机",
   "loginSubtitle": "登录以开始您的日志。",

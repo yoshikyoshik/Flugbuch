@@ -755,6 +755,17 @@ window.logFlight = async function () {
 	});
 	
     renderFlights(null, newFlightId);
+
+  // --- NEU: Review Trigger ---
+    // Wir holen kurz die aktuelle Anzahl der Flüge um zu prüfen
+    // (Da wir gerade einen hinzugefügt haben, ist die lokale Liste evtl. noch alt, 
+    // aber renderFlights lädt neu oder wir zählen manuell).
+    // Am sichersten: Wir warten kurz auf das Update oder nutzen getFlights.
+    getFlights().then(flights => {
+        checkAndAskForReview(flights.length);
+    });
+    // --------------------------
+
   }
   logButton.textContent = getTranslation("form.buttonLogFlight") || "Log Flight";
   logButton.disabled = true;
