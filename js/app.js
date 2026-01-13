@@ -700,13 +700,16 @@ window.logFlight = async function () {
   let finalAirlineName = rawAirlineInput;
   let finalAirlineLogo = null;
 
-  // Wenn Eingabe 2 Zeichen lang ist (z.B. "LH"), Details laden
-  if (rawAirlineInput.length === 2) {
+  // Wenn Eingabe mind. 2 Zeichen lang ist (z.B. "LH" oder "Lufthansa"), Details laden
+  if (rawAirlineInput.length >= 2) {
       try {
-          // fetchAirlineName muss in supabase.js global verfügbar sein
           const airlineInfo = await fetchAirlineName(rawAirlineInput.toUpperCase());
-          finalAirlineName = airlineInfo.name;
-          finalAirlineLogo = airlineInfo.logo;
+          
+          // Nur überschreiben, wenn die API auch einen Namen gefunden hat
+          if (airlineInfo && airlineInfo.name) {
+              finalAirlineName = airlineInfo.name;
+              finalAirlineLogo = airlineInfo.logo;
+          }
       } catch (err) {
           console.warn("Konnte Airline-Details nicht laden:", err);
       }
@@ -939,6 +942,26 @@ async function updateFlight() {
 
   const priceInput = document.getElementById("price").value;
 
+  // --- NEU: Logo & Name auch beim Update holen ---
+  const rawAirlineInput = document.getElementById("airline").value.trim();
+  let finalAirlineName = rawAirlineInput;
+  // WICHTIG: Altes Logo behalten, falls sich nichts ändert
+  let finalAirlineLogo = currentlyEditingFlightData.airline_logo || null; 
+
+  // HIER IST DIE KORREKTUR: >= 2 (damit auch Namen wie "Lufthansa" gehen)
+  if (rawAirlineInput.length >= 2) {
+      try {
+          const airlineInfo = await fetchAirlineName(rawAirlineInput.toUpperCase());
+          if (airlineInfo && airlineInfo.name) {
+              finalAirlineName = airlineInfo.name;
+              finalAirlineLogo = airlineInfo.logo;
+          }
+      } catch (err) {
+          console.warn("Update: Konnte Airline nicht laden", err);
+      }
+  }
+  // -----------------------------------------------
+
   const updatedFlightForSupabase = {
     date: document.getElementById("flightDate").value,
     departure: departureAirport.code,
@@ -948,7 +971,8 @@ async function updateFlight() {
     class: document.getElementById("flightClass").value,
     co2_kg: calculatedCO2,
     flightNumber: document.getElementById("flightNumber").value.trim(),
-    airline: document.getElementById("airline").value.trim(),
+    airline: finalAirlineName,      // Name aus API oder Input
+    airline_logo: finalAirlineLogo, // Logo aus API oder Datenbank
     aircraftType: document.getElementById("aircraftType").value.trim(),
     notes: document.getElementById("notes").value.trim(),
     depLat: departureAirport.lat,
