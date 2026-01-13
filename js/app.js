@@ -695,6 +695,24 @@ window.logFlight = async function () {
   );
   const newFlightId = new Date().getTime();
 
+  // --- NEU: Logo & Name holen ---
+  const rawAirlineInput = document.getElementById("airline").value.trim();
+  let finalAirlineName = rawAirlineInput;
+  let finalAirlineLogo = null;
+
+  // Wenn Eingabe 2 Zeichen lang ist (z.B. "LH"), Details laden
+  if (rawAirlineInput.length === 2) {
+      try {
+          // fetchAirlineName muss in supabase.js global verfügbar sein
+          const airlineInfo = await fetchAirlineName(rawAirlineInput.toUpperCase());
+          finalAirlineName = airlineInfo.name;
+          finalAirlineLogo = airlineInfo.logo;
+      } catch (err) {
+          console.warn("Konnte Airline-Details nicht laden:", err);
+      }
+  }
+  // ------------------------------
+
   const flightClass = document.getElementById("flightClass").value;
   const calculatedCO2 = calculateCO2(distance, flightClass);
 
@@ -713,7 +731,8 @@ window.logFlight = async function () {
     class: document.getElementById("flightClass").value,
     co2_kg: calculatedCO2,
     flightNumber: document.getElementById("flightNumber").value.trim(),
-    airline: document.getElementById("airline").value.trim(),
+    airline: finalAirlineName,       // Name aus API oder Eingabefeld
+airline_logo: finalAirlineLogo,  // Das neue Logo-Feld
     aircraftType: document.getElementById("aircraftType").value.trim(),
     notes: document.getElementById("notes").value.trim(),
     depLat: departureAirport.lat,
@@ -1333,102 +1352,126 @@ window.exportData = async function (format) {
 /**
  * Verarbeitet die hochgeladene JSON-Importdatei.
  */
+// app.js - handleImport komplett ersetzen
+
 async function handleImport(event) {
-  toggleBurgerMenu();
-
-  // --- NEU: DEMO CHECK ---
-    if (isDemoMode) {
-        showMessage("Demo-Modus", "Import im Demo-Modus deaktiviert.", "info");
-        event.target.value = null; // Reset Input
-        return;
-    }
-    // -----------------------
-
   const file = event.target.files[0];
-  if (!file) {
-    return; // Abbruch, wenn keine Datei gewählt wurde
-  }
+  if (!file) return;
+
+  showMessage(
+    getTranslation("toast.importTitle") || "Import gestartet...", 
+    "Daten werden verarbeitet.", 
+    "info"
+  );
 
   const reader = new FileReader();
+  
   reader.onload = async (e) => {
-    let importData;
     try {
-      importData = JSON.parse(e.target.result);
-      if (!importData.flights || !Array.isArray(importData.flights)) {
-        throw new Error(
-          "JSON-Datei hat nicht das erwartete Format (fehlendes 'flights'-Array)."
-        );
-      }
-    } catch (error) {
-      showMessage(
-        "Import-Fehler",
-        `Die Datei konnte nicht gelesen werden: ${error.message}`,
-        "error"
-      );
-      return;
-    }
+      const content = e.target.result;
+      let flightsToImport = [];
 
-    const flightCount = importData.flights.length;
-    if (flightCount === 0) {
-      showMessage("Import-Info", "Die JSON-Datei enthält keine Flüge.", "info");
-      return;
-    }
-
-    // WICHTIGE SICHERHEITSABFRAGE
-    const confirmed = confirm(getTranslation("import.confirmWarning").replace("{count}", flightCount));
-    if (!confirmed) {
-      showMessage(
-        "Import abgebrochen",
-        "Es wurden keine Daten geändert.",
-        "info"
-      );
-      event.target.value = null; // Setzt den Datei-Input zurück
-      return;
-    }
-
-    try {
-      const {
-        data: { user },
-      } = await supabaseClient.auth.getUser();
-      if (!user) {
-        throw new Error("Nutzer nicht authentifiziert.");
+      // A) Versuch: Ist es JSON?
+      try {
+        flightsToImport = JSON.parse(content);
+        if (!Array.isArray(flightsToImport)) throw new Error("Kein Array");
+      } catch (jsonErr) {
+        // B) Kein JSON -> Versuch: Ist es CSV?
+        console.log("Kein JSON, versuche CSV-Import...");
+        flightsToImport = parseCSV(content);
       }
 
-      // 1. Alle alten Flüge für diesen Nutzer löschen
-      const { error: deleteError } = await supabaseClient
+      if (!flightsToImport || flightsToImport.length === 0) {
+        throw new Error("Keine lesbaren Flüge gefunden.");
+      }
+
+      // Daten aufbereiten (User ID setzen, unnötige Felder entfernen)
+      const { data: userData } = await supabaseClient.auth.getUser();
+      const userId = userData.user.id;
+
+      const cleanFlights = flightsToImport.map(f => ({
+        user_id: userId,
+        date: f.date,
+        flight_number: f.flight_number || f.flightNumber || "",
+        departure: f.departure,
+        arrival: f.arrival,
+        airline: f.airline,
+        airline_logo: f.airline_logo || null, // Falls im Backup vorhanden
+        aircraft: f.aircraft || "",
+        registration: f.registration || "",
+        seat: f.seat || "",
+        duration: f.duration || "",
+        distance: f.distance || 0,
+        note: f.note || "",
+        // Supabase generiert ID und created_at selbst beim Insert
+      }));
+
+      // --- WICHTIG: KEIN DELETE MEHR! ---
+      // Wir fügen einfach hinzu. Supabase ignoriert nichts, wir haben keine Unique-Constraint auf (Datum+Flugnummer).
+      // Das bedeutet: User muss aufpassen, nicht doppelt zu importieren.
+      // Aber besser doppelt als alles weg!
+      
+      const { error } = await supabaseClient
         .from("flights")
-        .delete()
-        .eq("user_id", user.id);
+        .insert(cleanFlights);
 
-      if (deleteError) throw deleteError;
+      if (error) throw error;
 
-      // 2. Die neuen Flüge vorbereiten (alle 'id'-Felder entfernen und 'user_id' setzen)
-      const flightsToInsert = importData.flights.map((flight) => {
-        delete flight.id; // Entfernt die alte Supabase-ID
-        return { ...flight, user_id: user.id };
-      });
+      showMessage("Import erfolgreich", `${cleanFlights.length} Flüge hinzugefügt.`, "success");
+      
+      // UI neu laden
+      allFlightsUnfiltered = await getFlights();
+      renderFlights(allFlightsUnfiltered);
 
-      // 3. Neue Flüge einfügen
-      const { error: insertError } = await supabaseClient
-        .from("flights")
-        .insert(flightsToInsert);
-
-      if (insertError) throw insertError;
-
-      showMessage(getTranslation("import.successTitle"), getTranslation("import.successBody").replace("{count}", flightCount), "success");
-      renderFlights(); // Lade die App neu
-    } catch (error) {
-      showMessage(
-        "Import-Fehler",
-        `Ein Datenbankfehler ist aufgetreten: ${error.message}`,
-        "error"
-      );
-    } finally {
-      event.target.value = null; // Setzt den Datei-Input zurück
+    } catch (err) {
+      console.error("Import Fehler:", err);
+      showMessage("Fehler", "Datei konnte nicht importiert werden.", "error");
     }
+    // Input resetten, damit man die gleiche Datei nochmal wählen könnte
+    event.target.value = '';
   };
 
   reader.readAsText(file);
+}
+
+// Hilfsfunktion für CSV (ganz einfach gehalten)
+function parseCSV(csvText) {
+  const lines = csvText.split(/\r\n|\n/);
+  const result = [];
+  // Wir erwarten Header in Zeile 1: Date,Departure,Arrival,FlightNumber...
+  // Um es robust zu machen, nehmen wir hier eine vereinfachte Annahme oder prüfen Header.
+  // Hier ein "Smart Parser" für Standard-Spalten:
+  
+  const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/"/g, ''));
+  
+  for (let i = 1; i < lines.length; i++) {
+    const currentLine = lines[i];
+    if (!currentLine.trim()) continue;
+    
+    // Achtung: Einfacher Split bei Komma. (Ignoriert Kommas in Anführungszeichen!)
+    // Für Profi-CSV bräuchte man eine Lib wie PapaParse, aber für einfache Logs reicht das:
+    const values = currentLine.split(','); 
+    
+    let obj = {};
+    headers.forEach((header, index) => {
+        const val = values[index] ? values[index].trim().replace(/"/g, '') : "";
+        
+        // Mapping gängiger CSV-Header auf unsere DB-Felder
+        if (header.includes('date') || header.includes('datum')) obj.date = val;
+        if (header.includes('dep') || header.includes('from') || header.includes('von')) obj.departure = val;
+        if (header.includes('arr') || header.includes('to') || header.includes('nach')) obj.arrival = val;
+        if (header.includes('flight') || header.includes('flug') || header.includes('number')) obj.flight_number = val;
+        if (header.includes('airline')) obj.airline = val;
+        if (header.includes('aircraft') || header.includes('type')) obj.aircraft = val;
+        if (header.includes('reg')) obj.registration = val;
+    });
+
+    // Validierung: Mindestens Datum und Route muss da sein
+    if (obj.date && obj.departure && obj.arrival) {
+        result.push(obj);
+    }
+  }
+  return result;
 }
 
 // AUTH LOGIC

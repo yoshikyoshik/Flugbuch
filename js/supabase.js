@@ -164,25 +164,34 @@ window.fetchExternalAirport = async function (input) {
   }
 };
 
+// supabase.js
+
 async function fetchAirlineName(iataCode) {
   try {
-    
-	/*
-	const response = await fetch(
-      `https://aesthetic-strudel-ecfe50.netlify.app/.netlify/functions/fetch-airline-details?iata_code=${iataCode}`
+    const response = await fetch(
+      `${API_BASE_URL}/.netlify/functions/fetch-airline-details?iata_code=${iataCode}`
     );
-	*/
-	
-	const response = await fetch(
-    `${API_BASE_URL}/.netlify/functions/fetch-airline-details?iata_code=${iataCode}`
-	);
-	
-	
-    if (!response.ok) throw new Error("Fehler");
-    const result = await response.json();
-    if (result.data && result.data.length > 0) return result.data[0].name;
-    return null;
+    if (!response.ok) return { name: iataCode, logo: null };
+    
+    const json = await response.json();
+    const data = json.data; // Das Array aus deiner Netlify Function
+
+    if (data && data.length > 0) {
+      const airline = data[0];
+      
+      // ✅ ANPASSUNG FÜR API NINJAS:
+      // Wir suchen das beste Logo aus. Priorität: Volles Logo -> Brandmark -> Tail
+      const logo = airline.logo_url || airline.brandmark_url || airline.tail_logo_url || null;
+
+      // API Ninjas liefert den Namen einfach als "name"
+      return { 
+          name: airline.name || iataCode,
+          logo: logo
+      };
+    }
+    return { name: iataCode, logo: null };
   } catch (error) {
-    return null;
+    console.error("Fehler beim Laden der Airline:", error);
+    return { name: iataCode, logo: null };
   }
 }

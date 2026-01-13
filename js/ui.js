@@ -753,6 +753,10 @@ window.renderFlights = async function (
                         <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
                             📅 ${flight.date} | ⏱️ ${flight.time} | 📏 ${flight.distance.toLocaleString("de-DE")} km
                         </p>
+                        <div class="mt-2 text-sm text-gray-500 dark:text-gray-400 truncate flex items-center gap-2">
+                            ${flight.airline_logo ? `<img src="${flight.airline_logo}" alt="Logo" class="h-5 w-auto object-contain" />` : ''}
+                            <span class="font-medium">${flight.airline || '-'}</span>
+                        </div>
                         
                         <p class="text-xs text-gray-400 dark:text-gray-500 mt-1 group-open:hidden">
                             ${getTranslation("flights.showMore") || "Details anzeigen..."}
