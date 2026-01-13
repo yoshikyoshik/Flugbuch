@@ -332,7 +332,8 @@ async function openGlobeModal() {
     globeInstance = Globe({ rendererConfig: { preserveDrawingBuffer: true } })(document.getElementById("globe-container"))
       .backgroundColor("#000000")
       .atmosphereColor("#000000")
-      .globeImageUrl("//unpkg.com/three-globe/example/img/earth-night.jpg")
+      //.globeImageUrl("//unpkg.com/three-globe/example/img/earth-night.jpg")
+      .globeImageUrl("pictures/earth-night.jpg")
       .arcsData(progressiveData.arcData)
       .arcLabel("name")
             
