@@ -38,6 +38,7 @@
   "enterNewPWD": "Enter your new password.",
   "backToLogin": "Back to Login",
   "mapVisualization": "Visualization: {depName} ({depCode}) → {arrName} ({arrCode}).",
+
   "placeholder": {
     "password": "Password",
     "email": "Email",
@@ -49,8 +50,9 @@
     "egAircraft": "e.g. B747-8",
     "egPrice": "e.g. 199.99",
     "egCurrency": "e.g. USD",
-    "egRegistration": "e.g. G-XWBA"
+    "egRegistration": "e.g. D-AINC"
   },
+
   "tabs": {
     "newFlight": "New Flight",
     "flights": "Flights",
@@ -60,6 +62,7 @@
     "achievements": "Achievements",
     "help": "Help"
   },
+
   "burgerMenu": {
     "newFlight": "New Flight",
     "flights": "Flights",
@@ -68,7 +71,10 @@
     "logbook": "Logbook",
     "achievements": "Achievements",
     "help": "Help",
+    "map": "3D Map",
     "importJSON": "Import Data (JSON)...",
+    "import": "Import Data (JSON, CSV)...",
+    "export": "Export (CSV / JSON)",
     "exportJSON": "Export Data (JSON)",
     "exportCSV": "Export Data (CSV)",
     "changePassword": "Change Password",
@@ -76,6 +82,7 @@
     "logout": "Logout",
     "manageSubscription": "⚙️ Manage Subscription"
   },
+
   "form": {
     "autopilotTitle": "Autopilot: Load flight data via flight number",
     "flightNumber": "Flight Number",
@@ -108,8 +115,13 @@
     "reset": "Reset",
     "cancel": "Cancel",
     "buttonSaving": "Saving...",
-    "buttonUpdating": "Updating..."
+    "buttonUpdating": "Updating...",
+    "confirmDeleteTitle": "Delete Flight?",
+    "confirmDeleteBody": "Do you really want to permanently delete this flight?",
+    "yes": "Yes, delete",
+    "no": "Cancel"
   },
+
   "messages": {
     "noDataFound": "No flight data found for this combination.",
     "fetchError": "A problem occurred.",
@@ -121,8 +133,11 @@
     "statusUpdate": "Status Update",
     "noStripeAccount": "Active Play Store subscription account found.",
     "redirectingStripe": "Redirecting to customer portal...",
-    "confirmDelete": "Are you sure you want to permanently delete this flight?"
+    "confirmDelete": "Are you sure you want to permanently delete this flight?",
+    "limitTitle": "Limit Reached",
+    "limitBody": "You have reached the limit for free flights. Upgrade to Pro for unlimited logging."
   },
+
   "records": {
     "longestFlight": "Longest Flight",
     "shortestFlight": "Shortest Flight",
@@ -150,6 +165,7 @@
     "firstVisitAfrica": "First Visit to Africa",
     "firstVisitOceania": "First Visit to Oceania",
     "firstVisitAntarctica": "First Visit to Antarctica",
+
     "firstVisitAsiaDesc": "Log a flight to a destination in Asia.",
     "firstVisitEuropeDesc": "Log a flight to a destination in Europe.",
     "firstVisitNorthAmericaDesc": "Log a flight to a destination in North America.",
@@ -158,6 +174,7 @@
     "firstVisitOceaniaDesc": "Log a flight to a destination in Oceania.",
     "firstVisitAntarcticaDesc": "Log a flight to a destination in Antarctica."
   },
+
   "flights": {
     "title": "Saved Flights",
     "playChronicle": "▶️ Play Chronicle",
@@ -192,8 +209,12 @@
     "showMore": "Show details...",
     "hideMore": "Hide details...",
     "logReturnFlight": "✈️ Log Return Flight",
-    "createBook": "Create Book (PDF)"
+    "createBook": "Create Book (PDF)",
+    "myFlightsTitle": "My Flights",
+    "filterPlaceholder": "Search (Place, Airline, Date...)",
+    "hideAllRoutes": "Clear Map"
   },
+
   "print": {
     "nativeTitle": "Creating PDF...",
     "nativeMessage": "The app is generating the PDF. Please wait...",
@@ -211,6 +232,7 @@
     "errorNoFlights": "No flights found in current filter for printing.",
     "errorNativeFailed": "Could not create native PDF."
   },
+
   "stats": {
     "totalFlights": "Total Flights",
     "totalDistance": "Total Distance",
@@ -231,8 +253,14 @@
     "aircraftTypeCount": "{type} ({count}x)",
     "yearlySummaryContent": "{count} flights | {distance} km",
     "noYearlyData": "No yearly data available.",
-    "total": "Total"
+    "total": "Total",
+    "title": "Your Statistics",
+    "topAirports": "Top Airports",
+    "topAirlines": "Top Airlines",
+    "co2Title": "CO₂ Balance",
+    "flights": "Flights"
   },
+
   "charts": {
     "title": "Visual Analysis",
     "perYear": "Per Year",
@@ -245,6 +273,7 @@
     "labelDuration": "Total Flight Time",
     "tooltipLabel": "{label}{hours}h {minutes}m"
   },
+
   "logbook": {
     "title": "Logbook Views",
     "byAircraft": "By Aircraft Type",
@@ -273,7 +302,7 @@
     "flightEntryDate": "Date",
     "flightEntryRoute": "Route",
     "flightEntryDistance": "Distance",
-    "flightEntryDuration": "Duration",
+    "flightEntryDuration": "Flight Time",
     "flightEntryAirline": "Airline/Flt#",
     "flightEntryAircraft": "Aircraft/Reg",
     "flightEntryNotes": "Notes:",
@@ -292,19 +321,21 @@
     "focus": "Focus",
     "visit": "Visit",
     "visits": "Visits",
-    "screenshotWaitTitle": "Just a moment...",
-    "screenshotWaitMsg": "Creating screenshot... 📸",
+    "screenshotWaitTitle": "Moment...",
+    "screenshotWaitMsg": "Creating screenshot 📸",
     "screenshotSuccessTitle": "Saved",
-    "screenshotSuccessMsg": "Screenshot downloaded.",
+    "screenshotSuccessMsg": "Screenshot was downloaded.",
     "screenshotErrorTitle": "Error",
     "screenshotErrorSupport": "Sharing is not supported on this device.",
     "screenshotErrorGenericTitle": "Oops",
     "screenshotErrorGenericMsg": "Could not share the image."
   },
+
   "units": {
     "hoursShort": "h",
     "minutesShort": "m"
   },
+
   "modalDetails": {
     "loading": "Loading details...",
     "airportTitle": "Details for {key}",
@@ -315,6 +346,7 @@
     "airportWebsite": "Visit Website",
     "airportNoDetails": "No details found for this airport.",
     "airportError": "Could not load details.",
+
     "aircraftTitle": "Details for {key}",
     "aircraftManufacturer": "Manufacturer:",
     "aircraftModel": "Model:",
@@ -329,6 +361,7 @@
     "aircraftNoDetails": "No details found for this aircraft type.",
     "aircraftError": "Could not load details.",
     "notAvailable": "n/a",
+
     "airlineTitle": "Details for {key}",
     "airlineName": "Name:",
     "airlineCountry": "Country:",
@@ -344,10 +377,12 @@
     "airlineYear": "Founded",
     "airlineFleetDetail": "Fleet Composition"
   },
+
   "modal": {
     "loadingTitle": "Loading...",
     "loadingBody": "Loading details..."
   },
+
   "achievements": {
     "title": "Your Achievements",
     "recordsTitle": "Personal Records & \"Firsts\"",
@@ -358,62 +393,171 @@
     "unitHours": "h",
     "unitAirports": "Airports",
     "unitCo2": "kg CO₂",
+
     "flights": {
-      "1": { "title": "First Entry", "description": "Your first flight is logged!" },
-      "10": { "title": "Frequent Flyer Aspirant", "description": "10 flights logged" },
+      "1": {
+        "title": "First Entry",
+        "description": "Your first flight is logged!"
+      },
+      "10": {
+        "title": "Frequent Flyer Aspirant",
+        "description": "10 flights logged"
+      },
       "25": { "title": "Bronze Flyer", "description": "Reached 25 flights" },
       "50": { "title": "Globetrotter", "description": "Completed 50 flights" },
-      "100": { "title": "Century Club", "description": "Mastered 100 flights!" },
-      "150": { "title": "Silver Status", "description": "150 flights in the logbook" },
+      "100": {
+        "title": "Century Club",
+        "description": "Mastered 100 flights!"
+      },
+      "150": {
+        "title": "Silver Status",
+        "description": "150 flights in the logbook"
+      },
       "250": { "title": "Gold Status", "description": "Reached 250 flights!" },
-      "500": { "title": "Aviation Legend", "description": "500 flights, incredible!" },
-      "750": { "title": "Diamond Status", "description": "750 flights, the sky is yours!" },
-      "1000": { "title": "Master of the Skies", "description": "1,000 flights logged!" }
+      "500": {
+        "title": "Aviation Legend",
+        "description": "500 flights, incredible!"
+      },
+      "750": {
+        "title": "Diamond Status",
+        "description": "750 flights, the sky is yours!"
+      },
+      "1000": {
+        "title": "Master of the Skies",
+        "description": "1,000 flights logged!"
+      }
     },
+
     "distance": {
-      "10000": { "title": "Ten Thousand Mark", "description": "Traveled 10,000 km" },
-      "40075": { "title": "Round the World", "description": "Flown around the Equator once (40,075 km)" },
-      "100000": { "title": "Six-Figure Distance", "description": "Cracked 100,000 km" },
-      "250000": { "title": "Quarter Millionaire", "description": "250,000 km in the air" },
-      "384400": { "title": "Moon Traveler", "description": "Traveled the distance to the Moon (384,400 km)" },
-      "500000": { "title": "Half Million", "description": "Traveled 500,000 km" },
-      "768800": { "title": "There and Back", "description": "Distance to the Moon and back to Earth (768,800 km)" },
-      "1000000": { "title": "Distance Millionaire", "description": "Flown one million kilometers!" }
+      "10000": {
+        "title": "Ten Thousand Mark",
+        "description": "Traveled 10,000 km"
+      },
+      "40075": {
+        "title": "Round the World",
+        "description": "Flown around the Equator once (40,075 km)"
+      },
+      "100000": {
+        "title": "Six-Figure Distance",
+        "description": "Cracked 100,000 km"
+      },
+      "250000": {
+        "title": "Quarter Millionaire",
+        "description": "250,000 km in the air"
+      },
+      "384400": {
+        "title": "Moon Traveler",
+        "description": "Traveled the distance to the Moon (384,400 km)"
+      },
+      "500000": {
+        "title": "Half Million",
+        "description": "Traveled 500,000 km"
+      },
+      "768800": {
+        "title": "There and Back",
+        "description": "Distance to the Moon and back to Earth (768,800 km)"
+      },
+      "1000000": {
+        "title": "Distance Millionaire",
+        "description": "Flown one million kilometers!"
+      }
     },
+
     "time": {
-      "24": { "title": "Around the Clock", "description": "Spent 24 hours in the air" },
-      "100": { "title": "Hundred Hours", "description": "Over 100 hours flight time" },
-      "500": { "title": "500 Hour Mark", "description": "Spent more than 20 days in a plane" },
-      "1000": { "title": "Thousand Hours Flight Time", "description": "Over 1,000 hours in the air" },
-      "2500": { "title": "Four Thousand Hours", "description": "More than 100 days flight time" },
-      "8760": { "title": "A Year in the Sky", "description": "Spent a whole year (8,760h) in the air" }
+      "24": {
+        "title": "Around the Clock",
+        "description": "Spent 24 hours in the air"
+      },
+      "100": {
+        "title": "Hundred Hours",
+        "description": "Over 100 hours flight time"
+      },
+      "500": {
+        "title": "500 Hour Mark",
+        "description": "Spent more than 20 days in a plane"
+      },
+      "1000": {
+        "title": "Thousand Hours Flight Time",
+        "description": "Over 1,000 hours in the air"
+      },
+      "2500": {
+        "title": "Four Thousand Hours",
+        "description": "More than 100 days flight time"
+      },
+      "8760": {
+        "title": "A Year in the Sky",
+        "description": "Spent a whole year (8,760h) in the air"
+      }
     },
+
     "uniqueAirports": {
-      "10": { "title": "Explorer", "description": "Visited 10 different airports" },
-      "25": { "title": "Globetrotter", "description": "25 unique airports in the logbook" },
-      "50": { "title": "Culture Collector", "description": "Seen 50 different airports" },
-      "100": { "title": "Hub Hopper", "description": "Flew to 100 unique airports!" }
+      "10": {
+        "title": "Explorer",
+        "description": "Visited 10 different airports"
+      },
+      "25": {
+        "title": "Globetrotter",
+        "description": "25 unique airports in the logbook"
+      },
+      "50": {
+        "title": "Culture Collector",
+        "description": "Seen 50 different airports"
+      },
+      "100": {
+        "title": "Hub Hopper",
+        "description": "Flew to 100 unique airports!"
+      }
     },
+
     "longestFlight": {
-      "3000": { "title": "Long-Haul Debut", "description": "A flight over 3,000 km" },
-      "5000": { "title": "Continent Jumper", "description": "Completed a flight over 5,000 km" },
-      "8000": { "title": "Ocean Crosser", "description": "A flight over 8,000 km" },
-      "12000": { "title": "Ultra Long-Haul", "description": "Mastered an epic flight over 12,000 km" }
+      "3000": {
+        "title": "Long-Haul Debut",
+        "description": "A flight over 3,000 km"
+      },
+      "5000": {
+        "title": "Continent Jumper",
+        "description": "Completed a flight over 5,000 km"
+      },
+      "8000": {
+        "title": "Ocean Crosser",
+        "description": "A flight over 8,000 km"
+      },
+      "12000": {
+        "title": "Ultra Long-Haul",
+        "description": "Mastered an epic flight over 12,000 km"
+      }
     },
+
     "co2_total": {
-      "1000": { "title": "Awareness: 1 Ton", "description": "You have tracked your first ton (1,000 kg) of CO₂." },
-      "5000": { "title": "Awareness: 5 Tons", "description": "You have tracked 5,000 kg of CO₂." },
-      "10000": { "title": "Awareness: 10 Tons", "description": "You have tracked 10,000 kg of CO₂." },
-      "50000": { "title": "Awareness: 50 Tons", "description": "You have tracked 50,000 kg of CO₂." },
-      "100000": { "title": "Awareness: 100 Tons", "description": "You have tracked 100,000 kg of CO₂." }
+      "1000": {
+        "title": "Awareness: 1 Ton",
+        "description": "You have tracked your first ton (1,000 kg) of CO₂."
+      },
+      "5000": {
+        "title": "Awareness: 5 Tons",
+        "description": "You have tracked 5,000 kg of CO₂."
+      },
+      "10000": {
+        "title": "Awareness: 10 Tons",
+        "description": "You have tracked 10,000 kg of CO₂."
+      },
+      "50000": {
+        "title": "Awareness: 50 Tons",
+        "description": "You have tracked 50,000 kg of CO₂."
+      },
+      "100000": {
+        "title": "Awareness: 100 Tons",
+        "description": "You have tracked 100,000 kg of CO₂."
+      }
     }
   },
+
   "tutorial": {
     "title": "Welcome to your Digital Logbook!",
     "intro": "Here are a few tips to get started:",
     "step1": {
       "title": "Log Flights",
-      "desc": "In the 'New Flight' tab, you can enter flights manually (e.g. 'LHR' to 'JFK') or use 'Autopilot' with flight number (e.g. 'BA117') and date."
+      "desc": "In the 'New Flight' tab, you can enter flights manually (e.g. 'LHR' to 'JFK') or use 'Autopilot' with flight number (e.g. 'LH400') and date."
     },
     "step2": {
       "title": "View Flights",
@@ -425,11 +569,12 @@
     },
     "button": "Got it, let's go!"
   },
+
   "help": {
     "title": "Help & FAQ",
     "logging": {
       "title": "✈️ Log Flights (Manual & Autopilot)",
-      "content": "You can add flights in two ways: 1. Manually by entering airport codes (e.g. 'LHR'). The app calculates distance and time. 2. Via 'Autopilot' by entering a flight number (e.g. 'BA117') and date. This automatically fills in most data. Click the edit pencil icon in the 'Flights' list to change a flight."
+      "content": "You can add flights in two ways: 1. Manually by entering airport codes (e.g. 'LHR'). The app calculates distance and time. 2. Via 'Autopilot' by entering a flight number (e.g. 'LH202') and date. This automatically fills in most data. Click the edit pencil icon in the 'Flights' list to change a flight."
     },
     "globe": {
       "title": "🗺️ The 3D Globe & Story Mode",
@@ -446,6 +591,7 @@
     "expand": "Expand",
     "collapse": "Collapse"
   },
+
   "premium": {
     "title": "Become a Pro Traveler 🚀",
     "subtitle": "Remove all limits and unlock premium features.",
@@ -465,8 +611,10 @@
     "thankYou": "Thanks for your interest! Payment will follow soon.",
     "titleGlobe": "Explore the 3D Globe 🌍",
     "titlePrint": "Create your logbook as PDF 📚",
-    "nativeTitle": "Premium Feature 🔒"
+    "nativeTitle": "Premium Feature 🔒",
+    "restore": "Restore Purchases"
   },
+
   "landing": {
     "headline": "Make your travels unforgettable.",
     "subheadline": "The ultimate digital flight logbook for frequent flyers and aviation enthusiasts.",
@@ -475,8 +623,9 @@
     "featureAutopilot": "Autopilot: Load data via flight number",
     "featurePhotos": "Photo Upload & PDF Export",
     "privacy": "Privacy Policy",
-    "terms": "T&C & Imprint"
+    "terms": "Terms & Imprint"
   },
+
   "toast": {
     "errorTitle": "Error",
     "successTitle": "Success",
@@ -491,28 +640,57 @@
     "updateErrorBody": "Changes could not be saved.",
     "flightUpdated": "Flight updated successfully.",
     "deleteError": "Could not delete flight.",
-    "flightDeleted": "Flight deleted."
+    "importTitle": "Import",
+    "exportTitle": "Export"
   },
+
   "map": {
     "departure": "Departure",
     "arrival": "Arrival"
   },
+
   "anim": {
     "noFlights": "No flights to animate.",
     "paused": "Animation paused.",
     "finished": "Travel chronicle finished. {count} flights shown."
   },
+
   "auth": {
     "registerSuccessTitle": "Registration successful!",
     "registerSuccessBody": "Please confirm your email address.",
     "welcomeBack": "Welcome back!",
-    "enterNewPassword": "Please enter your new password."
+    "enterNewPassword": "Please enter your new password.",
+    "loginTitle": "Login",
+    "emailLabel": "Email",
+    "passwordLabel": "Password",
+    "btn": "Login / Register",
+    "magicLinkSent": "Magic Link sent! Check your emails."
   },
+
   "import": {
     "confirmWarning": "WARNING! You are about to import {count} flights. This will replace your current cloud data.",
     "successTitle": "Import successful",
-    "successBody": "{count} flights imported."
+    "successBody": "{count} flights imported.",
+    "readingFile": "Reading file...",
+    "wait": "Please wait.",
+    "processing": "Importing...",
+    "writing": "Writing data.",
+    "successReplace": "List completely replaced ({count} flights).",
+    "successAppend": "{count} flights added.",
+    "errorTitle": "Error",
+    "errorNoArray": "No valid array found.",
+    "errorNoFlights": "No readable flights found.",
+    "errorFileCorrupt": "File corrupt: {error}",
+    "saveError": "Could not save data.",
+    "modalTitle": "Import Options",
+    "modalBody": "We found <strong>{count} flights</strong> in your file. How would you like to proceed?",
+    "optionReplaceTitle": "⚠️ Replace All (Clean Import)",
+    "optionReplaceDesc": "Deletes ALL your current flights in the app and inserts only the new ones from the file.<br>Ideal if you are importing a complete master list.",
+    "optionAppendTitle": "➕ Add (Append)",
+    "optionAppendDesc": "Keeps existing flights and adds the new ones at the bottom.<br>Warning: May result in duplicate entries!",
+    "cancel": "Cancel"
   },
+
   "export": {
     "errorTitle": "Export Error",
     "noData": "No data to export.",
@@ -525,7 +703,7 @@
     "btn": "Try without account (Demo)",
     "userBadge": "Demo Pilot 🚀",
     "welcomeTitle": "Demo Mode",
-    "welcomeBody": "Welcome aboard! You are viewing sample data.",
+    "welcomeBody": "Welcome aboard! You are now viewing sample data.",
     "errorTitle": "Error",
     "errorBody": "Could not load demo data.",
     "exit": "🚪 Exit Demo"
@@ -537,13 +715,13 @@
     "yesButton": "Yes, sure! ⭐",
     "feedbackButton": "Give Feedback",
     "noButton": "No, thanks"
-},
+  },
 
   "registerFree": "Register for Free",
   "loginWelcome": "Welcome Aboard",
   "loginSubtitle": "Log in to start your logbook.",
   "regTermsPrefix": "By registering, you accept our",
   "and": "and",
-  "terms": "T&C",
+  "terms": "Terms",
   "privacy": "Privacy"
 }

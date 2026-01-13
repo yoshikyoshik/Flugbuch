@@ -1271,72 +1271,86 @@ window.setSortOrder = function (sortKey) {
   applyFilters();
 };
 
+// app.js - window.exportData (Internationalisiert & Verlustfrei)
+
 window.exportData = async function (format) {
-  const allFlights = await getFlights(); // Lade alle Flüge asynchron
+  const allFlights = await getFlights(); 
   const stats = calculateStatistics(allFlights);
   let filename = `flugbuch_export_${new Date().toISOString().slice(0, 10)}`;
   let data, mimeType;
 
   if (allFlights.length === 0) {
-    showMessage(getTranslation("export.errorTitle"), getTranslation("export.noData"), "error");
+    // i18n Error
+    showMessage(
+        getTranslation("export.errorTitle") || "Export Fehlgeschlagen", 
+        getTranslation("export.noData") || "Keine Flüge vorhanden.", 
+        "error"
+    );
     return;
   }
 
+  // --- JSON EXPORT ---
   if (format === "json") {
-    // JSON-Export: Wir exportieren die Rohdaten der Flüge
     const exportObj = {
       metadata: {
         export_date: new Date().toISOString(),
         totalFlights: stats.totalCount,
         totalDistanceKm: stats.totalDistance,
       },
-      flights: allFlights, // Das Array mit allen Flugobjekten
+      flights: allFlights,
     };
     data = JSON.stringify(exportObj, null, 2);
     mimeType = "application/json";
     filename += ".json";
-  } else if (format === "csv") {
+  } 
+  
+  // --- CSV EXPORT ---
+  else if (format === "csv") {
     const separator = ";";
-    // Definiere ALLE Spalten, die wir exportieren wollen
+    
+    // ALLE Spalten für Backup (inkl. technischer Felder)
     const flightKeys = [
-      "flightLogNumber",
-      "date",
-      "departure",
-      "arrival",
-      "distance",
-      "time",
-      "class",
-      "flightNumber",
-      "airline",
-      "aircraftType",
-      "price",
-      "currency",
-      "notes",
+      "flightLogNumber", "date", "departure", "arrival",
+      "depName", "arrName", "depLat", "depLon", "arrLat", "arrLon",
+      "distance", "time", "class", "flightNumber", 
+      "airline", "airline_logo", "aircraftType", "registration",
+      "price", "currency", "notes", "flight_id", "photo_url"
     ];
+
     const headers = flightKeys.join(separator);
 
-    const csvRows = allFlights
-      .map((flight) => {
-        return flightKeys
-          .map((key) => {
-            let value =
-              flight[key] !== undefined && flight[key] !== null
-                ? String(flight[key])
-                : "";
-            // Werte mit Anführungszeichen umschließen, um Kommas/Semikolons im "notes"-Feld abzufangen
-            return `"${value.replace(/"/g, '""')}"`;
-          })
-          .join(separator);
-      })
-      .join("\n");
+    const csvRows = allFlights.map((flight) => {
+      return flightKeys.map((key) => {
+          let value = flight[key];
 
-    data = "\uFEFF" + headers + "\n" + csvRows; // BOM für Excel-Kompatibilität
+          // Fotos als JSON-String
+          if (key === "photo_url" && Array.isArray(value)) {
+             value = JSON.stringify(value); 
+          }
+
+          if (value === undefined || value === null) {
+              value = "";
+          } else {
+              value = String(value);
+          }
+
+          // Zeilenumbrüche entfernen
+          value = value.replace(/(\r\n|\n|\r)/gm, " ");
+
+          // Escaping für CSV
+          return `"${value.replace(/"/g, '""')}"`;
+        })
+        .join(separator);
+    }).join("\n");
+
+    data = "\uFEFF" + headers + "\n" + csvRows; 
     mimeType = "text/csv;charset=utf-8;";
     filename += ".csv";
   } else {
     return;
   }
 
+  // Download
   const blob = new Blob([data], { type: mimeType });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -1346,21 +1360,26 @@ window.exportData = async function (format) {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
-  showMessage(getTranslation("export.successTitle"), getTranslation("export.successBody").replace("{file}", filename), "success");
+  
+  // i18n Success
+  const successTpl = getTranslation("export.successBody") || "Datei '{file}' geladen.";
+  showMessage(
+      getTranslation("export.successTitle") || "Export bereit", 
+      successTpl.replace("{file}", filename), 
+      "success"
+  );
 };
 
-/**
- * Verarbeitet die hochgeladene JSON-Importdatei.
- */
-// app.js - handleImport komplett ersetzen
+// app.js - handleImport (Internationalisiert)
 
 async function handleImport(event) {
   const file = event.target.files[0];
   if (!file) return;
 
+  // i18n: Toast Messages
   showMessage(
-    getTranslation("toast.importTitle") || "Import gestartet...", 
-    "Daten werden verarbeitet.", 
+    getTranslation("import.readingFile") || "Datei wird gelesen...", 
+    getTranslation("import.wait") || "Bitte warten.", 
     "info"
   );
 
@@ -1371,102 +1390,272 @@ async function handleImport(event) {
       const content = e.target.result;
       let flightsToImport = [];
 
-      // A) Versuch: Ist es JSON?
+      // 1. FORMAT ERKENNUNG
       try {
-        flightsToImport = JSON.parse(content);
-        if (!Array.isArray(flightsToImport)) throw new Error("Kein Array");
+        const jsonContent = JSON.parse(content);
+        if (jsonContent.flights && Array.isArray(jsonContent.flights)) {
+            flightsToImport = jsonContent.flights;
+        } else if (Array.isArray(jsonContent)) {
+            flightsToImport = jsonContent;
+        } else {
+            throw new Error(getTranslation("import.errorNoArray") || "Kein gültiges Array gefunden.");
+        }
       } catch (jsonErr) {
-        // B) Kein JSON -> Versuch: Ist es CSV?
-        console.log("Kein JSON, versuche CSV-Import...");
+        // Fallback zu CSV
         flightsToImport = parseCSV(content);
       }
 
       if (!flightsToImport || flightsToImport.length === 0) {
-        throw new Error("Keine lesbaren Flüge gefunden.");
+        throw new Error(getTranslation("import.errorNoFlights") || "Keine lesbaren Flüge gefunden.");
       }
 
-      // Daten aufbereiten (User ID setzen, unnötige Felder entfernen)
       const { data: userData } = await supabaseClient.auth.getUser();
       const userId = userData.user.id;
 
-      const cleanFlights = flightsToImport.map(f => ({
-        user_id: userId,
-        date: f.date,
-        flight_number: f.flight_number || f.flightNumber || "",
-        departure: f.departure,
-        arrival: f.arrival,
-        airline: f.airline,
-        airline_logo: f.airline_logo || null, // Falls im Backup vorhanden
-        aircraft: f.aircraft || "",
-        registration: f.registration || "",
-        seat: f.seat || "",
-        duration: f.duration || "",
-        distance: f.distance || 0,
-        note: f.note || "",
-        // Supabase generiert ID und created_at selbst beim Insert
-      }));
+      // 2. DATEN AUFBEREITEN
+      const cleanFlights = flightsToImport.map(f => {
+        
+        // Foto Logik
+        let parsedPhotos = [];
+        if (f.photo_url) {
+            if (Array.isArray(f.photo_url)) {
+                parsedPhotos = f.photo_url;
+            } else if (typeof f.photo_url === 'string') {
+                try {
+                    let jsonString = f.photo_url;
+                    if (jsonString.startsWith("'")) jsonString = jsonString.replace(/'/g, '"');
+                    parsedPhotos = JSON.parse(jsonString);
+                } catch (e) {
+                    if (f.photo_url.startsWith("http")) parsedPhotos = [f.photo_url];
+                }
+            }
+        }
 
-      // --- WICHTIG: KEIN DELETE MEHR! ---
-      // Wir fügen einfach hinzu. Supabase ignoriert nichts, wir haben keine Unique-Constraint auf (Datum+Flugnummer).
-      // Das bedeutet: User muss aufpassen, nicht doppelt zu importieren.
-      // Aber besser doppelt als alles weg!
-      
-      const { error } = await supabaseClient
-        .from("flights")
-        .insert(cleanFlights);
+        const flightId = f.flight_id ? parseInt(f.flight_id) : (new Date().getTime() + Math.floor(Math.random()*1000));
 
-      if (error) throw error;
+        return {
+            user_id: userId,
+            flight_id: flightId,
+            date: f.date,
+            flightNumber: f.flightNumber || f.flight_number || "",
+            departure: f.departure,
+            arrival: f.arrival,
+            airline: f.airline,
+            airline_logo: f.airline_logo || null,
+            aircraftType: f.aircraftType || f.aircraft || "",
+            registration: f.registration || "",
+            time: f.time || "",
+            distance: f.distance ? parseInt(f.distance) : 0,
+            notes: f.notes || f.note || "",
+            class: f.class || "Economy",
+            price: f.price ? parseFloat(f.price) : null,
+            currency: f.currency || null,
+            depLat: f.depLat ? parseFloat(f.depLat) : null,
+            depLon: f.depLon ? parseFloat(f.depLon) : null,
+            arrLat: f.arrLat ? parseFloat(f.arrLat) : null,
+            arrLon: f.arrLon ? parseFloat(f.arrLon) : null,
+            depName: f.depName || "",
+            arrName: f.arrName || "",
+            photo_url: parsedPhotos
+        };
+      });
 
-      showMessage("Import erfolgreich", `${cleanFlights.length} Flüge hinzugefügt.`, "success");
-      
-      // UI neu laden
-      allFlightsUnfiltered = await getFlights();
-      renderFlights(allFlightsUnfiltered);
+      showImportDecisionModal(cleanFlights);
 
     } catch (err) {
       console.error("Import Fehler:", err);
-      showMessage("Fehler", "Datei konnte nicht importiert werden.", "error");
+      // i18n: Fehler mit Platzhalter {error}
+      const errorTpl = getTranslation("import.errorFileCorrupt") || "Datei fehlerhaft: {error}";
+      showMessage(
+          getTranslation("import.errorTitle") || "Fehler", 
+          errorTpl.replace("{error}", err.message), 
+          "error"
+      );
     }
-    // Input resetten, damit man die gleiche Datei nochmal wählen könnte
     event.target.value = '';
   };
 
   reader.readAsText(file);
 }
 
-// Hilfsfunktion für CSV (ganz einfach gehalten)
+// app.js - showImportDecisionModal (Internationalisiert)
+
+function showImportDecisionModal(flightsData) {
+  // i18n: Titel und Body mit Count
+  const title = getTranslation("import.modalTitle") || "Import Optionen";
+  const bodyTpl = getTranslation("import.modalBody") || "Gefunden: {count} Flüge.";
+  const bodyText = bodyTpl.replace("{count}", flightsData.length);
+
+  // HTML Content
+  const content = `
+    <div class="space-y-4">
+      <p class="text-gray-700 dark:text-gray-300">
+        ${bodyText}
+      </p>
+
+      <div class="grid grid-cols-1 gap-3 mt-4">
+        <button id="btn-import-replace" class="w-full p-4 border border-red-200 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:border-red-800 rounded-lg text-left group transition">
+          <div class="font-bold text-red-700 dark:text-red-400 mb-1 flex items-center">
+             ${getTranslation("import.optionReplaceTitle") || "Alles Ersetzen"}
+          </div>
+          <div class="text-sm text-red-600/80 dark:text-red-400/70">
+            ${getTranslation("import.optionReplaceDesc") || "Löscht alle Daten."}
+          </div>
+        </button>
+
+        <button id="btn-import-append" class="w-full p-4 border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/20 dark:border-indigo-800 rounded-lg text-left transition">
+          <div class="font-bold text-indigo-700 dark:text-indigo-400 mb-1 flex items-center">
+             ${getTranslation("import.optionAppendTitle") || "Hinzufügen"}
+          </div>
+          <div class="text-sm text-indigo-600/80 dark:text-indigo-400/70">
+            ${getTranslation("import.optionAppendDesc") || "Fügt neue hinzu."}
+          </div>
+        </button>
+      </div>
+      
+      <div class="text-center mt-4">
+          <button onclick="closeInfoModal()" class="text-gray-500 hover:text-gray-700 text-sm underline">
+            ${getTranslation("import.cancel") || "Abbrechen"}
+          </button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById("info-modal-title").textContent = title;
+  document.getElementById("info-modal-content").innerHTML = content;
+  openInfoModal();
+
+  document.getElementById("btn-import-replace").onclick = () => executeImport(flightsData, 'replace');
+  document.getElementById("btn-import-append").onclick = () => executeImport(flightsData, 'append');
+}
+
+// app.js - executeImport (Internationalisiert)
+
+async function executeImport(flightsData, mode) {
+  closeInfoModal();
+  
+  const { data: userData } = await supabaseClient.auth.getUser();
+  if (!userData?.user) return;
+  const userId = userData.user.id;
+
+  showMessage(
+      getTranslation("import.processing") || "Import läuft...", 
+      getTranslation("import.writing") || "Daten werden geschrieben.", 
+      "info"
+  );
+
+  try {
+    if (mode === 'replace') {
+      const { error: deleteError } = await supabaseClient
+        .from("flights")
+        .delete()
+        .eq("user_id", userId);
+
+      if (deleteError) throw deleteError;
+    }
+
+    const { error: insertError } = await supabaseClient
+      .from("flights")
+      .insert(flightsData);
+
+    if (insertError) throw insertError;
+
+    // i18n: Erfolgstext je nach Modus mit Platzhalter {count}
+    let successBody = "";
+    if (mode === 'replace') {
+        const tpl = getTranslation("import.successReplace") || "Ersetzt: {count} Flüge.";
+        successBody = tpl.replace("{count}", flightsData.length);
+    } else {
+        const tpl = getTranslation("import.successAppend") || "Hinzugefügt: {count} Flüge.";
+        successBody = tpl.replace("{count}", flightsData.length);
+    }
+
+    showMessage(
+        getTranslation("import.successTitle") || "Erfolg", 
+        successBody, 
+        "success"
+    );
+
+    allFlightsUnfiltered = await getFlights();
+    renderFlights(allFlightsUnfiltered);
+
+    if (typeof checkAndAskForReview === 'function') {
+        checkAndAskForReview(allFlightsUnfiltered.length);
+    }
+
+  } catch (err) {
+    console.error("Datenbank Fehler:", err);
+    showMessage(
+        getTranslation("import.errorTitle") || "Fehler", 
+        getTranslation("import.saveError") || "Speicherfehler", 
+        "error"
+    );
+  }
+}
+
+// app.js - parseCSV (ERWEITERT FÜR FULL BACKUP/RESTORE)
+
 function parseCSV(csvText) {
   const lines = csvText.split(/\r\n|\n/);
   const result = [];
-  // Wir erwarten Header in Zeile 1: Date,Departure,Arrival,FlightNumber...
-  // Um es robust zu machen, nehmen wir hier eine vereinfachte Annahme oder prüfen Header.
-  // Hier ein "Smart Parser" für Standard-Spalten:
   
-  const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/"/g, ''));
+  if (lines.length < 2) return [];
+
+  // Trennzeichen-Erkennung
+  const firstLine = lines[0];
+  const semicolonCount = (firstLine.match(/;/g) || []).length;
+  const commaCount = (firstLine.match(/,/g) || []).length;
+  const separator = semicolonCount > commaCount ? ';' : ',';
+
+  // Header normalisieren
+  const headers = lines[0].split(separator).map(h => h.trim()); // Case-Sensitive lassen für genaues Matching oder lowercasen
+  const headersLower = headers.map(h => h.toLowerCase().replace(/"/g, ''));
   
   for (let i = 1; i < lines.length; i++) {
     const currentLine = lines[i];
     if (!currentLine.trim()) continue;
     
-    // Achtung: Einfacher Split bei Komma. (Ignoriert Kommas in Anführungszeichen!)
-    // Für Profi-CSV bräuchte man eine Lib wie PapaParse, aber für einfache Logs reicht das:
-    const values = currentLine.split(','); 
+    // Split
+    const values = currentLine.split(separator); 
     
     let obj = {};
-    headers.forEach((header, index) => {
-        const val = values[index] ? values[index].trim().replace(/"/g, '') : "";
+    headersLower.forEach((header, index) => {
+        // Wert säubern
+        let val = values[index] ? values[index].trim().replace(/^"|"$/g, '').replace(/"/g, '') : "";
         
-        // Mapping gängiger CSV-Header auf unsere DB-Felder
-        if (header.includes('date') || header.includes('datum')) obj.date = val;
-        if (header.includes('dep') || header.includes('from') || header.includes('von')) obj.departure = val;
-        if (header.includes('arr') || header.includes('to') || header.includes('nach')) obj.arrival = val;
-        if (header.includes('flight') || header.includes('flug') || header.includes('number')) obj.flight_number = val;
-        if (header.includes('airline')) obj.airline = val;
-        if (header.includes('aircraft') || header.includes('type')) obj.aircraft = val;
-        if (header.includes('reg')) obj.registration = val;
+        // --- BASIS DATEN ---
+        if (header === 'date' || header === 'datum') obj.date = val;
+        // WICHTIG: Striktere Prüfung für Departure/Arrival Code vs Name
+        if (header === 'departure' || header === 'start') obj.departure = val;
+        if (header === 'arrival' || header === 'ziel') obj.arrival = val;
+        
+        if (header === 'flightnumber' || header === 'flight_number') obj.flightNumber = val;
+        if (header === 'airline') obj.airline = val;
+        if (header === 'airline_logo') obj.airline_logo = val;
+        if (header === 'aircrafttype' || header === 'aircraft') obj.aircraftType = val;
+        if (header === 'registration') obj.registration = val;
+        if (header === 'time' || header === 'duration') obj.time = val;
+        if (header === 'distance') obj.distance = val;
+        if (header === 'class') obj.class = val;
+        if (header === 'notes' || header === 'note') obj.notes = val;
+        if (header === 'price') obj.price = val;
+        if (header === 'currency') obj.currency = val;
+
+        // --- 🚨 WICHTIG: KOORDINATEN & NAMEN (Für die Karte!) ---
+        // Deine CSV Headers: depLat, depLon, arrLat, arrLon, depName, arrName
+        if (header === 'deplat') obj.depLat = val;
+        if (header === 'deplon') obj.depLon = val;
+        if (header === 'arrlat') obj.arrLat = val;
+        if (header === 'arrlon') obj.arrLon = val;
+        if (header === 'depname') obj.depName = val;
+        if (header === 'arrname') obj.arrName = val;
+
+        // --- 🚨 WICHTIG: FOTOS & ID ---
+        if (header === 'photo_url') obj.photo_url = val; // Ist noch ein String, wird in handleImport geparst
+        if (header === 'flight_id') obj.flight_id = val; // Die Timestamp-ID
     });
 
-    // Validierung: Mindestens Datum und Route muss da sein
+    // Validierung
     if (obj.date && obj.departure && obj.arrival) {
         result.push(obj);
     }
@@ -1613,38 +1802,72 @@ function prefillReturnFlight(departureIata, arrivalIata) {
     .scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
-// --- CSV PARSER FUNKTION (Muss in app.js sein!) ---
+// app.js - parseCSV (FINAL & KORRIGIERT FÜR DEINEN EXPORT)
+
 function parseCSV(csvText) {
-  const lines = csvText.split(/\r\n|\n/);
+  // BOM entfernen, falls vorhanden (Excel-Artefakt)
+  const cleanText = csvText.replace(/^\uFEFF/, '');
+  const lines = cleanText.split(/\r\n|\n/);
   const result = [];
   
-  if (lines.length < 2) return []; // Header + Daten benötigt
+  if (lines.length < 2) return [];
 
-  // Header säubern
-  const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/"/g, ''));
+  // Trennzeichen-Erkennung
+  const firstLine = lines[0];
+  const semicolonCount = (firstLine.match(/;/g) || []).length;
+  const commaCount = (firstLine.match(/,/g) || []).length;
+  const separator = semicolonCount > commaCount ? ';' : ',';
+
+  // Header normalisieren (alles kleingeschrieben für einfachen Vergleich)
+  const headers = lines[0].split(separator).map(h => h.trim().toLowerCase().replace(/"/g, ''));
   
   for (let i = 1; i < lines.length; i++) {
     const currentLine = lines[i];
     if (!currentLine.trim()) continue;
     
-    // Split (Achtung: Einfache Logik, bricht bei Kommas im Text)
-    const values = currentLine.split(','); 
+    // Split
+    const values = currentLine.split(separator); 
     
     let obj = {};
     headers.forEach((header, index) => {
-        const val = values[index] ? values[index].trim().replace(/"/g, '') : "";
+        // Wert säubern (Anführungszeichen entfernen)
+        let val = values[index] ? values[index].trim().replace(/^"|"$/g, '').replace(/"/g, '') : "";
         
-        // Mapping
-        if (header.includes('date') || header.includes('datum')) obj.date = val;
-        if (header.includes('dep') || header.includes('start')) obj.departure = val;
-        if (header.includes('arr') || header.includes('ziel')) obj.arrival = val;
-        if (header.includes('flight') || header.includes('flug')) obj.flight_number = val;
-        if (header.includes('airline')) obj.airline = val;
-        if (header.includes('aircraft') || header.includes('typ')) obj.aircraft = val;
-        if (header.includes('reg')) obj.registration = val;
+        // --- BASIS DATEN ---
+        if (header.includes('date') || header === 'datum') obj.date = val;
+        
+        // WICHTIG: Striktere Prüfung, damit wir Departure-Code nicht mit Departure-Name verwechseln
+        if (header === 'departure' || header === 'start') obj.departure = val;
+        if (header === 'arrival' || header === 'ziel') obj.arrival = val;
+        
+        if (header.includes('flightnumber') || header.includes('flight_number')) obj.flightNumber = val;
+        if (header === 'airline') obj.airline = val;
+        if (header === 'airline_logo') obj.airline_logo = val;
+        if (header.includes('aircraft') || header.includes('type')) obj.aircraftType = val;
+        if (header === 'registration') obj.registration = val;
+        if (header === 'time' || header === 'duration') obj.time = val;
+        if (header === 'distance') obj.distance = val;
+        if (header === 'class') obj.class = val;
+        if (header.includes('note')) obj.notes = val;
+        if (header === 'price') obj.price = val;
+        if (header === 'currency') obj.currency = val;
+
+        // --- 🚨 WICHTIG: KOORDINATEN & NAMEN (Das hat gefehlt!) ---
+        // Deine CSV Headers sind: depLat, depLon, arrLat, arrLon ...
+        if (header === 'deplat') obj.depLat = val;
+        if (header === 'deplon') obj.depLon = val;
+        if (header === 'arrlat') obj.arrLat = val;
+        if (header === 'arrlon') obj.arrLon = val;
+        
+        if (header === 'depname') obj.depName = val;
+        if (header === 'arrname') obj.arrName = val;
+
+        // --- 🚨 WICHTIG: FOTOS & ID ---
+        if (header === 'photo_url') obj.photo_url = val; 
+        if (header === 'flight_id') obj.flight_id = val; 
     });
 
-    // Validierung
+    // Validierung: Mindestens Datum und Route muss da sein
     if (obj.date && obj.departure && obj.arrival) {
         result.push(obj);
     }

@@ -385,11 +385,16 @@
                 </a>
                 <label
                   for="import-file-input"
-                  data-i18n="burgerMenu.importJSON"
+                  data-i18n="burgerMenu.import"
                   class="block px-4 py-2 text-sm text-red-500 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
                 >
                   Daten Importieren (JSON)...
                 </label>
+                <input
+                  type="file"
+                  id="import-file-input"
+                  accept=".json,.csv"  class="hidden"
+                />
               </div>
 
               <div class="py-1">
