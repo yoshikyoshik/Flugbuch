@@ -1071,78 +1071,46 @@ async function runAnimationLoop() {
 
 // map.js - Am Ende der Datei einfügen
 
+// map.js
+
+// map.js
+
 async function takeGlobeScreenshot() {
-  if (!globeInstance) return;
+  const modalElement = document.getElementById("globe-modal");
+  if (!modalElement || modalElement.classList.contains("hidden")) return;
 
-  // 1. Visuelles Feedback
-  showMessage(
-      getTranslation("globe.screenshotWaitTitle") || "Moment...", 
-      getTranslation("globe.screenshotWaitMsg") || "Screenshot wird erstellt 📸", 
-      "info"
-  );
+  // 1. UI-Elemente temporär verstecken (damit sie nicht auf dem Foto sind)
+  // Wir wählen Buttons, Slider und das Label aus
+  const uiElements = modalElement.querySelectorAll('button, #globe-slider-container');
+  uiElements.forEach(el => el.style.visibility = 'hidden');
 
-  // 2. Kurz warten & Rendern erzwingen
-  // (Verhindert schwarze Bilder bei preserveDrawingBuffer)
-  globeInstance.renderer().render(globeInstance.scene(), globeInstance.camera());
+  try {
+      // 2. Screenshot vom GESAMTEN Modal machen (inkl. Labels & Hintergrund)
+      // Wir erzwingen Schwarz als Hintergrund, falls Transparenz Probleme macht
+      const canvas = await html2canvas(modalElement, {
+          useCORS: true,
+          backgroundColor: '#000000', 
+          scale: 2, // Hohe Qualität
+          ignoreElements: (element) => {
+              // Sicherstellen, dass keine Buttons versehentlich doch drauf sind
+              return element.tagName === 'BUTTON';
+          }
+      });
 
-  // 3. Bilddaten holen
-  const dataURL = globeInstance.renderer().domElement.toDataURL("image/png");
+      const dataURL = canvas.toDataURL("image/png");
 
-  // 4. Prüfen: Native App oder Browser?
-  const isNative = typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform();
+      // 3. Zentrale Teilen-Funktion aufrufen
+      if (typeof shareImageBase64 === 'function') {
+          await shareImageBase64(dataURL, "aviosphere_globe");
+      }
 
-  if (isNative) {
-    // --- ANDROID / NATIVE: ÜBER DATEISYSTEM TEILEN ---
-    try {
-        const { Share, Filesystem } = Capacitor.Plugins;
-
-        if (!Filesystem) {
-            throw new Error("Filesystem Plugin fehlt. Bitte installieren.");
-        }
-
-        // A) Base64 Header entfernen, um reine Daten zu bekommen
-        const base64Data = dataURL.split(',')[1];
-        const fileName = 'aviosphere_' + new Date().getTime() + '.png';
-
-        // B) Bild als Datei in den Cache schreiben
-        const result = await Filesystem.writeFile({
-            path: fileName,
-            data: base64Data,
-            directory: 'CACHE' // Speichert im temporären Cache-Ordner der App
-        });
-
-        // C) Den Pfad (URI) dieser Datei teilen
-        await Share.share({
-            title: 'AvioSphere 3D',
-            text: 'Schau dir meine Flüge auf AvioSphere an! ✈️🌍',
-            files: [result.uri] 
-        });
-
-    } catch (e) {
-        console.error("Fehler beim nativen Teilen:", e);
-        // Nur Fehler anzeigen, wenn es nicht der User selbst abgebrochen hat
-        if (e.message !== 'Share canceled') {
-             showMessage(
-                getTranslation("globe.screenshotErrorGenericTitle") || "Ups", 
-                "Fehler beim Teilen: " + e.message, // Zeigt den echten Grund an
-                "error"
-            );
-        }
-    }
-
-  } else {
-    // --- WEB BROWSER: EINFACHER DOWNLOAD ---
-    const link = document.createElement("a");
-    link.download = `aviosphere_globe_${new Date().toISOString().slice(0,10)}.png`;
-    link.href = dataURL;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    showMessage(
-        getTranslation("globe.screenshotSuccessTitle") || "Gespeichert", 
-        getTranslation("globe.screenshotSuccessMsg") || "Screenshot wurde heruntergeladen.", 
-        "success"
-    );
+  } catch (err) {
+      console.error("Fehler bei Globus-Screenshot:", err);
+      if (typeof showMessage === 'function') {
+          showMessage("Fehler", "Konnte Globus-Bild nicht erstellen.", "error");
+      }
+  } finally {
+      // 4. WICHTIG: UI-Elemente wieder sichtbar machen!
+      uiElements.forEach(el => el.style.visibility = 'visible');
   }
 }

@@ -1890,3 +1890,158 @@ function handleRatingAction(action) {
         modal.classList.add("hidden");
     }
 }
+
+// ui.js - Am Ende einfügen
+
+/**
+ * Zentrale Funktion zum Teilen von Base64-Bildern
+ * Funktioniert für Globus UND HTML-Screenshots
+ */
+async function shareImageBase64(dataURL, filenamePrefix = "aviosphere_share") {
+    // 1. Visuelles Feedback
+    showMessage("Moment...", "Bild wird aufbereitet 📸", "info");
+
+    const isNative = typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform();
+
+    if (isNative) {
+        try {
+            const { Share, Filesystem } = Capacitor.Plugins;
+
+            if (!Filesystem || !Share) {
+                throw new Error("Plugins fehlen.");
+            }
+
+            // A) Base64 Header entfernen
+            const base64Data = dataURL.split(',')[1];
+            const fileName = `${filenamePrefix}_${new Date().getTime()}.png`;
+
+            // B) Datei schreiben
+            const result = await Filesystem.writeFile({
+                path: fileName,
+                data: base64Data,
+                directory: 'CACHE'
+            });
+
+            // C) Teilen
+            await Share.share({
+                title: 'AvioSphere Stats',
+                text: 'Meine Flugstatistik auf AvioSphere! ✈️📊',
+                files: [result.uri]
+            });
+
+        } catch (e) {
+            console.error("Fehler beim Teilen:", e);
+            if (e.message !== 'Share canceled') {
+                showMessage("Ups", "Fehler beim Teilen: " + e.message, "error");
+            }
+        }
+    } else {
+        // Web Fallback
+        const link = document.createElement("a");
+        link.download = `${filenamePrefix}_${new Date().toISOString().slice(0, 10)}.png`;
+        link.href = dataURL;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showMessage("Gespeichert", "Bild wurde heruntergeladen.", "success");
+    }
+}
+
+/**
+ * Spezifische Funktion für Statistiken
+ */
+/**
+ * Spezifische Funktion für Statistiken
+ */
+async function shareStatsScreenshot() {
+    const statsPanel = document.getElementById("statistics-panel");
+    if (!statsPanel) return;
+
+    // --- VORBEREITUNG: Dropdown durch Text ersetzen (Hübscher für Fotos) ---
+    const yearSelect = document.getElementById("stat-year-select");
+    let originalDisplay = "";
+    let tempLabel = null;
+
+    if (yearSelect && !yearSelect.classList.contains("hidden")) {
+        // 1. Welches Jahr ist ausgewählt?
+        const selectedText = yearSelect.options[yearSelect.selectedIndex]?.text || "";
+
+        // 2. Dropdown verstecken
+        originalDisplay = yearSelect.style.display;
+        yearSelect.style.display = "none";
+
+        // 3. Hübsches Text-Label erstellen
+        tempLabel = document.createElement("span");
+        tempLabel.textContent = selectedText;
+        // Styling passend zum Dark/Light Mode (Indigo)
+        tempLabel.className = "text-sm font-bold text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800 px-2 py-1 rounded bg-indigo-50 dark:bg-gray-800";
+        
+        // Ins DOM einfügen (direkt vor das versteckte Select)
+        yearSelect.parentNode.insertBefore(tempLabel, yearSelect);
+    }
+    // -----------------------------------------------------------------------
+
+    try {
+        // Screenshot erstellen
+        const canvas = await html2canvas(statsPanel, {
+            useCORS: true,
+            backgroundColor: null, // Transparent/Dark Mode behalten
+            scale: 2 // Für bessere Qualität (Retina)
+        });
+
+        const dataURL = canvas.toDataURL("image/png");
+        
+        // An die zentrale Funktion übergeben
+        await shareImageBase64(dataURL, "aviosphere_stats");
+
+    } catch (e) {
+        console.error("html2canvas Fehler:", e);
+        showMessage("Fehler", "Konnte Statistik-Bild nicht erstellen.", "error");
+    } finally {
+        // --- AUFRÄUMEN (Wichtig!) ---
+        // Egal ob Fehler oder Erfolg: Wir müssen das Dropdown wieder anzeigen
+        if (yearSelect) {
+            yearSelect.style.display = originalDisplay;
+        }
+        if (tempLabel) {
+            tempLabel.remove(); // Das temporäre Label löschen
+        }
+    }
+}
+
+// ui.js - Am Ende einfügen
+
+async function shareInfoModalScreenshot() {
+    // Wir nehmen den ganzen Body auf, damit man den Kontext (Globus/Hintergrund) sieht.
+    // Das Info-Modal liegt ja über allem.
+    
+    // UI Aufräumen: Wir wollen die Schließen-Buttons im Modal für das Foto verstecken
+    const modal = document.getElementById('info-modal');
+    const buttons = modal.querySelectorAll('button');
+    buttons.forEach(b => b.style.visibility = 'hidden');
+
+    try {
+        const canvas = await html2canvas(document.body, {
+            useCORS: true,
+            // Wir beschränken den Bereich evtl. auf den Viewport, 
+            // aber document.body ist meist okay für Overlays.
+            windowWidth: window.innerWidth,
+            windowHeight: window.innerHeight,
+            x: window.scrollX,
+            y: window.scrollY,
+            width: window.innerWidth,
+            height: window.innerHeight,
+            scale: 2
+        });
+
+        const dataURL = canvas.toDataURL("image/png");
+        await shareImageBase64(dataURL, "aviosphere_details");
+
+    } catch (e) {
+        console.error("Screenshot Fehler:", e);
+        showMessage("Fehler", "Konnte Bild nicht erstellen.", "error");
+    } finally {
+        // Buttons wieder anzeigen
+        buttons.forEach(b => b.style.visibility = 'visible');
+    }
+}

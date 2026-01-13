@@ -41,6 +41,7 @@
 	<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
     <script src="https://unpkg.com/leaflet-polylinedecorator@1.6.0/dist/leaflet.polylineDecorator.js"></script>
     <script src="//unpkg.com/globe.gl@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
 	<script>
 	  tailwind.config = {
@@ -1192,6 +1193,16 @@
             </div>
 
             <div id="tab-content-stats">
+              <div class="flex justify-between items-center mb-4 px-1">
+                  <h2 class="text-xl font-bold text-gray-800 dark:text-white" data-i18n="tabs.stats">Statistiken</h2>
+                  <button 
+                      onclick="shareStatsScreenshot()"
+                      class="flex items-center gap-2 px-3 py-2 bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 rounded-lg hover:bg-indigo-200 dark:hover:bg-indigo-800 transition shadow-sm"
+                  >
+                      <span>📸</span> 
+                      <span class="text-sm font-semibold">Teilen</span>
+                  </button>
+              </div>
               <div
                 id="statistics-panel"
                 class="grid grid-cols-2 md:grid-cols-4 gap-4 bg-gray-100 dark:bg-gray-900 p-4 rounded-lg text-center"
@@ -1606,30 +1617,27 @@
         <div
           class="flex justify-between items-center border-b p-4 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-t-xl shrink-0"
         >
-          <h3
-            id="info-modal-title"
-            class="text-xl font-bold text-gray-800 dark:text-white truncate pr-4"
-          >
+          <h3 id="info-modal-title" class="text-xl font-bold text-gray-800 dark:text-white truncate pr-4 py-1">
             Modal-Titel
           </h3>
-          <button
-            onclick="closeInfoModal()"
-            class="text-gray-400 hover:text-gray-600 dark:hover:text-white p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition"
-          >
-            <svg
-              class="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M6 18L18 6M6 6l12 12"
-              ></path>
-            </svg>
-          </button>
+
+          <div class="flex items-center gap-2">
+              <button
+                onclick="shareInfoModalScreenshot()"
+                class="text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                title="Details teilen"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              </button>
+              <button onclick="closeInfoModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-white p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+          </div>
         </div>
 
         <div
