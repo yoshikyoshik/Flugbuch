@@ -1613,6 +1613,45 @@ function prefillReturnFlight(departureIata, arrivalIata) {
     .scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
+// --- CSV PARSER FUNKTION (Muss in app.js sein!) ---
+function parseCSV(csvText) {
+  const lines = csvText.split(/\r\n|\n/);
+  const result = [];
+  
+  if (lines.length < 2) return []; // Header + Daten benötigt
+
+  // Header säubern
+  const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/"/g, ''));
+  
+  for (let i = 1; i < lines.length; i++) {
+    const currentLine = lines[i];
+    if (!currentLine.trim()) continue;
+    
+    // Split (Achtung: Einfache Logik, bricht bei Kommas im Text)
+    const values = currentLine.split(','); 
+    
+    let obj = {};
+    headers.forEach((header, index) => {
+        const val = values[index] ? values[index].trim().replace(/"/g, '') : "";
+        
+        // Mapping
+        if (header.includes('date') || header.includes('datum')) obj.date = val;
+        if (header.includes('dep') || header.includes('start')) obj.departure = val;
+        if (header.includes('arr') || header.includes('ziel')) obj.arrival = val;
+        if (header.includes('flight') || header.includes('flug')) obj.flight_number = val;
+        if (header.includes('airline')) obj.airline = val;
+        if (header.includes('aircraft') || header.includes('typ')) obj.aircraft = val;
+        if (header.includes('reg')) obj.registration = val;
+    });
+
+    // Validierung
+    if (obj.date && obj.departure && obj.arrival) {
+        result.push(obj);
+    }
+  }
+  return result;
+}
+
 // DOMContentLoaded
 document.addEventListener("DOMContentLoaded", async function () {
   const preferredLanguage = localStorage.getItem("preferredLanguage") || "de";
