@@ -23,6 +23,7 @@
     "@capacitor/cli": "^7.4.3",
     "@capacitor/core": "^7.4.3",
     "@capacitor/filesystem": "^7.1.6",
+    "@capacitor/share": "^7.0.3",
     "@my-plugins/capacitor-printer": "file:my-printer",
     "@revenuecat/purchases-capacitor": "^11.3.2",
     "@supabase/supabase-js": "^2.84.0",
