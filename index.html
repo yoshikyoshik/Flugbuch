@@ -295,8 +295,19 @@
                   onclick="event.preventDefault(); showTab('stats'); toggleBurgerMenu();"
                   data-i18n="burgerMenu.stats"
                   class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                  >Statistiken</a
                 >
+                  Statistiken
+                </a>
+
+                <a 
+                  href="#"
+                  onclick="event.preventDefault(); openTripManager(); toggleBurgerMenu();"
+                  data-i18n="burgerMenu.trips"
+                  class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                >
+                  Meine Reisen
+                </a>
+
                 <a
                   href="#"
                   onclick="event.preventDefault(); showTab('charts'); toggleBurgerMenu();"
@@ -560,6 +571,14 @@
                 class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
               >
                 Charts
+              </button>
+              <button
+                onclick="openTripManager()"
+                id="tab-btn-trips"
+                data-i18n="tabs.trips"
+                class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              >
+                🏝️ Reisen
               </button>
               <button
                 onclick="showTab('logbook')"
@@ -851,6 +870,8 @@
                     />
                   </div>
 
+                  
+
                   <div class="lg:col-span-3">
                     <label
                       data-i18n="form.photo"
@@ -885,6 +906,7 @@
                       </p>
                     </div>
                   </div>
+                  
                   <div class="lg:col-span-3">
                     <label
                       for="notes"
@@ -899,6 +921,30 @@
                       data-i18n="form.notesPlaceholder"
                       class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 text-sm"
                     ></textarea>
+                  </div>
+
+                  <div class="lg:col-span-6">
+                    <label for="tripSelect" data-i18n="form.tripLabel" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Reise / Trip (Optional)
+                    </label>
+                    
+                    <div class="flex gap-2 items-center">
+                      <select
+                        id="tripSelect"
+                        class="flex-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                      >
+                        <option value="" data-i18n="form.tripNone">-- Keine Reise (Einzelflug) --</option>
+                        </select>
+                      
+                      <button
+                        type="button"
+                        onclick="createNewTrip()"
+                        class="flex-shrink-0 inline-flex items-center justify-center h-10 w-10 border border-transparent text-lg font-bold rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 dark:bg-indigo-900 dark:text-indigo-200 focus:outline-none transition-colors"
+                        title="Neue Reise anlegen"
+                      >
+                        +
+                      </button>
+                    </div>
                   </div>
 
                   <div class="lg:col-span-6">
@@ -1033,6 +1079,23 @@
                   </button>
                 </div>
               </div>
+
+              <div class="mb-4">
+  <div class="relative rounded-md shadow-sm">
+    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+      <span class="text-gray-500 sm:text-sm">🔍</span>
+    </div>
+    <input
+      type="text"
+      id="search-input"
+      onkeyup="applyFilters()"
+      class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 pr-3 py-3 sm:text-sm border-gray-300 rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white shadow-sm"
+      data-i18n="flights.filterPlaceholder"
+      placeholder="Suche (Ort, Airline, Reise, Datum...)"
+    />
+  </div>
+</div>
+
               <details
                 class="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg mb-4 border border-gray-200 dark:border-gray-700 group"
               >
@@ -1052,7 +1115,7 @@
                 </summary>
 
                 <div
-                  class="grid grid-cols-2 lg:grid-cols-5 gap-4 items-end mt-4 border-t border-gray-200 dark:border-gray-700 pt-4"
+                  class="grid grid-cols-2 lg:grid-cols-3 gap-4 items-end mt-4 border-t border-gray-200 dark:border-gray-700 pt-4"
                 >
                   <div>
                     <label
@@ -1080,6 +1143,19 @@
                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2"
                     />
                   </div>
+
+                  <div>
+                    <label for="filter-trip" class="block text-sm font-medium text-gray-700 dark:text-gray-300" data-i18n="flights.sortTrip">Reise / Trip</label>
+                    <div class="relative">
+                        <select id="filter-trip" onchange="applyFilters()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 dark:bg-gray-800 dark:border-gray-600 dark:text-white appearance-none">
+                          <option value="" data-i18n="flights.filterTripPlaceholder">Alle Reisen</option>
+                          </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 dark:text-gray-300 mt-1">
+                          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
+                    </div>
+                  </div>
+
                   <div>
                     <label
                       for="filter-date-from"
@@ -1146,6 +1222,16 @@
                 >
                   Datum
                 </button>
+
+                <button
+                  id="sort-btn-trip"
+                  onclick="setSortOrder('trip')"
+                  class="sort-btn flex-shrink-0 px-3 py-1 rounded-md transition hover:bg-gray-300 dark:hover:bg-gray-500 w-full lg:w-auto"
+                  data-i18n="flights.sortTrip"
+                >
+                  Reise
+                </button>
+
                 <button
                   id="sort-btn-departure"
                   onclick="setSortOrder('departure')"

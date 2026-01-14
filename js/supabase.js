@@ -6,11 +6,21 @@ const { createClient } = supabase;
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 async function getFlights() {
-  const { data, error } = await supabaseClient.from("flights").select("*");
+  // 1. Änderung im Select: trips(name) dazu
+  // 2. Empfehlung: .order() dazu, damit die Liste sortiert ist
+  const { data, error } = await supabaseClient
+    .from("flights")
+    .select("*, trips(name)") 
+    .order("date", { ascending: false }); 
+
   if (error) {
     console.error("Fehler beim Laden der Flüge:", error);
     return [];
   }
+
+  // Dein Mapping ist wichtig für deine App-Logik.
+  // Durch den Spread-Operator (...flight) wird das neue 'trips'-Objekt 
+  // automatisch mit übernommen.
   return data.map((flight) => ({ ...flight, id: flight.flight_id }));
 }
 

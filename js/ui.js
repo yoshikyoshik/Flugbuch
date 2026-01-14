@@ -633,10 +633,17 @@ window.renderFlights = async function (
       const valB = b[sortKey];
       let comparison = 0;
 
-      if (typeof valA === "number") {
+      // ✅ NEU: Sortierung nach Trip
+      if (sortKey === "trip") {
+          // Falls kein Trip da ist, leerer String (sortiert nach unten/oben)
+          const nameA = a.trips ? a.trips.name : "";
+          const nameB = b.trips ? b.trips.name : "";
+          comparison = nameA.localeCompare(nameB);
+      }
+      // Bestehende Sortierungen:
+      else if (typeof valA === "number") {
         comparison = valA - valB;
       } else if (sortKey === "date") {
-        // Hier stand fälschlicherweise b[sortKey]
         comparison = new Date(valA) - new Date(valB);
       } else {
         comparison = (valA || "").localeCompare(valB || "");
@@ -747,6 +754,15 @@ window.renderFlights = async function (
 
                 <details class="flex-grow group">
                     <summary class="list-none md:list-item cursor-pointer">
+                        
+                        ${flight.trips && flight.trips.name 
+                            ? `<div class="mb-1">
+                                 <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200 border border-indigo-200 dark:border-indigo-700">
+                                   🏝️ ${flight.trips.name}
+                                 </span>
+                               </div>` 
+                            : ''
+                        }
                         <p class="text-base md:text-lg font-bold text-indigo-700 dark:text-indigo-400">
                             ${depName} (${flight.departure}) ➔ ${arrName} (${flight.arrival})
                         </p>
@@ -1436,8 +1452,7 @@ async function buildAndPrintHtml(flightsToPrint, title) {
     return;
   }
 
-  // 2. (BUGFIX von vorher) Stelle sicher, dass die Flüge nummeriert sind
-  // (Wir verwenden resequenceAndAssignNumbers für die *gefilterte* Liste)
+  // 2. Stelle sicher, dass die Flüge nummeriert sind
   const sequencedFlights = resequenceAndAssignNumbers([...flightsToPrint]);
 
   // 3. Finde das ECHTE Start- und Enddatum VOR der UI-Sortierung
@@ -1447,11 +1462,10 @@ async function buildAndPrintHtml(flightsToPrint, title) {
   const firstDate = dateSortedFlights[0].date;
   const lastDate = dateSortedFlights[dateSortedFlights.length - 1].date;
 
-  // 4. Wende die aktuelle UI-Sortierung (currentSort) für die Druck-Reihenfolge an
+  // 4. Wende die aktuelle UI-Sortierung an
   const sortKey = currentSort.key;
   const direction = currentSort.direction === "asc" ? 1 : -1;
   sequencedFlights.sort((a, b) => {
-    // (Sortierlogik bleibt gleich)
     const valA = a[sortKey];
     const valB = b[sortKey];
     let comparison = 0;
@@ -1462,7 +1476,7 @@ async function buildAndPrintHtml(flightsToPrint, title) {
     return comparison * direction;
   });
 
-  // 5. Statistiken für das Deckblatt berechnen
+  // 5. Statistiken berechnen
   const stats = calculateStatistics(sequencedFlights);
   const totalMinutes = sequencedFlights.reduce(
     (sum, f) => sum + parseFlightTimeToMinutes(f.time),
@@ -1492,8 +1506,6 @@ async function buildAndPrintHtml(flightsToPrint, title) {
 
   // 7. HTML für jeden einzelnen Flug erstellen
   sequencedFlights.forEach((flight, index) => {
-    // WICHTIG: 'index' zur Schleife hinzufügen!
-    // (Rest der Funktion bleibt exakt gleich, verwendet 'flight.flightLogNumber')
     const title = getTranslation("print.flightTitle")
       .replace("{number}", flight.flightLogNumber)
       .replace("{departure}", flight.departure)
@@ -1512,8 +1524,8 @@ async function buildAndPrintHtml(flightsToPrint, title) {
       photosHtml += "</div>";
     }
 
-    // ACHTUNG: Wir bauen den gesamten Flugeintrag in der Variablen 'flightEntryHtml'
-    // und fügen sie dann in die umhüllende Tabelle ein.
+    // ACHTUNG: Hier bauen wir den Eintrag. 
+    // Ich füge die Reise-Info als Zeile unter dem Datum ein.
     let flightEntryHtml = `
         <div class="print-flight-entry" style="font-family: 'Inter', sans-serif;">
             <h2 style="font-size: 1.5rem; font-weight: 700; color: #4F46E5; border-bottom: 1px solid #E5E7EB; padding-bottom: 0.5rem;">
@@ -1521,6 +1533,11 @@ async function buildAndPrintHtml(flightsToPrint, title) {
             </h2>
             <div style="margin-top: 1rem; line-height: 1.75;">
                 <p><strong>${getTranslation("logbook.flightEntryDate")}:</strong> ${flight.date}</p>
+                
+                ${ flight.trips && flight.trips.name 
+                    ? `<p><strong>Reise / Trip:</strong> ${flight.trips.name}</p>` 
+                    : '' 
+                }
                 <p><strong>${getTranslation("logbook.flightEntryRoute")}:</strong> ${flight.depName || flight.departure} ${getTranslation("logbook.routeSeparator")} ${flight.arrName || flight.arrival}</p>
                 <p><strong>${getTranslation("logbook.flightEntryDistance")}:</strong> ${flight.distance.toLocaleString("de-DE")} km</p>
                 <p><strong>${getTranslation("logbook.flightEntryDuration")}:</strong> ${flight.time}</p>
@@ -1544,9 +1561,6 @@ async function buildAndPrintHtml(flightsToPrint, title) {
         </div>
     `;
 
-    // ----------------------------------------------------------------------
-    // KORRIGIERTER HAUPT-BLOCK: Verpackt den Eintrag in eine Tabelle
-    // ----------------------------------------------------------------------
     html += `
         <table class="print-table" role="presentation" style="border-collapse: collapse; page-break-before: always !important;">
             <tr>
@@ -1557,69 +1571,45 @@ async function buildAndPrintHtml(flightsToPrint, title) {
         </table>
     `;
 
-    // ----------------------------------------------------------------------
-    // MANUELLER UMBRUCH NACH JEDEM FLUG (AUSSER DEM LETZTEN)
-    // ----------------------------------------------------------------------
     if (index < sequencedFlights.length - 1) {
       html += '<hr class="page-break">';
     }
-    // ----------------------------------------------------------------------
   });
 
   // 8. HTML in den Container einfügen
   document.getElementById("print-view-content").innerHTML = html;
 
-  // --- HIER IST DIE "WEICHE" (CAPACITOR / WEB) ---
-
-  // 9. Prüfen, ob die App in einer Capacitor-Umgebung (Android/iOS) läuft
+  // 9. Capacitor Check (Native Printing)
   if (typeof Capacitor !== "undefined" && Capacitor.isNativePlatform()) {
-    // --- FALL 1: CAPACITOR APP (Android) ---
-
     showMessage(
       getTranslation("print.nativeTitle") || "PDF wird erstellt...",
-      getTranslation("print.nativeMessage") ||
-        "Die App generiert das PDF. Bitte warten...",
+      getTranslation("print.nativeMessage") || "Die App generiert das PDF. Bitte warten...",
       "info"
     );
 
     try {
-      // 1. Hole unser EIGENES Plugin
       const { MyPrinter } = Capacitor.Plugins;
-
       if (!MyPrinter) {
-        // Diese Meldung sehen Sie, wenn die Synchronisierung (sync) fehlgeschlagen ist
-        throw new Error(
-          "Eigenes 'MyPrinter'-Plugin nicht auf Capacitor.Plugins gefunden."
-        );
+        throw new Error("Eigenes 'MyPrinter'-Plugin nicht auf Capacitor.Plugins gefunden.");
       }
 
-      // 2. Rufe unsere EIGENE 'printHtml'-Funktion auf
-      // (Beachten Sie 'printHtml' und das 'content'-Objekt)
       MyPrinter.printHtml({
         content: html,
         jobName: title,
       }).catch((error) => {
-        // Fängt Fehler ab, falls das native Drucken fehlschlägt
         console.error("Fehler beim nativen Drucken:", error);
         showMessage(getTranslation("print.errorTitle"), getTranslation("print.errorNativeFailed"), "error");
       });
     } catch (e) {
-      console.error(
-        "Eigenes 'MyPrinter'-Plugin konnte nicht geladen werden:",
-        e
-      );
-      alert(
-        "Die native Druckfunktion ist auf diesem Gerät nicht verfügbar. (Plugin-Fehler)"
-      );
+      console.error("Eigenes 'MyPrinter'-Plugin konnte nicht geladen werden:", e);
+      alert("Die native Druckfunktion ist auf diesem Gerät nicht verfügbar. (Plugin-Fehler)");
     }
   } else {
-    // --- FALL 2: NORMALER BROWSER (Windows, etc.) ---
-    // Wir verwenden die alte Methode mit window.print()
+    // Browser Druck
     setTimeout(() => {
       window.print();
     }, 500);
   }
-  // --- ENDE DER WEICHE ---
 }
 
 /**
@@ -1627,43 +1617,51 @@ async function buildAndPrintHtml(flightsToPrint, title) {
  * Liest die Filter aus und ruft die Kern-Druckfunktion auf.
  */
 async function triggerPrintView_FlightsTab() {
-  // ✅ NEU: GATEKEEPER
+  // ✅ 1. GATEKEEPER (Bleibt wie gehabt)
   if (currentUserSubscription === "free") {
     openPremiumModal("print");
     return;
   }
 
-  // 1. Alle Flüge abrufen
-  let allFlights = await getFlights();
+  // ✅ 2. DATENQUELLE BESTIMMEN (Hier ist die wichtige Änderung!)
+  // Wir nehmen exakt das, was der User gerade in der Liste sieht.
+  // Das respektiert AUTOMATISCH alle Filter (Reise, Suche, Datum, etc.).
+  
+  let flightsToPrint = [];
 
-  // 2. Flüge filtern (Logik aus der alten Funktion)
-  const depFilter = document
-    .getElementById("filter-departure")
-    .value.trim()
-    .toUpperCase();
-  const arrFilter = document
-    .getElementById("filter-arrival")
-    .value.trim()
-    .toUpperCase();
-  const dateFrom = document.getElementById("filter-date-from").value;
-  const dateTo = document.getElementById("filter-date-to").value;
+  // 'currentlyFilteredFlights' ist eine globale Variable aus app.js, 
+  // die gesetzt wird, sobald ein Filter aktiv ist.
+  if (typeof currentlyFilteredFlights !== 'undefined' && currentlyFilteredFlights && currentlyFilteredFlights.length > 0) {
+      // Fall A: Filter ist aktiv -> Wir nehmen die gefilterte Liste
+      flightsToPrint = currentlyFilteredFlights;
+  } else if (typeof allFlightsUnfiltered !== 'undefined' && allFlightsUnfiltered && allFlightsUnfiltered.length > 0) {
+      // Fall B: Kein Filter aktiv -> Wir nehmen die komplette Liste aus dem Speicher
+      flightsToPrint = allFlightsUnfiltered;
+  } else {
+      // Fall C: Notfall-Fallback -> Neu laden
+      flightsToPrint = await getFlights();
+  }
 
-  let filteredFlights = allFlights;
-  if (depFilter)
-    filteredFlights = filteredFlights.filter((f) =>
-      f.departure.toUpperCase().includes(depFilter)
-    );
-  if (arrFilter)
-    filteredFlights = filteredFlights.filter((f) =>
-      f.arrival.toUpperCase().includes(arrFilter)
-    );
-  if (dateFrom)
-    filteredFlights = filteredFlights.filter((f) => f.date >= dateFrom);
-  if (dateTo) filteredFlights = filteredFlights.filter((f) => f.date <= dateTo);
+  // Sicherheits-Check: Gibt es überhaupt Daten zum Drucken?
+  if (!flightsToPrint || flightsToPrint.length === 0) {
+    showMessage("Info", "Keine Flüge für das Buch vorhanden.", "info");
+    return;
+  }
 
-  // 3. Kernfunktion aufrufen
-  const title = getTranslation("print.filteredTitle") || "Gefilterte Flugliste";
-  await buildAndPrintHtml(filteredFlights, title);
+  // Optional: Sortierung sicherstellen (Datum absteigend sieht im Buch meist am besten aus)
+  flightsToPrint.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  // ✅ 3. TITEL GENERIEREN (Reise-Name integrieren)
+  let title = getTranslation("print.filteredTitle") || "Mein Flugbuch";
+  
+  const tripFilterEl = document.getElementById("filter-trip");
+  // Wenn ein Trip ausgewählt ist (Index > 0, da 0 "Alle Reisen" ist), hängen wir den Namen an
+  if (tripFilterEl && tripFilterEl.selectedIndex > 0) {
+      title += ` - ${tripFilterEl.options[tripFilterEl.selectedIndex].text}`;
+  }
+
+  // 4. KERNFUNKTION AUFRUFEN
+  await buildAndPrintHtml(flightsToPrint, title);
 }
 
 /**

@@ -60,7 +60,8 @@
     "charts": "Графики",
     "logbook": "Журнал",
     "achievements": "Достижения",
-    "help": "Помощь"
+    "help": "Помощь",
+    "trips": "Мои путешествия"
   },
 
   "burgerMenu": {
@@ -80,7 +81,8 @@
     "changePassword": "Сменить пароль",
     "toggleMode": "Сменить режим",
     "logout": "Выйти",
-    "manageSubscription": "⚙️ Управление подпиской"
+    "manageSubscription": "⚙️ Управление подпиской",
+    "trips": "Мои путешествия"
   },
 
   "form": {
@@ -119,7 +121,9 @@
     "confirmDeleteTitle": "Удалить рейс?",
     "confirmDeleteBody": "Вы действительно хотите безвозвратно удалить этот рейс?",
     "yes": "Да, удалить",
-    "no": "Отмена"
+    "no": "Отмена",
+    "tripLabel": "Путешествие (Опционально)",
+    "tripNone": "-- Без путешествия / Отдельный рейс --"
   },
 
   "messages": {
@@ -212,7 +216,9 @@
     "createBook": "Создать книгу (PDF)",
     "myFlightsTitle": "Мои рейсы",
     "filterPlaceholder": "Поиск (Место, А/К, Дата...)",
-    "hideAllRoutes": "Очистить карту"
+    "hideAllRoutes": "Очистить карту",
+    "sortTrip": "Путешествие",
+    "filterTripPlaceholder": "Все путешествия"
   },
 
   "print": {

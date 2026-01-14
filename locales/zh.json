@@ -60,7 +60,8 @@
     "charts": "图表",
     "logbook": "日志",
     "achievements": "成就",
-    "help": "帮助"
+    "help": "帮助",
+    "trips": "我的旅行"
   },
 
   "burgerMenu": {
@@ -80,7 +81,8 @@
     "changePassword": "修改密码",
     "toggleMode": "切换模式",
     "logout": "退出登录",
-    "manageSubscription": "⚙️ 管理订阅"
+    "manageSubscription": "⚙️ 管理订阅",
+    "trips": "我的旅行"
   },
 
   "form": {
@@ -119,7 +121,9 @@
     "confirmDeleteTitle": "删除航班？",
     "confirmDeleteBody": "您确定要永久删除此航班吗？",
     "yes": "是的，删除",
-    "no": "取消"
+    "no": "取消",
+    "tripLabel": "旅行 (可选)",
+    "tripNone": "-- 无旅行 / 单次航班 --"
   },
 
   "messages": {
@@ -212,7 +216,9 @@
     "createBook": "创建日志书 (PDF)",
     "myFlightsTitle": "我的航班",
     "filterPlaceholder": "搜索 (地点, 航司, 日期...)",
-    "hideAllRoutes": "清除地图"
+    "hideAllRoutes": "清除地图",
+    "sortTrip": "旅行",
+    "filterTripPlaceholder": "所有旅行"
   },
 
   "print": {

@@ -60,7 +60,8 @@
     "charts": "Gráficos",
     "logbook": "Bitácora",
     "achievements": "Logros",
-    "help": "Ayuda"
+    "help": "Ayuda",
+    "trips": "Mis viajes"
   },
 
   "burgerMenu": {
@@ -80,7 +81,8 @@
     "changePassword": "Cambiar contraseña",
     "toggleMode": "Cambiar modo",
     "logout": "Cerrar sesión",
-    "manageSubscription": "⚙️ Gestionar suscripción"
+    "manageSubscription": "⚙️ Gestionar suscripción",
+    "trips": "Mis viajes"
   },
 
   "form": {
@@ -119,7 +121,9 @@
     "confirmDeleteTitle": "¿Eliminar vuelo?",
     "confirmDeleteBody": "¿Realmente deseas eliminar este vuelo permanentemente?",
     "yes": "Sí, eliminar",
-    "no": "Cancelar"
+    "no": "Cancelar",
+    "tripLabel": "Viaje (Opcional)",
+    "tripNone": "-- Sin viaje / Vuelo único --"
   },
 
   "messages": {
@@ -212,7 +216,9 @@
     "createBook": "Crear libro (PDF)",
     "myFlightsTitle": "Mis Vuelos",
     "filterPlaceholder": "Buscar (Lugar, Aerolínea, Fecha...)",
-    "hideAllRoutes": "Limpiar mapa"
+    "hideAllRoutes": "Limpiar mapa",
+    "sortTrip": "Viaje",
+    "filterTripPlaceholder": "Todos los viajes"
   },
 
   "print": {

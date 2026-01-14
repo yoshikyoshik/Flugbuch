@@ -60,7 +60,8 @@
     "charts": "Charts",
     "logbook": "Logbuch",
     "achievements": "Errungenschaften",
-    "help": "Hilfe"
+    "help": "Hilfe",
+    "trips": "Meine Reisen"
   },
 
   "burgerMenu": {
@@ -80,7 +81,8 @@
     "changePassword": "Passwort ändern",
     "toggleMode": "Modus wechseln",
     "logout": "Abmelden",
-    "manageSubscription": "⚙️ Abo verwalten"
+    "manageSubscription": "⚙️ Abo verwalten",
+    "trips": "Meine Reisen"
   },
 
   "form": {
@@ -119,7 +121,9 @@
     "confirmDeleteTitle": "Flug löschen?",
     "confirmDeleteBody": "Möchtest du diesen Flug wirklich endgültig löschen?",
     "yes": "Ja, löschen",
-    "no": "Abbrechen"
+    "no": "Abbrechen",
+    "tripLabel": "Reise / Trip (Optional)",
+    "tripNone": "-- Keine Reise / Einzelflug --"
   },
 
   "messages": {
@@ -212,7 +216,9 @@
     "createBook": "Buch erstellen (PDF)",
     "myFlightsTitle": "Meine Flüge",
     "filterPlaceholder": "Suche (Ort, Airline, Datum...)",
-    "hideAllRoutes": "Karte bereinigen"
+    "hideAllRoutes": "Karte bereinigen",
+    "sortTrip": "Reise / Trip",
+    "filterTripPlaceholder": "Alle Reisen"
   },
 
   "print": {

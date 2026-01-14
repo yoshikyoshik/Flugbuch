@@ -309,6 +309,13 @@ async function initializeApp() {
       }
     }
   }, 60000); // Alle 60 Sekunden
+
+  // Trips initial laden
+  loadTripsIntoDropdown();
+
+  // Trips für den Filter laden (für den Tab "Flüge")
+  populateTripFilterDropdown();
+
 }
 
 // =================================================================
@@ -734,6 +741,8 @@ window.logFlight = async function () {
     class: document.getElementById("flightClass").value,
     co2_kg: calculatedCO2,
     flightNumber: document.getElementById("flightNumber").value.trim(),
+    // ✅ NEU HINZUFÜGEN:
+    trip_id: document.getElementById("tripSelect").value || null,
     airline: finalAirlineName,       // Name aus API oder Eingabefeld
 airline_logo: finalAirlineLogo,  // Das neue Logo-Feld
     aircraftType: document.getElementById("aircraftType").value.trim(),
@@ -971,6 +980,8 @@ async function updateFlight() {
     class: document.getElementById("flightClass").value,
     co2_kg: calculatedCO2,
     flightNumber: document.getElementById("flightNumber").value.trim(),
+    // ✅ NEU HINZUFÜGEN:
+    trip_id: document.getElementById("tripSelect").value || null,
     airline: finalAirlineName,      // Name aus API oder Input
     airline_logo: finalAirlineLogo, // Logo aus API oder Datenbank
     aircraftType: document.getElementById("aircraftType").value.trim(),
@@ -1215,50 +1226,77 @@ window.editFlight = async function (id) {
   document
     .getElementById("log-button")
     .scrollIntoView({ behavior: "smooth", block: "center" });
+
+  // Falls der Flug eine trip_id hat, laden wir die Trips neu und setzen den Wert
+  if (flight.trip_id) {
+      loadTripsIntoDropdown(flight.trip_id);
+  } else {
+      loadTripsIntoDropdown(null);
+  }
+
 };
 
 /**
- * Wendet die in der Filterleiste eingegebenen Kriterien an und rendert die Ergebnisliste neu.
+ * Wendet Filter (Ort, Datum, Reise) an.
  */
 window.applyFilters = async function () {
-  // 'async' hinzugefügt
   currentPage = 1;
-  const allFlights = await getFlights(); // 'await' hinzugefügt
+  
+  // Wir nutzen die globale Variable 'allFlightsUnfiltered' (falls vorhanden) 
+  // oder laden neu, falls nötig.
+  // Da deine App Struktur 'getFlights' nutzt, bleiben wir dabei:
+  const allFlights = await getFlights();
 
-  const depFilter = document
-    .getElementById("filter-departure")
-    .value.trim()
-    .toUpperCase();
-  const arrFilter = document
-    .getElementById("filter-arrival")
-    .value.trim()
-    .toUpperCase();
-  const dateFrom = document.getElementById("filter-date-from").value;
-  const dateTo = document.getElementById("filter-date-to").value;
+  const searchInput = document.getElementById("search-input").value.toLowerCase();
+  
+  // ✅ NEU: Trip Filter Wert holen
+  const tripFilterEl = document.getElementById("filter-trip");
+  const tripFilterId = tripFilterEl ? tripFilterEl.value : "";
 
-  let filteredFlights = allFlights;
+  // Alte Filter-Felder (falls du die Details-Leiste noch nutzt):
+  const depFilter = document.getElementById("filter-departure")?.value.trim().toUpperCase() || "";
+  const arrFilter = document.getElementById("filter-arrival")?.value.trim().toUpperCase() || "";
+  const dateFrom = document.getElementById("filter-date-from")?.value || "";
+  const dateTo = document.getElementById("filter-date-to")?.value || "";
 
-  if (depFilter) {
-    filteredFlights = filteredFlights.filter((flight) =>
-      flight.departure.toUpperCase().includes(depFilter)
-    );
-  }
-  if (arrFilter) {
-    filteredFlights = filteredFlights.filter((flight) =>
-      flight.arrival.toUpperCase().includes(arrFilter)
-    );
-  }
-  if (dateFrom) {
-    filteredFlights = filteredFlights.filter(
-      (flight) => flight.date >= dateFrom
-    );
-  }
-  if (dateTo) {
-    filteredFlights = filteredFlights.filter((flight) => flight.date <= dateTo);
-  }
+  let filtered = allFlights.filter((flight) => {
+    
+    // 1. Text-Suche (Orte, Airline, Datum... UND JETZT AUCH REISENAME)
+    const matchesSearch =
+      !searchInput ||
+      (flight.departure && flight.departure.toLowerCase().includes(searchInput)) ||
+      (flight.arrival && flight.arrival.toLowerCase().includes(searchInput)) ||
+      (flight.depName && flight.depName.toLowerCase().includes(searchInput)) ||
+      (flight.arrName && flight.arrName.toLowerCase().includes(searchInput)) ||
+      (flight.airline && flight.airline.toLowerCase().includes(searchInput)) ||
+      (flight.date && flight.date.includes(searchInput)) ||
+      (flight.aircraftType && flight.aircraftType.toLowerCase().includes(searchInput)) ||
+      (flight.registration && flight.registration.toLowerCase().includes(searchInput)) ||
+      (flight.notes && flight.notes.toLowerCase().includes(searchInput)) ||
+      // ✅ HIER: Auch nach Reisenamen suchen
+      (flight.trips && flight.trips.name && flight.trips.name.toLowerCase().includes(searchInput));
 
-  currentlyFilteredFlights = filteredFlights; // ✅ NEU: Filter speichern
-  renderFlights(filteredFlights, null, 1); // ✅ NEU: Seite 1 erzwingen
+    // 2. ✅ NEU: Trip Dropdown Filter
+    let matchesTripFilter = true;
+    if (tripFilterId !== "") {
+        // Vergleich String vs Number sicherstellen
+        matchesTripFilter = flight.trip_id == tripFilterId;
+    }
+
+    // 3. Bestehende Detail-Filter (Abwärtskompatibilität)
+    const matchesDep = !depFilter || flight.departure.toUpperCase().includes(depFilter);
+    const matchesArr = !arrFilter || flight.arrival.toUpperCase().includes(arrFilter);
+    const matchesDateFrom = !dateFrom || flight.date >= dateFrom;
+    const matchesDateTo = !dateTo || flight.date <= dateTo;
+
+    return matchesSearch && matchesTripFilter && matchesDep && matchesArr && matchesDateFrom && matchesDateTo;
+  });
+
+  // Globale Variable aktualisieren
+  currentlyFilteredFlights = filtered;
+  
+  // Rendern (Seite 1)
+  renderFlights(filtered, null, 1);
 };
 
 /**
@@ -1271,6 +1309,9 @@ window.resetFilters = function () {
   document.getElementById("filter-arrival").value = "";
   document.getElementById("filter-date-from").value = "";
   document.getElementById("filter-date-to").value = "";
+  // Auch das Reise-Dropdown zurücksetzen
+  const tripFilter = document.getElementById("filter-trip");
+  if (tripFilter) tripFilter.value = "";
 
   // Rufe renderFlights ohne Argument auf, um alle Flüge anzuzeigen
   currentlyFilteredFlights = null; // ✅ NEU: Gespeicherten Filter löschen
@@ -1295,25 +1336,31 @@ window.setSortOrder = function (sortKey) {
   applyFilters();
 };
 
-// app.js - window.exportData (Internationalisiert & Verlustfrei)
+// app.js - exportData (MIT TRIPS SUPPORT)
 
 window.exportData = async function (format) {
-  const allFlights = await getFlights(); 
+  // 1. Flüge laden (mit Trip Namen!)
+  // Wir nutzen hier direkt Supabase, um sicherzugehen, dass wir alles haben
+  const { data: allFlights } = await supabaseClient
+    .from("flights")
+    .select("*, trips(name, id)") // Trip Name und ID holen
+    .order("date", { ascending: false });
+
+  // 2. Trips separat laden (für JSON Export wichtig)
+  const { data: allTrips } = await supabaseClient
+    .from("trips")
+    .select("*");
+
   const stats = calculateStatistics(allFlights);
   let filename = `flugbuch_export_${new Date().toISOString().slice(0, 10)}`;
   let data, mimeType;
 
-  if (allFlights.length === 0) {
-    // i18n Error
-    showMessage(
-        getTranslation("export.errorTitle") || "Export Fehlgeschlagen", 
-        getTranslation("export.noData") || "Keine Flüge vorhanden.", 
-        "error"
-    );
+  if (!allFlights || allFlights.length === 0) {
+    showMessage(getTranslation("export.errorTitle") || "Fehler", getTranslation("export.noData") || "Keine Daten", "error");
     return;
   }
 
-  // --- JSON EXPORT ---
+  // --- JSON EXPORT (Trips Array hinzufügen) ---
   if (format === "json") {
     const exportObj = {
       metadata: {
@@ -1321,6 +1368,7 @@ window.exportData = async function (format) {
         totalFlights: stats.totalCount,
         totalDistanceKm: stats.totalDistance,
       },
+      trips: allTrips, // ✅ NEU: Alle Reisen separat speichern
       flights: allFlights,
     };
     data = JSON.stringify(exportObj, null, 2);
@@ -1328,40 +1376,43 @@ window.exportData = async function (format) {
     filename += ".json";
   } 
   
-  // --- CSV EXPORT ---
+  // --- CSV EXPORT (Trip Name als Spalte) ---
   else if (format === "csv") {
     const separator = ";";
     
-    // ALLE Spalten für Backup (inkl. technischer Felder)
     const flightKeys = [
       "flightLogNumber", "date", "departure", "arrival",
       "depName", "arrName", "depLat", "depLon", "arrLat", "arrLon",
       "distance", "time", "class", "flightNumber", 
       "airline", "airline_logo", "aircraftType", "registration",
-      "price", "currency", "notes", "flight_id", "photo_url"
+      "price", "currency", "notes", "flight_id", "photo_url",
+      "trip_name" // ✅ NEU: Name der Reise
     ];
 
     const headers = flightKeys.join(separator);
 
     const csvRows = allFlights.map((flight) => {
       return flightKeys.map((key) => {
-          let value = flight[key];
+          let value = "";
 
-          // Fotos als JSON-String
+          // Spezialfall: Trip Name aus dem verknüpften Objekt holen
+          if (key === "trip_name") {
+              value = flight.trips ? flight.trips.name : "";
+          } 
+          // Spezialfall: Basis-Daten
+          else {
+              value = flight[key];
+          }
+
+          // Fotos & Arrays
           if (key === "photo_url" && Array.isArray(value)) {
              value = JSON.stringify(value); 
           }
 
-          if (value === undefined || value === null) {
-              value = "";
-          } else {
-              value = String(value);
-          }
+          if (value === undefined || value === null) value = "";
+          else value = String(value);
 
-          // Zeilenumbrüche entfernen
           value = value.replace(/(\r\n|\n|\r)/gm, " ");
-
-          // Escaping für CSV
           return `"${value.replace(/"/g, '""')}"`;
         })
         .join(separator);
@@ -1385,27 +1436,20 @@ window.exportData = async function (format) {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
   
-  // i18n Success
-  const successTpl = getTranslation("export.successBody") || "Datei '{file}' geladen.";
   showMessage(
       getTranslation("export.successTitle") || "Export bereit", 
-      successTpl.replace("{file}", filename), 
+      (getTranslation("export.successBody") || "Datei {file} geladen.").replace("{file}", filename), 
       "success"
   );
 };
 
-// app.js - handleImport (Internationalisiert)
+// app.js - handleImport (Update für Trips)
 
 async function handleImport(event) {
   const file = event.target.files[0];
   if (!file) return;
 
-  // i18n: Toast Messages
-  showMessage(
-    getTranslation("import.readingFile") || "Datei wird gelesen...", 
-    getTranslation("import.wait") || "Bitte warten.", 
-    "info"
-  );
+  showMessage(getTranslation("import.readingFile") || "Lese...", getTranslation("import.wait") || "Warten...", "info");
 
   const reader = new FileReader();
   
@@ -1413,24 +1457,28 @@ async function handleImport(event) {
     try {
       const content = e.target.result;
       let flightsToImport = [];
+      let importedTrips = []; // ✅ NEU: Liste der Reisen aus JSON
 
-      // 1. FORMAT ERKENNUNG
+      // 1. PARSEN
       try {
         const jsonContent = JSON.parse(content);
         if (jsonContent.flights && Array.isArray(jsonContent.flights)) {
             flightsToImport = jsonContent.flights;
+            // Falls JSON Trips enthält, merken wir uns die
+            if (jsonContent.trips && Array.isArray(jsonContent.trips)) {
+                importedTrips = jsonContent.trips;
+            }
         } else if (Array.isArray(jsonContent)) {
             flightsToImport = jsonContent;
         } else {
-            throw new Error(getTranslation("import.errorNoArray") || "Kein gültiges Array gefunden.");
+            throw new Error();
         }
       } catch (jsonErr) {
-        // Fallback zu CSV
         flightsToImport = parseCSV(content);
       }
 
       if (!flightsToImport || flightsToImport.length === 0) {
-        throw new Error(getTranslation("import.errorNoFlights") || "Keine lesbaren Flüge gefunden.");
+        throw new Error(getTranslation("import.errorNoFlights") || "Keine Flüge.");
       }
 
       const { data: userData } = await supabaseClient.auth.getUser();
@@ -1438,32 +1486,29 @@ async function handleImport(event) {
 
       // 2. DATEN AUFBEREITEN
       const cleanFlights = flightsToImport.map(f => {
-        
-        // Foto Logik
+        // Foto Logik (wie gehabt) ...
         let parsedPhotos = [];
-        if (f.photo_url) {
-            if (Array.isArray(f.photo_url)) {
-                parsedPhotos = f.photo_url;
-            } else if (typeof f.photo_url === 'string') {
-                try {
-                    let jsonString = f.photo_url;
-                    if (jsonString.startsWith("'")) jsonString = jsonString.replace(/'/g, '"');
-                    parsedPhotos = JSON.parse(jsonString);
-                } catch (e) {
-                    if (f.photo_url.startsWith("http")) parsedPhotos = [f.photo_url];
-                }
-            }
+        if (f.photo_url) { /* ... dein Foto Code ... */ 
+             if (Array.isArray(f.photo_url)) parsedPhotos = f.photo_url;
+             else if (typeof f.photo_url === 'string' && f.photo_url.startsWith("[")) {
+                 try { parsedPhotos = JSON.parse(f.photo_url.replace(/'/g, '"')); } catch(e){}
+             } else if (f.photo_url.startsWith("http")) parsedPhotos = [f.photo_url];
         }
 
-        const flightId = f.flight_id ? parseInt(f.flight_id) : (new Date().getTime() + Math.floor(Math.random()*1000));
+        // ✅ TRIP NAME ERMITTELN
+        // CSV hat 'trip_name', JSON hat oft 'trips: { name: ... }'
+        let tripName = "";
+        if (f.trip_name) tripName = f.trip_name;
+        else if (f.trips && f.trips.name) tripName = f.trips.name;
 
         return {
             user_id: userId,
-            flight_id: flightId,
+            flight_id: f.flight_id ? parseInt(f.flight_id) : (new Date().getTime() + Math.floor(Math.random()*1000)),
             date: f.date,
             flightNumber: f.flightNumber || f.flight_number || "",
             departure: f.departure,
             arrival: f.arrival,
+            // ... alle anderen Felder ...
             airline: f.airline,
             airline_logo: f.airline_logo || null,
             aircraftType: f.aircraftType || f.aircraft || "",
@@ -1480,37 +1525,34 @@ async function handleImport(event) {
             arrLon: f.arrLon ? parseFloat(f.arrLon) : null,
             depName: f.depName || "",
             arrName: f.arrName || "",
-            photo_url: parsedPhotos
+            photo_url: parsedPhotos,
+            
+            // WICHTIG: Wir speichern den NAMEN temporär im Objekt, 
+            // um ihn später in executeImport in eine ID umzuwandeln
+            _tempTripName: tripName 
         };
       });
 
-      showImportDecisionModal(cleanFlights);
+      // Wir übergeben auch die importierten Trips (aus JSON) an die nächste Funktion
+      showImportDecisionModal(cleanFlights, importedTrips);
 
     } catch (err) {
-      console.error("Import Fehler:", err);
-      // i18n: Fehler mit Platzhalter {error}
-      const errorTpl = getTranslation("import.errorFileCorrupt") || "Datei fehlerhaft: {error}";
-      showMessage(
-          getTranslation("import.errorTitle") || "Fehler", 
-          errorTpl.replace("{error}", err.message), 
-          "error"
-      );
+      console.error(err);
+      showMessage("Fehler", "Import fehlgeschlagen: " + err.message, "error");
     }
     event.target.value = '';
   };
-
   reader.readAsText(file);
 }
 
-// app.js - showImportDecisionModal (Internationalisiert)
+// app.js - showImportDecisionModal (KORRIGIERT)
 
-function showImportDecisionModal(flightsData) {
-  // i18n: Titel und Body mit Count
+// WICHTIG: Achte auf 'importedTrips = []' in der Klammer!
+function showImportDecisionModal(flightsData, importedTrips = []) {
   const title = getTranslation("import.modalTitle") || "Import Optionen";
   const bodyTpl = getTranslation("import.modalBody") || "Gefunden: {count} Flüge.";
   const bodyText = bodyTpl.replace("{count}", flightsData.length);
 
-  // HTML Content
   const content = `
     <div class="space-y-4">
       <p class="text-gray-700 dark:text-gray-300">
@@ -1520,19 +1562,19 @@ function showImportDecisionModal(flightsData) {
       <div class="grid grid-cols-1 gap-3 mt-4">
         <button id="btn-import-replace" class="w-full p-4 border border-red-200 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:border-red-800 rounded-lg text-left group transition">
           <div class="font-bold text-red-700 dark:text-red-400 mb-1 flex items-center">
-             ${getTranslation("import.optionReplaceTitle") || "Alles Ersetzen"}
+             ${getTranslation("import.optionReplaceTitle") || "⚠️ Alles Ersetzen"}
           </div>
           <div class="text-sm text-red-600/80 dark:text-red-400/70">
-            ${getTranslation("import.optionReplaceDesc") || "Löscht alle Daten."}
+            ${getTranslation("import.optionReplaceDesc") || "Löscht ALLE deine aktuellen Flüge und ersetzt sie."}
           </div>
         </button>
 
         <button id="btn-import-append" class="w-full p-4 border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/20 dark:border-indigo-800 rounded-lg text-left transition">
           <div class="font-bold text-indigo-700 dark:text-indigo-400 mb-1 flex items-center">
-             ${getTranslation("import.optionAppendTitle") || "Hinzufügen"}
+             ${getTranslation("import.optionAppendTitle") || "➕ Hinzufügen"}
           </div>
           <div class="text-sm text-indigo-600/80 dark:text-indigo-400/70">
-            ${getTranslation("import.optionAppendDesc") || "Fügt neue hinzu."}
+            ${getTranslation("import.optionAppendDesc") || "Fügt neue Flüge unten an."}
           </div>
         </button>
       </div>
@@ -1549,139 +1591,166 @@ function showImportDecisionModal(flightsData) {
   document.getElementById("info-modal-content").innerHTML = content;
   openInfoModal();
 
-  document.getElementById("btn-import-replace").onclick = () => executeImport(flightsData, 'replace');
-  document.getElementById("btn-import-append").onclick = () => executeImport(flightsData, 'append');
+  // Hier lag der Fehler: 'importedTrips' muss oben als Parameter existieren
+  document.getElementById("btn-import-replace").onclick = () => executeImport(flightsData, 'replace', importedTrips);
+  document.getElementById("btn-import-append").onclick = () => executeImport(flightsData, 'append', importedTrips);
 }
 
-// app.js - executeImport (Internationalisiert)
+// app.js - executeImport (Final & Silent)
 
-async function executeImport(flightsData, mode) {
+async function executeImport(flightsData, mode, importedTripsSource = []) {
   closeInfoModal();
-  
   const { data: userData } = await supabaseClient.auth.getUser();
   if (!userData?.user) return;
   const userId = userData.user.id;
 
-  showMessage(
-      getTranslation("import.processing") || "Import läuft...", 
-      getTranslation("import.writing") || "Daten werden geschrieben.", 
-      "info"
-  );
+  showMessage(getTranslation("import.processing") || "Import läuft...", getTranslation("import.writing") || "Schreibe Daten...", "info");
 
   try {
+    // 1. CLEANUP BEI REPLACE
     if (mode === 'replace') {
-      const { error: deleteError } = await supabaseClient
-        .from("flights")
-        .delete()
-        .eq("user_id", userId);
-
-      if (deleteError) throw deleteError;
+      await supabaseClient.from("flights").delete().eq("user_id", userId);
+      await supabaseClient.from("trips").delete().eq("user_id", userId);
     }
 
-    const { error: insertError } = await supabaseClient
-      .from("flights")
-      .insert(flightsData);
+    // 2. TRIPS MANAGEN
+    const tripNamesFromFlights = flightsData.map(f => f._tempTripName).filter(n => n);
+    const tripNamesFromJSON = importedTripsSource.map(t => t.name).filter(n => n);
+    const uniqueTripNames = [...new Set([...tripNamesFromFlights, ...tripNamesFromJSON])];
+    
+    const tripNameIdMap = {};
 
-    if (insertError) throw insertError;
+    for (const name of uniqueTripNames) {
+        // HIER IST DER FIX: .maybeSingle() statt .single()
+        // Das verhindert den 406 Fehler in der Konsole, wenn der Trip noch nicht existiert.
+        let { data: existing } = await supabaseClient
+            .from("trips")
+            .select("id")
+            .eq("user_id", userId)
+            .eq("name", name)
+            .maybeSingle(); 
 
-    // i18n: Erfolgstext je nach Modus mit Platzhalter {count}
-    let successBody = "";
-    if (mode === 'replace') {
-        const tpl = getTranslation("import.successReplace") || "Ersetzt: {count} Flüge.";
-        successBody = tpl.replace("{count}", flightsData.length);
-    } else {
-        const tpl = getTranslation("import.successAppend") || "Hinzugefügt: {count} Flüge.";
-        successBody = tpl.replace("{count}", flightsData.length);
+        if (existing) {
+            tripNameIdMap[name] = existing.id;
+        } else {
+            // Neu anlegen
+            const { data: newTrip } = await supabaseClient
+                .from("trips")
+                .insert([{ user_id: userId, name: name }])
+                .select()
+                .maybeSingle(); // Auch hier sicherheitshalber maybeSingle
+            
+            if (newTrip) tripNameIdMap[name] = newTrip.id;
+        }
     }
 
-    showMessage(
-        getTranslation("import.successTitle") || "Erfolg", 
-        successBody, 
-        "success"
-    );
+    // 3. FLÜGE VORBEREITEN & SÄUBERN
+    const finalFlights = flightsData.map(f => {
+        const tripId = f._tempTripName ? tripNameIdMap[f._tempTripName] : null;
+        
+        // Aufräumen: Alles weg, was nicht in die DB gehört
+        const { _tempTripName, trips, trip_name, ...rest } = f;
+        
+        return {
+            ...rest,
+            trip_id: tripId
+        };
+    });
 
+    // 4. SPEICHERN
+    if (finalFlights.length > 0) {
+        const { error: insertError } = await supabaseClient
+          .from("flights")
+          .insert(finalFlights);
+
+        if (insertError) throw insertError;
+    }
+
+    // 5. ERFOLG
+    let successBody = mode === 'replace' 
+        ? (getTranslation("import.successReplace") || "Ersetzt: {count}").replace("{count}", finalFlights.length)
+        : (getTranslation("import.successAppend") || "Hinzugefügt: {count}").replace("{count}", finalFlights.length);
+
+    showMessage(getTranslation("import.successTitle") || "Erfolg", successBody, "success");
+
+    loadTripsIntoDropdown(); 
     allFlightsUnfiltered = await getFlights();
     renderFlights(allFlightsUnfiltered);
 
-    if (typeof checkAndAskForReview === 'function') {
-        checkAndAskForReview(allFlightsUnfiltered.length);
-    }
-
   } catch (err) {
     console.error("Datenbank Fehler:", err);
-    showMessage(
-        getTranslation("import.errorTitle") || "Fehler", 
-        getTranslation("import.saveError") || "Speicherfehler", 
-        "error"
-    );
+    showMessage(getTranslation("import.errorTitle") || "Fehler", (getTranslation("import.saveError") || "Fehler: ") + err.message, "error");
   }
 }
 
-// app.js - parseCSV (ERWEITERT FÜR FULL BACKUP/RESTORE)
+// app.js - parseCSV (ROBUST)
 
 function parseCSV(csvText) {
-  const lines = csvText.split(/\r\n|\n/);
+  const lines = csvText.split(/\r?\n/).filter(line => line.trim() !== '');
+  if (lines.length === 0) return [];
+
+  const separator = lines[0].includes(";") ? ";" : ",";
+  
+  // Header säubern: Anführungszeichen und Leerzeichen weg
+  const headers = lines[0].split(separator).map(h => h.trim().replace(/^"|"$/g, ''));
+
   const result = [];
-  
-  if (lines.length < 2) return [];
 
-  // Trennzeichen-Erkennung
-  const firstLine = lines[0];
-  const semicolonCount = (firstLine.match(/;/g) || []).length;
-  const commaCount = (firstLine.match(/,/g) || []).length;
-  const separator = semicolonCount > commaCount ? ';' : ',';
-
-  // Header normalisieren
-  const headers = lines[0].split(separator).map(h => h.trim()); // Case-Sensitive lassen für genaues Matching oder lowercasen
-  const headersLower = headers.map(h => h.toLowerCase().replace(/"/g, ''));
-  
   for (let i = 1; i < lines.length; i++) {
     const currentLine = lines[i];
-    if (!currentLine.trim()) continue;
+    // Einfacherer, robuster Split für CSV (ignoriert Semikolons in Quotes ist hier komplex, 
+    // aber für Standard-Export reicht oft Split + Replace)
     
-    // Split
-    const values = currentLine.split(separator); 
-    
-    let obj = {};
-    headersLower.forEach((header, index) => {
-        // Wert säubern
-        let val = values[index] ? values[index].trim().replace(/^"|"$/g, '').replace(/"/g, '') : "";
-        
-        // --- BASIS DATEN ---
-        if (header === 'date' || header === 'datum') obj.date = val;
-        // WICHTIG: Striktere Prüfung für Departure/Arrival Code vs Name
-        if (header === 'departure' || header === 'start') obj.departure = val;
-        if (header === 'arrival' || header === 'ziel') obj.arrival = val;
-        
-        if (header === 'flightnumber' || header === 'flight_number') obj.flightNumber = val;
-        if (header === 'airline') obj.airline = val;
-        if (header === 'airline_logo') obj.airline_logo = val;
-        if (header === 'aircrafttype' || header === 'aircraft') obj.aircraftType = val;
-        if (header === 'registration') obj.registration = val;
-        if (header === 'time' || header === 'duration') obj.time = val;
-        if (header === 'distance') obj.distance = val;
-        if (header === 'class') obj.class = val;
-        if (header === 'notes' || header === 'note') obj.notes = val;
-        if (header === 'price') obj.price = val;
-        if (header === 'currency') obj.currency = val;
-
-        // --- 🚨 WICHTIG: KOORDINATEN & NAMEN (Für die Karte!) ---
-        // Deine CSV Headers: depLat, depLon, arrLat, arrLon, depName, arrName
-        if (header === 'deplat') obj.depLat = val;
-        if (header === 'deplon') obj.depLon = val;
-        if (header === 'arrlat') obj.arrLat = val;
-        if (header === 'arrlon') obj.arrLon = val;
-        if (header === 'depname') obj.depName = val;
-        if (header === 'arrname') obj.arrName = val;
-
-        // --- 🚨 WICHTIG: FOTOS & ID ---
-        if (header === 'photo_url') obj.photo_url = val; // Ist noch ein String, wird in handleImport geparst
-        if (header === 'flight_id') obj.flight_id = val; // Die Timestamp-ID
+    // Wir nutzen hier eine Logik, die Anführungszeichen am Anfang/Ende jedes Werts entfernt
+    // und doppelte Anführungszeichen ("") zu einfachen (") macht.
+    const rowData = currentLine.split(separator).map(v => {
+        let val = v.trim();
+        if (val.startsWith('"') && val.endsWith('"')) {
+            val = val.slice(1, -1);
+        }
+        return val.replace(/""/g, '"');
     });
 
-    // Validierung
-    if (obj.date && obj.departure && obj.arrival) {
-        result.push(obj);
+    if (rowData.length === headers.length) {
+      const obj = {};
+      headers.forEach((header, index) => {
+        const val = rowData[index];
+        const h = header.toLowerCase(); // Case-insensitive Vergleich
+
+        // Standard Felder
+        if (h === 'date') obj.date = val;
+        if (h.includes('departure') || h === 'dep' || h === 'depcode') obj.departure = val;
+        if (h.includes('arrival') || h === 'arr' || h === 'arrcode') obj.arrival = val;
+        if (h.includes('flightnumber') || h === 'flight_number') obj.flightNumber = val;
+        if (h === 'airline') obj.airline = val;
+        if (h === 'airline_logo') obj.airline_logo = val;
+        if (h.includes('aircraft')) obj.aircraftType = val;
+        if (h.includes('reg')) obj.registration = val;
+        if (h === 'time' || h === 'duration') obj.time = val;
+        if (h === 'distance') obj.distance = val;
+        if (h === 'notes' || h === 'note') obj.notes = val;
+        if (h === 'class') obj.class = val;
+        if (h === 'price') obj.price = val;
+        if (h === 'currency') obj.currency = val;
+        
+        // Tech Felder
+        if (header === 'depLat') obj.depLat = val;
+        if (header === 'depLon') obj.depLon = val;
+        if (header === 'arrLat') obj.arrLat = val;
+        if (header === 'arrLon') obj.arrLon = val;
+        if (header === 'depName') obj.depName = val;
+        if (header === 'arrName') obj.arrName = val;
+        if (header === 'photo_url') obj.photo_url = val;
+        if (header === 'flight_id') obj.flight_id = val;
+
+        // ✅ Trip Name (sicher erkennen)
+        if (header === 'trip_name' || header === 'trip' || header === 'reise') {
+            obj.trip_name = val;
+            // Wichtig für executeImport Logik:
+            obj._tempTripName = val; 
+        }
+      });
+      result.push(obj);
     }
   }
   return result;
@@ -2198,3 +2267,191 @@ document.getElementById("buy-pro-btn").addEventListener("click", async () => {
     }
   
 });
+
+// ==========================================
+// TRIPS / REISEN LOGIK
+// ==========================================
+
+// 1. Trips laden und ins Dropdown füllen
+async function loadTripsIntoDropdown(selectedTripId = null) {
+  const select = document.getElementById("tripSelect");
+  if (!select) return;
+
+  // Leer machen (bis auf die erste Option)
+  const defaultText = getTranslation("form.tripNone") || "-- Keine Reise / Einzelflug --";
+  select.innerHTML = `<option value="" data-i18n="form.tripNone">${defaultText}</option>`;
+
+  try {
+    const { data: trips, error } = await supabaseClient
+      .from("trips")
+      .select("*")
+      .order("created_at", { ascending: false }); // Neueste zuerst
+
+    if (error) throw error;
+
+    trips.forEach((trip) => {
+      const option = document.createElement("option");
+      option.value = trip.id;
+      option.textContent = trip.name;
+      if (selectedTripId && String(trip.id) === String(selectedTripId)) {
+        option.selected = true;
+      }
+      select.appendChild(option);
+    });
+
+  } catch (err) {
+    console.error("Fehler beim Laden der Trips:", err);
+  }
+}
+
+// 2. Neuen Trip erstellen (Simple Version per Prompt)
+async function createNewTrip() {
+  // Demo Check
+  if (typeof isDemoMode !== 'undefined' && isDemoMode) {
+      showMessage("Demo-Modus", "Im Demo-Modus können keine Trips erstellt werden.", "info");
+      return;
+  }
+
+  const name = prompt("Name der neuen Reise (z.B. 'Sommerurlaub 2024'):");
+  if (!name || name.trim() === "") return;
+
+  const { data: userData } = await supabaseClient.auth.getUser();
+  if (!userData?.user) return;
+
+  try {
+    const { data, error } = await supabaseClient
+      .from("trips")
+      .insert([{ 
+          user_id: userData.user.id,
+          name: name.trim() 
+      }])
+      .select();
+
+    if (error) throw error;
+
+    showMessage("Erfolg", `Reise '${name}' angelegt.`, "success");
+    
+    // Dropdown neu laden und den neuen Trip direkt auswählen
+    if (data && data.length > 0) {
+        loadTripsIntoDropdown(data[0].id);
+    }
+
+  } catch (err) {
+    console.error("Trip Fehler:", err);
+    showMessage("Fehler", "Reise konnte nicht erstellt werden.", "error");
+  }
+}
+
+// app.js - openTripManager (KORRIGIERT)
+
+async function openTripManager() {
+  // 1. Trips laden
+  const { data: trips } = await supabaseClient
+      .from("trips")
+      .select("*")
+      .order("created_at", { ascending: false });
+  
+  // 2. Flüge laden (FIX: Wir holen sie direkt, statt auf die Variable zu hoffen)
+  const allFlights = await getFlights();
+
+  if (!allFlights || allFlights.length === 0) {
+      showMessage("Info", "Keine Flüge geladen.", "info");
+      return;
+  }
+
+  if (!trips || trips.length === 0) {
+      showMessage("Info", "Du hast noch keine Reisen angelegt.", "info");
+      return;
+  }
+
+  // 3. HTML bauen
+  let htmlContent = `<div class="space-y-4">`;
+
+  trips.forEach(trip => {
+      // Filtere Flüge für diese Reise
+      const tripFlights = allFlights.filter(f => f.trip_id == trip.id);
+
+      if (tripFlights.length === 0) return; 
+
+      // Statistiken berechnen
+      const totalDist = tripFlights.reduce((sum, f) => sum + (f.distance || 0), 0);
+      const totalCO2 = tripFlights.reduce((sum, f) => sum + (f.co2_kg || 0), 0);
+      
+      // Preis (einfache Summe)
+      const totalPrice = tripFlights.reduce((sum, f) => sum + (f.price || 0), 0).toFixed(2);
+      const currency = tripFlights.find(f => f.currency)?.currency || "";
+
+      // HTML für die Karte
+      htmlContent += `
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+            <div class="flex justify-between items-center mb-2">
+                <h3 class="text-lg font-bold text-gray-800 dark:text-white">${trip.name}</h3>
+                <span class="text-xs text-gray-500">${tripFlights.length} Flüge</span>
+            </div>
+            
+            <div class="grid grid-cols-3 gap-2 text-sm text-center mb-3">
+                <div class="bg-gray-50 dark:bg-gray-700 p-2 rounded">
+                    <div class="font-bold text-gray-700 dark:text-gray-200">${totalDist.toLocaleString("de-DE")} km</div>
+                    <div class="text-xs text-gray-400">Distanz</div>
+                </div>
+                <div class="bg-gray-50 dark:bg-gray-700 p-2 rounded">
+                     <div class="font-bold text-green-600 dark:text-green-400">${totalPrice} ${currency}</div>
+                     <div class="text-xs text-gray-400">Kosten</div>
+                </div>
+                <div class="bg-gray-50 dark:bg-gray-700 p-2 rounded">
+                     <div class="font-bold text-orange-600 dark:text-orange-400">${totalCO2.toLocaleString("de-DE")} kg</div>
+                     <div class="text-xs text-gray-400">CO₂</div>
+                </div>
+            </div>
+            
+            <div class="text-xs text-gray-500 dark:text-gray-400 space-y-1">
+                ${tripFlights.map(f => `
+                    <div class="flex justify-between">
+                        <span>✈️ ${f.departure} ➔ ${f.arrival}</span>
+                        <span>${f.date}</span>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+      `;
+  });
+
+  htmlContent += `</div>`;
+
+  document.getElementById("info-modal-title").textContent = "Meine Reisen & Events";
+  document.getElementById("info-modal-content").innerHTML = htmlContent;
+  openInfoModal();
+}
+
+// app.js - Ganz am Ende einfügen
+
+async function populateTripFilterDropdown() {
+  const filterSelect = document.getElementById("filter-trip");
+  if (!filterSelect) return;
+
+  // Aktuellen Wert merken (falls wir refreshen)
+  const currentVal = filterSelect.value;
+
+  // Trips laden
+  const { data: trips } = await supabaseClient
+    .from("trips")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (!trips) return;
+
+  // Standard-Option setzen (Wichtig: i18n beachten wir hier einfachshalber via Helper oder HTML)
+  // Wir löschen alles außer der ersten Option, falls nötig, oder bauen neu:
+  const defaultText = getTranslation("flights.filterTripPlaceholder") || "Alle Reisen";
+  filterSelect.innerHTML = `<option value="" data-i18n="flights.filterTripPlaceholder">${defaultText}</option>`;
+
+  trips.forEach(trip => {
+      const option = document.createElement("option");
+      option.value = trip.id;
+      option.textContent = trip.name;
+      filterSelect.appendChild(option);
+  });
+
+  // Alten Wert wiederherstellen
+  if (currentVal) filterSelect.value = currentVal;
+}

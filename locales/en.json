@@ -60,7 +60,8 @@
     "charts": "Charts",
     "logbook": "Logbook",
     "achievements": "Achievements",
-    "help": "Help"
+    "help": "Help",
+    "trips": "My Trips"
   },
 
   "burgerMenu": {
@@ -80,7 +81,8 @@
     "changePassword": "Change Password",
     "toggleMode": "Toggle Mode",
     "logout": "Logout",
-    "manageSubscription": "⚙️ Manage Subscription"
+    "manageSubscription": "⚙️ Manage Subscription",
+    "trips": "My Trips"
   },
 
   "form": {
@@ -119,7 +121,9 @@
     "confirmDeleteTitle": "Delete Flight?",
     "confirmDeleteBody": "Do you really want to permanently delete this flight?",
     "yes": "Yes, delete",
-    "no": "Cancel"
+    "no": "Cancel",
+    "tripLabel": "Trip / Vacation (Optional)",
+    "tripNone": "-- No Trip / Single Flight --"
   },
 
   "messages": {
@@ -212,7 +216,9 @@
     "createBook": "Create Book (PDF)",
     "myFlightsTitle": "My Flights",
     "filterPlaceholder": "Search (Place, Airline, Date...)",
-    "hideAllRoutes": "Clear Map"
+    "hideAllRoutes": "Clear Map",
+    "sortTrip": "Trip",
+    "filterTripPlaceholder": "All Trips"
   },
 
   "print": {
