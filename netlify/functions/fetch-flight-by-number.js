@@ -1,56 +1,64 @@
 // netlify/functions/fetch-flight-by-number.js
-const fetch = require('node-fetch');
+
+// WICHTIG: Wir nutzen das native 'fetch' von Node.js 18+. 
+// Kein 'require' notwendig, das reduziert Fehlerquellen.
 
 exports.handler = async function(event, context) {
-    // CORS Header definieren
+    // 1. CORS Headers (für Zugriff von deiner App)
     const headers = {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Headers": "Content-Type",
         "Access-Control-Allow-Methods": "POST, OPTIONS",
     };
 
-    // Preflight Request (OPTIONS) behandeln
     if (event.httpMethod === "OPTIONS") {
         return { statusCode: 200, headers, body: "" };
     }
 
+    // 2. Token Check
     const TOKEN = process.env.FLIGHTRADAR24_TOKEN;
     if (!TOKEN) {
-        return { statusCode: 500, headers, body: JSON.stringify({ message: 'FR24-Token fehlt.' }) };
+        return { statusCode: 500, headers, body: JSON.stringify({ message: 'Server-Config: FR24-Token fehlt.' }) };
     }
 
-    // Parameter lesen (POST Body oder Query String unterstützen)
-    let params = event.queryStringParameters;
+    // 3. Parameter auslesen
+    const params = event.queryStringParameters || {};
+    // Fallback: Manchmal kommen Parameter im Body (je nach Aufruf)
     if (event.body) {
         try {
             const bodyParams = JSON.parse(event.body);
-            params = { ...params, ...bodyParams };
-        } catch (e) {
-            // Body war kein JSON, wir machen mit QueryParams weiter
-        }
+            Object.assign(params, bodyParams);
+        } catch (e) {}
     }
 
-    const { flight_number, flightNumber, date } = params;
-    // Support für beide Schreibweisen (Frontend sendet oft flightNumber, API braucht flight_number Logik)
-    const flightNum = flight_number || flightNumber;
+    // Support für beide Schreibweisen (flightNumber vs flight_number)
+    const rawFlightNum = params.flight_number || params.flightNumber;
+    const date = params.date;
 
-    if (!flightNum || !date) {
+    if (!rawFlightNum || !date) {
         return { statusCode: 400, headers, body: JSON.stringify({ message: 'Flugnummer und Datum erforderlich.' }) };
     }
 
-    // Datums-Grenzen für History API
+    // Leerzeichen entfernen (z.B. "PC 986" -> "PC986")
+    const flightNum = rawFlightNum.replace(/\s+/g, '').toUpperCase();
+
+    // Debugging Logs (sichtbar im Netlify Dashboard)
+    console.log(`🔍 Suche Flug: ${flightNum} am ${date}`);
+
+    // Datums-Grenzen für History
     const dateFrom = `${date}T00:00:00Z`;
     const dateTo = `${date}T23:59:59Z`;
 
-    // ---------------------------------------------------------
-    // SCHRITT 1: Historische Daten abfragen (Standard)
-    // ---------------------------------------------------------
+    // =====================================================================
+    // STRATEGIE: Erst History versuchen. Wenn leer -> Live versuchen.
+    // =====================================================================
+
+    // --- 1. HISTORY API (flight-summary) ---
+    // Dokumentation: https://fr24api.flightradar24.com/docs/endpoints/overview#flight-summary-full
     const HISTORY_ENDPOINT = `https://fr24api.flightradar24.com/api/flight-summary/full?flights=${flightNum}&flight_datetime_from=${dateFrom}&flight_datetime_to=${dateTo}`;
     
-    console.log(`[1] Prüfe History: ${HISTORY_ENDPOINT}`);
-
     try {
-        let response = await fetch(HISTORY_ENDPOINT, {
+        const histResp = await fetch(HISTORY_ENDPOINT, {
             headers: {
                 'Accept': 'application/json',
                 'Accept-Version': 'v1',
@@ -58,128 +66,123 @@ exports.handler = async function(event, context) {
             }
         });
 
-        if (response.ok) {
-            const data = await response.json();
-            // Prüfen, ob wirklich Daten drin sind (FR24 sendet oft leeres Array)
-            const hasHistory = data?.result?.response?.data && data.result.response.data.length > 0;
-
-            if (hasHistory) {
-                console.log("✅ History Daten gefunden.");
+        if (histResp.ok) {
+            const histData = await histResp.json();
+            // Check: Ist das Array 'data' gefüllt?
+            if (histData?.result?.response?.data && histData.result.response.data.length > 0) {
+                console.log("✅ Fündig in History API.");
                 return {
                     statusCode: 200,
                     headers,
-                    body: JSON.stringify(data)
+                    body: JSON.stringify(histData)
+                };
+            }
+        } else {
+            console.warn(`⚠️ History API Status: ${histResp.status}`);
+        }
+    } catch (e) {
+        console.error("Fehler History API:", e);
+    }
+
+    // --- 2. LIVE API (live/flight-positions) ---
+    // Fallback, falls History leer war (z.B. Flug ist gerade aktiv oder API hinkt hinterher)
+    // Wir machen das unabhängig vom Datum, um Zeitzonen-Probleme zu umgehen.
+    // Wenn das Datum 2 Jahre her ist, liefert Live eh nix zurück -> Kein Schaden.
+    
+    console.log("...nicht in History. Prüfe Live API...");
+
+    // WICHTIG: Live Endpoint OHNE Datums-Parameter!
+    const LIVE_ENDPOINT = `https://fr24api.flightradar24.com/api/live/flight-positions/full?flights=${flightNum}`;
+
+    try {
+        const liveResp = await fetch(LIVE_ENDPOINT, {
+            headers: {
+                'Accept': 'application/json',
+                'Accept-Version': 'v1',
+                'Authorization': `Bearer ${TOKEN}`
+            }
+        });
+
+        if (liveResp.ok) {
+            const liveJson = await liveResp.json();
+            
+            // Live Daten Struktur: { data: [ ... ] }
+            if (liveJson.data && liveJson.data.length > 0) {
+                console.log("✅ Fündig in Live API. Mappe Daten...");
+                const liveFlight = liveJson.data[0];
+
+                // MAPPING: Wir bauen die Live-Daten in die History-Struktur um,
+                // damit deine 'app.js' nicht abstürzt.
+                const mappedData = {
+                    result: {
+                        response: {
+                            data: [{
+                                identification: {
+                                    number: { default: liveFlight.flight || flightNum },
+                                    callsign: liveFlight.callsign
+                                },
+                                aircraft: {
+                                    model: { code: liveFlight.type || "" }, 
+                                    registration: liveFlight.reg || ""
+                                },
+                                airline: {
+                                    code: { 
+                                        icao: liveFlight.operating_as || "", 
+                                        iata: "" 
+                                    },
+                                    name: liveFlight.operating_as || "" // Live liefert oft keinen Namen
+                                },
+                                airport: {
+                                    origin: {
+                                        code: { 
+                                            iata: liveFlight.orig_iata || "", 
+                                            icao: liveFlight.orig_icao || "" 
+                                        },
+                                        timezone: {} 
+                                    },
+                                    destination: {
+                                        code: { 
+                                            iata: liveFlight.dest_iata || "", 
+                                            icao: liveFlight.dest_icao || "" 
+                                        },
+                                        timezone: {} 
+                                    },
+                                },
+                                status: {
+                                    live: true,
+                                    text: "Live / In Air"
+                                },
+                                time: {
+                                    // Wir nutzen ETA als Ankunftszeit, falls vorhanden
+                                    scheduled: {
+                                        departure: null, 
+                                        arrival: null
+                                    },
+                                    estimated: {
+                                        arrival: liveFlight.eta ? Math.floor(new Date(liveFlight.eta).getTime() / 1000) : null
+                                    },
+                                    real: {
+                                        departure: null,
+                                        arrival: null
+                                    }
+                                }
+                            }]
+                        }
+                    }
+                };
+
+                return {
+                    statusCode: 200,
+                    headers,
+                    body: JSON.stringify(mappedData)
                 };
             }
         }
-    } catch (err) {
-        console.warn("Fehler bei History Abruf:", err.message);
-        // Wir machen weiter mit Live Check...
+    } catch (e) {
+        console.error("Fehler Live API:", e);
     }
 
-    // ---------------------------------------------------------
-    // SCHRITT 2: Live Daten abfragen (Fallback für "Heute")
-    // ---------------------------------------------------------
-    
-    // Prüfen, ob das angefragte Datum "heute" ist
-    const inputDateObj = new Date(date);
-    const todayObj = new Date();
-    const isToday = inputDateObj.toISOString().split('T')[0] === todayObj.toISOString().split('T')[0];
-
-    if (isToday) {
-        // ACHTUNG: Live Endpoint darf KEINE Datums-Parameter haben!
-        const LIVE_ENDPOINT = `https://fr24api.flightradar24.com/api/live/flight-positions/full?flights=${flightNum}`;
-        console.log(`[2] Datum ist heute, History leer. Prüfe Live: ${LIVE_ENDPOINT}`);
-
-        try {
-            const liveResponse = await fetch(LIVE_ENDPOINT, {
-                headers: {
-                    'Accept': 'application/json',
-                    'Accept-Version': 'v1',
-                    'Authorization': `Bearer ${TOKEN}`
-                }
-            });
-
-            if (liveResponse.ok) {
-                const liveJson = await liveResponse.json();
-                
-                // Prüfen auf Daten (Live Struktur: { data: [ ... ] })
-                if (liveJson.data && liveJson.data.length > 0) {
-                    console.log("✅ Live Daten gefunden! Starte Mapping...");
-                    
-                    const liveFlight = liveJson.data[0];
-
-                    // ---------------------------------------------------------
-                    // SCHRITT 3: Mapping (Live-Format -> History-Format)
-                    // Damit app.js nicht abstürzt, bauen wir die Struktur nach.
-                    // ---------------------------------------------------------
-                    const mappedData = {
-                        result: {
-                            response: {
-                                data: [{
-                                    identification: {
-                                        number: { default: liveFlight.flight || flightNum },
-                                        callsign: liveFlight.callsign
-                                    },
-                                    aircraft: {
-                                        model: { code: liveFlight.type || "" }, 
-                                        registration: liveFlight.reg || ""
-                                    },
-                                    airline: {
-                                        code: { 
-                                            icao: liveFlight.operating_as || "", 
-                                            iata: "" 
-                                        },
-                                        name: "" // Live API liefert oft keinen Airline-Namen
-                                    },
-                                    airport: {
-                                        origin: {
-                                            code: { 
-                                                iata: liveFlight.orig_iata || "", 
-                                                icao: liveFlight.orig_icao || "" 
-                                            },
-                                            timezone: {} // Dummy
-                                        },
-                                        destination: {
-                                            code: { 
-                                                iata: liveFlight.dest_iata || "", 
-                                                icao: liveFlight.dest_icao || "" 
-                                            },
-                                            timezone: {} // Dummy
-                                        },
-                                    },
-                                    status: {
-                                        live: true,
-                                        text: "Live / In Air"
-                                    },
-                                    time: {
-                                        // Live liefert nur Zeitstempel oder ETA, wir simulieren Scheduled
-                                        scheduled: {
-                                            departure: null, 
-                                            arrival: null
-                                        },
-                                        estimated: {
-                                            arrival: liveFlight.eta ? Math.floor(new Date(liveFlight.eta).getTime() / 1000) : null
-                                        }
-                                    }
-                                }]
-                            }
-                        }
-                    };
-
-                    return {
-                        statusCode: 200,
-                        headers,
-                        body: JSON.stringify(mappedData)
-                    };
-                }
-            }
-        } catch (liveErr) {
-            console.error("Fehler bei Live Abruf:", liveErr);
-        }
-    }
-
-    // Wenn nichts gefunden wurde
+    // --- 3. NICHTS GEFUNDEN ---
     console.log("❌ Weder History noch Live Daten gefunden.");
     return {
         statusCode: 404,
