@@ -1,147 +1,151 @@
-// fetch-flight-by-number.js (Serverless Function)
+// netlify/functions/fetch-flight-by-number.js
+const fetch = require('node-fetch');
 
-exports.handler = async function (event, context) {
-  // CORS Header für Sicherheit
-  const headers = {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Headers": "Content-Type",
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
-  };
+exports.handler = async function(event, context) {
+    // --- DEBUGGING ---
+    console.log("Netlify Function 'fetch-flight-by-number' (FR24) aufgerufen.");
+    // --- ENDE DEBUGGING ---
 
-  if (event.httpMethod === "OPTIONS") {
-    return { statusCode: 200, headers, body: "" };
-  }
-
-  if (event.httpMethod !== "POST") {
-    return {
-      statusCode: 405,
-      headers,
-      body: JSON.stringify({ error: "Method Not Allowed" }),
-    };
-  }
-
-  const API_KEY = process.env.FLIGHTAWARE_API_KEY;
-  if (!API_KEY) {
-    return {
-      statusCode: 500,
-      headers,
-      body: JSON.stringify({ error: "Server config error: API Key missing" }),
-    };
-  }
-
-  try {
-    const { flightNumber, date } = JSON.parse(event.body);
-
-    if (!flightNumber || !date) {
-      return {
-        statusCode: 400,
-        headers,
-        body: JSON.stringify({ error: "Missing flightNumber or date" }),
-      };
+    const TOKEN = process.env.FLIGHTRADAR24_TOKEN; 
+    if (!TOKEN) {
+        return { statusCode: 500, body: JSON.stringify({ message: 'FR24-Token ist nicht konfiguriert.' }) };
     }
 
-    // Datum Parsing & Logik für Endpoint-Wahl
+    const { flight_number, date } = event.queryStringParameters;
+    if (!flight_number || !date) {
+        return { statusCode: 400, body: JSON.stringify({ message: 'Flugnummer und Datum sind erforderlich.' }) };
+    }
+
+    // Datum prüfen: Ist es heute?
     const inputDate = new Date(date);
     const today = new Date();
-    // Zeitanteile nullen für reinen Datumsvergleich
-    today.setHours(0, 0, 0, 0);
-    // Wir setzen inputDate auf 00:00 UTC oder Local, um sicher zu vergleichen
-    // Einfacherer Check: Ist das Input-Datum >= Heute (00:00)?
-    // Wir geben etwas Puffer (gestern könnte auch noch 'active' sein bei Zeitzonen)
-    
-    // Zeitfenster berechnen (Start/Ende des gesuchten Tages)
-    // AeroAPI erwartet ISO Strings oder Timestamps.
-    // Wir nehmen Start des Tages bis Ende des Tages (+etwas Puffer)
-    const startDate = new Date(date);
-    const endDate = new Date(date);
-    endDate.setDate(endDate.getDate() + 1); // +1 Tag
+    today.setHours(0,0,0,0);
+    inputDate.setHours(0,0,0,0);
+    const isToday = inputDate.getTime() === today.getTime();
 
-    const startStr = startDate.toISOString().split('T')[0]; // YYYY-MM-DD
-    const endStr = endDate.toISOString().split('T')[0];
+    // 1. VERSUCH: Historische Zusammenfassung (Standard)
+    const dateFrom = `${date}T00:00:00Z`;
+    const dateTo = `${date}T23:59:59Z`;
+    const SUMMARY_ENDPOINT = `https://fr24api.flightradar24.com/api/flight-summary/full?flights=${flight_number}&flight_datetime_from=${dateFrom}&flight_datetime_to=${dateTo}`;
 
-    // ENTSCHEIDUNG: Welcher Endpoint?
-    // Wenn Datum >= Heute-1 Tag -> Standard Endpoint (Scheduled/Enroute)
-    // Wenn Datum älter -> History Endpoint
-    const oneDayAgo = new Date(today);
-    oneDayAgo.setDate(today.getDate() - 1);
-    
-    let apiUrl;
-    const isRecent = inputDate >= oneDayAgo;
+    try {
+        console.log(`Versuche History-API: ${SUMMARY_ENDPOINT}`);
+        let response = await fetch(SUMMARY_ENDPOINT, {
+            headers: {
+                'Accept': 'application/json',
+                'Accept-Version': 'v1',
+                'Authorization': `Bearer ${TOKEN}`
+            }
+        });
 
-    if (isRecent) {
-        // Aktuelle/Geplante Flüge
-        // Parameter ?start=...&end=... filtern das Fenster
-        apiUrl = `https://aeroapi.flightaware.com/aeroapi/flights/${flightNumber}?start=${startStr}&end=${endStr}`;
-    } else {
-        // Historische Flüge
-        apiUrl = `https://aeroapi.flightaware.com/aeroapi/flights/${flightNumber}/history?start=${startStr}&end=${endStr}`;
+        if (!response.ok) {
+            const errText = await response.text();
+            return { statusCode: response.status, body: `Fehler von FR24 History API: ${errText}` };
+        }
+
+        let data = await response.json();
+        
+        // Prüfen, ob wir Daten gefunden haben
+        const hasHistoryData = data?.result?.response?.data && data.result.response.data.length > 0;
+
+        // Wenn Daten da sind, sofort zurückgeben
+        if (hasHistoryData) {
+            console.log("Daten in History gefunden.");
+            return {
+                statusCode: 200,
+                headers: { "Access-Control-Allow-Origin": "*" },
+                body: JSON.stringify(data)
+            };
+        }
+
+        // 2. VERSUCH: Live-API (Nur wenn Datum == Heute und nichts in History gefunden)
+        if (!hasHistoryData && isToday) {
+            console.log("Keine History-Daten für heute. Versuche Live-API...");
+            
+            const LIVE_ENDPOINT = `https://fr24api.flightradar24.com/api/live/flight-positions/full?flights=${flight_number}`;
+            
+            response = await fetch(LIVE_ENDPOINT, {
+                headers: {
+                    'Accept': 'application/json',
+                    'Accept-Version': 'v1',
+                    'Authorization': `Bearer ${TOKEN}`
+                }
+            });
+
+            if (!response.ok) {
+                // Wenn Live auch fehlschlägt, geben wir den leeren History-Status zurück oder Fehler
+                console.log("Live-API fehlgeschlagen.");
+                return { statusCode: 404, body: JSON.stringify({ message: "Flug weder historisch noch live gefunden." }) };
+            }
+
+            const liveData = await response.json();
+
+            // Prüfen ob Live Daten da sind (FR24 Live API Struktur ist anders!)
+            if (liveData && liveData.data && liveData.data.length > 0) {
+                // MAPPING: Wir bauen die Live-Daten so um, dass sie wie Summary-Daten aussehen
+                // damit app.js nicht geändert werden muss.
+                const liveFlight = liveData.data[0];
+                
+                const mappedData = {
+                    result: {
+                        response: {
+                            data: [{
+                                identification: {
+                                    number: { default: liveFlight.flight || flight_number },
+                                    callsign: liveFlight.callsign
+                                },
+                                aircraft: {
+                                    model: { code: liveFlight.aircraft_code || "" }, // z.B. B748
+                                    registration: liveFlight.reg || ""
+                                },
+                                airline: {
+                                    code: { icao: liveFlight.operate_by || "" }, // Oft Operator ICAO
+                                    name: "" // Name fehlt oft in Live-Daten
+                                },
+                                airport: {
+                                    origin: {
+                                        code: { iata: liveFlight.orig_iata || "", icao: liveFlight.orig_icao || "" },
+                                        name: "" // Fehlt in Live
+                                    },
+                                    destination: {
+                                        code: { iata: liveFlight.dest_iata || "", icao: liveFlight.dest_icao || "" },
+                                        name: "" // Fehlt in Live
+                                    },
+                                },
+                                status: {
+                                    live: true,
+                                    text: "In Air / Scheduled"
+                                },
+                                time: {
+                                    // Live liefert oft nur geschätzte Zeiten
+                                    scheduled: {
+                                        departure: null, // Schwierig in Live-Daten
+                                        arrival: null
+                                    },
+                                    real: {
+                                        departure: null,
+                                        arrival: null
+                                    }
+                                }
+                            }]
+                        }
+                    }
+                };
+
+                console.log("Live-Daten gefunden und gemappt.");
+                return {
+                    statusCode: 200,
+                    headers: { "Access-Control-Allow-Origin": "*" },
+                    body: JSON.stringify(mappedData)
+                };
+            }
+        }
+
+        // Wenn nichts gefunden wurde (weder History noch Live)
+        return { statusCode: 404, body: JSON.stringify({ message: 'Keine Daten für diesen Flug gefunden.' }) };
+
+    } catch (error) {
+        console.log(`FEHLER im catch-Block: ${error.message}`);
+        return { statusCode: 500, body: JSON.stringify({ message: `Interner Serverfehler: ${error.message}` }) };
     }
-
-    console.log(`Fetching from: ${apiUrl}`); // Zum Debuggen in Netlify Logs
-
-    const response = await fetch(apiUrl, {
-      headers: {
-        "x-apikey": API_KEY,
-      },
-    });
-
-    if (!response.ok) {
-        // Fehlerbehandlung
-        const errText = await response.text();
-        console.error("FlightAware Error:", errText);
-        return {
-            statusCode: response.status,
-            headers,
-            body: JSON.stringify({ error: `Provider Error: ${response.statusText}` }),
-        };
-    }
-
-    const data = await response.json();
-
-    // FlightAware gibt { flights: [...] } zurück.
-    // Wir müssen den passenden Flug aus dem Array finden.
-    // Da wir start/end gesetzt haben, sollten nur relevante Flüge kommen.
-    
-    if (!data.flights || data.flights.length === 0) {
-       return {
-        statusCode: 404,
-        headers,
-        body: JSON.stringify({ error: "Flight not found for this date." }),
-      };
-    }
-
-    // Wir nehmen den ersten Treffer, der einen Status hat (oder einfach den ersten)
-    // Manchmal liefert FlightAware "Cancelled" Flüge, die wollen wir ggf. filtern, 
-    // aber fürs Logbuch ist "Cancelled" auch eine Info. Wir nehmen den ersten.
-    const flight = data.flights[0];
-
-    // Mapping auf unser Format
-    // Achtung: scheduled_out vs actual_out
-    const flightData = {
-      flightNumber: flight.ident || flightNumber,
-      airline: flight.operator || "", // ICAO Code der Airline
-      aircraftType: flight.aircraft_type || "",
-      registration: flight.registration || "",
-      departure: flight.origin ? flight.origin.code : "",
-      arrival: flight.destination ? flight.destination.code : "",
-      // Bevorzuge Actual, sonst Scheduled
-      depTime: flight.actual_out || flight.scheduled_out, 
-      arrTime: flight.actual_in || flight.scheduled_in,
-      status: flight.status
-    };
-
-    return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify(flightData),
-    };
-
-  } catch (error) {
-    console.error("Server Error:", error);
-    return {
-      statusCode: 500,
-      headers,
-      body: JSON.stringify({ error: error.message }),
-    };
-  }
 };
