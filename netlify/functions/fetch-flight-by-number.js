@@ -1,106 +1,147 @@
-// netlify/functions/fetch-flight-by-number.js
+// fetch-flight-by-number.js (Serverless Function)
 
-/**
-// netlify/functions/fetch-flight-by-number.js
-// KEIN 'require('node-fetch')' mehr hier. Wir verwenden die Standard-fetch-Funktion.
+exports.handler = async function (event, context) {
+  // CORS Header für Sicherheit
+  const headers = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers": "Content-Type",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+  };
 
-exports.handler = async function(event, context) {
-    const API_KEY = process.env.GOFLIGHTLABS_API_KEY; 
-    if (!API_KEY) {
-        return { statusCode: 500, body: JSON.stringify({ message: 'GoFlightLabs API-Schlüssel ist nicht konfiguriert.' }) };
+  if (event.httpMethod === "OPTIONS") {
+    return { statusCode: 200, headers, body: "" };
+  }
+
+  if (event.httpMethod !== "POST") {
+    return {
+      statusCode: 405,
+      headers,
+      body: JSON.stringify({ error: "Method Not Allowed" }),
+    };
+  }
+
+  const API_KEY = process.env.FLIGHTAWARE_API_KEY;
+  if (!API_KEY) {
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error: "Server config error: API Key missing" }),
+    };
+  }
+
+  try {
+    const { flightNumber, date } = JSON.parse(event.body);
+
+    if (!flightNumber || !date) {
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ error: "Missing flightNumber or date" }),
+      };
     }
 
-    const { flight_number, date } = event.queryStringParameters;
-    if (!flight_number || !date) {
-        return { statusCode: 400, body: JSON.stringify({ message: 'Flugnummer und Datum sind erforderlich.' }) };
-    }
-
-    // KORREKTER ENDPUNKT: 'www.goflightlabs.com/flight', wie von dir im Browser getestet.
-    const apiEndpoint = `https://www.goflightlabs.com/flight?access_key=${API_KEY}&flight_number=${flight_number}&date=${date}`;
-	// const apiEndpoint = `https://api.goflightlabs.com/v1/flight?access_key=${API_KEY}&flight_number=${flight_number}&date=${date}`;
+    // Datum Parsing & Logik für Endpoint-Wahl
+    const inputDate = new Date(date);
+    const today = new Date();
+    // Zeitanteile nullen für reinen Datumsvergleich
+    today.setHours(0, 0, 0, 0);
+    // Wir setzen inputDate auf 00:00 UTC oder Local, um sicher zu vergleichen
+    // Einfacherer Check: Ist das Input-Datum >= Heute (00:00)?
+    // Wir geben etwas Puffer (gestern könnte auch noch 'active' sein bei Zeitzonen)
     
-    try {
-        // Verwendet die globale fetch-Implementierung von Netlify
-        const response = await fetch(apiEndpoint); 
-        const responseBody = await response.text(); 
+    // Zeitfenster berechnen (Start/Ende des gesuchten Tages)
+    // AeroAPI erwartet ISO Strings oder Timestamps.
+    // Wir nehmen Start des Tages bis Ende des Tages (+etwas Puffer)
+    const startDate = new Date(date);
+    const endDate = new Date(date);
+    endDate.setDate(endDate.getDate() + 1); // +1 Tag
 
-        if (!response.ok) {
-            return { statusCode: response.status, body: `Fehler von externer API: ${responseBody}` };
-        }
+    const startStr = startDate.toISOString().split('T')[0]; // YYYY-MM-DD
+    const endStr = endDate.toISOString().split('T')[0];
 
-        const data = JSON.parse(responseBody);
-        
-        return {
-            statusCode: 200,
-            headers: { "Access-Control-Allow-Origin": "*" },
-            body: JSON.stringify(data)
-        };
-    } catch (error) {
-        return { statusCode: 500, body: JSON.stringify({ message: `Interner Serverfehler: ${error.message}` }) };
-    }
-};
-*/
-
-// netlify/functions/fetch-flight-by-number.js
-// netlify/functions/fetch-flight-by-number.js
-const fetch = require('node-fetch');
-
-exports.handler = async function(event, context) {
-    // --- DEBUGGING ---
-    console.log("Netlify Function 'fetch-flight-by-number' aufgerufen.");
-    console.log("Empfangene Query-Parameter:", event.queryStringParameters);
-    // --- ENDE DEBUGGING ---
-
-    const TOKEN = process.env.FLIGHTRADAR24_TOKEN; 
-    if (!TOKEN) {
-        console.log("FEHLER: FR24-Token ist nicht konfiguriert.");
-        return { statusCode: 500, body: JSON.stringify({ message: 'FR24-Token ist nicht konfiguriert.' }) };
-    }
-
-    const { flight_number, date } = event.queryStringParameters;
-    if (!flight_number || !date) {
-        console.log("FEHLER: Flugnummer oder Datum fehlen.");
-        return { statusCode: 400, body: JSON.stringify({ message: 'Flugnummer und Datum sind erforderlich.' }) };
-    }
-
-    const dateFrom = `${date}T00:00:00Z`;
-    const dateTo = `${date}T23:59:59Z`;
-
-    const API_ENDPOINT = `https://fr24api.flightradar24.com/api/flight-summary/full?flights=${flight_number}&flight_datetime_from=${dateFrom}&flight_datetime_to=${dateTo}`;
+    // ENTSCHEIDUNG: Welcher Endpoint?
+    // Wenn Datum >= Heute-1 Tag -> Standard Endpoint (Scheduled/Enroute)
+    // Wenn Datum älter -> History Endpoint
+    const oneDayAgo = new Date(today);
+    oneDayAgo.setDate(today.getDate() - 1);
     
-    // --- DEBUGGING ---
-    console.log(`Rufe FR24-API auf: ${API_ENDPOINT}`);
-    // --- ENDE DEBUGGING ---
+    let apiUrl;
+    const isRecent = inputDate >= oneDayAgo;
 
-    try {
-        const response = await fetch(API_ENDPOINT, {
-            headers: {
-                'Accept': 'application/json',
-                'Accept-Version': 'v1',
-                'Authorization': `Bearer ${TOKEN}`
-            }
-        }); 
-        
-        const responseBody = await response.text(); 
-        
-        // --- DEBUGGING ---
-        console.log(`Antwort-Status von FR24: ${response.status}`);
-        console.log(`Antwort-Body von FR24 (als Text): ${responseBody}`);
-        // --- ENDE DEBUGGING ---
-
-        if (!response.ok) {
-            return { statusCode: response.status, body: `Fehler von externer API: ${responseBody}` };
-        }
-
-        const data = JSON.parse(responseBody);
-        
-        return {
-            statusCode: 200,
-            headers: { "Access-Control-Allow-Origin": "*" },
-            body: JSON.stringify(data)
-        };
-    } catch (error) {
-        console.log(`FEHLER im catch-Block: ${error.message}`);
-        return { statusCode: 500, body: JSON.stringify({ message: `Interner Serverfehler: ${error.message}` }) };
+    if (isRecent) {
+        // Aktuelle/Geplante Flüge
+        // Parameter ?start=...&end=... filtern das Fenster
+        apiUrl = `https://aeroapi.flightaware.com/aeroapi/flights/${flightNumber}?start=${startStr}&end=${endStr}`;
+    } else {
+        // Historische Flüge
+        apiUrl = `https://aeroapi.flightaware.com/aeroapi/flights/${flightNumber}/history?start=${startStr}&end=${endStr}`;
     }
+
+    console.log(`Fetching from: ${apiUrl}`); // Zum Debuggen in Netlify Logs
+
+    const response = await fetch(apiUrl, {
+      headers: {
+        "x-apikey": API_KEY,
+      },
+    });
+
+    if (!response.ok) {
+        // Fehlerbehandlung
+        const errText = await response.text();
+        console.error("FlightAware Error:", errText);
+        return {
+            statusCode: response.status,
+            headers,
+            body: JSON.stringify({ error: `Provider Error: ${response.statusText}` }),
+        };
+    }
+
+    const data = await response.json();
+
+    // FlightAware gibt { flights: [...] } zurück.
+    // Wir müssen den passenden Flug aus dem Array finden.
+    // Da wir start/end gesetzt haben, sollten nur relevante Flüge kommen.
+    
+    if (!data.flights || data.flights.length === 0) {
+       return {
+        statusCode: 404,
+        headers,
+        body: JSON.stringify({ error: "Flight not found for this date." }),
+      };
+    }
+
+    // Wir nehmen den ersten Treffer, der einen Status hat (oder einfach den ersten)
+    // Manchmal liefert FlightAware "Cancelled" Flüge, die wollen wir ggf. filtern, 
+    // aber fürs Logbuch ist "Cancelled" auch eine Info. Wir nehmen den ersten.
+    const flight = data.flights[0];
+
+    // Mapping auf unser Format
+    // Achtung: scheduled_out vs actual_out
+    const flightData = {
+      flightNumber: flight.ident || flightNumber,
+      airline: flight.operator || "", // ICAO Code der Airline
+      aircraftType: flight.aircraft_type || "",
+      registration: flight.registration || "",
+      departure: flight.origin ? flight.origin.code : "",
+      arrival: flight.destination ? flight.destination.code : "",
+      // Bevorzuge Actual, sonst Scheduled
+      depTime: flight.actual_out || flight.scheduled_out, 
+      arrTime: flight.actual_in || flight.scheduled_in,
+      status: flight.status
+    };
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify(flightData),
+    };
+
+  } catch (error) {
+    console.error("Server Error:", error);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error: error.message }),
+    };
+  }
 };
