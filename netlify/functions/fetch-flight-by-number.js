@@ -1,4 +1,3 @@
-// netlify/functions/fetch-flight-by-number.js
 const fetch = require('node-fetch');
 
 exports.handler = async function(event, context) {
@@ -41,20 +40,39 @@ exports.handler = async function(event, context) {
         }
 
         const data = JSON.parse(responseBody);
-        const flightsArray = data?.result?.response?.data || [];
+        
+        // Flightradar liefert oft verschachtelt: result.response.data
+        // Deine config.js erwartet aber direkt: { data: [...] }
+        let flightsArray = [];
+        if (data && data.result && data.result.response && data.result.response.data) {
+             flightsArray = data.result.response.data;
+        } else if (data && data.data) {
+             flightsArray = data.data; // Falls die API doch flach antwortet
+        }
         
         if (flightsArray.length > 0) {
-            return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify(data) };
+            // Wir bauen das Array so um, dass config.js glücklich ist (braucht orig_iata, dest_iata, first_seen)
+            // Wenn die Historie verschachtelte Objekte hat, müssen wir sie für config.js flachklopfen
+            const mappedHistory = flightsArray.map(f => {
+                return {
+                    flight: f.identification?.number?.default || flight_number,
+                    orig_iata: f.airport?.origin?.code?.iata || "",
+                    dest_iata: f.airport?.destination?.code?.iata || "",
+                    operating_as: f.airline?.code?.icao || "",
+                    type: f.aircraft?.model?.code || "",
+                    reg: f.aircraft?.registration || "",
+                    // WICHTIG: Das Feld first_seen wird zwingend gebraucht!
+                    first_seen: f.time?.real?.departure ? new Date(f.time.real.departure * 1000).toISOString() : `${date}T12:00:00Z`
+                };
+            });
+
+            return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ data: mappedHistory }) };
         }
 
         // =================================================================
         // SCHRITT 2: LIVE DATEN
         // =================================================================
         const cleanFlightNum = flight_number.replace(/\s+/g, '').toUpperCase();
-        
-        // 🔥 DER TRICK: Wir extrahieren die Airline-Buchstaben aus deiner Eingabe (z.B. "FR" aus "FR1148")
-        const inputIata = cleanFlightNum.replace(/[0-9]/g, '');
-
         const LIVE_ENDPOINT = `https://fr24api.flightradar24.com/api/live/flight-positions/full?flights=${cleanFlightNum}`;
 
         const liveResponse = await fetch(LIVE_ENDPOINT, {
@@ -68,72 +86,20 @@ exports.handler = async function(event, context) {
 
             if (liveArray.length > 0) {
                 const liveFlight = liveArray[0];
-                const dummyTimestamp = Math.floor(new Date(`${date}T12:00:00Z`).getTime() / 1000);
 
+                // 🔥 Das ultimative Mapping, exakt auf config.js (Zeile 451ff) zugeschnitten
                 const mappedData = {
-                    result: {
-                        request: { query: flight_number },
-                        response: {
-                            data: [{
-                                identification: {
-                                    number: { default: cleanFlightNum, alternative: null },
-                                    callsign: liveFlight.callsign || ""
-                                },
-                                aircraft: {
-                                    model: { text: liveFlight.type || "", code: liveFlight.type || "" },
-                                    registration: liveFlight.reg || "",
-                                    country: { name: "" }
-                                },
-                                airline: {
-                                    // 🔥 HIER NUTZEN WIR DEINEN EINGABE-CODE ("FR") DAMIT CONFIG.JS IHN AKZEPTIERT
-                                    name: inputIata,
-                                    code: { 
-                                        iata: inputIata, 
-                                        icao: liveFlight.operating_as || "" 
-                                    }
-                                },
-                                airport: {
-                                    origin: {
-                                        name: liveFlight.orig_iata || "",
-                                        code: { iata: liveFlight.orig_iata || "", icao: liveFlight.orig_icao || "" },
-                                        position: { country: { name: "" }, region: { city: "" } },
-                                        timezone: { name: "UTC", offset: 0 }
-                                    },
-                                    destination: {
-                                        name: liveFlight.dest_iata || "",
-                                        code: { iata: liveFlight.dest_iata || "", icao: liveFlight.dest_icao || "" },
-                                        position: { country: { name: "" }, region: { city: "" } },
-                                        timezone: { name: "UTC", offset: 0 }
-                                    }
-                                },
-                                status: {
-                                    live: true,
-                                    text: "Live / In Air",
-                                    icon: "green",
-                                    estimated: null,
-                                    ambiguous: false,
-                                    generic: { status: { text: "estimated", type: "arrival" } }
-                                },
-                                time: {
-                                    scheduled: { 
-                                        departure: dummyTimestamp, 
-                                        arrival: dummyTimestamp + 7200,
-                                        departure_date: date, // 🔥 Strings für die Filter hinzugefügt
-                                        arrival_date: date
-                                    },
-                                    real: { 
-                                        departure: dummyTimestamp, 
-                                        arrival: null,
-                                        departure_date: date
-                                    },
-                                    estimated: { 
-                                        departure: dummyTimestamp,
-                                        arrival: liveFlight.eta ? Math.floor(new Date(liveFlight.eta).getTime() / 1000) : dummyTimestamp + 7200 
-                                    }
-                                }
-                            }]
-                        }
-                    }
+                    data: [{
+                        flight: liveFlight.flight || flight_number,
+                        orig_iata: liveFlight.orig_iata || "",
+                        dest_iata: liveFlight.dest_iata || "",
+                        operating_as: liveFlight.operating_as || "",
+                        painted_as: liveFlight.painted_as || "",
+                        type: liveFlight.type || "",
+                        reg: liveFlight.reg || "",
+                        // 🔥 HIER IST DER LEBENSRETTER FÜR CONFIG.JS:
+                        first_seen: `${date}T12:00:00Z` 
+                    }]
                 };
 
                 return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify(mappedData) };
@@ -143,7 +109,7 @@ exports.handler = async function(event, context) {
         // =================================================================
         // SCHRITT 3: NICHTS GEFUNDEN
         // =================================================================
-        return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify(data) };
+        return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ data: [] }) };
 
     } catch (error) {
         return { 
