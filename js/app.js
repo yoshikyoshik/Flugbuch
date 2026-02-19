@@ -1360,12 +1360,11 @@ window.editFlight = async function (id) {
     .scrollIntoView({ behavior: "smooth", block: "center" });
 
   // Falls der Flug eine trip_id hat, laden wir die Trips neu und setzen den Wert
-  if (flight.trip_id) {
-      loadTripsIntoDropdown(flight.trip_id);
+  if (flightToEdit.trip_id) {
+      loadTripsIntoDropdown(flightToEdit.trip_id);
   } else {
       loadTripsIntoDropdown(null);
   }
-
 };
 
 /**
