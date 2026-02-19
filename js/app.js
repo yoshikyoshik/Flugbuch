@@ -683,14 +683,25 @@ window.logFlight = async function () {
   logButton.textContent = getTranslation("form.buttonSaving") || "Saving...";
   logButton.disabled = true;
 
+  // --- OFFLINE-FREUNDLICHER LOGIN CHECK ---
   const {
-    data: { user },
-  } = await supabaseClient.auth.getUser();
+    data: { session },
+  } = await supabaseClient.auth.getSession();
+
+  // Wir holen uns den User aus der lokalen Session
+  const user = session?.user;
+
   if (!user) {
     showMessage(getTranslation("toast.errorTitle"), getTranslation("toast.notLoggedIn"), "error");
-    logButton.disabled = false;
+    
+    // UI zurücksetzen, damit der Button nicht hängen bleibt
+    if (logButton) {
+        logButton.textContent = getTranslation("form.buttonLogFlight") || "Log Flight";
+        logButton.disabled = false;
+    }
     return;
   }
+  // ----------------------------------------
 
   // --- ✅ NEU: FLUG-LIMIT PRÜFEN ---
   // Wir holen kurz die Liste der Flüge, um zu zählen
