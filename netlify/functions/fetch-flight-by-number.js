@@ -50,11 +50,101 @@ exports.handler = async function(event, context) {
 
         const data = JSON.parse(responseBody);
         
+        // =========================================================================
+        // ✅ NEUER BLOCK: HIER GREIFEN WIR NUR EIN, WENN DIE HISTORIE LEER IST
+        // =========================================================================
+        const flightsArray = data?.result?.response?.data || [];
+        
+        // Wenn das Array leer ist, ist der Flug wahrscheinlich heute / Live
+        if (flightsArray.length === 0) {
+            console.log("Historische Daten sind leer. Prüfe Live-API...");
+            const LIVE_ENDPOINT = `https://fr24api.flightradar24.com/api/live/flight-positions/full?flights=${flight_number}`;
+            
+            try {
+                const liveResponse = await fetch(LIVE_ENDPOINT, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'Accept-Version': 'v1',
+                        'Authorization': `Bearer ${TOKEN}`
+                    }
+                });
+
+                if (liveResponse.ok) {
+                    const liveBody = await liveResponse.text();
+                    const liveJson = JSON.parse(liveBody);
+
+                    // Hat die Live-API etwas gefunden?
+                    if (liveJson.data && liveJson.data.length > 0) {
+                        console.log("Live-Daten gefunden! Baue sie für die App um...");
+                        const liveFlight = liveJson.data[0];
+
+                        const mappedData = {
+                            result: {
+                                response: {
+                                    data: [{
+                                        identification: {
+                                            number: { default: liveFlight.flight || flight_number },
+                                            callsign: liveFlight.callsign
+                                        },
+                                        aircraft: {
+                                            model: { code: liveFlight.type || "" },
+                                            registration: liveFlight.reg || ""
+                                        },
+                                        airline: {
+                                            code: { icao: liveFlight.operating_as || "", iata: "" },
+                                            name: liveFlight.operating_as || ""
+                                        },
+                                        airport: {
+                                            origin: {
+                                                code: { iata: liveFlight.orig_iata || "", icao: liveFlight.orig_icao || "" },
+                                                timezone: {}
+                                            },
+                                            destination: {
+                                                code: { iata: liveFlight.dest_iata || "", icao: liveFlight.dest_icao || "" },
+                                                timezone: {}
+                                            }
+                                        },
+                                        status: {
+                                            live: true,
+                                            text: "Live / In Air"
+                                        },
+                                        time: {
+                                            scheduled: { departure: null, arrival: null },
+                                            estimated: {
+                                                arrival: liveFlight.eta ? Math.floor(new Date(liveFlight.eta).getTime() / 1000) : null
+                                            },
+                                            real: { departure: null, arrival: null }
+                                        }
+                                    }]
+                                }
+                            }
+                        };
+
+                        // Wir geben die umgebauten Live-Daten zurück und beenden hier
+                        return {
+                            statusCode: 200,
+                            headers: { "Access-Control-Allow-Origin": "*" },
+                            body: JSON.stringify(mappedData)
+                        };
+                    }
+                }
+            } catch (liveError) {
+                console.log(`Fehler bei Live-Abfrage: ${liveError.message}`);
+                // Wenn Live fehlschlägt, ignorieren wir das und lassen den Original-Code weiterlaufen
+            }
+        }
+        // =========================================================================
+        // ✅ ENDE NEUER BLOCK
+        // =========================================================================
+
+        // DEIN ORIGINAL RETURN (Wird ausgeführt, wenn History Daten hat ODER wenn beides leer ist)
+        // Dadurch stürzt config.js NIE ab, da immer Status 200 gesendet wird.
         return {
             statusCode: 200,
             headers: { "Access-Control-Allow-Origin": "*" },
             body: JSON.stringify(data)
         };
+
     } catch (error) {
         console.log(`FEHLER im catch-Block: ${error.message}`);
         return { statusCode: 500, body: JSON.stringify({ message: `Interner Serverfehler: ${error.message}` }) };
