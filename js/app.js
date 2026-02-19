@@ -805,15 +805,22 @@ window.logFlight = async function () {
   let finalAirlineName = rawAirlineInput;
   let finalAirlineLogo = null;
 
-  // Wenn Eingabe mind. 2 Zeichen lang ist (z.B. "LH" oder "Lufthansa"), Details laden
   if (rawAirlineInput.length >= 2) {
       try {
-          const airlineInfo = await fetchAirlineName(rawAirlineInput.toUpperCase());
+          const fetchedAirline = await fetchAirlineName(rawAirlineInput.toUpperCase());
           
-          // Nur überschreiben, wenn die API auch einen Namen gefunden hat
-          if (airlineInfo && airlineInfo.name) {
-              finalAirlineName = airlineInfo.name;
-              finalAirlineLogo = airlineInfo.logo;
+          // Wir entpacken das Array (falls es eins ist)
+          let airlineData = null;
+          if (Array.isArray(fetchedAirline) && fetchedAirline.length > 0) {
+              airlineData = fetchedAirline[0];
+          } else if (typeof fetchedAirline === 'object' && !Array.isArray(fetchedAirline)) {
+              airlineData = fetchedAirline;
+          }
+
+          if (airlineData && airlineData.name) {
+              finalAirlineName = airlineData.name;
+              // API Ninjas nutzt logo_url oder brandmark_url
+              finalAirlineLogo = airlineData.logo_url || airlineData.brandmark_url || null;
           }
       } catch (err) {
           console.warn("Konnte Airline-Details nicht laden:", err);
@@ -1072,16 +1079,23 @@ async function updateFlight() {
   // --- NEU: Logo & Name auch beim Update holen ---
   const rawAirlineInput = document.getElementById("airline").value.trim();
   let finalAirlineName = rawAirlineInput;
-  // WICHTIG: Altes Logo behalten, falls sich nichts ändert
   let finalAirlineLogo = currentlyEditingFlightData.airline_logo || null; 
 
-  // HIER IST DIE KORREKTUR: >= 2 (damit auch Namen wie "Lufthansa" gehen)
   if (rawAirlineInput.length >= 2) {
       try {
-          const airlineInfo = await fetchAirlineName(rawAirlineInput.toUpperCase());
-          if (airlineInfo && airlineInfo.name) {
-              finalAirlineName = airlineInfo.name;
-              finalAirlineLogo = airlineInfo.logo;
+          const fetchedAirline = await fetchAirlineName(rawAirlineInput.toUpperCase());
+          
+          let airlineData = null;
+          if (Array.isArray(fetchedAirline) && fetchedAirline.length > 0) {
+              airlineData = fetchedAirline[0];
+          } else if (typeof fetchedAirline === 'object' && !Array.isArray(fetchedAirline)) {
+              airlineData = fetchedAirline;
+          }
+
+          if (airlineData && airlineData.name) {
+              finalAirlineName = airlineData.name;
+              // Falls die API ein Logo hat, nimm es. Ansonsten behalte das alte Logo.
+              finalAirlineLogo = airlineData.logo_url || airlineData.brandmark_url || finalAirlineLogo;
           }
       } catch (err) {
           console.warn("Update: Konnte Airline nicht laden", err);
