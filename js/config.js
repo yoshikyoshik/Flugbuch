@@ -1186,10 +1186,25 @@ async function autofillFlightData() {
           throw new Error("Flughafencodes fehlen in den API-Daten.");
       }
 
-      // Airline-Namen parallel abrufen (wir nutzen dafür unsere GFL-Funktion)
-      let airlineName = "";
+      // Airline-Namen parallel abrufen
+      let finalAirlineName = airlineIata; // Fallback: Wir nutzen erstmal den Code (z.B. "KLM" oder "KL")
+
       if (airlineIata) {
-        airlineName = await fetchAirlineName(airlineIata);
+          try {
+              const fetchedAirline = await fetchAirlineName(airlineIata);
+              
+              // HIER IST DER FIX: Wir packen das Paket aus!
+              // Wenn ein Objekt zurückkommt, greifen wir gezielt den Namen (.name) ab.
+              if (fetchedAirline && typeof fetchedAirline === 'object') {
+                  finalAirlineName = fetchedAirline.name || fetchedAirline.icao || fetchedAirline.iata || airlineIata;
+              } 
+              // Falls wider Erwarten doch nur ein Text zurückkommt
+              else if (typeof fetchedAirline === 'string' && fetchedAirline.trim() !== "") {
+                  finalAirlineName = fetchedAirline;
+              }
+          } catch (error) {
+              console.warn("Airline-Name konnte nicht geladen werden, nutze Code-Fallback.", error);
+          }
       }
 
       // --- FORMULAR FÜLLEN ---
