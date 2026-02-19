@@ -14,10 +14,26 @@ exports.handler = async function(event, context) {
     }
 
     // Wir prüfen 'code', den das Frontend sendet
-    const { code } = event.queryStringParameters;
-    if (!code) {
-        console.log("FEHLER: Parameter 'code' fehlt in der Anfrage.");
-        return { statusCode: 400, body: JSON.stringify({ message: 'Parameter "code" ist erforderlich.' }) };
+    const { code } = event.queryStringParameters || {};
+    
+    // Globale CORS Header für die Antworten
+    const CORS_HEADERS = {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers": "Content-Type",
+        "Access-Control-Allow-Methods": "GET, POST, OPTIONS"
+    };
+
+    if (event.httpMethod === "OPTIONS") {
+        return { statusCode: 200, headers: CORS_HEADERS, body: "" };
+    }
+
+    if (!code || code.trim() === "") {
+        // HIER HABEN DIE CORS-HEADER GEFEHLT!
+        return { 
+            statusCode: 400, 
+            headers: CORS_HEADERS, 
+            body: JSON.stringify({ message: 'Flughafencode fehlt oder ist leer.' }) 
+        };
     }
 
     console.log(`Parameter 'code' erfolgreich empfangen: ${code}`);

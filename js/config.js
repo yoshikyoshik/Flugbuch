@@ -1174,11 +1174,17 @@ async function autofillFlightData() {
       });
 
       // --- DATEN EXTRAHIEREN ---
-      const depIata = flight.orig_iata;
-      const arrIata = flight.dest_iata;
-      const airlineIata = flight.operating_as || flight.painted_as; // z.B. "LH" oder "DLH"
-      const aircraftModel = flight.type; // z.B. "B738"
-      const registration = flight.reg; // z.B. "D-AINY"
+      // Wir prüfen erst die flache Struktur (Live), dann die verschachtelte Struktur (Historie FR24)
+      const depIata = flight.orig_iata || (flight.airport?.origin?.code?.iata) || "";
+      const arrIata = flight.dest_iata || (flight.airport?.destination?.code?.iata) || "";
+      const airlineIata = flight.operating_as || flight.painted_as || (flight.airline?.code?.icao) || ""; 
+      const aircraftModel = flight.type || (flight.aircraft?.model?.code) || ""; 
+      const registration = flight.reg || (flight.aircraft?.registration) || "";
+      
+      // Sicherheits-Abbruch, falls wirklich KEIN Flughafen gefunden wurde
+      if (!depIata || !arrIata) {
+          throw new Error("Flughafencodes fehlen in den API-Daten.");
+      }
 
       // Airline-Namen parallel abrufen (wir nutzen dafür unsere GFL-Funktion)
       let airlineName = "";
