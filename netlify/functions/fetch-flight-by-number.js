@@ -1,16 +1,13 @@
+// netlify/functions/fetch-flight-by-number.js
 const fetch = require('node-fetch');
 
 exports.handler = async function(event, context) {
-    // =================================================================
-    // 1. CORS HEADERS (Müssen IMMER mitgesendet werden, auch bei Fehlern)
-    // =================================================================
     const CORS_HEADERS = {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Headers": "Content-Type",
         "Access-Control-Allow-Methods": "GET, POST, OPTIONS"
     };
 
-    // Preflight Request für CORS abfangen
     if (event.httpMethod === "OPTIONS") {
         return { statusCode: 200, headers: CORS_HEADERS, body: "" };
     }
@@ -30,22 +27,16 @@ exports.handler = async function(event, context) {
         const dateTo = `${date}T23:59:59Z`;
 
         // =================================================================
-        // SCHRITT 1: HISTORIE (Dein Original)
+        // SCHRITT 1: HISTORIE
         // =================================================================
         const HISTORY_ENDPOINT = `https://fr24api.flightradar24.com/api/flight-summary/full?flights=${flight_number}&flight_datetime_from=${dateFrom}&flight_datetime_to=${dateTo}`;
         
         const response = await fetch(HISTORY_ENDPOINT, {
-            headers: {
-                'Accept': 'application/json',
-                'Accept-Version': 'v1',
-                'Authorization': `Bearer ${TOKEN}`
-            }
+            headers: { 'Accept': 'application/json', 'Accept-Version': 'v1', 'Authorization': `Bearer ${TOKEN}` }
         }); 
         
         const responseBody = await response.text(); 
-
         if (!response.ok) {
-            // Selbst Fehler müssen CORS Header haben!
             return { statusCode: response.status, headers: CORS_HEADERS, body: JSON.stringify({ message: `API Fehler: ${response.status}` }) };
         }
 
@@ -53,26 +44,21 @@ exports.handler = async function(event, context) {
         const flightsArray = data?.result?.response?.data || [];
         
         if (flightsArray.length > 0) {
-            // ✅ Daten gefunden! Zurückgeben.
-            return {
-                statusCode: 200,
-                headers: CORS_HEADERS,
-                body: JSON.stringify(data)
-            };
+            return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify(data) };
         }
 
         // =================================================================
         // SCHRITT 2: LIVE DATEN
         // =================================================================
         const cleanFlightNum = flight_number.replace(/\s+/g, '').toUpperCase();
+        
+        // 🔥 DER TRICK: Wir extrahieren die Airline-Buchstaben aus deiner Eingabe (z.B. "FR" aus "FR1148")
+        const inputIata = cleanFlightNum.replace(/[0-9]/g, '');
+
         const LIVE_ENDPOINT = `https://fr24api.flightradar24.com/api/live/flight-positions/full?flights=${cleanFlightNum}`;
 
         const liveResponse = await fetch(LIVE_ENDPOINT, {
-            headers: {
-                'Accept': 'application/json',
-                'Accept-Version': 'v1',
-                'Authorization': `Bearer ${TOKEN}`
-            }
+            headers: { 'Accept': 'application/json', 'Accept-Version': 'v1', 'Authorization': `Bearer ${TOKEN}` }
         });
 
         if (liveResponse.ok) {
@@ -82,18 +68,15 @@ exports.handler = async function(event, context) {
 
             if (liveArray.length > 0) {
                 const liveFlight = liveArray[0];
-
-                // Zeitstempel generieren (Mitte des gesuchten Tages), um config.js zu besänftigen
                 const dummyTimestamp = Math.floor(new Date(`${date}T12:00:00Z`).getTime() / 1000);
 
-                // Das ultimative Mapping (Täuscht einen perfekten Historien-Flug vor)
                 const mappedData = {
                     result: {
                         request: { query: flight_number },
                         response: {
                             data: [{
                                 identification: {
-                                    number: { default: liveFlight.flight || flight_number, alternative: null },
+                                    number: { default: cleanFlightNum, alternative: null },
                                     callsign: liveFlight.callsign || ""
                                 },
                                 aircraft: {
@@ -102,8 +85,12 @@ exports.handler = async function(event, context) {
                                     country: { name: "" }
                                 },
                                 airline: {
-                                    name: liveFlight.operating_as || "Unknown",
-                                    code: { iata: liveFlight.operating_as || "", icao: liveFlight.operating_as || "" }
+                                    // 🔥 HIER NUTZEN WIR DEINEN EINGABE-CODE ("FR") DAMIT CONFIG.JS IHN AKZEPTIERT
+                                    name: inputIata,
+                                    code: { 
+                                        iata: inputIata, 
+                                        icao: liveFlight.operating_as || "" 
+                                    }
                                 },
                                 airport: {
                                     origin: {
@@ -128,8 +115,17 @@ exports.handler = async function(event, context) {
                                     generic: { status: { text: "estimated", type: "arrival" } }
                                 },
                                 time: {
-                                    scheduled: { departure: dummyTimestamp, arrival: dummyTimestamp + 7200 },
-                                    real: { departure: dummyTimestamp, arrival: null },
+                                    scheduled: { 
+                                        departure: dummyTimestamp, 
+                                        arrival: dummyTimestamp + 7200,
+                                        departure_date: date, // 🔥 Strings für die Filter hinzugefügt
+                                        arrival_date: date
+                                    },
+                                    real: { 
+                                        departure: dummyTimestamp, 
+                                        arrival: null,
+                                        departure_date: date
+                                    },
                                     estimated: { 
                                         departure: dummyTimestamp,
                                         arrival: liveFlight.eta ? Math.floor(new Date(liveFlight.eta).getTime() / 1000) : dummyTimestamp + 7200 
@@ -140,26 +136,16 @@ exports.handler = async function(event, context) {
                     }
                 };
 
-                return {
-                    statusCode: 200,
-                    headers: CORS_HEADERS,
-                    body: JSON.stringify(mappedData)
-                };
+                return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify(mappedData) };
             }
         }
 
         // =================================================================
         // SCHRITT 3: NICHTS GEFUNDEN
         // =================================================================
-        return {
-            statusCode: 200, 
-            headers: CORS_HEADERS,
-            body: JSON.stringify(data) // Das leere Original-Objekt zurückgeben
-        };
+        return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify(data) };
 
     } catch (error) {
-        console.error("Fataler Crash:", error);
-        // Notfall-Rückgabe bei Crashs (MIT CORS HEADERS!)
         return { 
             statusCode: 500, 
             headers: {
