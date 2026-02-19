@@ -128,6 +128,7 @@
 
   "messages": {
     "noDataFound": "No se encontraron datos de vuelo para esta combinación.",
+    "futureData": "El vuelo está programado para el futuro o aún no ha despegado. Los vuelos solo se pueden registrar a partir del momento del despegue.",
     "fetchError": "Ocurrió un problema.",
     "importSuccess": "Vuelos importados. La vista se está actualizando.",
     "importConfirm": "¡ADVERTENCIA! Estás a punto de importar {count} vuelos. Todos tus vuelos actuales serán eliminados y reemplazados.",

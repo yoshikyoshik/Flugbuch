@@ -1228,7 +1228,17 @@ async function autofillFlightData() {
       updateFlightDetails(); // Distanz, Zeit & CO2 berechnen
       showMessage(getTranslation("form.autopilotSuccess"), "success");
     } else {
-      showMessage(getTranslation("messages.noDataFound"), "error");
+      // Prüfen, ob das eingegebene Datum heute oder in der Zukunft liegt
+      const selectedDate = new Date(flightDate).setHours(0, 0, 0, 0);
+      const today = new Date().setHours(0, 0, 0, 0);
+
+      if (selectedDate >= today) {
+          // Meldung für zukünftige oder geplante, aber noch nicht gestartete Flüge
+          showMessage(getTranslation("messages.futureData"), "info");
+      } else {
+          // Standard-Meldung für alte Flüge, die wirklich nicht existieren
+          showMessage(getTranslation("messages.noDataFound"), "error");
+      }
     }
   } catch (error) {
     console.error("Fehler beim Abrufen der Flugdaten:", error);

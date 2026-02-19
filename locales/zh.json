@@ -128,6 +128,7 @@
 
   "messages": {
     "noDataFound": "未找到此组合的航班数据。",
+    "futureData": "航班在未来或尚未起飞。航班只能从起飞时间开始记录。",
     "fetchError": "发生问题。",
     "importSuccess": "航班已导入。视图正在刷新。",
     "importConfirm": "警告！您即将导入 {count} 个航班。您当前的所有云端数据将被删除并替换。",

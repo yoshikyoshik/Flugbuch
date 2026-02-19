@@ -128,6 +128,7 @@
 
   "messages": {
     "noDataFound": "No flight data found for this combination.",
+    "futureData": "The flight is in the future or has not yet started. Flights can only be logged from the moment of take-off.",
     "fetchError": "A problem occurred.",
     "importSuccess": "Flights imported. View is refreshing.",
     "importConfirm": "WARNING! You are about to import {count} flights. All your current flights will be deleted and replaced.",
