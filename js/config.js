@@ -1174,33 +1174,36 @@ async function autofillFlightData() {
       });
 
       // --- DATEN EXTRAHIEREN ---
-      // Wir prüfen erst die flache Struktur (Live), dann die verschachtelte Struktur (Historie FR24)
       const depIata = flight.orig_iata || (flight.airport?.origin?.code?.iata) || "";
       const arrIata = flight.dest_iata || (flight.airport?.destination?.code?.iata) || "";
-      const airlineIata = flight.operating_as || flight.painted_as || (flight.airline?.code?.icao) || ""; 
+      const airlineIata = flight.operating_as || flight.painted_as || (flight.airline?.code?.icao) || (flight.airline?.code?.iata) || ""; 
       const aircraftModel = flight.type || (flight.aircraft?.model?.code) || ""; 
-      const registration = flight.reg || (flight.aircraft?.registration) || "";
       
-      // Sicherheits-Abbruch, falls wirklich KEIN Flughafen gefunden wurde
+      // Sicheres Auslesen der Registrierung für Live- und Historien-Flüge
+      const registration = flight.reg || (flight.aircraft?.registration) || flight.registration || "";
+      
       if (!depIata || !arrIata) {
           throw new Error("Flughafencodes fehlen in den API-Daten.");
       }
 
-      // Airline-Namen parallel abrufen
-      let finalAirlineName = airlineIata; // Fallback: Wir nutzen erstmal den Code (z.B. "KLM" oder "KL")
+      // Airline-Namen abrufen (Robust gegen Arrays, Objekte und Strings)
+      let airlineName = airlineIata; // Standard-Fallback ist der IATA/ICAO Code
 
       if (airlineIata) {
           try {
               const fetchedAirline = await fetchAirlineName(airlineIata);
               
-              // HIER IST DER FIX: Wir packen das Paket aus!
-              // Wenn ein Objekt zurückkommt, greifen wir gezielt den Namen (.name) ab.
-              if (fetchedAirline && typeof fetchedAirline === 'object') {
-                  finalAirlineName = fetchedAirline.name || fetchedAirline.icao || fetchedAirline.iata || airlineIata;
-              } 
-              // Falls wider Erwarten doch nur ein Text zurückkommt
-              else if (typeof fetchedAirline === 'string' && fetchedAirline.trim() !== "") {
-                  finalAirlineName = fetchedAirline;
+              if (fetchedAirline) {
+                  if (Array.isArray(fetchedAirline) && fetchedAirline.length > 0) {
+                      // API Ninjas liefert oft ein Array: [{ name: "Lufthansa", ... }]
+                      airlineName = fetchedAirline[0].name || fetchedAirline[0].icao || airlineIata;
+                  } else if (typeof fetchedAirline === 'object' && !Array.isArray(fetchedAirline)) {
+                      // Es ist ein einzelnes Objekt
+                      airlineName = fetchedAirline.name || fetchedAirline.icao || airlineIata;
+                  } else if (typeof fetchedAirline === 'string' && fetchedAirline.trim() !== "") {
+                      // Es ist bereits reiner Text
+                      airlineName = fetchedAirline;
+                  }
               }
           } catch (error) {
               console.warn("Airline-Name konnte nicht geladen werden, nutze Code-Fallback.", error);
@@ -1211,7 +1214,8 @@ async function autofillFlightData() {
       document.getElementById("departure").value = depIata;
       document.getElementById("arrival").value = arrIata;
       document.getElementById("aircraftType").value = aircraftModel || "";
-      document.getElementById("flightNumber").value = flight.flight;
+      // Falls die Flugnummer fehlt, nehmen wir das, was der Nutzer ins Suchfeld getippt hat
+      document.getElementById("flightNumber").value = flight.flight || flight.identification?.number?.default || document.getElementById("auto-flight-number").value.trim().toUpperCase() || "";
       document.getElementById("airline").value = airlineName || "";
       document.getElementById("registration").value = registration || "";
       document.getElementById("flightDate").value = flightDate;
