@@ -316,6 +316,93 @@ async function initializeApp() {
   // Trips für den Filter laden (für den Tab "Flüge")
   populateTripFilterDropdown();
 
+  // --- OFFLINE SYNC LISTENER ---
+  // 1. Beim Start prüfen
+  syncOfflineFlights();
+
+  // 2. Wenn Verbindung wiederkommt
+  window.addEventListener('online', () => {
+      console.log("🌐 Verbindung wiederhergestellt. Starte Sync...");
+      syncOfflineFlights();
+  });
+
+}
+
+// ==========================================
+// OFFLINE SYNC LOGIC
+// ==========================================
+
+function saveFlightOffline(flightData) {
+    // 1. Hole bestehende Queue aus LocalStorage
+    let queue = [];
+    try {
+        queue = JSON.parse(localStorage.getItem('offline_flight_queue') || '[]');
+    } catch (e) { queue = []; }
+    
+    // 2. Flug markieren und hinzufügen
+    flightData._isOffline = true; 
+    flightData._timestamp = new Date().getTime(); // Für Sortierung
+    queue.push(flightData);
+    
+    // 3. Speichern
+    localStorage.setItem('offline_flight_queue', JSON.stringify(queue));
+    
+    showMessage("Offline gespeichert", "Kein Internet. Flug wurde lokal gespeichert und wird später übertragen.", "info");
+}
+
+async function syncOfflineFlights() {
+    // Nur ausführen, wenn wir online sind
+    if (!navigator.onLine) return;
+
+    let queue = [];
+    try {
+        queue = JSON.parse(localStorage.getItem('offline_flight_queue') || '[]');
+    } catch (e) { return; }
+    
+    if (queue.length === 0) return;
+
+    console.log(`🔄 Sync: Versuche ${queue.length} Offline-Flüge zu senden...`);
+    showMessage("Sync", `Übertrage ${queue.length} offline gespeicherte Flüge...`, "info");
+
+    const failedQueue = [];
+    let successCount = 0;
+
+    for (const flight of queue) {
+        // Aufräumen: Interne Offline-Flags entfernen
+        const { _isOffline, _timestamp, ...flightForDb } = flight;
+
+        // Versuchen zu senden
+        const { error } = await supabaseClient
+            .from("flights")
+            .insert(flightForDb);
+
+        if (error) {
+            console.error("Sync Fehler für Flug:", flight, error);
+            // Bei Fehler behalten wir ihn in der Queue
+            failedQueue.push(flight);
+        } else {
+            successCount++;
+        }
+    }
+
+    // Queue aktualisieren (nur die fehlgeschlagenen bleiben übrig)
+    localStorage.setItem('offline_flight_queue', JSON.stringify(failedQueue));
+
+    if (successCount > 0) {
+        showMessage("Sync erfolgreich", `${successCount} Flüge wurden nachgetragen.`, "success");
+        
+        // Liste neu laden, damit die neuen Flüge erscheinen
+        if (typeof renderFlights === 'function') {
+             // Cache leeren erzwingen durch direkten Abruf
+             allFlightsUnfiltered = await getFlights();
+             renderFlights(allFlightsUnfiltered);
+        }
+    }
+    
+    if (failedQueue.length > 0) {
+        // Silent Log, um den User nicht zu nerven, oder kleine Info
+        console.warn(`${failedQueue.length} Flüge konnten noch nicht gesendet werden.`);
+    }
 }
 
 // =================================================================
@@ -765,6 +852,26 @@ airline_logo: finalAirlineLogo,  // Das neue Logo-Feld
       null,
   };
 
+  // --- OFFLINE CHECK & SAVE ---
+  if (!navigator.onLine) {
+      // 1. Warnung bzgl. Fotos (da Supabase Storage offline nicht geht)
+      if (filesToUpload && filesToUpload.length > 0) {
+          alert("Hinweis: Fotos können im Offline-Modus leider nicht gespeichert werden. Bitte fügen Sie diese später hinzu.");
+          newFlightForSupabase.photo_url = []; // Fotos leeren
+      }
+
+      // 2. Lokal speichern
+      saveFlightOffline(newFlightForSupabase);
+      
+      // 3. UI zurücksetzen (wie beim Erfolg)
+      resetForm();
+      logButton.textContent = getTranslation("form.buttonLogFlight") || "Log Flight";
+      logButton.disabled = false;
+      return; // 🛑 HIER ABBRECHEN, NICHT AN SUPABASE SENDEN
+  }
+  // -----------------------------
+
+  // Normaler Online-Insert (Dein bestehender Code)
   const { error } = await supabaseClient
     .from("flights")
     .insert(newFlightForSupabase);
