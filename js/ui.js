@@ -2047,3 +2047,37 @@ async function shareInfoModalScreenshot() {
         buttons.forEach(b => b.style.visibility = 'visible');
     }
 }
+
+/**
+ * Steuert das Öffnen und Schließen des neuen Login Bottom-Sheets / Modals
+ * @param {boolean} show - true zum Öffnen, false zum Schließen
+ */
+window.toggleAuthSheet = function(show) {
+    const backdrop = document.getElementById("auth-sheet-backdrop");
+    const panel = document.getElementById("auth-sheet-panel");
+
+    if (!backdrop || !panel) return;
+
+    if (show) {
+        // Einblenden
+        backdrop.classList.remove("pointer-events-none");
+        backdrop.classList.add("opacity-100");
+        backdrop.classList.remove("opacity-0");
+
+        // Panel rein-sliden (Mobile) / vergrößern (Desktop)
+        panel.classList.remove("translate-y-full", "md:scale-95", "md:opacity-0");
+        panel.classList.add("translate-y-0", "md:scale-100", "md:opacity-100");
+    } else {
+        // Ausblenden
+        backdrop.classList.remove("opacity-100");
+        backdrop.classList.add("opacity-0", "pointer-events-none");
+
+        // Panel raus-sliden (Mobile) / verkleinern (Desktop)
+        panel.classList.remove("translate-y-0", "md:scale-100", "md:opacity-100");
+        panel.classList.add("translate-y-full", "md:scale-95", "md:opacity-0");
+        
+        // Fehler-Meldungen zurücksetzen beim Schließen
+        const errorText = document.getElementById("auth-error");
+        if(errorText) errorText.textContent = "";
+    }
+};

@@ -66,76 +66,55 @@
   </head>
 
   <body class="bg-gray-100 dark:bg-gray-900">
-    <div
-      id="auth-container"
-      class="min-h-screen flex items-center justify-center p-4 bg-gray-100 dark:bg-gray-900"
-    >
-      <div
-        class="w-full max-w-5xl bg-white dark:bg-gray-800 shadow-2xl rounded-2xl overflow-hidden flex flex-col md:flex-row"
-      >
-        <div class="md:w-1/2 bg-indigo-600 p-8 text-white flex flex-col justify-between relative overflow-hidden">
-          <div class="absolute top-0 right-0 -mr-10 -mt-10 w-40 h-40 bg-white opacity-10 rounded-full blur-3xl"></div>
-          
-          <div class="relative z-10">
-            <div class="flex justify-between items-start mb-8">
-                <div class="flex items-center gap-3">
-                   <img src="pictures/logo.png" alt="AvioSphere Logo" class="w-12 h-12 rounded-xl bg-white p-1 shadow-md">
-                   <h1 class="text-3xl font-extrabold tracking-tight">AvioSphere</h1>
-                </div>
+    <div id="auth-container" class="relative min-h-screen w-full bg-gradient-to-br from-indigo-900 via-indigo-700 to-indigo-900 overflow-hidden flex flex-col justify-between items-center transition-all duration-500">
+      
+      <div class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-indigo-500 rounded-full mix-blend-overlay filter blur-3xl opacity-50"></div>
+      <div class="absolute bottom-[20%] right-[-10%] w-72 h-72 bg-purple-500 rounded-full mix-blend-overlay filter blur-3xl opacity-50"></div>
 
-                <div class="flex gap-2 text-indigo-200 text-sm font-bold bg-indigo-800/30 px-3 py-1 rounded-full backdrop-blur-sm border border-indigo-500/30">
-                    <button onclick="setLanguage('de')" class="hover:text-white transition">DE</button>
-                    <span class="opacity-50">|</span>
-                    <button onclick="setLanguage('en')" class="hover:text-white transition">EN</button>
-                </div>
-            </div>
-            
-            <h2 class="text-2xl font-bold mb-4" data-i18n="landing.headline">Mache deine Reisen unvergesslich.</h2>
-            <p class="text-indigo-100 mb-8 text-lg leading-relaxed" data-i18n="landing.subheadline">
-              Das ultimative digitale Flugbuch für Vielflieger und Luftfahrt-Enthusiasten.
-            </p>
+      <div class="w-full flex justify-end p-6 relative z-20">
+        <div class="flex gap-2 text-white/80 text-xs font-bold bg-white/10 px-3 py-1.5 rounded-full backdrop-blur-md border border-white/20 shadow-sm">
+            <button onclick="setLanguage('de')" class="hover:text-white transition">DE</button>
+            <span class="opacity-50">|</span>
+            <button onclick="setLanguage('en')" class="hover:text-white transition">EN</button>
+        </div>
+      </div>
 
-            <ul class="space-y-5 text-indigo-50 font-medium">
-              <li class="flex items-center gap-4">
-                <span class="text-2xl bg-indigo-500/30 p-2 rounded-lg">🌍</span>
-                <span data-i18n="landing.featureGlobus">Interaktiver 3D-Globus deiner Reisen</span>
-              </li>
-              <li class="flex items-center gap-4">
-                <span class="text-2xl bg-indigo-500/30 p-2 rounded-lg">📊</span>
-                <span data-i18n="landing.featureStats">Detaillierte Statistiken & Charts</span>
-              </li>
-              <li class="flex items-center gap-4">
-                <span class="text-2xl bg-indigo-500/30 p-2 rounded-lg">✈️</span>
-                <span data-i18n="landing.featureAutopilot">Autopilot: Daten per Flugnummer</span>
-              </li>
-              <li class="flex items-center gap-4">
-                <span class="text-2xl bg-indigo-500/30 p-2 rounded-lg">📸</span>
-                <span data-i18n="landing.featurePhotos">Foto-Upload & PDF-Export</span>
-              </li>
-            </ul>
-          </div>
+      <div class="relative z-10 flex flex-col items-center text-center px-6 -mt-10">
+        <img src="pictures/logo.png" alt="AvioSphere Logo" class="w-28 h-28 md:w-32 md:h-32 rounded-3xl shadow-2xl mb-8 transform hover:scale-105 transition duration-300 ring-4 ring-white/20">
+        <h1 class="text-5xl md:text-7xl font-extrabold text-white tracking-tight drop-shadow-lg mb-4">AvioSphere</h1>
+        <p class="text-indigo-100 text-lg md:text-xl font-medium max-w-sm drop-shadow-md" data-i18n="landing.subheadline">
+          Das ultimative digitale Flugbuch für Vielflieger und Enthusiasten.
+        </p>
+      </div>
 
-          <div class="mt-10 text-xs text-indigo-200 relative z-10">
-            <p class="mb-2">© <span id="current-year"></span> AvioSphere. All rights reserved.</p>
-            <div class="flex flex-wrap gap-4">
-                <a id="link-privacy" href="privacy.html" target="_blank" class="hover:text-white underline decoration-indigo-400" data-i18n="landing.privacy">Datenschutzerklärung</a>
-                <a id="link-terms" href="terms.html" target="_blank" class="hover:text-white underline decoration-indigo-400" data-i18n="landing.terms">AGB & Impressum</a>
-            </div>
-          </div>
+      <div class="relative z-20 w-full max-w-sm px-6 pb-12 space-y-4">
+        <button onclick="toggleAuthSheet(true)" class="w-full py-4 bg-white text-indigo-700 font-extrabold text-lg rounded-2xl shadow-xl hover:bg-gray-50 transform hover:-translate-y-1 transition-all duration-200">
+          Login / Registrieren
+        </button>
+        
+        <button id="demo-btn" class="w-full py-4 bg-indigo-800/40 border border-indigo-300/50 text-white font-bold text-lg rounded-2xl backdrop-blur-md hover:bg-indigo-800/60 transition-all duration-200">
+          <span class="mr-2">🚀</span> <span data-i18n="demo.btn">App testen (Demo)</span>
+        </button>
+
+        <div class="pt-4 flex justify-center gap-4 text-xs text-indigo-200/70">
+            <a href="privacy.html" target="_blank" class="hover:text-white transition">Datenschutz</a>
+            <span>&bull;</span>
+            <a href="terms.html" target="_blank" class="hover:text-white transition">Impressum</a>
+        </div>
+      </div>
+
+      <div id="auth-sheet-backdrop" onclick="toggleAuthSheet(false)" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 opacity-0 pointer-events-none transition-opacity duration-300"></div>
+
+      <div id="auth-sheet-panel" class="fixed bottom-0 left-0 w-full bg-white dark:bg-gray-800 rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.3)] z-50 transform translate-y-full transition-all duration-300 ease-out md:top-1/2 md:left-1/2 md:bottom-auto md:w-full md:max-w-md md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-2xl md:scale-95 md:opacity-0 max-h-[90vh] overflow-y-auto">
+        
+        <div class="w-full flex justify-center pt-3 pb-2 md:hidden" onclick="toggleAuthSheet(false)">
+            <div class="w-12 h-1.5 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
         </div>
 
-        <div class="md:w-1/2 p-8 md:p-12 bg-white dark:bg-gray-800 overflow-y-auto relative">
-            
-            
-
-            <div class="md:hidden flex justify-center mb-6 mt-4">
-                <img src="pictures/logo.png" alt="Logo" class="w-16 h-16 rounded-xl shadow-md">
-            </div>
-
-            <div class="text-center mb-8 mt-2">
-                <h2 class="text-2xl font-bold text-gray-800 dark:text-white" data-i18n="loginWelcome">Willkommen an Bord</h2>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mt-2" data-i18n="loginSubtitle">Melde dich an, um dein Logbuch zu starten.</p>
-            </div>
+        <div class="p-6 md:p-8 pt-2 md:pt-8">
+            <button onclick="toggleAuthSheet(false)" class="hidden md:block absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
 
             <div id="auth-tabs" class="flex justify-center border-b border-gray-200 dark:border-gray-700 mb-6">
               <button onclick="switchAuthTab('login')" id="login-tab" data-i18n="login" class="auth-tab active-tab px-6 py-2 font-semibold text-lg transition-colors">Login</button>
@@ -143,90 +122,68 @@
             </div>
 
             <form id="login-form" class="space-y-5">
-  <div>
-    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" data-i18n="placeholder.email">E-Mail</label>
-    <input type="email" id="login-email" required class="w-full p-3 rounded-lg border border-gray-300 dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 outline-none transition" />
-  </div>
-  
-  <div>
-    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" data-i18n="placeholder.password">Passwort</label>
-    <div class="relative">
-      <input type="password" id="login-password" required class="w-full p-3 pr-10 rounded-lg border border-gray-300 dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 outline-none transition" />
-      <button type="button" onclick="togglePasswordVisibility('login-password', this)" class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors focus:outline-none">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z M12 9a3 3 0 100 6 3 3 0 000-6z" />
-        </svg>
-      </button>
-    </div>
-  </div>
-  <div class="text-right">
-    <a href="#" onclick="event.preventDefault(); showPasswordResetForm();" data-i18n="forgotPWD" class="text-sm font-medium text-indigo-600 hover:underline dark:text-indigo-400">Passwort vergessen?</a>
-  </div>
-  <button type="submit" data-i18n="login" class="w-full py-3 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
-    Einloggen
-  </button>
-</form>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" data-i18n="placeholder.email">E-Mail</label>
+                <input type="email" id="login-email" required class="w-full p-3 rounded-xl border border-gray-300 dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 outline-none transition" />
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" data-i18n="placeholder.password">Passwort</label>
+                <div class="relative">
+                  <input type="password" id="login-password" required class="w-full p-3 pr-10 rounded-xl border border-gray-300 dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 outline-none transition" />
+                  <button type="button" onclick="togglePasswordVisibility('login-password', this)" class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-indigo-600 transition-colors focus:outline-none">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z M12 9a3 3 0 100 6 3 3 0 000-6z" /></svg>
+                  </button>
+                </div>
+              </div>
+              <div class="text-right">
+                <a href="#" onclick="event.preventDefault(); showPasswordResetForm();" data-i18n="forgotPWD" class="text-sm font-medium text-indigo-600 hover:underline dark:text-indigo-400">Passwort vergessen?</a>
+              </div>
+              <button type="submit" data-i18n="login" class="w-full py-3.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                Einloggen
+              </button>
+            </form>
 
-<form id="register-form" class="space-y-5 hidden">
-  <div>
-    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" data-i18n="placeholder.email">E-Mail</label>
-    <input type="email" id="register-email" required class="w-full p-3 rounded-lg border border-gray-300 dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-green-500 outline-none transition" />
-  </div>
+            <form id="register-form" class="space-y-5 hidden">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" data-i18n="placeholder.email">E-Mail</label>
+                <input type="email" id="register-email" required class="w-full p-3 rounded-xl border border-gray-300 dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-green-500 outline-none transition" />
+              </div>
 
-  <div>
-    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" data-i18n="placeholder.password">Passwort</label>
-    <div class="relative">
-      <input type="password" id="register-password" required class="w-full p-3 pr-10 rounded-lg border border-gray-300 dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-green-500 outline-none transition" />
-      <button type="button" onclick="togglePasswordVisibility('register-password', this)" class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors focus:outline-none">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z M12 9a3 3 0 100 6 3 3 0 000-6z" />
-        </svg>
-      </button>
-    </div>
-  </div>
-  <button type="submit" data-i18n="registerFree" class="w-full py-3 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
-    Kostenlos Registrieren
-  </button>
-  <p class="text-xs text-center text-gray-500 dark:text-gray-400 mt-4">
-    <span data-i18n="regTermsPrefix">Mit der Registrierung akzeptierst du unsere</span>
-    <a id="link-terms-small" href="terms.html" target="_blank" class="underline hover:text-indigo-600" data-i18n="terms">AGB</a>
-    <span data-i18n="and">und</span>
-    <a id="link-privacy-small" href="privacy.html" target="_blank" class="underline hover:text-indigo-600" data-i18n="privacy">Datenschutz</a>.
-  </p>
-</form>
-
-            <div id="demo-container" class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700 text-center">
-    <p class="text-sm text-gray-500 dark:text-gray-400 mb-3" data-i18n="demo.or">oder</p>
-    
-    <button 
-        id="demo-btn" 
-        type="button" 
-        class="w-full py-3 rounded-xl font-bold shadow-md transition-all duration-200 transform hover:-translate-y-0.5 flex justify-center items-center gap-2
-               bg-green-100 text-green-800 border-2 border-green-400 hover:bg-green-200 hover:shadow-lg
-               dark:bg-green-900/20 dark:text-green-300 dark:border-green-600 dark:hover:bg-green-900/40"
-    >
-        <span class="text-xl">🚀</span> 
-        <span data-i18n="demo.btn">Ohne Account ausprobieren (Demo)</span>
-    </button>
-</div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" data-i18n="placeholder.password">Passwort</label>
+                <div class="relative">
+                  <input type="password" id="register-password" required class="w-full p-3 pr-10 rounded-xl border border-gray-300 dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-green-500 outline-none transition" />
+                  <button type="button" onclick="togglePasswordVisibility('register-password', this)" class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-green-600 transition-colors focus:outline-none">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z M12 9a3 3 0 100 6 3 3 0 000-6z" /></svg>
+                  </button>
+                </div>
+              </div>
+              <button type="submit" data-i18n="registerFree" class="w-full py-3.5 bg-green-600 text-white font-bold rounded-xl hover:bg-green-700 transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                Kostenlos Registrieren
+              </button>
+              <p class="text-xs text-center text-gray-500 dark:text-gray-400 mt-4">
+                Mit der Registrierung akzeptierst du unsere <a href="terms.html" target="_blank" class="underline hover:text-indigo-600">AGB</a> und <a href="privacy.html" target="_blank" class="underline hover:text-indigo-600">Datenschutz</a>.
+              </p>
+            </form>
 
             <div id="password-reset-container" class="hidden space-y-4">
-                <div class="text-center mt-4">
-                    <a href="#" onclick="event.preventDefault(); backToLogin();" data-i18n="backToLogin" class="text-sm font-medium text-indigo-600 hover:underline dark:text-indigo-400">Zurück zum Login</a>
+                <div class="text-center mb-4">
+                    <a href="#" onclick="event.preventDefault(); backToLogin();" class="text-sm font-medium text-indigo-600 hover:underline flex items-center justify-center gap-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg> Zurück zum Login</a>
                 </div>
             </div>
             
             <form id="request-reset-form" class="space-y-4 hidden">
                 <p data-i18n="newMail4Link4PWD" class="text-sm text-center text-gray-600 dark:text-gray-400">Gib deine E-Mail-Adresse ein...</p>
-                <input type="email" id="reset-email" placeholder="E-Mail" required class="w-full p-3 rounded-lg border border-gray-300 dark:bg-gray-700 dark:border-gray-600" />
-                <button type="submit" data-i18n="reset" class="w-full py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">Reset-Link anfordern</button>
-              </form>
-              <form id="update-password-form" class="space-y-4 hidden">
-                 <input type="password" id="update-password-input" placeholder="Neues Passwort" required class="w-full p-3 rounded-lg border-gray-300 dark:bg-gray-700 dark:border-gray-600" />
-                 <button type="submit" data-i18n="saveNewPWD" class="w-full py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition">Neues Passwort speichern</button>
-              </form>
+                <input type="email" id="reset-email" placeholder="E-Mail" required class="w-full p-3 rounded-xl border border-gray-300 dark:bg-gray-700 dark:border-gray-600" />
+                <button type="submit" data-i18n="reset" class="w-full py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition font-bold">Reset-Link anfordern</button>
+            </form>
+            <form id="update-password-form" class="space-y-4 hidden">
+                 <input type="password" id="update-password-input" placeholder="Neues Passwort" required class="w-full p-3 rounded-xl border border-gray-300 dark:bg-gray-700 dark:border-gray-600" />
+                 <button type="submit" data-i18n="saveNewPWD" class="w-full py-3 bg-green-500 text-white rounded-xl hover:bg-green-600 transition font-bold">Neues Passwort speichern</button>
+            </form>
 
-            <p id="auth-error" class="text-red-500 text-sm mt-6 text-center font-medium"></p>
+            <p id="auth-error" class="text-red-500 text-sm mt-4 text-center font-medium empty:hidden"></p>
         </div>
       </div>
     </div>
