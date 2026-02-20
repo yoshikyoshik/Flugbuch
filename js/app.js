@@ -807,20 +807,17 @@ window.logFlight = async function () {
 
   if (rawAirlineInput.length >= 2) {
       try {
-          const fetchedAirline = await fetchAirlineName(rawAirlineInput.toUpperCase());
+          // Wir rufen die API direkt auf (wie im Logbuch), um GANZ SICHER das Logo zu bekommen!
+          const response = await fetch(`${API_BASE_URL}/.netlify/functions/fetch-airline-details?iata_code=${encodeURIComponent(rawAirlineInput.toUpperCase())}`);
           
-          // Wir entpacken das Array (falls es eins ist)
-          let airlineData = null;
-          if (Array.isArray(fetchedAirline) && fetchedAirline.length > 0) {
-              airlineData = fetchedAirline[0];
-          } else if (typeof fetchedAirline === 'object' && !Array.isArray(fetchedAirline)) {
-              airlineData = fetchedAirline;
-          }
-
-          if (airlineData && airlineData.name) {
-              finalAirlineName = airlineData.name;
-              // API Ninjas nutzt logo_url oder brandmark_url
-              finalAirlineLogo = airlineData.logo_url || airlineData.brandmark_url || null;
+          if (response.ok) {
+              const result = await response.json();
+              if (result && result.data && result.data.length > 0) {
+                  const airlineData = result.data[0];
+                  finalAirlineName = airlineData.name || finalAirlineName;
+                  // Wir sichern alle Logo-Varianten ab (logo_url, brandmark_url, tail_logo_url)
+                  finalAirlineLogo = airlineData.logo_url || airlineData.brandmark_url || airlineData.tail_logo_url || null;
+              }
           }
       } catch (err) {
           console.warn("Konnte Airline-Details nicht laden:", err);
@@ -1083,19 +1080,17 @@ async function updateFlight() {
 
   if (rawAirlineInput.length >= 2) {
       try {
-          const fetchedAirline = await fetchAirlineName(rawAirlineInput.toUpperCase());
+          // Auch beim Update den direkten API-Weg gehen!
+          const response = await fetch(`${API_BASE_URL}/.netlify/functions/fetch-airline-details?iata_code=${encodeURIComponent(rawAirlineInput.toUpperCase())}`);
           
-          let airlineData = null;
-          if (Array.isArray(fetchedAirline) && fetchedAirline.length > 0) {
-              airlineData = fetchedAirline[0];
-          } else if (typeof fetchedAirline === 'object' && !Array.isArray(fetchedAirline)) {
-              airlineData = fetchedAirline;
-          }
-
-          if (airlineData && airlineData.name) {
-              finalAirlineName = airlineData.name;
-              // Falls die API ein Logo hat, nimm es. Ansonsten behalte das alte Logo.
-              finalAirlineLogo = airlineData.logo_url || airlineData.brandmark_url || finalAirlineLogo;
+          if (response.ok) {
+              const result = await response.json();
+              if (result && result.data && result.data.length > 0) {
+                  const airlineData = result.data[0];
+                  finalAirlineName = airlineData.name || finalAirlineName;
+                  // Falls die API ein Logo hat, nimm es. Ansonsten behalte das alte Logo.
+                  finalAirlineLogo = airlineData.logo_url || airlineData.brandmark_url || airlineData.tail_logo_url || finalAirlineLogo;
+              }
           }
       } catch (err) {
           console.warn("Update: Konnte Airline nicht laden", err);
