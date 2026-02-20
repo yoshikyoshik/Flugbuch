@@ -324,3 +324,48 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.3);
   box-shadow: 0 10px 15px -3px rgba(236, 72, 153, 0.4); /* Pinker Schatten */
 }
+
+/* =================================================================
+   MODERN FLOATING BOTTOM NAV (Overrides)
+   ================================================================= */
+
+/* Versteckt die Scrollbar bei kleinen Handys, lässt aber Wischen zu */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Basis-Styling für alle Tab-Buttons in der Floating Bar */
+.tab-btn {
+  border: none !important;
+  border-radius: 9999px !important; /* Macht sie komplett rund (Pillenform) */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* AKTIVER TAB: Wir fangen die Klasse 'text-indigo-600' der ui.js ab! */
+.tab-btn.text-indigo-600 {
+  background-color: #4f46e5 !important; /* bg-indigo-600 */
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.35) !important;
+  font-weight: 700 !important;
+  transform: scale(1.02);
+}
+
+.dark .tab-btn.text-indigo-600 {
+  background-color: #6366f1 !important; /* bg-indigo-500 für Dark Mode */
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35) !important;
+}
+
+/* INAKTIVER TAB: Hover-Effekte */
+.tab-btn.text-gray-500:hover {
+  background-color: rgba(79, 70, 229, 0.1) !important;
+  color: #4f46e5 !important;
+}
+
+.dark .tab-btn.text-gray-500:hover {
+  background-color: rgba(99, 102, 241, 0.15) !important;
+  color: #a5b4fc !important;
+}

@@ -2470,71 +2470,70 @@ async function createNewTrip() {
 
 // app.js - openTripManager (KORRIGIERT)
 
-async function openTripManager() {
+window.renderTripManager = async function() {
+  const container = document.getElementById("trips-content");
+  if (!container) return;
+  container.innerHTML = `<p class="text-gray-500">Lade Reisen...</p>`;
+
   // 1. Trips laden
   const { data: trips } = await supabaseClient
       .from("trips")
       .select("*")
       .order("created_at", { ascending: false });
   
-  // 2. Flüge laden (FIX: Wir holen sie direkt, statt auf die Variable zu hoffen)
+  // 2. Flüge laden
   const allFlights = await getFlights();
 
   if (!allFlights || allFlights.length === 0) {
-      showMessage("Info", "Keine Flüge geladen.", "info");
+      container.innerHTML = `<p class="text-gray-500">Keine Flüge geladen.</p>`;
       return;
   }
 
   if (!trips || trips.length === 0) {
-      showMessage("Info", "Du hast noch keine Reisen angelegt.", "info");
+      container.innerHTML = `<p class="text-gray-500">Du hast noch keine Reisen angelegt.</p>`;
       return;
   }
 
   // 3. HTML bauen
-  let htmlContent = `<div class="space-y-4">`;
+  let htmlContent = `<div class="space-y-6">`;
 
   trips.forEach(trip => {
-      // Filtere Flüge für diese Reise
       const tripFlights = allFlights.filter(f => f.trip_id == trip.id);
-
       if (tripFlights.length === 0) return; 
 
-      // Statistiken berechnen
       const totalDist = tripFlights.reduce((sum, f) => sum + (f.distance || 0), 0);
       const totalCO2 = tripFlights.reduce((sum, f) => sum + (f.co2_kg || 0), 0);
-      
-      // Preis (einfache Summe)
       const totalPrice = tripFlights.reduce((sum, f) => sum + (f.price || 0), 0).toFixed(2);
       const currency = tripFlights.find(f => f.currency)?.currency || "";
 
-      // HTML für die Karte
+      // HTML für die Karte (jetzt ohne Popup-Rand, passend für den Tab)
       htmlContent += `
-        <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow border border-gray-200 dark:border-gray-700">
-            <div class="flex justify-between items-center mb-2">
-                <h3 class="text-lg font-bold text-gray-800 dark:text-white">${trip.name}</h3>
-                <span class="text-xs text-gray-500">${tripFlights.length} Flüge</span>
+        <div class="bg-gray-50 dark:bg-gray-900/50 p-5 rounded-xl border border-gray-200 dark:border-gray-700">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-indigo-700 dark:text-indigo-400">🏝️ ${trip.name}</h3>
+                <span class="text-sm font-semibold text-gray-500 px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded-full">${tripFlights.length} Flüge</span>
             </div>
             
-            <div class="grid grid-cols-3 gap-2 text-sm text-center mb-3">
-                <div class="bg-gray-50 dark:bg-gray-700 p-2 rounded">
-                    <div class="font-bold text-gray-700 dark:text-gray-200">${totalDist.toLocaleString("de-DE")} km</div>
-                    <div class="text-xs text-gray-400">Distanz</div>
+            <div class="grid grid-cols-3 gap-3 text-sm text-center mb-4">
+                <div class="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
+                    <div class="font-extrabold text-gray-800 dark:text-gray-200 text-lg">${totalDist.toLocaleString("de-DE")} km</div>
+                    <div class="text-xs text-gray-400 uppercase tracking-wide mt-1">Distanz</div>
                 </div>
-                <div class="bg-gray-50 dark:bg-gray-700 p-2 rounded">
-                     <div class="font-bold text-green-600 dark:text-green-400">${totalPrice} ${currency}</div>
-                     <div class="text-xs text-gray-400">Kosten</div>
+                <div class="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
+                     <div class="font-extrabold text-green-600 dark:text-green-400 text-lg">${totalPrice} ${currency}</div>
+                     <div class="text-xs text-gray-400 uppercase tracking-wide mt-1">Kosten</div>
                 </div>
-                <div class="bg-gray-50 dark:bg-gray-700 p-2 rounded">
-                     <div class="font-bold text-orange-600 dark:text-orange-400">${totalCO2.toLocaleString("de-DE")} kg</div>
-                     <div class="text-xs text-gray-400">CO₂</div>
+                <div class="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
+                     <div class="font-extrabold text-orange-600 dark:text-orange-400 text-lg">${totalCO2.toLocaleString("de-DE")} kg</div>
+                     <div class="text-xs text-gray-400 uppercase tracking-wide mt-1">CO₂</div>
                 </div>
             </div>
             
-            <div class="text-xs text-gray-500 dark:text-gray-400 space-y-1">
+            <div class="text-sm text-gray-600 dark:text-gray-400 space-y-2">
                 ${tripFlights.map(f => `
-                    <div class="flex justify-between">
-                        <span>✈️ ${f.departure} ➔ ${f.arrival}</span>
-                        <span>${f.date}</span>
+                    <div class="flex justify-between items-center border-b border-gray-200 dark:border-gray-700 last:border-0 pb-2 last:pb-0">
+                        <span class="font-medium">✈️ ${f.departure} ➔ ${f.arrival}</span>
+                        <span class="text-xs bg-white dark:bg-gray-800 px-2 py-1 rounded">${f.date}</span>
                     </div>
                 `).join('')}
             </div>
@@ -2543,11 +2542,8 @@ async function openTripManager() {
   });
 
   htmlContent += `</div>`;
-
-  document.getElementById("info-modal-title").textContent = "Meine Reisen & Events";
-  document.getElementById("info-modal-content").innerHTML = htmlContent;
-  openInfoModal();
-}
+  container.innerHTML = htmlContent;
+};
 
 // app.js - Ganz am Ende einfügen
 

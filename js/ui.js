@@ -559,6 +559,7 @@ function showTab(tabName) {
   document.getElementById("tab-content-neue-fluege").classList.add("hidden");
   document.getElementById("tab-content-achievements").classList.add("hidden");
   document.getElementById("tab-content-hilfe").classList.add("hidden");
+  document.getElementById("tab-content-trips")?.classList.add("hidden"); // <--- Diese Zeile ergänzen
 
   document.querySelectorAll(".tab-btn").forEach((btn) => {
     btn.classList.remove("border-indigo-500", "text-indigo-600");
@@ -591,6 +592,9 @@ function showTab(tabName) {
   }
   if (tabName === "hilfe") {
     renderHelpContent();
+  }
+  if (tabName === "trips") {
+    renderTripManager();
   }
 }
 
