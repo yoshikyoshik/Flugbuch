@@ -369,3 +369,62 @@ body {
   background-color: rgba(99, 102, 241, 0.15) !important;
   color: #a5b4fc !important;
 }
+
+/* =================================================================
+   MODERN CARD UI & SOFT INPUTS (Schritt 2)
+   ================================================================= */
+
+/* 1. Weichere, modernere Eingabefelder (Inputs, Selects, Textareas) */
+input[type="text"], input[type="date"], input[type="number"], 
+input[type="email"], input[type="password"], select, textarea {
+    border-radius: 0.75rem !important; /* rounded-xl */
+    transition: all 0.2s ease-in-out !important;
+}
+
+input:focus, select:focus, textarea:focus {
+    /* Ein sanfter, leuchtender Rand beim Reinklicken (Fokus) */
+    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15) !important;
+    border-color: #6366f1 !important;
+}
+
+/* 2. Flug-Karten in der Liste (Werden von app.js generiert) */
+#flight-log-list > div {
+    border-radius: 1.25rem !important; /* 20px Ecken */
+    border: 1px solid rgba(229, 231, 235, 0.6) !important;
+    box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.05) !important;
+    transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+    background-color: #ffffff !important;
+    padding: 1.25rem !important; /* Etwas mehr Luft zum Atmen */
+}
+
+/* Hover-Effekt: Die Flugkarte schwebt leicht nach oben */
+#flight-log-list > div:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 12px 25px -5px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Dark Mode für die Flug-Karten */
+.dark #flight-log-list > div {
+    background-color: #1f2937 !important;
+    border-color: rgba(75, 85, 99, 0.4) !important;
+    box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* 3. Statistik- und Trip-Karten aufhübschen */
+#statistics-panel > div,
+#trips-content > div > div {
+    border-radius: 1.25rem !important;
+    box-shadow: 0 4px 15px -3px rgba(0, 0, 0, 0.03) !important;
+    border: 1px solid rgba(229, 231, 235, 0.6) !important;
+    transition: transform 0.2s ease !important;
+}
+
+#statistics-panel > div:hover {
+    transform: translateY(-2px) !important;
+}
+
+.dark #statistics-panel > div,
+.dark #trips-content > div > div {
+    border-color: rgba(75, 85, 99, 0.4) !important;
+    background-color: rgba(31, 41, 55, 0.6) !important;
+}
