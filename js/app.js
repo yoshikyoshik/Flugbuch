@@ -272,7 +272,7 @@ async function initializeApp() {
   // --- ENDE Event-Listener ---
 
   // Initiales Rendern der App
-  showTab("neue-fluege");
+  showTab("fluege");
   renderFlights();
   displayAppVersion();
   showFirstStepsTutorial();

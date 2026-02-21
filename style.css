@@ -387,35 +387,40 @@ input:focus, select:focus, textarea:focus {
     border-color: #6366f1 !important;
 }
 
-/* 2. Flug-Karten in der Liste (Werden von app.js generiert) */
+/* 2. Flug-Karten in der Liste */
 #flight-log-list > div {
-    border-radius: 1.25rem !important; /* 20px Ecken */
-    border: 1px solid rgba(229, 231, 235, 0.6) !important;
-    box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.05) !important;
+    border-radius: 1.25rem !important;
+    border: 1px solid rgba(255, 255, 255, 0.8) !important; /* Heller Rand für Glas-Effekt */
+    box-shadow: 0 4px 20px -4px rgba(79, 70, 229, 0.08) !important; /* Zarter blauer Schatten */
     transition: transform 0.3s ease, box-shadow 0.3s ease !important;
-    background-color: #ffffff !important;
-    padding: 1.25rem !important; /* Etwas mehr Luft zum Atmen */
+    
+    /* HIER IST DEIN ZARTES INDIGO: */
+    background-color: rgba(238, 242, 255, 0.85) !important; 
+    backdrop-filter: blur(10px) !important; /* Milchglas-Effekt */
+    padding: 1.25rem !important;
 }
 
-/* Hover-Effekt: Die Flugkarte schwebt leicht nach oben */
 #flight-log-list > div:hover {
     transform: translateY(-3px) !important;
-    box-shadow: 0 12px 25px -5px rgba(0, 0, 0, 0.1) !important;
+    box-shadow: 0 12px 25px -5px rgba(79, 70, 229, 0.15) !important;
 }
 
-/* Dark Mode für die Flug-Karten */
 .dark #flight-log-list > div {
-    background-color: #1f2937 !important;
-    border-color: rgba(75, 85, 99, 0.4) !important;
+    background-color: rgba(30, 27, 75, 0.6) !important; /* Edles, dunkles Indigo im Dark Mode */
+    border-color: rgba(67, 56, 202, 0.4) !important;
     box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.4) !important;
 }
 
-/* 3. Statistik- und Trip-Karten aufhübschen */
+/* 3. Statistik- und Trip-Karten */
 #statistics-panel > div,
 #trips-content > div > div {
     border-radius: 1.25rem !important;
-    box-shadow: 0 4px 15px -3px rgba(0, 0, 0, 0.03) !important;
-    border: 1px solid rgba(229, 231, 235, 0.6) !important;
+    box-shadow: 0 4px 15px -3px rgba(79, 70, 229, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.8) !important;
+    
+    /* Auch hier das zarte Indigo: */
+    background-color: rgba(238, 242, 255, 0.85) !important; 
+    backdrop-filter: blur(10px) !important;
     transition: transform 0.2s ease !important;
 }
 
@@ -425,6 +430,6 @@ input:focus, select:focus, textarea:focus {
 
 .dark #statistics-panel > div,
 .dark #trips-content > div > div {
-    border-color: rgba(75, 85, 99, 0.4) !important;
-    background-color: rgba(31, 41, 55, 0.6) !important;
+    border-color: rgba(67, 56, 202, 0.4) !important;
+    background-color: rgba(30, 27, 75, 0.6) !important;
 }

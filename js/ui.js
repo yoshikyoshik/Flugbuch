@@ -596,6 +596,12 @@ function showTab(tabName) {
   if (tabName === "trips") {
     renderTripManager();
   }
+  // HIER EINFÜGEN: Sorgt dafür, dass die Karte im versteckten Zustand nicht kaputtgeht
+  if (tabName === "fluege") {
+    if (typeof map !== 'undefined' && map) {
+        setTimeout(() => { map.invalidateSize(); }, 50);
+    }
+  }
 }
 
 // RENDERING
@@ -2063,22 +2069,19 @@ window.toggleAuthSheet = function(show) {
     if (!backdrop || !panel) return;
 
     if (show) {
-        // Einblenden
-        backdrop.classList.remove("pointer-events-none");
+        // Einblenden: Wir entfernen den unsichtbaren Schutzschild
+        backdrop.classList.remove("pointer-events-none", "opacity-0");
         backdrop.classList.add("opacity-100");
-        backdrop.classList.remove("opacity-0");
 
-        // Panel rein-sliden (Mobile) / vergrößern (Desktop)
-        panel.classList.remove("translate-y-full", "md:scale-95", "md:opacity-0");
-        panel.classList.add("translate-y-0", "md:scale-100", "md:opacity-100");
+        // Panel rein-sliden & klickbar machen
+        panel.classList.remove("translate-y-full", "md:scale-95", "md:opacity-0", "pointer-events-none");
     } else {
-        // Ausblenden
+        // Ausblenden: Wir setzen den Schutzschild wieder
         backdrop.classList.remove("opacity-100");
         backdrop.classList.add("opacity-0", "pointer-events-none");
 
-        // Panel raus-sliden (Mobile) / verkleinern (Desktop)
-        panel.classList.remove("translate-y-0", "md:scale-100", "md:opacity-100");
-        panel.classList.add("translate-y-full", "md:scale-95", "md:opacity-0");
+        // Panel raus-sliden & unklickbar machen
+        panel.classList.add("translate-y-full", "md:scale-95", "md:opacity-0", "pointer-events-none");
         
         // Fehler-Meldungen zurücksetzen beim Schließen
         const errorText = document.getElementById("auth-error");
