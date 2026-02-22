@@ -232,70 +232,7 @@
               id="burger-menu"
               class="hidden absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-md shadow-lg z-50 border dark:border-gray-700"
             >
-              <div class="md:hidden border-b dark:border-gray-700">
-                <a
-                  href="#"
-                  onclick="event.preventDefault(); showTab('neue-fluege'); toggleBurgerMenu();"
-                  data-i18n="burgerMenu.newFlight"
-                  class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                  >Neuer Flug</a
-                >
-                <a
-                  href="#"
-                  onclick="event.preventDefault(); showTab('fluege'); toggleBurgerMenu();"
-                  data-i18n="burgerMenu.flights"
-                  class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                  >Flüge</a
-                >
-                <a
-                  href="#"
-                  onclick="event.preventDefault(); showTab('stats'); toggleBurgerMenu();"
-                  data-i18n="burgerMenu.stats"
-                  class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                >
-                  Statistiken
-                </a>
-
-                <a 
-                  href="#"
-                  onclick="event.preventDefault(); showTab('trips'); toggleBurgerMenu();"
-                  data-i18n="burgerMenu.trips"
-                  class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                >
-                  Meine Reisen
-                </a>
-
-                <a
-                  href="#"
-                  onclick="event.preventDefault(); showTab('charts'); toggleBurgerMenu();"
-                  data-i18n="burgerMenu.charts"
-                  class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                  >Charts</a
-                >
-                <a
-                  href="#"
-                  onclick="event.preventDefault(); showTab('logbook'); toggleBurgerMenu();"
-                  data-i18n="burgerMenu.logbook"
-                  class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                  >Logbuch</a
-                >
-                <a
-                  href="#"
-                  onclick="event.preventDefault(); showTab('achievements'); toggleBurgerMenu();"
-                  data-i18n="burgerMenu.achievements"
-                  class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                  >Errungenschaften</a
-                >
-                <a
-                  href="#"
-                  onclick="event.preventDefault(); showTab('hilfe'); toggleBurgerMenu();"
-                  data-i18n="burgerMenu.help"
-                  class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                  >Hilfe</a
-                >
-              </div>
-
-              <div
+            <div
                 class="border-b dark:border-gray-700 py-1 flex justify-around"
               >
                 <button
@@ -1473,21 +1410,34 @@
               </div>
             </div>
 			
-          </div> </div> </div> <div class="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] md:bottom-8 left-0 w-full flex justify-center z-[100] pointer-events-none px-2">
-        <nav class="pointer-events-auto flex items-center overflow-x-auto hide-scrollbar bg-white/70 dark:bg-gray-800/80 backdrop-blur-xl shadow-[0_8px_30px_rgba(79,70,229,0.15)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.6)] rounded-full border border-indigo-300/70 dark:border-indigo-500/40 p-1.5 gap-1 md:gap-2 max-w-full" aria-label="Tabs">
+          </div> </div> </div> 
+        <div class="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] md:bottom-8 left-0 w-full flex justify-center z-[100] pointer-events-none px-2">
+        
+        <div class="relative max-w-full pointer-events-auto">
           
-          <button onclick="showTab('neue-fluege')" id="tab-btn-neue-fluege" data-i18n="tabs.newFlight" class="tab-btn whitespace-nowrap py-2.5 px-4 md:px-5 font-medium text-sm text-indigo-600">✈️ Neuer Flug</button>
-          <button onclick="showTab('fluege')" id="tab-btn-fluege" data-i18n="tabs.flights" class="tab-btn whitespace-nowrap py-2.5 px-4 md:px-5 font-medium text-sm text-gray-500">📋 Flüge</button>
-          <button onclick="showTab('stats')" id="tab-btn-stats" data-i18n="tabs.stats" class="tab-btn whitespace-nowrap py-2.5 px-4 md:px-5 font-medium text-sm text-gray-500">📊 Statistiken</button>
-          <button onclick="showTab('charts')" id="tab-btn-charts" data-i18n="tabs.charts" class="tab-btn whitespace-nowrap py-2.5 px-4 md:px-5 font-medium text-sm text-gray-500">📈 Charts</button>
-          <button onclick="showTab('trips')" id="tab-btn-trips" data-i18n="tabs.trips" class="tab-btn whitespace-nowrap py-2.5 px-4 md:px-5 font-medium text-sm text-gray-500">🏝️ Reisen</button>
-          <button onclick="showTab('logbook')" id="tab-btn-logbook" data-i18n="tabs.logbook" class="tab-btn whitespace-nowrap py-2.5 px-4 md:px-5 font-medium text-sm text-gray-500">📔 Logbuch</button>
-          <button onclick="showTab('achievements')" id="tab-btn-achievements" data-i18n="tabs.achievements" class="tab-btn whitespace-nowrap py-2.5 px-4 md:px-5 font-medium text-sm text-gray-500">🏆 Rekorde</button>
-          <button onclick="showTab('hilfe')" id="tab-btn-hilfe" data-i18n="tabs.help" class="tab-btn whitespace-nowrap py-2.5 px-4 md:px-5 font-medium text-sm text-gray-500">💡 Hilfe</button>
+          <div class="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-white/90 dark:from-gray-800/90 to-transparent rounded-l-full z-10 pointer-events-none flex items-center justify-start pl-2">
+              <span class="text-indigo-500 dark:text-indigo-400 font-bold text-lg animate-pulse opacity-80">‹</span>
+          </div>
 
-        </nav>
+          <nav class="flex items-center overflow-x-auto hide-scrollbar bg-white/70 dark:bg-gray-800/80 backdrop-blur-xl shadow-[0_8px_30px_rgba(79,70,229,0.15)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.6)] rounded-full border border-indigo-300/70 dark:border-indigo-500/40 p-1.5 gap-1 md:gap-2 max-w-full" aria-label="Tabs">
+            
+            <button onclick="showTab('neue-fluege')" id="tab-btn-neue-fluege" data-i18n="tabs.newFlight" class="tab-btn whitespace-nowrap py-2.5 px-4 md:px-5 font-medium text-sm text-indigo-600">✈️ Neuer Flug</button>
+            <button onclick="showTab('fluege')" id="tab-btn-fluege" data-i18n="tabs.flights" class="tab-btn whitespace-nowrap py-2.5 px-4 md:px-5 font-medium text-sm text-gray-500">📋 Flüge</button>
+            <button onclick="showTab('stats')" id="tab-btn-stats" data-i18n="tabs.stats" class="tab-btn whitespace-nowrap py-2.5 px-4 md:px-5 font-medium text-sm text-gray-500">📊 Statistiken</button>
+            <button onclick="showTab('charts')" id="tab-btn-charts" data-i18n="tabs.charts" class="tab-btn whitespace-nowrap py-2.5 px-4 md:px-5 font-medium text-sm text-gray-500">📈 Charts</button>
+            <button onclick="showTab('trips')" id="tab-btn-trips" data-i18n="tabs.trips" class="tab-btn whitespace-nowrap py-2.5 px-4 md:px-5 font-medium text-sm text-gray-500">🏝️ Reisen</button>
+            <button onclick="showTab('logbook')" id="tab-btn-logbook" data-i18n="tabs.logbook" class="tab-btn whitespace-nowrap py-2.5 px-4 md:px-5 font-medium text-sm text-gray-500">📔 Logbuch</button>
+            <button onclick="showTab('achievements')" id="tab-btn-achievements" data-i18n="tabs.achievements" class="tab-btn whitespace-nowrap py-2.5 px-4 md:px-5 font-medium text-sm text-gray-500">🏆 Rekorde</button>
+            <button onclick="showTab('hilfe')" id="tab-btn-hilfe" data-i18n="tabs.help" class="tab-btn whitespace-nowrap py-2.5 px-4 md:px-5 font-medium text-sm text-gray-500">💡 Hilfe</button>
+
+          </nav>
+
+          <div class="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-white/90 dark:from-gray-800/90 to-transparent rounded-r-full z-10 pointer-events-none flex items-center justify-end pr-2">
+              <span class="text-indigo-500 dark:text-indigo-400 font-bold text-lg animate-pulse opacity-80">›</span>
+          </div>
+
+        </div>
       </div>
-    </div> 
     <div
       id="password-change-modal"
       class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center p-4 z-50"
