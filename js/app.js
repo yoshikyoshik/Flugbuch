@@ -2392,6 +2392,35 @@ document.getElementById("buy-pro-btn").addEventListener("click", async () => {
         });
     }
   
+    const btnBadges = document.getElementById('btn-view-badges');
+    const btnRecords = document.getElementById('btn-view-records');
+    const viewBadges = document.getElementById('view-achievements-badges');
+    const viewRecords = document.getElementById('view-achievements-records');
+
+    if(btnBadges && btnRecords) {
+        // Klick auf "Badges"
+        btnBadges.addEventListener('click', () => {
+            // Ansichten umschalten
+            viewBadges.classList.remove('hidden');
+            viewRecords.classList.add('hidden');
+            
+            // Button-Styling anpassen (Aktiv-Zustand)
+            btnBadges.classList.add('bg-white', 'dark:bg-gray-700', 'shadow-sm');
+            btnRecords.classList.remove('bg-white', 'dark:bg-gray-700', 'shadow-sm');
+        });
+
+        // Klick auf "Rekorde"
+        btnRecords.addEventListener('click', () => {
+            // Ansichten umschalten
+            viewRecords.classList.remove('hidden');
+            viewBadges.classList.add('hidden');
+            
+            // Button-Styling anpassen (Aktiv-Zustand)
+            btnRecords.classList.add('bg-white', 'dark:bg-gray-700', 'shadow-sm');
+            btnBadges.classList.remove('bg-white', 'dark:bg-gray-700', 'shadow-sm');
+        });
+    }
+
 });
 
 // ==========================================

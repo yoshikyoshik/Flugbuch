@@ -411,25 +411,37 @@ input:focus, select:focus, textarea:focus {
     box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.4) !important;
 }
 
-/* 3. Statistik- und Trip-Karten */
+/* 3. Statistik-, Trip- und Logbuch-Karten */
 #statistics-panel > div,
-#trips-content > div > div {
+#trips-content > div > div,
+#logbook-content > div, 
+#achievements-container > div {  /* <-- Diese Zeile ergänzen (ID ggf. anpassen) */
     border-radius: 1.25rem !important;
     box-shadow: 0 4px 15px -3px rgba(79, 70, 229, 0.05) !important;
     border: 1px solid rgba(255, 255, 255, 0.8) !important;
     
-    /* Auch hier das zarte Indigo: */
+    background-color: rgba(238, 242, 255, 0.85) !important; 
+    backdrop-filter: blur(10px) !important;
+    transition: transform 0.2s ease !important;
+}
+#records-container > div {  /* <-- Diese Zeile ergänzen (ID ggf. anpassen) */
+    border-radius: 1.25rem !important;
+    box-shadow: 0 4px 15px -3px rgba(79, 70, 229, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.8) !important;
+    
     background-color: rgba(238, 242, 255, 0.85) !important; 
     backdrop-filter: blur(10px) !important;
     transition: transform 0.2s ease !important;
 }
 
-#statistics-panel > div:hover {
+#statistics-panel > div:hover,
+#logbook-content > div:hover {
     transform: translateY(-2px) !important;
 }
 
 .dark #statistics-panel > div,
-.dark #trips-content > div > div {
+.dark #trips-content > div > div,
+.dark #logbook-content > div {
     border-color: rgba(67, 56, 202, 0.4) !important;
     background-color: rgba(30, 27, 75, 0.6) !important;
 }
