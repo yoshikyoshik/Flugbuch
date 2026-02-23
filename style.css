@@ -441,7 +441,9 @@ input:focus, select:focus, textarea:focus {
 
 .dark #statistics-panel > div,
 .dark #trips-content > div > div,
-.dark #logbook-content > div {
+.dark #logbook-content > div,
+.dark #achievements-container > div,
+.dark #records-container > div {
     border-color: rgba(67, 56, 202, 0.4) !important;
     background-color: rgba(30, 27, 75, 0.6) !important;
 }

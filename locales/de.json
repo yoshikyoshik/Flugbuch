@@ -33,7 +33,7 @@
   "forgotPWD": "Passwort vergessen?",
   "newMail4Link4PWD": "Gib deine E-Mail-Adresse ein, um einen Link zum Zurücksetzen deines Passworts zu erhalten.",
   "reset": "Reset-Link anfordern",
-  "newPWD": "Gib dein neues Passwort ein.",
+  "newPWD": "Gib dein neues Passwort ein",
   "saveNewPWD": "Neues Passwort speichern",
   "enterNewPWD": "Gib dein neues Passwort ein.",
   "backToLogin": "Zurück zum Login",
@@ -116,6 +116,7 @@
     "registration": "Registrierung (Optional)",
     "reset": "Zurücksetzen",
     "cancel": "Abbrechen",
+    "save": "Speichern",
     "buttonSaving": "Speichert...",
     "buttonUpdating": "Aktualisiert...",
     "confirmDeleteTitle": "Flug löschen?",
@@ -630,7 +631,13 @@
     "featureAutopilot": "Autopilot: Daten per Flugnummer laden",
     "featurePhotos": "Foto-Upload & PDF-Export",
     "privacy": "Datenschutzerklärung",
-    "terms": "AGB & Impressum"
+    "terms": "AGB & Impressum",
+    "loginBtn":	"Login / Registrieren",
+    "AcceptingRegText1": "Mit der Registrierung akzeptierst du unsere",
+    "AcceptingRegTerms": "AGB",
+    "AcceptingRegText2": "und",
+    "AcceptingRegPrivacy": "Datenschutz",
+    "backToLogin": "Zurück zum Login"
   },
 
   "toast": {
@@ -671,7 +678,9 @@
     "emailLabel": "E-Mail",
     "passwordLabel": "Passwort",
     "btn": "Anmelden / Registrieren",
-    "magicLinkSent": "Magic Link gesendet! Prüfe deine E-Mails."
+    "magicLinkSent": "Magic Link gesendet! Prüfe deine E-Mails.",
+    "resetEmailSentTitle": "E-Mail gesendet",
+    "resetEmailSentBody": "Falls ein Konto existiert, wurde ein Reset-Link verschickt."
   },
 
   "import": {

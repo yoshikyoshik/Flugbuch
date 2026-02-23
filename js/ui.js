@@ -1286,10 +1286,7 @@ var updateStatisticsDisplay = function (flights) {
  * @param {string} timeframe - Entweder 'year' oder 'month'.
  */
 function updateCharts(allFlights, timeframe = "year") {
-  // Zeile entfernt: const allFlights = getFlights();
-
   if (!allFlights || allFlights.length === 0) {
-    // Optional: Verstecke oder leere die Charts, wenn keine Daten da sind
     if (flightsChartInstance) flightsChartInstance.destroy();
     if (distanceChartInstance) distanceChartInstance.destroy();
     if (timeChartInstance) timeChartInstance.destroy();
@@ -1303,39 +1300,90 @@ function updateCharts(allFlights, timeframe = "year") {
       timeframe === "year"
         ? flight.date.substring(0, 4)
         : flight.date.substring(0, 7);
+        
     if (!aggregatedData[key]) {
       aggregatedData[key] = { count: 0, distance: 0, time: 0 };
     }
+    
+    // --- 🛡️ DER MULTILINGUALE ZEIT-PARSER ---
+    let flightMinutes = 0;
+    let t = flight.time;
+    
+    if (t) {
+        if (typeof t === 'number') {
+            flightMinutes = t <= 30 ? t * 60 : t; 
+        } else if (typeof t === 'string') {
+            t = t.toLowerCase().trim();
+            
+            // Fall 1: Doppelpunkt (z.B. "11:31", "0:54h")
+            if (t.includes(':')) {
+                const cleanT = t.replace(/[^\d:]/g, ''); 
+                const parts = cleanT.split(':');
+                flightMinutes = (parseInt(parts[0], 10) || 0) * 60 + (parseInt(parts[1], 10) || 0);
+            } 
+            // Fall 2: Textformate (Findet jetzt 'h', 'Std', 'Stunde', 'hour' etc.)
+            else if (/[a-z]/i.test(t)) {
+                let h = 0, m = 0;
+                // Sucht nach der Zahl vor h, std, stunde oder hour
+                const matchH = t.match(/(\d+(?:[.,]\d+)?)\s*(?:h|std|stunde|hour)/i);
+                // Sucht nach der Zahl vor m, min oder minute
+                const matchM = t.match(/(\d+(?:[.,]\d+)?)\s*(?:m|min|minute)/i);
+                
+                if (matchH) h = parseFloat(matchH[1].replace(',', '.'));
+                if (matchM) m = parseFloat(matchM[1].replace(',', '.'));
+                
+                if (matchH || matchM) {
+                    flightMinutes = (h * 60) + m;
+                } else {
+                    // Notfall-Rettung: Holt einfach die ersten zwei Zahlen (z.B. bei "11 31")
+                    const nums = t.match(/\d+/g);
+                    if (nums && nums.length >= 2) {
+                        flightMinutes = (parseInt(nums[0], 10) * 60) + parseInt(nums[1], 10);
+                    }
+                }
+            } 
+            // Fall 3: Reine Zahlen (z.B. "1.5", "5,2")
+            else {
+                let cleanT = t.replace(/[^\d.,]/g, '').replace(',', '.');
+                let num = parseFloat(cleanT);
+                if (!isNaN(num)) {
+                    flightMinutes = num <= 30 ? num * 60 : num;
+                }
+            }
+        }
+    }
+    
+    // Fallback falls alles fehlschlägt
+    if (flightMinutes <= 0 && flight.distance > 0) {
+        flightMinutes = (flight.distance / 800) * 60 + 30;
+    }
+    // -------------------------------------
+
     aggregatedData[key].count++;
-    aggregatedData[key].distance += flight.distance;
-    aggregatedData[key].time += parseFlightTimeToMinutes(flight.time);
+    aggregatedData[key].distance += (flight.distance || 0);
+    aggregatedData[key].time += Math.round(flightMinutes);
   });
 
   const sortedLabels = Object.keys(aggregatedData).sort();
 
   const flightsData = sortedLabels.map((label) => aggregatedData[label].count);
-  const distanceData = sortedLabels.map(
-    (label) => aggregatedData[label].distance
-  );
-  const timeData = sortedLabels.map((label) => aggregatedData[label].time);
+  const distanceData = sortedLabels.map((label) => aggregatedData[label].distance);
+  
+  // Umrechnung für die Anzeige im Chart
+  const timeData = sortedLabels.map((label) => {
+    return parseFloat((aggregatedData[label].time / 60).toFixed(2));
+  });
 
   renderAllCharts(sortedLabels, flightsData, distanceData, timeData);
 
-  document
-    .getElementById("chart-view-year")
-    .classList.toggle("active", timeframe === "year");
-  document
-    .getElementById("chart-view-month")
-    .classList.toggle("active", timeframe === "month");
+  const btnYear = document.getElementById("chart-view-year");
+  const btnMonth = document.getElementById("chart-view-month");
+  if(btnYear) btnYear.classList.toggle("active", timeframe === "year");
+  if(btnMonth) btnMonth.classList.toggle("active", timeframe === "month");
 }
 
 /**
  * Zeichnet alle Diagramme basierend auf den aufbereiteten Daten.
- * Zerstört alte Diagramme, bevor neue gezeichnet werden.
- * @param {Array<string>} labels - Die Labels für die X-Achse (z.B. ['2024', '2025']).
- * @param {Array<number>} flightsData - Die Daten für die Anzahl der Flüge.
- * @param {Array<number>} distanceData - Die Daten für die Distanz.
- * @param {Array<number>} timeData - Die Daten für die Flugzeit in Minuten.
  */
 function renderAllCharts(labels, flightsData, distanceData, timeData) {
   if (flightsChartInstance) flightsChartInstance.destroy();
@@ -1355,7 +1403,7 @@ function renderAllCharts(labels, flightsData, distanceData, timeData) {
       labels: labels,
       datasets: [
         {
-          label: getTranslation("charts.labelFlights"), // KORRIGIERT
+          label: getTranslation("charts.labelFlights"),
           data: flightsData,
           backgroundColor: "rgba(79, 70, 229, 0.8)",
           borderColor: "rgba(79, 70, 229, 1)",
@@ -1365,11 +1413,7 @@ function renderAllCharts(labels, flightsData, distanceData, timeData) {
     },
     options: {
       scales: {
-        y: {
-          beginAtZero: true,
-          ticks: { color: labelColor },
-          grid: { color: gridColor },
-        },
+        y: { beginAtZero: true, ticks: { color: labelColor }, grid: { color: gridColor } },
         x: { ticks: { color: labelColor }, grid: { color: gridColor } },
       },
     },
@@ -1382,7 +1426,7 @@ function renderAllCharts(labels, flightsData, distanceData, timeData) {
       labels: labels,
       datasets: [
         {
-          label: getTranslation("charts.labelDistance"), // KORRIGIERT
+          label: getTranslation("charts.labelDistance"),
           data: distanceData,
           fill: false,
           borderColor: "rgba(22, 163, 74, 1)",
@@ -1392,11 +1436,7 @@ function renderAllCharts(labels, flightsData, distanceData, timeData) {
     },
     options: {
       scales: {
-        y: {
-          beginAtZero: true,
-          ticks: { color: labelColor },
-          grid: { color: gridColor },
-        },
+        y: { beginAtZero: true, ticks: { color: labelColor }, grid: { color: gridColor } },
         x: { ticks: { color: labelColor }, grid: { color: gridColor } },
       },
     },
@@ -1409,8 +1449,8 @@ function renderAllCharts(labels, flightsData, distanceData, timeData) {
       labels: labels,
       datasets: [
         {
-          label: getTranslation("charts.labelDuration"), // KORRIGIERT
-          data: timeData,
+          label: getTranslation("charts.labelDuration"),
+          data: timeData, // Y-Achse ist jetzt in Dezimal-Stunden
           fill: false,
           borderColor: "rgba(219, 39, 119, 1)",
           tension: 0.1,
@@ -1419,11 +1459,7 @@ function renderAllCharts(labels, flightsData, distanceData, timeData) {
     },
     options: {
       scales: {
-        y: {
-          beginAtZero: true,
-          ticks: { color: labelColor },
-          grid: { color: gridColor },
-        },
+        y: { beginAtZero: true, ticks: { color: labelColor }, grid: { color: gridColor } },
         x: { ticks: { color: labelColor }, grid: { color: gridColor } },
       },
       plugins: {
@@ -1432,11 +1468,12 @@ function renderAllCharts(labels, flightsData, distanceData, timeData) {
             label: function (context) {
               let label = context.dataset.label || "";
               if (label) label += ": ";
-              const totalMinutes = context.parsed.y;
-              const hours = Math.floor(totalMinutes / 60);
-              const minutes = totalMinutes % 60;
+              
+              // HIER IST DER TOOLTIP-FIX: Rechnet Dezimal-Stunden zurück in Stunden und saubere Minuten
+              const totalHoursDecimal = context.parsed.y;
+              const hours = Math.floor(totalHoursDecimal);
+              const minutes = Math.round((totalHoursDecimal - hours) * 60);
 
-              // KORRIGIERT: Verwendet die Übersetzungsvorlage
               return getTranslation("charts.tooltipLabel")
                 .replace("{label}", label)
                 .replace("{hours}", hours)

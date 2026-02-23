@@ -33,9 +33,9 @@
   "forgotPWD": "Forgot password?",
   "newMail4Link4PWD": "Enter your email address to receive a link to reset your password.",
   "reset": "Request Reset Link",
-  "newPWD": "Enter your new password.",
+  "newPWD": "Enter your new password",
   "saveNewPWD": "Save New Password",
-  "enterNewPWD": "Enter your new password.",
+  "enterNewPWD": "Enter your new password",
   "backToLogin": "Back to Login",
   "mapVisualization": "Visualization: {depName} ({depCode}) → {arrName} ({arrCode}).",
 
@@ -116,6 +116,7 @@
     "registration": "Registration (Optional)",
     "reset": "Reset",
     "cancel": "Cancel",
+    "save": "Save",
     "buttonSaving": "Saving...",
     "buttonUpdating": "Updating...",
     "confirmDeleteTitle": "Delete Flight?",
@@ -630,7 +631,13 @@
     "featureAutopilot": "Autopilot: Load data via flight number",
     "featurePhotos": "Photo Upload & PDF Export",
     "privacy": "Privacy Policy",
-    "terms": "Terms & Imprint"
+    "terms": "Terms & Imprint",
+    "loginBtn":	"Login / Register",
+    "AcceptingRegText1": "With registering you accept our",
+    "AcceptingRegTerms": "terms",
+    "AcceptingRegText2": "and",
+    "AcceptingRegPrivacy": "privacy",
+    "backToLogin": "Back to Login"
   },
 
   "toast": {
@@ -671,7 +678,9 @@
     "emailLabel": "Email",
     "passwordLabel": "Password",
     "btn": "Login / Register",
-    "magicLinkSent": "Magic Link sent! Check your emails."
+    "magicLinkSent": "Magic Link sent! Check your emails.",
+    "resetEmailSentTitle": "E-Mail sent",
+    "resetEmailSentBody": "If account exists, reset link is sent."
   },
 
   "import": {

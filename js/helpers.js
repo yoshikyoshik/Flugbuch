@@ -306,23 +306,19 @@ async function setLanguage(lang) {
     // 1. Alle Texte übersetzen
     translatePage();
 
-    // --- ✅ HIERHIN VERSCHOBEN (Vor den Auth-Check!) ---
-    // Damit die Links auch auf der Landing-Page (ausgeloggt) funktionieren
-    const isGerman = lang === 'de';
-    const privacyFile = isGerman ? 'privacy.html' : 'privacy_en.html';
-    const termsFile = isGerman ? 'terms.html' : 'terms_en.html';
-
-    // Links Update
-    const linkPrivacy = document.getElementById('link-privacy');
-    const linkTerms = document.getElementById('link-terms');
-    if (linkPrivacy) linkPrivacy.setAttribute('href', privacyFile);
-    if (linkTerms) linkTerms.setAttribute('href', termsFile);
-
-    const linkPrivacySmall = document.getElementById('link-privacy-small');
-    const linkTermsSmall = document.getElementById('link-terms-small');
-    if (linkPrivacySmall) linkPrivacySmall.setAttribute('href', privacyFile);
-    if (linkTermsSmall) linkTermsSmall.setAttribute('href', termsFile);
-    // --- ENDE VERSCHOBENER BLOCK ---
+    // --- ✅ KUGELSICHERE LINK-UMSCHALTUNG (Ohne IDs) ---
+    const isEn = (lang === 'en');
+    
+    // Findet ALLE Links mit "terms" im href (z.B. terms.html oder terms_en.html)
+    document.querySelectorAll('a[href*="terms"]').forEach(a => {
+        a.href = isEn ? "terms_en.html" : "terms.html";
+    });
+    
+    // Findet ALLE Links mit "privacy" im href
+    document.querySelectorAll('a[href*="privacy"]').forEach(a => {
+        a.href = isEn ? "privacy_en.html" : "privacy.html";
+    });
+    // --- ENDE DYNAMISCHE LINKS ---
 
 
     // Schutzabfrage: Ab hier nur weiter, wenn App initialisiert (User eingeloggt)
@@ -407,4 +403,22 @@ function translatePage() {
  */
 function isNativeApp() {
   return typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform();
+}
+
+/**
+ * Tauscht die Links für rechtliche Dokumente (AGB, Datenschutz) 
+ * dynamisch je nach gewählter Sprache aus.
+ */
+function updateLegalLinks(lang) {
+    const isEn = (lang === 'en');
+    
+    // 1. AGB / Terms Links anpassen
+    document.querySelectorAll('a[href="terms.html"], a[href="terms_en.html"]').forEach(a => {
+        a.href = isEn ? "terms_en.html" : "terms.html";
+    });
+    
+    // 2. Datenschutz / Privacy Links anpassen
+    document.querySelectorAll('a[href="privacy.html"], a[href="privacy_en.html"]').forEach(a => {
+        a.href = isEn ? "privacy_en.html" : "privacy.html";
+    });
 }

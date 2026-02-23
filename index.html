@@ -88,7 +88,7 @@
       </div>
 
       <div class="relative z-20 w-full max-w-sm px-6 pb-12 space-y-4">
-        <button onclick="toggleAuthSheet(true)" class="w-full py-4 bg-white text-indigo-700 font-extrabold text-lg rounded-2xl shadow-xl hover:bg-gray-50 transform hover:-translate-y-1 transition-all duration-200">
+        <button data-i18n="landing.loginBtn" onclick="toggleAuthSheet(true)" data-i18n="landing.loginBtn" class="w-full py-4 bg-white text-indigo-700 font-extrabold text-lg rounded-2xl shadow-xl hover:bg-gray-50 transform hover:-translate-y-1 transition-all duration-200">
           Login / Registrieren
         </button>
         
@@ -97,9 +97,9 @@
         </button>
 
         <div class="pt-4 flex justify-center gap-4 text-xs text-indigo-200/70">
-            <a href="privacy.html" target="_blank" class="hover:text-white transition">Datenschutz</a>
+            <a href="privacy.html" target="_blank" data-i18n="landing.privacy" class="hover:text-white transition">Datenschutz</a>
             <span>&bull;</span>
-            <a href="terms.html" target="_blank" class="hover:text-white transition">Impressum</a>
+            <a href="terms.html" target="_blank" data-i18n="landing.terms" class="hover:text-white transition">Impressum</a>
         </div>
       </div>
 
@@ -163,23 +163,26 @@
                 Kostenlos Registrieren
               </button>
               <p class="text-xs text-center text-gray-500 dark:text-gray-400 mt-4">
-                Mit der Registrierung akzeptierst du unsere <a href="terms.html" target="_blank" class="underline hover:text-indigo-600">AGB</a> und <a href="privacy.html" target="_blank" class="underline hover:text-indigo-600">Datenschutz</a>.
+                  <span data-i18n="landing.AcceptingRegText1">Mit der Registrierung akzeptierst du unsere</span>
+                  <a href="terms.html" target="_blank" class="underline hover:text-indigo-600" data-i18n="landing.AcceptingRegTerms">AGB</a>
+                  <span data-i18n="landing.AcceptingRegText2">und</span>
+                  <a href="privacy.html" target="_blank" class="underline hover:text-indigo-600" data-i18n="landing.AcceptingRegPrivacy">Datenschutz</a>.
               </p>
             </form>
 
             <div id="password-reset-container" class="hidden space-y-4">
                 <div class="text-center mb-4">
-                    <a href="#" onclick="event.preventDefault(); backToLogin();" class="text-sm font-medium text-indigo-600 hover:underline flex items-center justify-center gap-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg> Zurück zum Login</a>
+                    <a href="#" onclick="event.preventDefault(); backToLogin();" class="text-sm font-medium text-indigo-600 hover:underline flex items-center justify-center gap-1" data-i18n="landing.backToLogin"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg> Zurück zum Login</a>
                 </div>
             </div>
             
             <form id="request-reset-form" class="space-y-4 hidden">
                 <p data-i18n="newMail4Link4PWD" class="text-sm text-center text-gray-600 dark:text-gray-400">Gib deine E-Mail-Adresse ein...</p>
-                <input type="email" id="reset-email" placeholder="E-Mail" required class="w-full p-3 rounded-xl border border-gray-300 dark:bg-gray-700 dark:border-gray-600" />
+                <input type="email" id="reset-email" data-i18n="placeholder.email" required class="w-full p-3 rounded-xl border border-gray-300 dark:bg-gray-700 dark:border-gray-600" />
                 <button type="submit" data-i18n="reset" class="w-full py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition font-bold">Reset-Link anfordern</button>
             </form>
             <form id="update-password-form" class="space-y-4 hidden">
-                 <input type="password" id="update-password-input" placeholder="Neues Passwort" required class="w-full p-3 rounded-xl border border-gray-300 dark:bg-gray-700 dark:border-gray-600" />
+                 <input type="password" id="update-password-input" data-i18n="placeholder.newPassword" required class="w-full p-3 rounded-xl border border-gray-300 dark:bg-gray-700 dark:border-gray-600" />
                  <button type="submit" data-i18n="saveNewPWD" class="w-full py-3 bg-green-500 text-white rounded-xl hover:bg-green-600 transition font-bold">Neues Passwort speichern</button>
             </form>
 
@@ -1445,34 +1448,34 @@
       <div
         class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-full max-w-md"
       >
-        <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-4">
+        <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-4" data-i18n="newPWD">
           Neues Passwort festlegen
         </h3>
         <form id="password-change-form" class="space-y-4">
           <div>
             <label
               for="new-password"
-              class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300" data-i18n="placeholder.password"
               >Neues Passwort</label
             >
             <input
               type="password"
               id="new-password"
               placeholder="Mindestens 6 Zeichen"
-              class="mt-1 w-full p-3 rounded-lg border-gray-300 dark:bg-gray-700 dark:border-gray-600"
+              class="mt-1 w-full p-3 rounded-lg border-gray-300 dark:bg-gray-700 dark:border-gray-600" data-i18n="placeholder.newPassword"
             />
           </div>
           <div class="flex justify-end gap-4">
             <button
               type="button"
               onclick="closePasswordChangeModal(event)"
-              class="px-4 py-2 bg-gray-200 dark:bg-gray-600 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500 transition"
+              class="px-4 py-2 bg-gray-200 dark:bg-gray-600 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500 transition" data-i18n="form.cancel"
             >
               Abbrechen
             </button>
             <button
               type="submit"
-              class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition"
+              class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition" data-i18n="form.save"
             >
               Speichern
             </button>

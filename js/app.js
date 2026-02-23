@@ -1989,8 +1989,15 @@ function showPasswordResetForm() {
 }
 
 function backToLogin() {
+  // 1. Reiter wieder einblenden
   document.getElementById("auth-tabs").classList.remove("hidden");
+  
+  // 2. ALLE Reset-Container und Formulare rigoros verstecken
   document.getElementById("password-reset-container").classList.add("hidden");
+  document.getElementById("request-reset-form").classList.add("hidden");
+  document.getElementById("update-password-form").classList.add("hidden");
+  
+  // 3. Auf den sauberen Login-Tab wechseln
   switchAuthTab("login");
 }
 
@@ -2158,18 +2165,44 @@ document.addEventListener("DOMContentLoaded", async function () {
     .getElementById("request-reset-form")
     .addEventListener("submit", async (e) => {
       e.preventDefault();
-      const email = document.getElementById("reset-email").value;
+      const emailInput = document.getElementById("reset-email");
+      const email = emailInput.value;
+      
       const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
         redirectTo: window.location.origin,
       });
+      
       if (error) {
-        showMessage("Fehler", error.message, "error");
+        showMessage(getTranslation("toast.errorTitle") || "Fehler", error.message, "error");
       } else {
+        // 1. Formular leeren und Ansicht zum Login zurücksetzen
+        emailInput.value = "";
+        backToLogin(); 
+        
+        // 2. Standard-Toast (oben rechts) trotzdem abfeuern
         showMessage(
-          "E-Mail gesendet",
-          "Wenn ein Benutzer mit dieser E-Mail existiert, wurde ein Link zum Zurücksetzen gesendet.",
+          getTranslation("auth.resetEmailSentTitle") || "E-Mail gesendet",
+          getTranslation("auth.resetEmailSentBody") || "Falls ein Konto existiert, wurde ein Reset-Link verschickt.",
           "success"
         );
+        
+        // 3. DIREKTES FEEDBACK: Meldung im Login-Fenster (in Grün) anzeigen
+        const authError = document.getElementById("auth-error");
+        if (authError) {
+            authError.textContent = getTranslation("auth.resetEmailSentBody") || "Reset-Link gesendet! Bitte prüfe deinen Posteingang.";
+            authError.classList.remove("text-red-500");
+            authError.classList.add("text-green-500");
+            
+            // Nach 7 Sekunden räumen wir die Meldung wieder auf, damit es sauber bleibt
+            setTimeout(() => {
+                // Nur aufräumen, wenn es immer noch unsere grüne Erfolgsmeldung ist
+                if (authError.classList.contains("text-green-500")) {
+                    authError.textContent = "";
+                    authError.classList.remove("text-green-500");
+                    authError.classList.add("text-red-500");
+                }
+            }, 7000);
+        }
       }
     });
 
