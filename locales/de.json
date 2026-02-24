@@ -141,7 +141,9 @@
     "redirectingStripe": "Leite zum Kundenportal weiter...",
     "confirmDelete": "Möchtest du diesen Flug wirklich unwiderruflich löschen?",
     "limitTitle": "Limit erreicht",
-    "limitBody": "Du hast das Limit für kostenlose Flüge erreicht. Upgrade auf Pro für unbegrenztes Loggen."
+    "limitBody": "Du hast das Limit für kostenlose Flüge erreicht. Upgrade auf Pro für unbegrenztes Loggen.",
+    "photoUploadFailed": "Das Foto {fileName} konnte nicht hochgeladen werden.",
+    "globeScreenshotError": "Das Globusbild konnte nicht erstellt werden."
   },
 
   "records": {
@@ -220,7 +222,11 @@
     "filterPlaceholder": "Suche (Ort, Airline, Datum...)",
     "hideAllRoutes": "Karte bereinigen",
     "sortTrip": "Reise / Trip",
-    "filterTripPlaceholder": "Alle Reisen"
+    "filterTripPlaceholder": "Alle Reisen",
+    "notFound": "Der zu bearbeitende Flug wurde nicht gefunden.",
+    "photoDeleteError": "Alte Fotos konnten nicht gelöscht, aber neue hinzugefügt werden.",
+    "logFlightBtn": "Flug loggen und speichern",
+    "saveChangesBtn": "Änderungen speichern"
   },
 
   "print": {
@@ -620,7 +626,12 @@
     "titleGlobe": "Entdecke den 3D Globus 🌍",
     "titlePrint": "Erstelle dein Logbuch als PDF 📚",
     "nativeTitle": "Premium Feature 🔒",
-    "restore": "Einkäufe wiederherstellen"
+    "restore": "Einkäufe wiederherstellen",
+    "restoreBtn": "Einkäufe wiederherstellen",
+    "stripeConflictTitle": "Sie haben bereits ein aktives Web-Abonnement (Stripe).",
+    "stripeConflictDesc": "Bitte verwalten Sie Ihr Abonnement auf aviosphere.com.",
+    "googlePlayConflictTitle": "Sie haben ein aktives App-Abonnement (Google Play).",
+    "googlePlayConflictDesc": "Bitte verwalten Sie Ihr Abonnement in der Android-App."
   },
 
   "landing": {
@@ -655,7 +666,15 @@
     "flightUpdated": "Flug erfolgreich aktualisiert.",
     "deleteError": "Flug konnte nicht gelöscht werden.",
     "importTitle": "Import",
-    "exportTitle": "Export"
+    "exportTitle": "Export",
+    "saveOffline": "Offline gespeichert",
+    "noInternet": "Kein Internet. Flug wurde lokal gespeichert und wird später übertragen.",
+    "syncTitle": "Sync",
+    "syncingDesc": "Übertrage {count} offline gespeicherte Flüge...",
+    "syncSuccess": "Sync erfolgreich",
+    "flightsTransferred": "{successCount} Flüge wurden nachgetragen.",
+    "offlinePhotoWarning": "Hinweis: Fotos können im Offline-Modus leider nicht gespeichert werden. Bitte fügen Sie diese später hinzu.",
+    "uploadErrorTitle": "Upload Fehler"
   },
 
   "map": {
@@ -722,7 +741,12 @@
     "welcomeBody": "Willkommen an Bord! Du siehst nun Beispieldaten.",
     "errorTitle": "Fehler",
     "errorBody": "Demo-Daten konnten nicht geladen werden.",
-    "exit": "🚪 Demo Beenden"
+    "exit": "🚪 Demo Beenden",
+    "demoModus": "Demo-Modus",
+    "noDataSaved": "Im Demo-Modus können keine Daten gespeichert werden.",
+    "noChangesSaved": "Im Demo-Modus können keine Änderungen gespeichert werden.",
+    "noDataDeleted": "Im Demo-Modus können keine Daten gelöscht werden.",
+    "noTripsCreated": "Im Demo-Modus können keine Trips erstellt werden."
   },
 
   "review": {
@@ -731,6 +755,14 @@
     "yesButton": "Ja, gerne! ⭐",
     "feedbackButton": "Feedback geben",
     "noButton": "Nein, danke"
+  },
+
+  "billing": {
+    "restoreSuccessTitle": "Erfolgreich",
+    "restoreSuccessDesc": "Käufe erfolgreich wiederhergestellt.",
+    "restoreInfoTitle": "Info",
+    "noSubFound": "Keine aktiven Abonnements gefunden.",
+    "restoreFailed": "Wiederherstellung fehlgeschlagen."
   },
 
   "registerFree": "Kostenlos Registrieren",

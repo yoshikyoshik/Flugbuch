@@ -347,7 +347,11 @@ function saveFlightOffline(flightData) {
     // 3. Speichern
     localStorage.setItem('offline_flight_queue', JSON.stringify(queue));
     
-    showMessage("Offline gespeichert", "Kein Internet. Flug wurde lokal gespeichert und wird später übertragen.", "info");
+    showMessage(
+      getTranslation("toast.saveOffline") || "Offline gespeichert",
+      getTranslation("toast.noInternet") || "Kein Internet. Flug wurde lokal gespeichert und wird später übertragen.",
+      "info"
+    );
 }
 
 async function syncOfflineFlights() {
@@ -362,7 +366,11 @@ async function syncOfflineFlights() {
     if (queue.length === 0) return;
 
     console.log(`🔄 Sync: Versuche ${queue.length} Offline-Flüge zu senden...`);
-    showMessage("Sync", `Übertrage ${queue.length} offline gespeicherte Flüge...`, "info");
+    showMessage(
+    getTranslation("toast.syncTitle") || "Sync", 
+    (getTranslation("toast.syncingDesc") || "Übertrage {count} offline gespeicherte Flüge...").replace("{count}", queue.length), 
+    "info"
+);
 
     const failedQueue = [];
     let successCount = 0;
@@ -389,7 +397,11 @@ async function syncOfflineFlights() {
     localStorage.setItem('offline_flight_queue', JSON.stringify(failedQueue));
 
     if (successCount > 0) {
-        showMessage("Sync erfolgreich", `${successCount} Flüge wurden nachgetragen.`, "success");
+        showMessage(
+            getTranslation("toast.syncSuccess") || "Sync erfolgreich", 
+            (getTranslation("toast.flightsTransferred") || "{successCount} Flüge wurden nachgetragen.").replace("{successCount}", successCount), 
+            "success"
+        );
         
         // Liste neu laden, damit die neuen Flüge erscheinen
         if (typeof renderFlights === 'function') {
@@ -669,7 +681,11 @@ function lockUiForDemo() {
 window.logFlight = async function () {
   // --- NEU: DEMO CHECK ---
     if (isDemoMode) {
-        showMessage("Demo-Modus", "Im Demo-Modus können keine Daten gespeichert werden.", "info");
+        showMessage(
+          getTranslation("demo.demoModus") || "Demo-Modus",
+          getTranslation("demo.noDataSaved") || "Im Demo-Modus können keine Daten gespeichert werden.",
+          "info"
+        );
         return;
     }
     // -----------------------
@@ -783,7 +799,7 @@ window.logFlight = async function () {
 
   if (!departureAirport || !arrivalAirport) {
     showMessage(getTranslation("toast.errorTitle"), getTranslation("toast.airportNotFound"), "error");
-    logButton.textContent = "Flug loggen und speichern";
+    logButton.textContent = getTranslation("flights.logFlightBtn") || "Flug loggen und speichern";
     logButton.disabled = false;
     return;
   }
@@ -871,7 +887,10 @@ airline_logo: finalAirlineLogo,  // Das neue Logo-Feld
   if (!navigator.onLine) {
       // 1. Warnung bzgl. Fotos (da Supabase Storage offline nicht geht)
       if (filesToUpload && filesToUpload.length > 0) {
-          alert("Hinweis: Fotos können im Offline-Modus leider nicht gespeichert werden. Bitte fügen Sie diese später hinzu.");
+          alert(
+              getTranslation("toast.offlinePhotoWarning") || 
+              "Hinweis: Fotos können im Offline-Modus leider nicht gespeichert werden. Bitte fügen Sie diese später hinzu."
+          );
           newFlightForSupabase.photo_url = []; // Fotos leeren
       }
 
@@ -929,8 +948,12 @@ airline_logo: finalAirlineLogo,  // Das neue Logo-Feld
  */
 async function updateFlight() {
   // --- NEU: DEMO CHECK ---
-    if (isDemoMode) {
-        showMessage("Demo-Modus", "Im Demo-Modus können keine Änderungen gespeichert werden.", "info");
+    if (isDemoMode) {"demo.noChangesSaved"
+        showMessage(
+          getTranslation("demo.demoModus") || "Demo-Modus",
+          getTranslation() || "Im Demo-Modus können keine Änderungen gespeichert werden.",
+          "info"
+        );
         return;
     }
     // -----------------------
@@ -1008,8 +1031,8 @@ async function updateFlight() {
     if (deleteError) {
       console.error("Fehler beim Löschen alter Fotos:", deleteError);
       showMessage(
-        "Save error",
-        "Old photos could not get deleted, but new ones added.",
+        getTranslation("toast.saveErrorTitle") || "Save error",
+        getTranslation("flights.photoDeleteError") || "Old photos could not get deleted, but new ones added.",
         "error"
       );
     }
@@ -1052,7 +1075,7 @@ async function updateFlight() {
 
   if (!departureAirport || !arrivalAirport) {
     showMessage(getTranslation("toast.errorTitle"), getTranslation("toast.airportNotFound"), "error");
-    logButton.textContent = "Änderungen speichern";
+    logButton.textContent = getTranslation("flights.saveChangesBtn") || "Änderungen speichern";
     logButton.disabled = false;
     return;
   }
@@ -1165,7 +1188,11 @@ async function updateFlight() {
 window.deleteFlight = async function (id) {
   // --- NEU: DEMO CHECK ---
     if (isDemoMode) {
-        showMessage("Demo-Modus", "Im Demo-Modus können keine Daten gelöscht werden.", "info");
+        showMessage(
+          getTranslation("demo.demoModus") || "Demo-Modus",
+          getTranslation("demo.noDataDeleted") || "Im Demo-Modus können keine Daten gelöscht werden.",
+          "info"
+        );
         return;
     }
     // -----------------------
@@ -1269,8 +1296,8 @@ window.editFlight = async function (id) {
 
   if (!flightToEdit) {
     showMessage(
-      "Fehler",
-      "Der zu bearbeitende Flug wurde nicht gefunden.",
+      getTranslation("toast.errorTitle") || "Fehler",
+      getTranslation("flights.notFound") || "Der zu bearbeitende Flug wurde nicht gefunden.",
       "error"
     );
     return;
@@ -2495,7 +2522,11 @@ async function loadTripsIntoDropdown(selectedTripId = null) {
 async function createNewTrip() {
   // Demo Check
   if (typeof isDemoMode !== 'undefined' && isDemoMode) {
-      showMessage("Demo-Modus", "Im Demo-Modus können keine Trips erstellt werden.", "info");
+      showMessage(
+        getTranslation("demo.demoModus") || "Demo-Modus",
+        getTranslation("demo.noTripsCreated") || "Im Demo-Modus können keine Trips erstellt werden.",
+        "info"
+      );
       return;
   }
 

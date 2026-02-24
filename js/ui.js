@@ -87,7 +87,10 @@ function openPremiumModal(featureKey = null) {
           }
           if (nativeHint) {
               nativeHint.classList.remove("hidden");
-              nativeHint.innerHTML = `<p class="text-red-500 font-bold">Du hast bereits ein aktives Web-Abo (Stripe).</p><p>Bitte verwalte dein Abo auf aviosphere.com.</p>`;
+              nativeHint.innerHTML = `
+                <p class="text-red-500 font-bold">${getTranslation("premium.stripeConflictTitle") || "Du hast bereits ein aktives Web-Abo (Stripe)."}</p>
+                <p>${getTranslation("premium.stripeConflictDesc") || "Bitte verwalte dein Abo auf aviosphere.com."}</p>
+              `;
           }
           return; // Modal fertig, Abbruch
       }
@@ -100,7 +103,10 @@ function openPremiumModal(featureKey = null) {
           
           if (nativeHint) {
               nativeHint.classList.remove("hidden");
-              nativeHint.innerHTML = `<p class="text-indigo-600 font-bold">Du hast ein aktives App-Abo (Google Play).</p><p>Bitte verwalte dein Abo in der Android App.</p>`;
+              nativeHint.innerHTML = nativeHint.innerHTML = `
+                <p class="text-indigo-600 font-bold">${getTranslation("premium.googlePlayConflictTitle") || "Du hast ein aktives App-Abo (Google Play)."}</p>
+                <p>${getTranslation("premium.googlePlayConflictDesc") || "Bitte verwalte dein Abo in der Android App."}</p>
+              `;
           }
           return;
       }

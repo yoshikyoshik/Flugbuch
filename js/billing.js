@@ -223,15 +223,27 @@ async function restorePurchases() {
         
         // Listener erledigt den Rest, aber wir geben Feedback
         if (customerInfo.entitlements.all["pro_access"]?.isActive) {
-            showMessage("Erfolg", "Einkäufe wiederhergestellt.", "success");
+            showMessage(
+                getTranslation("billing.restoreSuccessTitle") || "Erfolg",
+                getTranslation("billing.restoreSuccessDesc") || "Einkäufe wiederhergestellt.",
+                "success"
+            );
             closePremiumModal();
         } else {
-            showMessage("Info", "Keine aktiven Abos gefunden.", "info");
+            showMessage(
+                getTranslation("billing.restoreInfoTitle") || "Info",
+                getTranslation("billing.noSubFound") || "Keine aktiven Abos gefunden.",
+                "info"
+            );
         }
     } catch (e) {
-        showMessage("Fehler", "Wiederherstellung fehlgeschlagen.", "error");
+        showMessage(
+            getTranslation("toast.errorTitle") || "Fehler",
+            getTranslation("billing.restoreFailed") || "Wiederherstellung fehlgeschlagen.",
+            "error"
+        );
     }
-    if(btn) btn.textContent = "Einkäufe wiederherstellen";
+    if(btn) btn.textContent = getTranslation("premium.restoreBtn") || "Einkäufe wiederherstellen";
 }
 
 /**

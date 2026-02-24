@@ -15,9 +15,9 @@ const API_BASE_URL = (window.location.hostname === 'localhost' || window.locatio
     : '';
 
 // Konstanten
-const MAX_PHOTOS_PER_FLIGHT = 5;
-const MAX_FILE_SIZE_BYTES = 3 * 1024 * 1024; // 3 MB
-const ITEMS_PER_PAGE = 5;
+const MAX_PHOTOS_PER_FLIGHT = 10;
+const MAX_FILE_SIZE_BYTES = 6 * 1024 * 1024; // 6 MB
+const ITEMS_PER_PAGE = 10;
 
 // Globale Zustands-Variablen
 let map;

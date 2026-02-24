@@ -42,8 +42,8 @@ async function uploadFlightPhotos(filesToUpload) {
     if (uploadError) {
       console.error("Fehler beim Hochladen der Datei:", uploadError);
       showMessage(
-        "Upload-Fehler",
-        `Foto ${file.name} konnte nicht hochgeladen werden.`,
+        getTranslation("toast.uploadErrorTitle") || "Upload-Fehler",
+        (getTranslation("messages.photoUploadFailed") || "Foto {fileName} konnte nicht hochgeladen werden.").replace("{fileName}", file.name),
         "error"
       );
       continue;

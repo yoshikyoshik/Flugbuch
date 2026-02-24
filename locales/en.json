@@ -141,7 +141,9 @@
     "redirectingStripe": "Redirecting to customer portal...",
     "confirmDelete": "Are you sure you want to permanently delete this flight?",
     "limitTitle": "Limit Reached",
-    "limitBody": "You have reached the limit for free flights. Upgrade to Pro for unlimited logging."
+    "limitBody": "You have reached the limit for free flights. Upgrade to Pro for unlimited logging.",
+    "photoUploadFailed": "Photo {fileName} could not be uploaded.",
+    "globeScreenshotError": "Could not create globe image."
   },
 
   "records": {
@@ -220,7 +222,11 @@
     "filterPlaceholder": "Search (Place, Airline, Date...)",
     "hideAllRoutes": "Clear Map",
     "sortTrip": "Trip",
-    "filterTripPlaceholder": "All Trips"
+    "filterTripPlaceholder": "All Trips",
+    "notFound": "The flight to be processed could not be found.",
+    "photoDeleteError": "Old photos could not get deleted, but new ones added.",
+    "logFlightBtn": "Log and save flight",
+    "saveChangesBtn": "Save changes"
   },
 
   "print": {
@@ -620,7 +626,12 @@
     "titleGlobe": "Explore the 3D Globe 🌍",
     "titlePrint": "Create your logbook as PDF 📚",
     "nativeTitle": "Premium Feature 🔒",
-    "restore": "Restore Purchases"
+    "restore": "Restore Purchases",
+    "restoreBtn": "Restore Purchases",
+    "stripeConflictTitle": "You already have an active web subscription (Stripe).",
+    "stripeConflictDesc": "Please manage your subscription at aviosphere.com.",
+    "googlePlayConflictTitle": "You have an active app subscription (Google Play).",
+    "googlePlayConflictDesc": "Please manage your subscription in the Android app."
   },
 
   "landing": {
@@ -655,7 +666,15 @@
     "flightUpdated": "Flight updated successfully.",
     "deleteError": "Could not delete flight.",
     "importTitle": "Import",
-    "exportTitle": "Export"
+    "exportTitle": "Export",
+    "saveOffline": "Saved offline",
+    "noInternet": "No internet. Flight saved local and will be transferred later to database.",
+    "syncTitle": "Sync",
+    "toast.syncingDesc": "Transferring {count} offline saved flights...",
+    "syncSuccess": "Sync successful",
+    "flightsTransferred": "{successCount} Flights successfully saved in database.",
+    "offlinePhotoWarning": "Note: Photos cannot be saved in offline mode unfortunately. Please add them later.",
+    "uploadErrorTitle": "Upload Error"
   },
 
   "map": {
@@ -722,7 +741,12 @@
     "welcomeBody": "Welcome aboard! You are now viewing sample data.",
     "errorTitle": "Error",
     "errorBody": "Could not load demo data.",
-    "exit": "🚪 Exit Demo"
+    "exit": "🚪 Exit Demo",
+    "demoModus": "Demo Mode",
+    "noDataSaved": "Data cannot be saved in demo mode.",
+    "noChangesSaved": "Changes cannot be saved in demo mode.",
+    "noDataDeleted": "Data cannot be deleted in demo mode.",
+    "noTripsCreated": "Trips cannot be created in demo mode."
   },
 
   "review": {
@@ -731,6 +755,14 @@
     "yesButton": "Yes, sure! ⭐",
     "feedbackButton": "Give Feedback",
     "noButton": "No, thanks"
+  },
+
+  "billing": {
+    "restoreSuccessTitle": "Success",
+    "restoreSuccessDesc": "Purchases successfully restored.",
+    "restoreInfoTitle": "Info",
+    "noSubFound": "No active subscriptions found.",
+    "restoreFailed": "Restore failed."
   },
 
   "registerFree": "Register for Free",

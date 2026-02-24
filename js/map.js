@@ -1107,7 +1107,11 @@ async function takeGlobeScreenshot() {
   } catch (err) {
       console.error("Fehler bei Globus-Screenshot:", err);
       if (typeof showMessage === 'function') {
-          showMessage("Fehler", "Konnte Globus-Bild nicht erstellen.", "error");
+          showMessage(
+            getTranslation("toast.errorTitle") || "Fehler",
+            getTranslation("messages.globeScreenshotError") || "Konnte Globus-Bild nicht erstellen.",
+            "error"
+          );
       }
   } finally {
       // 4. WICHTIG: UI-Elemente wieder sichtbar machen!
