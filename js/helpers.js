@@ -396,6 +396,14 @@ function translatePage() {
       }
     }
   });
+  // --- NEU: Titel-Attribute (Tooltips bei Icon-Buttons) übersetzen ---
+  document.querySelectorAll("[data-i18n-title]").forEach((element) => {
+    const key = element.getAttribute("data-i18n-title");
+    const translation = getTranslation(key);
+    if (translation) {
+      element.title = translation; // Überschreibt nur den Hover-Text!
+    }
+  });
 }
 
 /**

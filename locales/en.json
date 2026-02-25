@@ -61,7 +61,8 @@
     "logbook": "Logbook",
     "achievements": "Achievements",
     "help": "Help",
-    "trips": "My Trips"
+    "trips": "My Trips",
+    "share": "Share"
   },
 
   "burgerMenu": {
@@ -226,7 +227,12 @@
     "notFound": "The flight to be processed could not be found.",
     "photoDeleteError": "Old photos could not get deleted, but new ones added.",
     "logFlightBtn": "Log and save flight",
-    "saveChangesBtn": "Save changes"
+    "saveChangesBtn": "Save changes",
+    "cancelEdit": "Cancel"
+  },
+
+  "trips": {
+    "createNew": "Create new trip"
   },
 
   "print": {
@@ -394,7 +400,8 @@
 
   "modal": {
     "loadingTitle": "Loading...",
-    "loadingBody": "Loading details..."
+    "loadingBody": "Loading details...",
+    "shareDetails": "Share details"
   },
 
   "achievements": {
@@ -407,6 +414,8 @@
     "unitHours": "h",
     "unitAirports": "Airports",
     "unitCo2": "kg CO₂",
+    "tabBadges": "Badges",
+    "tabRecords": "Records",
 
     "flights": {
       "1": {
@@ -631,7 +640,8 @@
     "stripeConflictTitle": "You already have an active web subscription (Stripe).",
     "stripeConflictDesc": "Please manage your subscription at aviosphere.com.",
     "googlePlayConflictTitle": "You have an active app subscription (Google Play).",
-    "googlePlayConflictDesc": "Please manage your subscription in the Android app."
+    "googlePlayConflictDesc": "Please manage your subscription in the Android app.",
+    "loadStat": "Loading Status..."
   },
 
   "landing": {
@@ -699,7 +709,10 @@
     "btn": "Login / Register",
     "magicLinkSent": "Magic Link sent! Check your emails.",
     "resetEmailSentTitle": "E-Mail sent",
-    "resetEmailSentBody": "If account exists, reset link is sent."
+    "resetEmailSentBody": "If account exists, reset link is sent.",
+    "passwordTooShort": "The password must be at least 6 characters long.",
+    "passwordUpdateFailed": "Password could not be updated...",
+    "passwordUpdated": "Your password has been changed..."
   },
 
   "import": {
@@ -723,14 +736,21 @@
     "optionReplaceDesc": "Deletes ALL your current flights in the app and inserts only the new ones from the file.<br>Ideal if you are importing a complete master list.",
     "optionAppendTitle": "➕ Add (Append)",
     "optionAppendDesc": "Keeps existing flights and adds the new ones at the bottom.<br>Warning: May result in duplicate entries!",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "failed": "Import failed: {error}"
   },
 
   "export": {
     "errorTitle": "Export Error",
     "noData": "No data to export.",
     "successTitle": "Export successful",
-    "successBody": "Data exported as {file}."
+    "successBody": "Data exported as {file}.",
+    "shareTitle": "Flugbuch Export",
+    "shareText": "Hier ist mein AvioSphere Flugbuch-Export.",
+    "successBodyMobile": "Die Datei wurde zum Teilen bereitgestellt.",
+    "nativeErrorBody": "Export auf dem Gerät fehlgeschlagen: {error}",
+    "dialogTitle": "Export speichern unter...",
+    "errorPluginsMissing": "Capacitor Plugins fehlen."
   },
 
   "demo": {

@@ -61,7 +61,8 @@
     "logbook": "Logbuch",
     "achievements": "Errungenschaften",
     "help": "Hilfe",
-    "trips": "Meine Reisen"
+    "trips": "Meine Reisen",
+    "share": "Teilen"
   },
 
   "burgerMenu": {
@@ -226,7 +227,12 @@
     "notFound": "Der zu bearbeitende Flug wurde nicht gefunden.",
     "photoDeleteError": "Alte Fotos konnten nicht gelöscht, aber neue hinzugefügt werden.",
     "logFlightBtn": "Flug loggen und speichern",
-    "saveChangesBtn": "Änderungen speichern"
+    "saveChangesBtn": "Änderungen speichern",
+    "cancelEdit": "Abbrechen"
+  },
+
+  "trips": {
+    "createNew": "Neue Reise anlegen"
   },
 
   "print": {
@@ -394,7 +400,8 @@
 
   "modal": {
     "loadingTitle": "Lade...",
-    "loadingBody": "Lade Details..."
+    "loadingBody": "Lade Details...",
+    "shareDetails": "Details teilen"
   },
 
   "achievements": {
@@ -407,6 +414,8 @@
     "unitHours": "Std.",
     "unitAirports": "Flughäfen",
     "unitCo2": "kg CO₂",
+    "tabBadges": "Badges",
+    "tabRecords": "Rekorde",
 
     "flights": {
       "1": {
@@ -631,7 +640,8 @@
     "stripeConflictTitle": "Sie haben bereits ein aktives Web-Abonnement (Stripe).",
     "stripeConflictDesc": "Bitte verwalten Sie Ihr Abonnement auf aviosphere.com.",
     "googlePlayConflictTitle": "Sie haben ein aktives App-Abonnement (Google Play).",
-    "googlePlayConflictDesc": "Bitte verwalten Sie Ihr Abonnement in der Android-App."
+    "googlePlayConflictDesc": "Bitte verwalten Sie Ihr Abonnement in der Android-App.",
+    "loadStat": "Lade Status..."
   },
 
   "landing": {
@@ -699,7 +709,10 @@
     "btn": "Anmelden / Registrieren",
     "magicLinkSent": "Magic Link gesendet! Prüfe deine E-Mails.",
     "resetEmailSentTitle": "E-Mail gesendet",
-    "resetEmailSentBody": "Falls ein Konto existiert, wurde ein Reset-Link verschickt."
+    "resetEmailSentBody": "Falls ein Konto existiert, wurde ein Reset-Link verschickt.",
+    "passwordTooShort": "Das Passwort muss mindestens 6 Zeichen lang sein.",
+    "passwordUpdateFailed": "Passwort konnte nicht aktualisiert werden...",
+    "passwordUpdated": "Dein Passwort wurde geändert..."
   },
 
   "import": {
@@ -723,14 +736,21 @@
     "optionReplaceDesc": "Löscht ALLE deine aktuellen Flüge in der App und fügt nur die neuen aus der Datei ein.<br>Ideal, wenn du eine vollständige Master-Liste importierst.",
     "optionAppendTitle": "➕ Hinzufügen (Anhängen)",
     "optionAppendDesc": "Behält bestehende Flüge und fügt die neuen unten an.<br>Achtung: Kann zu doppelten Einträgen führen!",
-    "cancel": "Abbrechen"
+    "cancel": "Abbrechen",
+    "failed": "Import fehlgeschlagen: {error}"
   },
 
   "export": {
     "errorTitle": "Export-Fehler",
     "noData": "Keine Daten zum Exportieren.",
     "successTitle": "Export erfolgreich",
-    "successBody": "Daten als {file} exportiert."
+    "successBody": "Daten als {file} exportiert.",
+    "shareTitle": "Flugbuch Export",
+    "shareText": "Hier ist mein AvioSphere Flugbuch-Export.",
+    "successBodyMobile": "Die Datei wurde zum Teilen bereitgestellt.",
+    "nativeErrorBody": "Export auf dem Gerät fehlgeschlagen: {error}",
+    "dialogTitle": "Export speichern unter...",
+    "errorPluginsMissing": "Capacitor Plugins fehlen."
   },
 
   "demo": {

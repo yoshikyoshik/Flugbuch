@@ -1275,7 +1275,7 @@ window.resetForm = function () {
 
   // UI zurücksetzen
   const logButton = document.getElementById("log-button");
-  logButton.textContent = "Flug loggen und speichern";
+  logButton.textContent = getTranslation("flights.logFlightBtn") || "Flug loggen und speichern";
   document.getElementById("cancel-edit-button").classList.add("hidden");
 
   updateFlightDetails(); // Setzt Distanz etc. zurück und deaktiviert den Button
@@ -1371,7 +1371,7 @@ window.editFlight = async function (id) {
 
   // UI für den Bearbeitungsmodus anpassen
   const logButton = document.getElementById("log-button");
-  logButton.textContent = "Änderungen speichern";
+  logButton.textContent = getTranslation("flights.saveChangesBtn") || "Änderungen speichern";
   document.getElementById("cancel-edit-button").classList.remove("hidden");
 
   updateFlightDetails(); // Berechnet Distanz/Zeit für die geladenen Flughäfen
@@ -1588,7 +1588,7 @@ window.exportData = async function (format) {
       try {
           const { Filesystem, Share } = Capacitor.Plugins;
           
-          if (!Filesystem || !Share) throw new Error("Capacitor Plugins fehlen.");
+          if (!Filesystem || !Share) throw new Error(getTranslation("export.errorPluginsMissing") || "Capacitor Plugins fehlen.");
 
           // Datei ins lokale Cache-Verzeichnis der App schreiben
           const result = await Filesystem.writeFile({
@@ -1603,7 +1603,7 @@ window.exportData = async function (format) {
               title: getTranslation("export.shareTitle") || 'Flugbuch Export',
               text: getTranslation("export.shareText") || 'Hier ist mein AvioSphere Flugbuch-Export.',
               url: result.uri,
-              dialogTitle: 'Export speichern unter...'
+              dialogTitle: getTranslation("export.dialogTitle") || 'Export speichern unter...'
           });
 
           showMessage(
@@ -1614,7 +1614,11 @@ window.exportData = async function (format) {
 
       } catch (e) {
           console.error("Fehler beim nativen Export:", e);
-          showMessage("Fehler", "Export auf dem Gerät fehlgeschlagen: " + e.message, "error");
+          showMessage(
+            getTranslation("toast.errorTitle") || "Fehler", 
+            (getTranslation("export.nativeErrorBody") || "Export auf dem Gerät fehlgeschlagen: {error}").replace("{error}", e.message), 
+            "error"
+        );
       }
 
   } else {
@@ -1732,7 +1736,11 @@ async function handleImport(event) {
 
     } catch (err) {
       console.error(err);
-      showMessage("Fehler", "Import fehlgeschlagen: " + err.message, "error");
+      showMessage(
+        getTranslation("toast.errorTitle") || "Fehler",
+        (getTranslation("import.failed") || "Import fehlgeschlagen: {error}").replace("{error}", err.message),
+        "error"
+      );
     }
     event.target.value = '';
   };
@@ -2006,8 +2014,8 @@ async function changePassword(event) {
 
   if (newPassword.length < 6) {
     showMessage(
-      "Fehler",
-      "Das Passwort muss mindestens 6 Zeichen lang sein.",
+      getTranslation("toast.errorTitle") || "Fehler",
+      getTranslation("auth.passwordTooShort") || "Das Passwort muss mindestens 6 Zeichen lang sein.",
       "error"
     );
     return;
@@ -2294,14 +2302,14 @@ document.addEventListener("DOMContentLoaded", async function () {
       });
       if (error) {
         showMessage(
-          "Fehler",
-          "Passwort konnte nicht aktualisiert werden: " + error.message,
+          getTranslation("toast.errorTitle") || "Fehler",
+          getTranslation("auth.passwordUpdateFailed") || "Passwort konnte nicht aktualisiert werden...",
           "error"
         );
       } else {
         showMessage(
-          "Erfolg!",
-          "Dein Passwort wurde geändert. Du kannst dich jetzt einloggen.",
+          getTranslation("toast.successTitle") || "Erfolg!",
+          getTranslation("auth.passwordUpdated") || "Dein Passwort wurde geändert...",
           "success"
         );
         backToLogin();
