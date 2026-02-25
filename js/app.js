@@ -1578,22 +1578,63 @@ window.exportData = async function (format) {
     return;
   }
 
-  // Download
-  const blob = new Blob([data], { type: mimeType });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  // --- DOWNLOAD / SHARE LOGIK ---
   
-  showMessage(
-      getTranslation("export.successTitle") || "Export bereit", 
-      (getTranslation("export.successBody") || "Datei {file} geladen.").replace("{file}", filename), 
-      "success"
-  );
+  // Prüfen, ob wir als native App (Android/iOS) laufen
+  const isNative = typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform();
+
+  if (isNative) {
+      // 📱 NATIVE APP LOGIK (Android / iOS)
+      try {
+          const { Filesystem, Share } = Capacitor.Plugins;
+          
+          if (!Filesystem || !Share) throw new Error("Capacitor Plugins fehlen.");
+
+          // Datei ins lokale Cache-Verzeichnis der App schreiben
+          const result = await Filesystem.writeFile({
+              path: filename,
+              data: data, // Der reine String (CSV oder JSON)
+              directory: 'CACHE',
+              encoding: 'utf8'
+          });
+
+          // Das native "Teilen"-Menü öffnen (Speichern in Dateien, Google Drive, Mail etc.)
+          await Share.share({
+              title: getTranslation("export.shareTitle") || 'Flugbuch Export',
+              text: getTranslation("export.shareText") || 'Hier ist mein AvioSphere Flugbuch-Export.',
+              url: result.uri,
+              dialogTitle: 'Export speichern unter...'
+          });
+
+          showMessage(
+              getTranslation("export.successTitle") || "Export bereit", 
+              getTranslation("export.successBodyMobile") || "Die Datei wurde zum Teilen bereitgestellt.", 
+              "success"
+          );
+
+      } catch (e) {
+          console.error("Fehler beim nativen Export:", e);
+          showMessage("Fehler", "Export auf dem Gerät fehlgeschlagen: " + e.message, "error");
+      }
+
+  } else {
+      // 💻 WEB LOGIK (PC / Browser Fallback - genau wie vorher)
+      const blob = new Blob([data], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      showMessage(
+          getTranslation("export.successTitle") || "Export bereit", 
+          (getTranslation("export.successBody") || "Datei {file} geladen.").replace("{file}", filename), 
+          "success"
+      );
+  }
 };
 
 // app.js - handleImport (Update für Trips)
