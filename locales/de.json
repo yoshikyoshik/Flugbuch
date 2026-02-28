@@ -1,795 +1,792 @@
 {
-  "appName": "AvioSphere",
-  "tagline": "Dein Flugbuch, visualisiert in 3D.",
-  "lastFlightMap": "Zuletzt geloggter/bearbeiteter Flug",
-  "mapInfo": "Flugroute wird visualisiert.",
-  "autoPilot": "Autopilot: Flugdaten per Flugnummer laden",
-  "autoFlightNumber": "Flugnummer",
-  "autoFlightDate": "Flugdatum",
-  "autofillBtn": "Daten abrufen",
-  "logNewFlight": "Neuen Flug loggen",
-  "departureNewFlight": "Abflugort (IATA/Name)",
-  "arrivalNewFlight": "Zielort (IATA/Name)",
-  "flightDateNewFlight": "Flugdatum (Optional)",
-  "flightClassNewFlight": "Klasse/Zweck (Optional)",
-  "flightNumberNewFlight": "Flugnummer (Optional)",
-  "airlineNewFlight": "Airline (Optional)",
   "aircraftTypeNewFlight": "Flugzeugtyp (Optional)",
-  "priceNewFlight": "Ticketpreis (Optional)",
+  "airlineNewFlight": "Airline (Optional)",
+  "and": "und",
+  "appName": "AvioSphere",
+  "arrivalNewFlight": "Zielort (IATA/Name)",
+  "autoFlightDate": "Flugdatum",
+  "autoFlightNumber": "Flugnummer",
+  "autoPilot": "Autopilot: Flugdaten per Flugnummer laden",
+  "autofillBtn": "Daten abrufen",
+  "backToLogin": "Zurück zum Login",
   "currencyNewFlight": "Währung (Optional)",
-  "flightPhotoNewFlight": "Foto (Optional)",
-  "notesNewFlight": "Bemerkungen (Optional",
+  "departureNewFlight": "Abflugort (IATA/Name)",
+  "enterNewPWD": "Gib dein neues Passwort ein.",
+  "estimatedCO2Emissions": "Geschätzter CO₂-Ausstoß",
   "estimatedDistanceNewFlight": "Geschätzte Entfernung",
   "estimatedFlightTimeNewFlight": "Geschätzte Flugzeit",
-  "estimatedCO2Emissions": "Geschätzter CO₂-Ausstoß",
-  "logFlightNewFlight": "Flug loggen und speichern",
-  "flightClassEconomy": "Economy",
   "flightClassBusiness": "Business",
-  "flightClassFirst": "First",
-  "flightClassPrivat": "Privat",
   "flightClassCargo": "Cargo",
-  "register": "Registrieren",
-  "login": "Login",
+  "flightClassEconomy": "Economy",
+  "flightClassFirst": "First",
+  "flightClassNewFlight": "Klasse/Zweck (Optional)",
+  "flightClassPrivat": "Privat",
+  "flightDateNewFlight": "Flugdatum (Optional)",
+  "flightNumberNewFlight": "Flugnummer (Optional)",
+  "flightPhotoNewFlight": "Foto (Optional)",
   "forgotPWD": "Passwort vergessen?",
-  "newMail4Link4PWD": "Gib deine E-Mail-Adresse ein, um einen Link zum Zurücksetzen deines Passworts zu erhalten.",
-  "reset": "Reset-Link anfordern",
-  "newPWD": "Gib dein neues Passwort ein",
-  "saveNewPWD": "Neues Passwort speichern",
-  "enterNewPWD": "Gib dein neues Passwort ein.",
-  "backToLogin": "Zurück zum Login",
+  "lastFlightMap": "Zuletzt geloggter/bearbeiteter Flug",
+  "logFlightNewFlight": "Flug loggen und speichern",
+  "logNewFlight": "Neuen Flug loggen",
+  "login": "Login",
+  "loginSubtitle": "Melde dich an, um dein Logbuch zu starten.",
+  "loginWelcome": "Willkommen an Bord",
+  "mapInfo": "Flugroute wird visualisiert.",
   "mapVisualization": "Visualisierung: {depName} ({depCode}) → {arrName} ({arrCode}).",
-
-  "placeholder": {
-    "password": "Passwort",
-    "email": "E-Mail",
-    "newPassword": "Neues Passwort (mind. 6 Zeichen)",
-    "egFlightNumber": "z.B. LH202",
-    "egDeparture": "z.B. FRA",
-    "egArrival": "z.B. JFK",
-    "egAirline": "z.B. Lufthansa",
-    "egAircraft": "z.B. B747-8",
-    "egPrice": "z.B. 199.99",
-    "egCurrency": "z.B. EUR",
-    "egRegistration": "z.B. D-AINC"
+  "newMail4Link4PWD": "Gib deine E-Mail-Adresse ein, um einen Link zum Zurücksetzen deines Passworts zu erhalten.",
+  "newPWD": "Gib dein neues Passwort ein",
+  "notesNewFlight": "Bemerkungen (Optional",
+  "priceNewFlight": "Ticketpreis (Optional)",
+  "privacy": "Datenschutz",
+  "regTermsPrefix": "Mit der Registrierung akzeptierst du unsere",
+  "register": "Registrieren",
+  "registerFree": "Kostenlos Registrieren",
+  "reset": "Reset-Link anfordern",
+  "saveNewPWD": "Neues Passwort speichern",
+  "tagline": "Dein Flugbuch, visualisiert in 3D.",
+  "terms": "AGB",
+  
+  "achievements": {
+    "co2_total": {
+      "1000": {
+        "description": "Du hast deine erste Tonne (1.000 kg) CO₂ erfasst.",
+        "title": "Bewusstsein: 1 Tonne"
+      },
+      "10000": {
+        "description": "Du hast 10.000 kg CO₂ erfasst.",
+        "title": "Bewusstsein: 10 Tonnen"
+      },
+      "100000": {
+        "description": "Du hast 100.000 kg CO₂ erfasst.",
+        "title": "Bewusstsein: 100 Tonnen"
+      },
+      "5000": {
+        "description": "Du hast 5.000 kg CO₂ erfasst.",
+        "title": "Bewusstsein: 5 Tonnen"
+      },
+      "50000": {
+        "description": "Du hast 50.000 kg CO₂ erfasst.",
+        "title": "Bewusstsein: 50 Tonnen"
+      }
+    },
+    "distance": {
+      "10000": {
+        "description": "10.000 km zurückgelegt",
+        "title": "Zehntausender-Marke"
+      },
+      "100000": {
+        "description": "100.000 km geknackt",
+        "title": "Sechsstellige Distanz"
+      },
+      "1000000": {
+        "description": "Eine Million Kilometer geflogen!",
+        "title": "Distanz-Millionär"
+      },
+      "250000": {
+        "description": "250.000 km in der Luft",
+        "title": "Viertelmillionär"
+      },
+      "384400": {
+        "description": "Die Distanz zum Mond zurückgelegt (384.400 km)",
+        "title": "Mond-Reisender"
+      },
+      "40075": {
+        "description": "Einmal um den Äquator geflogen (40.075 km)",
+        "title": "Weltumrunder"
+      },
+      "500000": {
+        "description": "500.000 km gereist",
+        "title": "Halbe Million"
+      },
+      "768800": {
+        "description": "Die Distanz zum Mond und zurück zur Erde (768.800 km)",
+        "title": "Hin und Zurück"
+      }
+    },
+    "flights": {
+      "1": {
+        "description": "Dein erster Flug ist geloggt!",
+        "title": "Erster Eintrag"
+      },
+      "10": {
+        "description": "10 Flüge geloggt",
+        "title": "Vielflieger-Anwärter"
+      },
+      "100": {
+        "description": "100 Flüge gemeistert!",
+        "title": "Hunderter-Club"
+      },
+      "1000": {
+        "description": "1.000 Flüge geloggt!",
+        "title": "Meister der Lüfte"
+      },
+      "150": {
+        "description": "150 Flüge im Logbuch",
+        "title": "Silber-Status"
+      },
+      "25": {
+        "description": "25 Flüge erreicht",
+        "title": "Bronze-Flieger"
+      },
+      "250": {
+        "description": "250 Flüge erreicht!",
+        "title": "Gold-Status"
+      },
+      "50": {
+        "description": "50 Flüge absolviert",
+        "title": "Globetrotter"
+      },
+      "500": {
+        "description": "500 Flüge, unglaublich!",
+        "title": "Luftfahrt-Legende"
+      },
+      "750": {
+        "description": "750 Flüge, der Himmel gehört dir!",
+        "title": "Diamant-Status"
+      }
+    },
+    "loading": "Berechne Errungenschaften...",
+    "longestFlight": {
+      "12000": {
+        "description": "Einen epischen Flug über 12.000 km gemeistert",
+        "title": "Ultra-Langstrecke"
+      },
+      "3000": {
+        "description": "Ein Flug über 3.000 km",
+        "title": "Langstrecken-Debüt"
+      },
+      "5000": {
+        "description": "Einen Flug über 5.000 km absolviert",
+        "title": "Kontinentspringer"
+      },
+      "8000": {
+        "description": "Ein Flug über 8.000 km",
+        "title": "Ozean-Überquerer"
+      }
+    },
+    "noFlights": "Logge deinen ersten Flug, um Errungenschaften freizuschalten!",
+    "recordsTitle": "Persönliche Rekorde & \"Firsts\"",
+    "tabBadges": "Badges",
+    "tabRecords": "Rekorde",
+    "time": {
+      "100": {
+        "description": "Über 100 Stunden Flugzeit",
+        "title": "Hundert Stunden"
+      },
+      "1000": {
+        "description": "Über 1.000 Stunden in der Luft",
+        "title": "Tausend Stunden Flugzeit"
+      },
+      "24": {
+        "description": "24 Stunden in der Luft verbracht",
+        "title": "Rund um die Uhr"
+      },
+      "2500": {
+        "description": "Mehr als 100 Tage Flugzeit",
+        "title": "Viertausend Stunden"
+      },
+      "500": {
+        "description": "Mehr als 20 Tage im Flugzeug verbracht",
+        "title": "500-Stunden-Marke"
+      },
+      "8760": {
+        "description": "Ein ganzes Jahr (8.760h) in der Luft verbracht",
+        "title": "Ein Jahr im Himmel"
+      }
+    },
+    "title": "Deine Errungenschaften",
+    "uniqueAirports": {
+      "10": {
+        "description": "10 verschiedene Flughäfen besucht",
+        "title": "Entdecker"
+      },
+      "100": {
+        "description": "100 einzigartige Flughäfen angeflogen!",
+        "title": "Hub-Hopper"
+      },
+      "25": {
+        "description": "25 einzigartige Flughäfen im Logbuch",
+        "title": "Weltenbummler"
+      },
+      "50": {
+        "description": "50 verschiedene Flughäfen gesehen",
+        "title": "Kultursammler"
+      }
+    },
+    "unitAirports": "Flughäfen",
+    "unitCo2": "kg CO₂",
+    "unitFlights": "Flüge",
+    "unitHours": "Std.",
+    "unitKm": "km"
   },
-
-  "tabs": {
-    "newFlight": "Neuer Flug",
-    "flights": "Flüge",
-    "stats": "Statistiken",
-    "charts": "Charts",
-    "logbook": "Logbuch",
-    "achievements": "Errungenschaften",
-    "help": "Hilfe",
-    "trips": "Meine Reisen",
-    "share": "Teilen"
+  "anim": {
+    "finished": "Reisechronik beendet. {count} Flüge angezeigt.",
+    "noFlights": "Keine Flüge zum Animieren.",
+    "paused": "Animation pausiert."
   },
-
+  "auth": {
+    "btn": "Anmelden / Registrieren",
+    "emailLabel": "E-Mail",
+    "enterNewPassword": "Bitte gib dein neues Passwort ein.",
+    "loginTitle": "Login",
+    "magicLinkSent": "Magic Link gesendet! Prüfe deine E-Mails.",
+    "passwordLabel": "Passwort",
+    "passwordTooShort": "Das Passwort muss mindestens 6 Zeichen lang sein.",
+    "passwordUpdated": "Dein Passwort wurde geändert...",
+    "passwordUpdateFailed": "Passwort konnte nicht aktualisiert werden...",
+    "registerSuccessBody": "Bitte bestätige deine E-Mail-Adresse.",
+    "registerSuccessTitle": "Registrierung erfolgreich!",
+    "resetEmailSentBody": "Falls ein Konto existiert, wurde ein Reset-Link verschickt.",
+    "resetEmailSentTitle": "E-Mail gesendet",
+    "welcomeBack": "Willkommen zurück!"
+  },
+  "billing": {
+    "noSubFound": "Keine aktiven Abonnements gefunden.",
+    "restoreFailed": "Wiederherstellung fehlgeschlagen.",
+    "restoreInfoTitle": "Info",
+    "restoreSuccessDesc": "Käufe erfolgreich wiederhergestellt.",
+    "restoreSuccessTitle": "Erfolgreich"
+  },
   "burgerMenu": {
-    "newFlight": "Neuer Flug",
-    "flights": "Flüge",
-    "stats": "Statistiken",
-    "charts": "Charts",
-    "logbook": "Logbuch",
     "achievements": "Errungenschaften",
-    "help": "Hilfe",
-    "map": "3D Karte",
-    "importJSON": "Daten Importieren (JSON)...",
-    "import": "Daten Importieren (JSON, CSV)...",
-    "export": "Export (CSV / JSON)",
-    "exportJSON": "Daten Exportieren (JSON)",
-    "exportCSV": "Daten Exportieren (CSV)",
     "changePassword": "Passwort ändern",
-    "toggleMode": "Modus wechseln",
+    "charts": "Charts",
+    "export": "Export (CSV / JSON)",
+    "exportCSV": "Daten Exportieren (CSV)",
+    "exportJSON": "Daten Exportieren (JSON)",
+    "flights": "Flüge",
+    "help": "Hilfe",
+    "import": "Daten Importieren (JSON, CSV)...",
+    "importJSON": "Daten Importieren (JSON)...",
+    "logbook": "Logbuch",
     "logout": "Abmelden",
     "manageSubscription": "⚙️ Abo verwalten",
+    "map": "3D Karte",
+    "newFlight": "Neuer Flug",
+    "stats": "Statistiken",
+    "toggleMode": "Modus wechseln",
     "trips": "Meine Reisen"
   },
-
-  "form": {
-    "autopilotTitle": "Autopilot: Flugdaten per Flugnummer laden",
-    "flightNumber": "Flugnummer",
-    "date": "Flugdatum",
-    "buttonFetch": "Daten abrufen",
-    "buttonFetching": "Suche...",
-    "logNewFlight": "Neuen Flug loggen",
-    "from": "Abflugort (IATA/Name)",
-    "to": "Zielort (IATA/Name)",
-    "dateOptional": "Flugdatum (Optional)",
-    "class": "Klasse/Zweck (Optional)",
-    "flightNumberOptional": "Flugnummer (Optional)",
-    "airline": "Airline (Optional)",
-    "aircraft": "Flugzeugtyp (Optional)",
-    "price": "Ticketpreis (Optional)",
-    "currency": "Währung (Optional)",
-    "photo": "Foto (Optional)",
-    "notes": "Bemerkungen (Optional)",
-    "notesPlaceholder": "Besondere Vorkommnisse oder persönliche Notizen...",
-    "distEstimate": "Geschätzte Entfernung",
-    "timeEstimate": "Geschätzte Flugzeit",
-    "co2Estimate": "Geschätzter CO₂-Ausstoß",
-    "buttonLogFlight": "Flug loggen und speichern",
-    "buttonSaveChanges": "Änderungen speichern",
-    "buttonCancel": "Abbrechen",
-    "chooseFile": "Datei auswählen...",
-    "noFileSelected": "Keine Datei ausgewählt",
-    "filesSelected": "{count} Foto(s) ausgewählt.",
-    "registration": "Registrierung (Optional)",
-    "reset": "Zurücksetzen",
-    "cancel": "Abbrechen",
-    "save": "Speichern",
-    "buttonSaving": "Speichert...",
-    "buttonUpdating": "Aktualisiert...",
-    "confirmDeleteTitle": "Flug löschen?",
-    "confirmDeleteBody": "Möchtest du diesen Flug wirklich endgültig löschen?",
-    "yes": "Ja, löschen",
-    "no": "Abbrechen",
-    "tripLabel": "Reise / Trip (Optional)",
-    "tripNone": "-- Keine Reise / Einzelflug --"
-  },
-
-  "messages": {
-    "noDataFound": "Keine Flugdaten für diese Kombination gefunden.",
-    "futureData": "Flug liegt in der Zukunft oder ist noch nicht gestartet. Flüge können erst ab dem Zeitpunkt des Starts geloggt werden.",
-    "fetchError": "Ein Problem ist aufgetreten.",
-    "importSuccess": "Flüge wurden importiert. Die Ansicht wird aktualisiert.",
-    "importConfirm": "ACHTUNG! Du bist dabei, {count} Flüge zu importieren. Alle deine aktuellen Flüge werden gelöscht und ersetzt.",
-    "uploadLimitCount": "Limit erreicht: Es sind maximal {count} Fotos pro Flug erlaubt. Es werden nur die ersten {count} neuen Fotos hochgeladen.",
-    "uploadLimitSize": "Datei übersprungen: {fileName} ist zu groß (Max. 3 MB).",
-    "subscriptionExpired": "Dein Abo ist abgelaufen. Du bist nun wieder im Free-Modus.",
-    "statusUpdate": "Status-Update",
-    "noStripeAccount": "Aktives Play Store-Abo-Konto gefunden.",
-    "redirectingStripe": "Leite zum Kundenportal weiter...",
-    "confirmDelete": "Möchtest du diesen Flug wirklich unwiderruflich löschen?",
-    "limitTitle": "Limit erreicht",
-    "limitBody": "Du hast das Limit für kostenlose Flüge erreicht. Upgrade auf Pro für unbegrenztes Loggen.",
-    "photoUploadFailed": "Das Foto {fileName} konnte nicht hochgeladen werden.",
-    "globeScreenshotError": "Das Globusbild konnte nicht erstellt werden."
-  },
-
-  "records": {
-    "longestFlight": "Längster Flug",
-    "shortestFlight": "Kürzester Flug",
-    "mostExpensive": "Teuerster Flug",
-    "highestCO2": "Höchster CO₂-Ausstoß",
-    "firstFlight": "Erster Flug",
-    "firstLongHaul": "Erster Langstreckenflug (>5000km)",
-    "firstPremiumFlight": "Erster {class}-Flug",
-    "firstA380": "Erster A380-Flug",
-    "firstEquator": "Äquator überquert",
-    "firstArctic": "Nördl. Polarkreis überquert",
-    "firstAntarctic": "Südl. Polarkreis überquert",
-    "firstMeridian": "Nullmeridian überquert",
-    "firstLongHaulDesc": "Fliege über 5.000 km in einem Flug.",
-    "firstPremiumFlightDesc": "Fliege in der Business- oder First-Class.",
-    "firstA380Desc": "Logge einen Flug in einem A380.",
-    "firstEquatorDesc": "Überquere den Äquator auf einem Flug.",
-    "firstArcticDesc": "Überquere den nördlichen Polarkreis.",
-    "firstAntarcticDesc": "Überquere den südlichen Polarkreis.",
-    "firstMeridianDesc": "Überquere den Nullmeridian.",
-    "firstVisitAsia": "Erster Besuch in Asien",
-    "firstVisitEurope": "Erster Besuch in Europa",
-    "firstVisitNorthAmerica": "Erster Besuch in Nordamerika",
-    "firstVisitSouthAmerica": "Erster Besuch in Südamerika",
-    "firstVisitAfrica": "Erster Besuch in Afrika",
-    "firstVisitOceania": "Erster Besuch in Ozeanien",
-    "firstVisitAntarctica": "Erster Besuch in der Antarktis",
-
-    "firstVisitAsiaDesc": "Logge einen Flug zu einem Ziel in Asien.",
-    "firstVisitEuropeDesc": "Logge einen Flug zu einem Ziel in Europa.",
-    "firstVisitNorthAmericaDesc": "Logge einen Flug zu einem Ziel in Nordamerika.",
-    "firstVisitSouthAmericaDesc": "Logge einen Flug zu einem Ziel in Südamerika.",
-    "firstVisitAfricaDesc": "Logge einen Flug zu einem Ziel in Afrika.",
-    "firstVisitOceaniaDesc": "Logge einen Flug zu einem Ziel in Ozeanien.",
-    "firstVisitAntarcticaDesc": "Logge einen Flug zu einem Ziel in der Antarktis."
-  },
-
-  "flights": {
-    "title": "Gespeicherte Flüge",
-    "playChronicle": "▶️ Chronik abspielen",
-    "pauseChronicle": "⏸️ Pausieren",
-    "continueChronicle": "▶️ Fortsetzen",
-    "showAllRoutes": "Alle Routen zeigen",
-    "showSingleRoute": "Einzelansicht zeigen",
-    "refresh": "Aktualisieren",
-    "filterTitle": "Flüge filtern",
-    "filterDeparture": "Abflugort (IATA)",
-    "filterArrival": "Zielort (IATA)",
-    "filterDateFrom": "Datum (von)",
-    "filterDateTo": "Datum (bis)",
-    "filterButton": "Filtern",
-    "resetButton": "Reset",
-    "sortBy": "Sortieren nach:",
-    "sortDate": "Datum",
-    "sortRoute": "Route",
-    "sortDistance": "Distanz",
-    "prevButton": "‹ Zurück",
-    "nextButton": "Weiter ›",
-    "noFlights": "Noch keine Flüge geloggt.",
-    "pageInfo": "Seite {currentPage} von {totalPages}",
-    "flightNumberTitle": "Flugbuch-Nummer",
-    "editTitle": "Flug bearbeiten",
-    "deleteTitle": "Flug löschen",
-    "flightDetails": "Flug: {flightNumber} | Airline: {airline} | Typ: {aircraftType}",
-    "co2Info": "🌍 {co2} kg CO₂",
-    "mapOverview": "Gesamtübersicht: {count} einzigartige Routen werden angezeigt.",
-    "mapNoFlights": "Keine Flüge vorhanden, um eine Gesamtübersicht zu zeigen.",
-    "show3DGlobe": "🌍 3D Globus",
-    "showMore": "Details anzeigen...",
-    "hideMore": "Details ausblenden...",
-    "logReturnFlight": "✈️ Rückflug loggen",
-    "createBook": "Buch erstellen (PDF)",
-    "myFlightsTitle": "Meine Flüge",
-    "filterPlaceholder": "Suche (Ort, Airline, Datum...)",
-    "hideAllRoutes": "Karte bereinigen",
-    "sortTrip": "Reise / Trip",
-    "filterTripPlaceholder": "Alle Reisen",
-    "notFound": "Der zu bearbeitende Flug wurde nicht gefunden.",
-    "photoDeleteError": "Alte Fotos konnten nicht gelöscht, aber neue hinzugefügt werden.",
-    "logFlightBtn": "Flug loggen und speichern",
-    "saveChangesBtn": "Änderungen speichern",
-    "cancelEdit": "Abbrechen"
-  },
-
-  "trips": {
-    "createNew": "Neue Reise anlegen"
-  },
-
-  "print": {
-    "nativeTitle": "PDF wird erstellt...",
-    "nativeMessage": "Die App generiert das PDF. Bitte warten...",
-    "coverTitle": "Mein Digitales Flugbuch",
-    "coverSubtitle": "Ein Export deiner geloggten Flüge",
-    "summaryFor": "Zusammenfassung für {count} Flüge",
-    "totalDistance": "Gesamtdistanz",
-    "totalTime": "Gesamte Flugzeit",
-    "totalCO2": "Gesamter CO₂-Ausstoß",
-    "dateRange": "Zeitraum",
-    "flightTitle": "Flug #{number}: {departure} ➔ {arrival}",
-    "filteredTitle": "Gefilterte Flugliste",
-    "logbookTitle": "Logbuch: {groupName}",
-    "createBookForGroup": "Buch für {groupName} erstellen (PDF)",
-    "errorNoFlights": "Keine Flüge im aktuellen Filter zum Drucken gefunden.",
-    "errorNativeFailed": "Natives PDF konnte nicht erstellt werden."
-  },
-
-  "stats": {
-    "totalFlights": "Gesamte Flüge",
-    "totalDistance": "Gesamtdistanz",
-    "frequentAirport": "Häufigster Flughafen",
-    "totalSpending": "Gesamtausgaben",
-    "mostExpensive": "Teuerster Flug",
-    "leastExpensive": "Günstigster Flug",
-    "longestFlight": "Längster Flug",
-    "shortestFlight": "Kürzester Flug",
-    "avgDistance": "Ø Flugdistanz",
-    "frequentAircraft": "Häufigster Flugzeugtyp",
-    "avgCo2": "Ø CO₂ pro Flug",
-    "totalCo2": "Gesamter CO₂-Fußabdruck",
-    "yearlySummary": "Jahreszusammenfassung",
-    "noData": "-",
-    "flightRouteKm": "{departure} → {arrival} ({distance} km)",
-    "flightRoutePrice": "{departure} → {arrival} ({price} {currency})",
-    "aircraftTypeCount": "{type} ({count}x)",
-    "yearlySummaryContent": "{count} Flüge | {distance} km",
-    "noYearlyData": "Keine Jahresdaten verfügbar.",
-    "total": "Total",
-    "title": "Deine Statistik",
-    "topAirports": "Top Flughäfen",
-    "topAirlines": "Top Airlines",
-    "co2Title": "CO₂ Bilanz",
-    "flights": "Flüge"
-  },
-
   "charts": {
-    "title": "Visuelle Auswertungen",
-    "perYear": "Pro Jahr",
-    "perMonth": "Pro Monat",
-    "flightsOverTime": "Flüge pro Zeitraum",
     "distanceOverTime": "Distanz pro Zeitraum (km)",
     "durationOverTime": "Flugzeit pro Zeitraum",
-    "labelFlights": "Anzahl der Flüge",
+    "flightsOverTime": "Flüge pro Zeitraum",
     "labelDistance": "Gesamtdistanz (km)",
     "labelDuration": "Gesamtflugzeit",
+    "labelFlights": "Anzahl der Flüge",
+    "perMonth": "Pro Monat",
+    "perYear": "Pro Jahr",
+    "title": "Visuelle Auswertungen",
     "tooltipLabel": "{label}{hours} Std. {minutes} Min."
   },
-
+  "demo": {
+    "btn": "Ohne Account ausprobieren (Demo)",
+    "demoModus": "Demo-Modus",
+    "errorBody": "Demo-Daten konnten nicht geladen werden.",
+    "errorTitle": "Fehler",
+    "exit": "🚪 Demo Beenden",
+    "noChangesSaved": "Im Demo-Modus können keine Änderungen gespeichert werden.",
+    "noDataDeleted": "Im Demo-Modus können keine Daten gelöscht werden.",
+    "noDataSaved": "Im Demo-Modus können keine Daten gespeichert werden.",
+    "noTripsCreated": "Im Demo-Modus können keine Trips erstellt werden.",
+    "or": "oder",
+    "userBadge": "Demo Pilot 🚀",
+    "welcomeBody": "Willkommen an Bord! Du siehst nun Beispieldaten.",
+    "welcomeTitle": "Demo-Modus"
+  },
+  "export": {
+    "dialogTitle": "Export speichern unter...",
+    "errorNativeBody": "Export auf dem Gerät fehlgeschlagen: {error}",
+    "errorPluginsMissing": "Capacitor Plugins fehlen.",
+    "errorTitle": "Export-Fehler",
+    "noData": "Keine Daten zum Exportieren.",
+    "shareText": "Hier ist mein AvioSphere Flugbuch-Export.",
+    "shareTitle": "Flugbuch Export",
+    "successBody": "Daten als {file} exportiert.",
+    "successBodyMobile": "Die Datei wurde zum Teilen bereitgestellt.",
+    "successTitle": "Export erfolgreich"
+  },
+  "flights": {
+    "cancelEdit": "Abbrechen",
+    "co2Info": "🌍 {co2} kg CO₂",
+    "continueChronicle": "▶️ Fortsetzen",
+    "createBook": "Buch erstellen (PDF)",
+    "deleteTitle": "Flug löschen",
+    "editTitle": "Flug bearbeiten",
+    "filterArrival": "Zielort (IATA)",
+    "filterButton": "Filtern",
+    "filterDateFrom": "Datum (von)",
+    "filterDateTo": "Datum (bis)",
+    "filterDeparture": "Abflugort (IATA)",
+    "filterPlaceholder": "Suche (Ort, Airline, Datum...)",
+    "filterTitle": "Flüge filtern",
+    "filterTripPlaceholder": "Alle Reisen",
+    "flightDetails": "Flug: {flightNumber} | Airline: {airline} | Typ: {aircraftType}",
+    "flightNumberTitle": "Flugbuch-Nummer",
+    "hideAllRoutes": "Karte bereinigen",
+    "hideMore": "Details ausblenden...",
+    "logFlightBtn": "Flug loggen und speichern",
+    "logReturnFlight": "✈️ Rückflug loggen",
+    "mapNoFlights": "Keine Flüge vorhanden, um eine Gesamtübersicht zu zeigen.",
+    "mapOverview": "Gesamtübersicht: {count} einzigartige Routen werden angezeigt.",
+    "myFlightsTitle": "Meine Flüge",
+    "nextButton": "Weiter ›",
+    "noFlights": "Noch keine Flüge geloggt.",
+    "notFound": "Der zu bearbeitende Flug wurde nicht gefunden.",
+    "pageInfo": "Seite {currentPage} von {totalPages}",
+    "pauseChronicle": "⏸️ Pausieren",
+    "photoDeleteError": "Alte Fotos konnten nicht gelöscht, aber neue hinzugefügt werden.",
+    "playChronicle": "▶️ Chronik abspielen",
+    "prevButton": "‹ Zurück",
+    "refresh": "Aktualisieren",
+    "resetButton": "Reset",
+    "saveChangesBtn": "Änderungen speichern",
+    "show3DGlobe": "🌍 3D Globus",
+    "showAllRoutes": "Alle Routen zeigen",
+    "showMore": "Details anzeigen...",
+    "showSingleRoute": "Einzelansicht zeigen",
+    "sortBy": "Sortieren nach:",
+    "sortDate": "Datum",
+    "sortDistance": "Distanz",
+    "sortRoute": "Route",
+    "sortTrip": "Reise / Trip",
+    "title": "Gespeicherte Flüge"
+  },
+  "form": {
+    "aircraft": "Flugzeugtyp (Optional)",
+    "airline": "Airline (Optional)",
+    "autopilotTitle": "Autopilot: Flugdaten per Flugnummer laden",
+    "buttonCancel": "Abbrechen",
+    "buttonFetch": "Daten abrufen",
+    "buttonFetching": "Suche...",
+    "buttonLogFlight": "Flug loggen und speichern",
+    "buttonSaveChanges": "Änderungen speichern",
+    "buttonSaving": "Speichert...",
+    "buttonUpdating": "Aktualisiert...",
+    "cancel": "Abbrechen",
+    "chooseFile": "Datei auswählen...",
+    "class": "Klasse/Zweck (Optional)",
+    "co2Estimate": "Geschätzter CO₂-Ausstoß",
+    "confirmDeleteBody": "Möchtest du diesen Flug wirklich endgültig löschen?",
+    "confirmDeleteTitle": "Flug löschen?",
+    "currency": "Währung (Optional)",
+    "date": "Flugdatum",
+    "dateOptional": "Flugdatum (Optional)",
+    "distEstimate": "Geschätzte Entfernung",
+    "filesSelected": "{count} Foto(s) ausgewählt.",
+    "flightNumber": "Flugnummer",
+    "flightNumberOptional": "Flugnummer (Optional)",
+    "from": "Abflugort (IATA/Name)",
+    "logNewFlight": "Neuen Flug loggen",
+    "no": "Abbrechen",
+    "noFileSelected": "Keine Datei ausgewählt",
+    "notes": "Bemerkungen (Optional)",
+    "notesPlaceholder": "Besondere Vorkommnisse oder persönliche Notizen...",
+    "photo": "Foto (Optional)",
+    "price": "Ticketpreis (Optional)",
+    "registration": "Registrierung (Optional)",
+    "reset": "Zurücksetzen",
+    "save": "Speichern",
+    "timeEstimate": "Geschätzte Flugzeit",
+    "to": "Zielort (IATA/Name)",
+    "tripLabel": "Reise / Trip (Optional)",
+    "tripNone": "-- Keine Reise / Einzelflug --",
+    "yes": "Ja, löschen"
+  },
+  "globe": {
+    "buttonNormalMode": "🚀 Normaler Modus",
+    "buttonStoryMode": "📖 Story-Modus",
+    "focus": "Fokus",
+    "noFlights": "Keine Flüge verfügbar",
+    "screenshotErrorGenericMsg": "Konnte das Bild nicht teilen.",
+    "screenshotErrorGenericTitle": "Ups",
+    "screenshotErrorSupport": "Teilen wird auf diesem Gerät nicht unterstützt.",
+    "screenshotErrorTitle": "Fehler",
+    "screenshotSuccessMsg": "Screenshot wurde heruntergeladen.",
+    "screenshotSuccessTitle": "Gespeichert",
+    "screenshotWaitMsg": "Screenshot wird erstellt 📸",
+    "screenshotWaitTitle": "Moment...",
+    "storyModeHint": "Story-Modus: Flüge anklicken, um Details zu sehen.",
+    "visit": "Besuch",
+    "visits": "Besuche"
+  },
+  "help": {
+    "collapse": "Einklappen",
+    "data": {
+      "content": "Im Burger-Menü (≡) oben rechts kannst du deine gesamten Flugdaten als JSON- oder CSV-Datei exportieren (Backup!). Du kannst auch eine JSON-Datei importieren (Achtung: Dies überschreibt alle aktuellen Daten). Dort findest du auch den Dark-Mode-Schalter und die Sprachauswahl.",
+      "title": "⚙️ Daten (Import/Export & Einstellungen)"
+    },
+    "expand": "Ausklappen",
+    "globe": {
+      "content": "Der 3D Globus ('Flüge' > '3D Globus') visualisiert alle deine Reisen. Klicke auf '📖 Story-Modus', um die Erdrotation zu stoppen. Die Flugbahnen werden dicker, und du kannst sie anklicken, um Details zu sehen (das 'Interaktive Flugbuch'). Klicke auf Flughafensäulen oder Länder, um auf diese Region zu fokussieren. Ein Klick auf den Ozean setzt den Fokus zurück.",
+      "title": "🗺️ Der 3D Globus & Story-Modus"
+    },
+    "logging": {
+      "content": "Du kannst Flüge auf zwei Arten hinzufügen: 1. Manuell, indem du Flughafen-Codes (z.B. 'FRA') eingibst. Die App berechnet Distanz und Zeit. 2. Per 'Autopilot', indem du eine Flugnummer (z.B. 'LH202') und ein Datum eingibst. Dies füllt die meisten Daten automatisch aus. Klicke in der 'Flüge'-Liste auf den Bearbeiten-Stift (Edit), um einen Flug zu ändern.",
+      "title": "✈️ Flüge loggen (Manuell & Autopilot)"
+    },
+    "tabs": {
+      "content": "'Statistiken' zeigt dir deine Rekorde (längster Flug, häufigster Flughafen). 'Charts' visualisiert deine Flüge und Distanzen über die Zeit (pro Jahr oder Monat). 'Logbuch' gruppiert deine Flüge nach Kriterien wie Flugzeugtyp oder Airline. Klicke auf das (i)-Symbol, um Details zum jeweiligen Typ abzurufen.",
+      "title": "📊 Statistiken, Charts & Logbuch"
+    },
+    "title": "Hilfe & FAQ"
+  },
+  "import": {
+    "cancel": "Abbrechen",
+    "confirmWarning": "WARNUNG! Du bist dabei, {count} Flüge zu importieren. Dies wird deine aktuellen Cloud-Daten ersetzen.",
+    "errorFileCorrupt": "Datei fehlerhaft: {error}",
+    "errorNoArray": "Kein gültiges Array gefunden.",
+    "errorNoFlights": "Keine lesbaren Flüge gefunden.",
+    "errorTitle": "Fehler",
+    "failed": "Import fehlgeschlagen: {error}",
+    "modalBody": "Wir haben <strong>{count} Flüge</strong> in deiner Datei gefunden. Wie möchtest du fortfahren?",
+    "modalTitle": "Import Optionen",
+    "optionAppendDesc": "Behält bestehende Flüge und fügt die neuen unten an.<br>Achtung: Kann zu doppelten Einträgen führen!",
+    "optionAppendTitle": "➕ Hinzufügen (Anhängen)",
+    "optionReplaceDesc": "Löscht ALLE deine aktuellen Flüge in der App und fügt nur die neuen aus der Datei ein.<br>Ideal, wenn du eine vollständige Master-Liste importierst.",
+    "optionReplaceTitle": "⚠️ Alles Ersetzen (Clean Import)",
+    "processing": "Import läuft...",
+    "readingFile": "Datei wird gelesen...",
+    "saveError": "Konnte Daten nicht speichern.",
+    "successAppend": "{count} Flüge hinzugefügt.",
+    "successBody": "{count} Flüge importiert.",
+    "successReplace": "Liste komplett ersetzt ({count} Flüge).",
+    "successTitle": "Import erfolgreich",
+    "wait": "Bitte warten.",
+    "writing": "Daten werden geschrieben."
+  },
+  "landing": {
+    "AcceptingRegPrivacy": "Datenschutz",
+    "AcceptingRegTerms": "AGB",
+    "AcceptingRegText1": "Mit der Registrierung akzeptierst du unsere",
+    "AcceptingRegText2": "und",
+    "backToLogin": "Zurück zum Login",
+    "featureAutopilot": "Autopilot: Daten per Flugnummer laden",
+    "featureGlobus": "Interaktiver 3D-Globus deiner Reisen",
+    "featurePhotos": "Foto-Upload & PDF-Export",
+    "featureStats": "Detaillierte Statistiken & Charts",
+    "headline": "Mache deine Reisen unvergesslich.",
+    "loginBtn": "Login / Registrieren",
+    "privacy": "Datenschutzerklärung",
+    "subheadline": "Das ultimative digitale Flugbuch für Vielflieger und Luftfahrt-Enthusiasten.",
+    "terms": "AGB & Impressum"
+  },
   "logbook": {
-    "title": "Logbuch-Ansichten",
+    "aircraftCeiling": "Flughöhe",
+    "aircraftCruiseSpeed": "Reisetempo",
+    "aircraftEngineThrust": "Schubkraft",
+    "aircraftEngineType": "Triebwerkstyp",
+    "aircraftError": "Details konnten nicht geladen werden.",
+    "aircraftManufacturer": "Hersteller",
+    "aircraftMaxSpeed": "Max. Tempo",
+    "aircraftModel": "Modell",
+    "aircraftNoDetails": "Keine Details für dieses Modell gefunden.",
+    "aircraftRange": "Reichweite",
+    "aircraftVariants": "Andere gefundene Varianten",
     "byAircraft": "Nach Flugzeugtyp",
     "byAirline": "Nach Airline",
     "byAirport": "Nach Flughafen",
-    "loading": "Lade Logbuch-Daten...",
-    "noData": "Keine Daten für diese Ansicht verfügbar.",
-    "unknown": "Unbekannt",
-    "summary": "({count} Flüge / {distance} km)",
-    "flightEntry": "{date}: {departure} → {arrival} ({distance} km)",
-    "detailsTitleAirport": "Details für {key} anzeigen",
-    "detailsTitleAircraft": "Details für {key} anzeigen",
-    "aircraftManufacturer": "Hersteller",
-    "aircraftModel": "Modell",
-    "aircraftEngineType": "Triebwerkstyp",
-    "aircraftEngineThrust": "Schubkraft",
-    "aircraftMaxSpeed": "Max. Tempo",
-    "aircraftCruiseSpeed": "Reisetempo",
-    "aircraftCeiling": "Flughöhe",
-    "aircraftRange": "Reichweite",
-    "aircraftVariants": "Andere gefundene Varianten",
-    "aircraftNoDetails": "Keine Details für dieses Modell gefunden.",
-    "aircraftError": "Details konnten nicht geladen werden.",
-    "detailsTitleAirline": "Details für {key} anzeigen",
     "byRegistration": "Nach Registrierung",
+    "detailsTitleAircraft": "Details für {key} anzeigen",
+    "detailsTitleAirline": "Details für {key} anzeigen",
+    "detailsTitleAirport": "Details für {key} anzeigen",
+    "disambiguationButton": "Flug #{number} (am {date})",
+    "disambiguationIntro": "Auf dieser Route wurden {count} Flüge gefunden. Bitte wählen Sie einen aus:",
+    "disambiguationTitle": "Route: {departure} → {arrival}",
+    "flightEntry": "{date}: {departure} → {arrival} ({distance} km)",
+    "flightEntryAircraft": "Flugzeug/Reg",
+    "flightEntryAirline": "Airline/Flugnr",
     "flightEntryDate": "Datum",
-    "flightEntryRoute": "Strecke",
     "flightEntryDistance": "Distanz",
     "flightEntryDuration": "Flugzeit",
-    "flightEntryAirline": "Airline/Flugnr",
-    "flightEntryAircraft": "Flugzeug/Reg",
     "flightEntryNotes": "Notizen:",
-    "disambiguationTitle": "Route: {departure} → {arrival}",
-    "disambiguationIntro": "Auf dieser Route wurden {count} Flüge gefunden. Bitte wählen Sie einen aus:",
-    "disambiguationButton": "Flug #{number} (am {date})",
+    "flightEntryRoute": "Strecke",
+    "flightEntryTrip": "Reise:",
     "flightTitle": "Flug #{number}: {departure} → {arrival}",
+    "icaoInfoNote": "Detaillierte (i)-Informationen sind derzeit nur für 3-stellige IATA-Flughafencodes verfügbar.",
+    "loading": "Lade Logbuch-Daten...",
+    "noData": "Keine Daten für diese Ansicht verfügbar.",
     "routeSeparator": "nach",
-    "icaoInfoNote": "Detaillierte (i)-Informationen sind derzeit nur für 3-stellige IATA-Flughafencodes verfügbar."
+    "summary": "({count} Flüge / {distance} km)",
+    "title": "Logbuch-Ansichten",
+    "unknown": "Unbekannt"
   },
-  "globe": {
-    "storyModeHint": "Story-Modus: Flüge anklicken, um Details zu sehen.",
-    "buttonStoryMode": "📖 Story-Modus",
-    "buttonNormalMode": "🚀 Normaler Modus",
-    "noFlights": "Keine Flüge verfügbar",
-    "focus": "Fokus",
-    "visit": "Besuch",
-    "visits": "Besuche",
-    "screenshotWaitTitle": "Moment...",
-    "screenshotWaitMsg": "Screenshot wird erstellt 📸",
-    "screenshotSuccessTitle": "Gespeichert",
-    "screenshotSuccessMsg": "Screenshot wurde heruntergeladen.",
-    "screenshotErrorTitle": "Fehler",
-    "screenshotErrorSupport": "Teilen wird auf diesem Gerät nicht unterstützt.",
-    "screenshotErrorGenericTitle": "Ups",
-    "screenshotErrorGenericMsg": "Konnte das Bild nicht teilen."
+  "map": {
+    "animationFailed": "Animation fehlgeschlagen.",
+    "animationProgress": "Flug {number} / {total}: {date} von {dep} nach {arr}",
+    "arrival": "Ankunft",
+    "departure": "Abflug"
   },
-
+  "messages": {
+    "confirmDelete": "Möchtest du diesen Flug wirklich unwiderruflich löschen?",
+    "fetchError": "Ein Problem ist aufgetreten.",
+    "futureData": "Flug liegt in der Zukunft oder ist noch nicht gestartet. Flüge können erst ab dem Zeitpunkt des Starts geloggt werden.",
+    "globeScreenshotError": "Das Globusbild konnte nicht erstellt werden.",
+    "importConfirm": "ACHTUNG! Du bist dabei, {count} Flüge zu importieren. Alle deine aktuellen Flüge werden gelöscht und ersetzt.",
+    "importSuccess": "Flüge wurden importiert. Die Ansicht wird aktualisiert.",
+    "limitBody": "Du hast das Limit für kostenlose Flüge erreicht. Upgrade auf Pro für unbegrenztes Loggen.",
+    "limitTitle": "Limit erreicht",
+    "noDataFound": "Keine Flugdaten für diese Kombination gefunden.",
+    "noStripeAccount": "Aktives Play Store-Abo-Konto gefunden.",
+    "photoUploadFailed": "Das Foto {fileName} konnte nicht hochgeladen werden.",
+    "redirectingStripe": "Leite zum Kundenportal weiter...",
+    "statusUpdate": "Status-Update",
+    "subscriptionExpired": "Dein Abo ist abgelaufen. Du bist nun wieder im Free-Modus.",
+    "uploadLimitCount": "Limit erreicht: Es sind maximal {count} Fotos pro Flug erlaubt. Es werden nur die ersten {count} neuen Fotos hochgeladen.",
+    "uploadLimitSize": "Datei übersprungen: {fileName} ist zu groß (Max. 3 MB)."
+  },
+  "modal": {
+    "loadingBody": "Lade Details...",
+    "loadingTitle": "Lade...",
+    "shareDetails": "Details teilen"
+  },
+  "modalDetails": {
+    "aircraftCeiling": "Flughöhe (m):",
+    "aircraftEngineCount": "Anz. Triebwerke:",
+    "aircraftEngineType": "Triebwerkstyp:",
+    "aircraftError": "Details konnten nicht geladen werden.",
+    "aircraftLength": "Länge (m):",
+    "aircraftManufacturer": "Hersteller:",
+    "aircraftModel": "Modell:",
+    "aircraftNoDetails": "Keine Details für diesen Flugzeugtyp gefunden.",
+    "aircraftRange": "Reichweite (km):",
+    "aircraftSpeed": "Geschw. (km/h):",
+    "aircraftTitle": "Details für {key}",
+    "aircraftWeight": "Max. Abfluggewicht:",
+    "aircraftWingspan": "Spannweite (m):",
+    "airlineAgeUnit": "Jahre",
+    "airlineBase": "Heimatbasis",
+    "airlineCallsign": "Rufzeichen:",
+    "airlineCountry": "Land:",
+    "airlineError": "Details konnten nicht geladen werden.",
+    "airlineFleetAge": "Flotten-Ø-Alter:",
+    "airlineFleetDetail": "Flotten-Zusammensetzung",
+    "airlineFleetSize": "Flottengröße:",
+    "airlineIcao": "ICAO-Code:",
+    "airlineName": "Name:",
+    "airlineNoDetails": "Keine Details für diese Airline gefunden.",
+    "airlineTitle": "Details für {key}",
+    "airlineWebsite": "Website besuchen",
+    "airlineYear": "Gründungsjahr",
+    "airportCoords": "Koordinaten:",
+    "airportError": "Details konnten nicht geladen werden.",
+    "airportLocation": "Standort:",
+    "airportName": "Name:",
+    "airportNoDetails": "Keine Details für diesen Flughafen gefunden.",
+    "airportTimezone": "Zeitzone:",
+    "airportTitle": "Details für {key}",
+    "airportWebsite": "Website besuchen",
+    "loading": "Lade Details...",
+    "notAvailable": "k.A."
+  },
+  "placeholder": {
+    "egAircraft": "z.B. B747-8",
+    "egAirline": "z.B. Lufthansa",
+    "egArrival": "z.B. JFK",
+    "egCurrency": "z.B. EUR",
+    "egDeparture": "z.B. FRA",
+    "egFlightNumber": "z.B. LH202",
+    "egPrice": "z.B. 199.99",
+    "egRegistration": "z.B. D-AINC",
+    "email": "E-Mail",
+    "newPassword": "Neues Passwort (mind. 6 Zeichen)",
+    "password": "Passwort"
+  },
+  "premium": {
+    "alreadyPremiumDesc": "Du hast ein aktives Web-Abo. Bitte verwalte es auf der Webseite.",
+    "alreadyPremiumTitle": "Bereits Premium",
+    "cta": "Jetzt Upgraden",
+    "desc1": "Kein 15-Flüge-Limit mehr.",
+    "desc2": "Interaktive 3D-Reisehistorie.",
+    "desc3": "Speichere Erinnerungen & erstelle Bücher.",
+    "feature1": "Unbegrenzte Flüge",
+    "feature2": "Interaktiver 3D-Globus",
+    "feature3": "Foto-Uploads & PDF-Export",
+    "googlePlayConflictDesc": "Bitte verwalten Sie Ihr Abonnement in der Android-App.",
+    "googlePlayConflictTitle": "Sie haben ein aktives App-Abonnement (Google Play).",
+    "loadStat": "Lade Status...",
+    "loadingCheckout": "Lade Checkout...",
+    "menuBtn": "🚀 Upgrade auf Pro",
+    "monthly": "Monatlich",
+    "nativeHint": "Hinweis: Die Verwaltung deines Profils und Abos ist über unsere Webseite <strong>aviosphere.com</strong> möglich.",
+    "nativeTitle": "Premium Feature 🔒",
+    "perMonth": "/ Monat",
+    "perYear": "/ Jahr",
+    "processingPurchase": "Kauf wird verarbeitet. Bitte App kurz offen lassen.",
+    "purchaseFailedTitle": "Kauf fehlgeschlagen",
+    "restore": "Einkäufe wiederherstellen",
+    "restoreBtn": "Einkäufe wiederherstellen",
+    "stripeConflictDesc": "Bitte verwalten Sie Ihr Abonnement auf aviosphere.com.",
+    "stripeConflictTitle": "Sie haben bereits ein aktives Web-Abonnement (Stripe).",
+    "subtitle": "Entferne alle Limits und schalte Premium-Features frei.",
+    "thankYou": "Danke für dein Interesse! Die Bezahlung folgt bald.",
+    "title": "Werde ein Pro-Reisender 🚀",
+    "titleGlobe": "Entdecke den 3D Globus 🌍",
+    "titlePrint": "Erstelle dein Logbuch als PDF 📚",
+    "tryAgain": "Bitte erneut versuchen.",
+    "yearly": "Jährlich"
+  },
+  "print": {
+    "coverSubtitle": "Ein Export deiner geloggten Flüge",
+    "coverTitle": "Mein Digitales Flugbuch",
+    "createBookForGroup": "Buch für {groupName} erstellen (PDF)",
+    "dateRange": "Zeitraum",
+    "errorNativeFailed": "Natives PDF konnte nicht erstellt werden.",
+    "errorNoFlights": "Keine Flüge im aktuellen Filter zum Drucken gefunden.",
+    "filteredTitle": "Gefilterte Flugliste",
+    "flightTitle": "Flug #{number}: {departure} ➔ {arrival}",
+    "logbookTitle": "Logbuch: {groupName}",
+    "nativeMessage": "Die App generiert das PDF. Bitte warten...",
+    "nativeTitle": "PDF wird erstellt...",
+    "noFlights": "Keine Flüge für das Buch vorhanden.",
+    "pluginError": "Die native Druckfunktion ist auf diesem Gerät nicht verfügbar. (Plugin-Fehler)",
+    "summaryFor": "Zusammenfassung für {count} Flüge",
+    "totalCO2": "Gesamter CO₂-Ausstoß",
+    "totalDistance": "Gesamtdistanz",
+    "totalTime": "Gesamte Flugzeit"
+  },
+  "records": {
+    "firstA380": "Erster A380-Flug",
+    "firstA380Desc": "Logge einen Flug in einem A380.",
+    "firstAntarctic": "Südl. Polarkreis überquert",
+    "firstAntarcticDesc": "Überquere den südlichen Polarkreis.",
+    "firstArctic": "Nördl. Polarkreis überquert",
+    "firstArcticDesc": "Überquere den nördlichen Polarkreis.",
+    "firstEquator": "Äquator überquert",
+    "firstEquatorDesc": "Überquere den Äquator auf einem Flug.",
+    "firstFlight": "Erster Flug",
+    "firstLongHaul": "Erster Langstreckenflug (>5000km)",
+    "firstLongHaulDesc": "Fliege über 5.000 km in einem Flug.",
+    "firstMeridian": "Nullmeridian überquert",
+    "firstMeridianDesc": "Überquere den Nullmeridian.",
+    "firstPremiumFlight": "Erster {class}-Flug",
+    "firstPremiumFlightDesc": "Fliege in der Business- oder First-Class.",
+    "firstVisitAfrica": "Erster Besuch in Afrika",
+    "firstVisitAfricaDesc": "Logge einen Flug zu einem Ziel in Afrika.",
+    "firstVisitAntarctica": "Erster Besuch in der Antarktis",
+    "firstVisitAntarcticaDesc": "Logge einen Flug zu einem Ziel in der Antarktis.",
+    "firstVisitAsia": "Erster Besuch in Asien",
+    "firstVisitAsiaDesc": "Logge einen Flug zu einem Ziel in Asien.",
+    "firstVisitEurope": "Erster Besuch in Europa",
+    "firstVisitEuropeDesc": "Logge einen Flug zu einem Ziel in Europa.",
+    "firstVisitNorthAmerica": "Erster Besuch in Nordamerika",
+    "firstVisitNorthAmericaDesc": "Logge einen Flug zu einem Ziel in Nordamerika.",
+    "firstVisitOceania": "Erster Besuch in Ozeanien",
+    "firstVisitOceaniaDesc": "Logge einen Flug zu einem Ziel in Ozeanien.",
+    "firstVisitSouthAmerica": "Erster Besuch in Südamerika",
+    "firstVisitSouthAmericaDesc": "Logge einen Flug zu einem Ziel in Südamerika.",
+    "highestCO2": "Höchster CO₂-Ausstoß",
+    "longestFlight": "Längster Flug",
+    "mostExpensive": "Teuerster Flug",
+    "shortestFlight": "Kürzester Flug"
+  },
+  "review": {
+    "body": "Du hast bereits 5 Flüge geloggt! ✈️\nWir würden uns riesig freuen, wenn du uns eine Bewertung im Play Store hinterlässt.",
+    "feedbackButton": "Feedback geben",
+    "noButton": "Nein, danke",
+    "title": "Gefällt dir AvioSphere?",
+    "yesButton": "Ja, gerne! ⭐"
+  },
+  "share": {
+    "downloaded": "Bild wurde heruntergeladen.",
+    "errorDesc": "Fehler beim Teilen: {error}",
+    "errorTitle": "Ups",
+    "imageError": "Konnte Bild nicht erstellen.",
+    "prepDesc": "Bild wird aufbereitet",
+    "prepTitle": "Moment...",
+    "statImageError": "Konnte Statistik-Bild nicht erstellen.",
+    "successTitle": "Gespeichert"
+  },
+  "stats": {
+    "aircraftTypeCount": "{type} ({count}x)",
+    "avgCo2": "Ø CO₂ pro Flug",
+    "avgDistance": "Ø Flugdistanz",
+    "co2Title": "CO₂ Bilanz",
+    "flightRouteKm": "{departure} → {arrival} ({distance} km)",
+    "flightRoutePrice": "{departure} → {arrival} ({price} {currency})",
+    "flights": "Flüge",
+    "frequentAircraft": "Häufigster Flugzeugtyp",
+    "frequentAirport": "Häufigster Flughafen",
+    "leastExpensive": "Günstigster Flug",
+    "longestFlight": "Längster Flug",
+    "mostExpensive": "Teuerster Flug",
+    "noData": "-",
+    "noYearlyData": "Keine Jahresdaten verfügbar.",
+    "shortestFlight": "Kürzester Flug",
+    "title": "Deine Statistik",
+    "topAirlines": "Top Airlines",
+    "topAirports": "Top Flughäfen",
+    "total": "Total",
+    "totalCo2": "Gesamter CO₂-Fußabdruck",
+    "totalDistance": "Gesamtdistanz",
+    "totalFlights": "Gesamte Flüge",
+    "totalSpending": "Gesamtausgaben",
+    "yearlySummary": "Jahreszusammenfassung",
+    "yearlySummaryContent": "{count} Flüge | {distance} km"
+  },
+  "tabs": {
+    "achievements": "Errungenschaften",
+    "charts": "Charts",
+    "flights": "Flüge",
+    "help": "Hilfe",
+    "logbook": "Logbuch",
+    "newFlight": "Neuer Flug",
+    "share": "Teilen",
+    "stats": "Statistiken",
+    "trips": "Meine Reisen"
+  },
+  "toast": {
+    "airportNotFound": "Flughafencode nicht gefunden.",
+    "deleteError": "Flug konnte nicht gelöscht werden.",
+    "errorTitle": "Fehler",
+    "exportTitle": "Export",
+    "flightSaved": "Flug erfolgreich gespeichert.",
+    "flightUpdated": "Flug erfolgreich aktualisiert.",
+    "importTitle": "Import",
+    "infoTitle": "Info",
+    "loadingTitle": "Lade...",
+    "noInternet": "Kein Internet. Flug wurde lokal gespeichert und wird später übertragen.",
+    "notLoggedIn": "Nicht eingeloggt. Bitte neu laden.",
+    "offlinePhotoWarning": "Hinweis: Fotos können im Offline-Modus leider nicht gespeichert werden. Bitte fügen Sie diese später hinzu.",
+    "saveErrorBody": "Flug konnte nicht in der Datenbank gespeichert werden.",
+    "saveErrorTitle": "Speicherfehler",
+    "saveOffline": "Offline gespeichert",
+    "sessionExpired": "Sitzung abgelaufen. Bitte neu einloggen.",
+    "successTitle": "Erfolg",
+    "syncSuccess": "Sync erfolgreich",
+    "syncTitle": "Sync",
+    "syncingDesc": "Übertrage {count} offline gespeicherte Flüge...",
+    "updateErrorBody": "Änderungen konnten nicht gespeichert werden.",
+    "updateErrorTitle": "Update-Fehler",
+    "uploadErrorTitle": "Upload Fehler",
+    "uploadLimitTitle": "Upload-Limit"
+  },
+  "trips": {
+    "createError": "Reise konnte nicht erstellt werden.",
+    "createNew": "Neue Reise anlegen",
+    "created": "Reise '{name}' angelegt.",
+    "loading": "Lade Reisen...",
+    "promptName": "Name der neuen Reise (z.B. 'Sommerurlaub 2024'):"
+  },
+  "tutorial": {
+    "button": "Verstanden, los geht's!",
+    "intro": "Hier sind ein paar Tipps für den Start:",
+    "step1": {
+      "desc": "Im Tab 'Neuer Flug' kannst du Flüge manuell (z.B. 'FRA' nach 'JFK') oder über den 'Autopilot' mit Flugnummer (z.B. 'LH400') und Datum eintragen.",
+      "title": "Flüge loggen"
+    },
+    "step2": {
+      "desc": "Im Tab 'Flüge' siehst du deine Liste. Klicke auf 'Alle Routen zeigen' für eine 2D-Kartenübersicht.",
+      "title": "Flüge ansehen"
+    },
+    "step3": {
+      "desc": "Klicke im 'Flüge'-Tab auf '3D Globus'. Aktiviere den 'Story-Modus', um die Rotation zu stoppen und Details durch Klicken auf die Flugbahnen anzuzeigen.",
+      "title": "Den Globus entdecken"
+    },
+    "title": "Willkommen beim Digitalen Flugbuch!"
+  },
   "units": {
     "hoursShort": "Std.",
     "minutesShort": "Min."
-  },
-
-  "modalDetails": {
-    "loading": "Lade Details...",
-    "airportTitle": "Details für {key}",
-    "airportName": "Name:",
-    "airportLocation": "Standort:",
-    "airportTimezone": "Zeitzone:",
-    "airportCoords": "Koordinaten:",
-    "airportWebsite": "Website besuchen",
-    "airportNoDetails": "Keine Details für diesen Flughafen gefunden.",
-    "airportError": "Details konnten nicht geladen werden.",
-
-    "aircraftTitle": "Details für {key}",
-    "aircraftManufacturer": "Hersteller:",
-    "aircraftModel": "Modell:",
-    "aircraftEngineType": "Triebwerkstyp:",
-    "aircraftEngineCount": "Anz. Triebwerke:",
-    "aircraftSpeed": "Geschw. (km/h):",
-    "aircraftRange": "Reichweite (km):",
-    "aircraftCeiling": "Flughöhe (m):",
-    "aircraftLength": "Länge (m):",
-    "aircraftWingspan": "Spannweite (m):",
-    "aircraftWeight": "Max. Abfluggewicht:",
-    "aircraftNoDetails": "Keine Details für diesen Flugzeugtyp gefunden.",
-    "aircraftError": "Details konnten nicht geladen werden.",
-    "notAvailable": "k.A.",
-
-    "airlineTitle": "Details für {key}",
-    "airlineName": "Name:",
-    "airlineCountry": "Land:",
-    "airlineIcao": "ICAO-Code:",
-    "airlineCallsign": "Rufzeichen:",
-    "airlineFleetSize": "Flottengröße:",
-    "airlineFleetAge": "Flotten-Ø-Alter:",
-    "airlineWebsite": "Website besuchen",
-    "airlineNoDetails": "Keine Details für diese Airline gefunden.",
-    "airlineError": "Details konnten nicht geladen werden.",
-    "airlineAgeUnit": "Jahre",
-    "airlineBase": "Heimatbasis",
-    "airlineYear": "Gründungsjahr",
-    "airlineFleetDetail": "Flotten-Zusammensetzung"
-  },
-
-  "modal": {
-    "loadingTitle": "Lade...",
-    "loadingBody": "Lade Details...",
-    "shareDetails": "Details teilen"
-  },
-
-  "achievements": {
-    "title": "Deine Errungenschaften",
-    "recordsTitle": "Persönliche Rekorde & \"Firsts\"",
-    "loading": "Berechne Errungenschaften...",
-    "noFlights": "Logge deinen ersten Flug, um Errungenschaften freizuschalten!",
-    "unitFlights": "Flüge",
-    "unitKm": "km",
-    "unitHours": "Std.",
-    "unitAirports": "Flughäfen",
-    "unitCo2": "kg CO₂",
-    "tabBadges": "Badges",
-    "tabRecords": "Rekorde",
-
-    "flights": {
-      "1": {
-        "title": "Erster Eintrag",
-        "description": "Dein erster Flug ist geloggt!"
-      },
-      "10": {
-        "title": "Vielflieger-Anwärter",
-        "description": "10 Flüge geloggt"
-      },
-      "25": { "title": "Bronze-Flieger", "description": "25 Flüge erreicht" },
-      "50": { "title": "Globetrotter", "description": "50 Flüge absolviert" },
-      "100": {
-        "title": "Hunderter-Club",
-        "description": "100 Flüge gemeistert!"
-      },
-      "150": {
-        "title": "Silber-Status",
-        "description": "150 Flüge im Logbuch"
-      },
-      "250": { "title": "Gold-Status", "description": "250 Flüge erreicht!" },
-      "500": {
-        "title": "Luftfahrt-Legende",
-        "description": "500 Flüge, unglaublich!"
-      },
-      "750": {
-        "title": "Diamant-Status",
-        "description": "750 Flüge, der Himmel gehört dir!"
-      },
-      "1000": {
-        "title": "Meister der Lüfte",
-        "description": "1.000 Flüge geloggt!"
-      }
-    },
-
-    "distance": {
-      "10000": {
-        "title": "Zehntausender-Marke",
-        "description": "10.000 km zurückgelegt"
-      },
-      "40075": {
-        "title": "Weltumrunder",
-        "description": "Einmal um den Äquator geflogen (40.075 km)"
-      },
-      "100000": {
-        "title": "Sechsstellige Distanz",
-        "description": "100.000 km geknackt"
-      },
-      "250000": {
-        "title": "Viertelmillionär",
-        "description": "250.000 km in der Luft"
-      },
-      "384400": {
-        "title": "Mond-Reisender",
-        "description": "Die Distanz zum Mond zurückgelegt (384.400 km)"
-      },
-      "500000": {
-        "title": "Halbe Million",
-        "description": "500.000 km gereist"
-      },
-      "768800": {
-        "title": "Hin und Zurück",
-        "description": "Die Distanz zum Mond und zurück zur Erde (768.800 km)"
-      },
-      "1000000": {
-        "title": "Distanz-Millionär",
-        "description": "Eine Million Kilometer geflogen!"
-      }
-    },
-
-    "time": {
-      "24": {
-        "title": "Rund um die Uhr",
-        "description": "24 Stunden in der Luft verbracht"
-      },
-      "100": {
-        "title": "Hundert Stunden",
-        "description": "Über 100 Stunden Flugzeit"
-      },
-      "500": {
-        "title": "500-Stunden-Marke",
-        "description": "Mehr als 20 Tage im Flugzeug verbracht"
-      },
-      "1000": {
-        "title": "Tausend Stunden Flugzeit",
-        "description": "Über 1.000 Stunden in der Luft"
-      },
-      "2500": {
-        "title": "Viertausend Stunden",
-        "description": "Mehr als 100 Tage Flugzeit"
-      },
-      "8760": {
-        "title": "Ein Jahr im Himmel",
-        "description": "Ein ganzes Jahr (8.760h) in der Luft verbracht"
-      }
-    },
-
-    "uniqueAirports": {
-      "10": {
-        "title": "Entdecker",
-        "description": "10 verschiedene Flughäfen besucht"
-      },
-      "25": {
-        "title": "Weltenbummler",
-        "description": "25 einzigartige Flughäfen im Logbuch"
-      },
-      "50": {
-        "title": "Kultursammler",
-        "description": "50 verschiedene Flughäfen gesehen"
-      },
-      "100": {
-        "title": "Hub-Hopper",
-        "description": "100 einzigartige Flughäfen angeflogen!"
-      }
-    },
-
-    "longestFlight": {
-      "3000": {
-        "title": "Langstrecken-Debüt",
-        "description": "Ein Flug über 3.000 km"
-      },
-      "5000": {
-        "title": "Kontinentspringer",
-        "description": "Einen Flug über 5.000 km absolviert"
-      },
-      "8000": {
-        "title": "Ozean-Überquerer",
-        "description": "Ein Flug über 8.000 km"
-      },
-      "12000": {
-        "title": "Ultra-Langstrecke",
-        "description": "Einen epischen Flug über 12.000 km gemeistert"
-      }
-    },
-
-    "co2_total": {
-      "1000": {
-        "title": "Bewusstsein: 1 Tonne",
-        "description": "Du hast deine erste Tonne (1.000 kg) CO₂ erfasst."
-      },
-      "5000": {
-        "title": "Bewusstsein: 5 Tonnen",
-        "description": "Du hast 5.000 kg CO₂ erfasst."
-      },
-      "10000": {
-        "title": "Bewusstsein: 10 Tonnen",
-        "description": "Du hast 10.000 kg CO₂ erfasst."
-      },
-      "50000": {
-        "title": "Bewusstsein: 50 Tonnen",
-        "description": "Du hast 50.000 kg CO₂ erfasst."
-      },
-      "100000": {
-        "title": "Bewusstsein: 100 Tonnen",
-        "description": "Du hast 100.000 kg CO₂ erfasst."
-      }
-    }
-  },
-
-  "tutorial": {
-    "title": "Willkommen beim Digitalen Flugbuch!",
-    "intro": "Hier sind ein paar Tipps für den Start:",
-    "step1": {
-      "title": "Flüge loggen",
-      "desc": "Im Tab 'Neuer Flug' kannst du Flüge manuell (z.B. 'FRA' nach 'JFK') oder über den 'Autopilot' mit Flugnummer (z.B. 'LH400') und Datum eintragen."
-    },
-    "step2": {
-      "title": "Flüge ansehen",
-      "desc": "Im Tab 'Flüge' siehst du deine Liste. Klicke auf 'Alle Routen zeigen' für eine 2D-Kartenübersicht."
-    },
-    "step3": {
-      "title": "Den Globus entdecken",
-      "desc": "Klicke im 'Flüge'-Tab auf '3D Globus'. Aktiviere den 'Story-Modus', um die Rotation zu stoppen und Details durch Klicken auf die Flugbahnen anzuzeigen."
-    },
-    "button": "Verstanden, los geht's!"
-  },
-
-  "help": {
-    "title": "Hilfe & FAQ",
-    "logging": {
-      "title": "✈️ Flüge loggen (Manuell & Autopilot)",
-      "content": "Du kannst Flüge auf zwei Arten hinzufügen: 1. Manuell, indem du Flughafen-Codes (z.B. 'FRA') eingibst. Die App berechnet Distanz und Zeit. 2. Per 'Autopilot', indem du eine Flugnummer (z.B. 'LH202') und ein Datum eingibst. Dies füllt die meisten Daten automatisch aus. Klicke in der 'Flüge'-Liste auf den Bearbeiten-Stift (Edit), um einen Flug zu ändern."
-    },
-    "globe": {
-      "title": "🗺️ Der 3D Globus & Story-Modus",
-      "content": "Der 3D Globus ('Flüge' > '3D Globus') visualisiert alle deine Reisen. Klicke auf '📖 Story-Modus', um die Erdrotation zu stoppen. Die Flugbahnen werden dicker, und du kannst sie anklicken, um Details zu sehen (das 'Interaktive Flugbuch'). Klicke auf Flughafensäulen oder Länder, um auf diese Region zu fokussieren. Ein Klick auf den Ozean setzt den Fokus zurück."
-    },
-    "tabs": {
-      "title": "📊 Statistiken, Charts & Logbuch",
-      "content": "'Statistiken' zeigt dir deine Rekorde (längster Flug, häufigster Flughafen). 'Charts' visualisiert deine Flüge und Distanzen über die Zeit (pro Jahr oder Monat). 'Logbuch' gruppiert deine Flüge nach Kriterien wie Flugzeugtyp oder Airline. Klicke auf das (i)-Symbol, um Details zum jeweiligen Typ abzurufen."
-    },
-    "data": {
-      "title": "⚙️ Daten (Import/Export & Einstellungen)",
-      "content": "Im Burger-Menü (≡) oben rechts kannst du deine gesamten Flugdaten als JSON- oder CSV-Datei exportieren (Backup!). Du kannst auch eine JSON-Datei importieren (Achtung: Dies überschreibt alle aktuellen Daten). Dort findest du auch den Dark-Mode-Schalter und die Sprachauswahl."
-    },
-    "expand": "Ausklappen",
-    "collapse": "Einklappen"
-  },
-
-  "premium": {
-    "title": "Werde ein Pro-Reisender 🚀",
-    "subtitle": "Entferne alle Limits und schalte Premium-Features frei.",
-    "nativeHint": "Hinweis: Die Verwaltung deines Profils und Abos ist über unsere Webseite <strong>aviosphere.com</strong> möglich.",
-    "feature1": "Unbegrenzte Flüge",
-    "desc1": "Kein 15-Flüge-Limit mehr.",
-    "feature2": "Interaktiver 3D-Globus",
-    "desc2": "Interaktive 3D-Reisehistorie.",
-    "feature3": "Foto-Uploads & PDF-Export",
-    "desc3": "Speichere Erinnerungen & erstelle Bücher.",
-    "cta": "Jetzt Upgraden",
-    "menuBtn": "🚀 Upgrade auf Pro",
-    "monthly": "Monatlich",
-    "yearly": "Jährlich",
-    "perMonth": "/ Monat",
-    "perYear": "/ Jahr",
-    "thankYou": "Danke für dein Interesse! Die Bezahlung folgt bald.",
-    "titleGlobe": "Entdecke den 3D Globus 🌍",
-    "titlePrint": "Erstelle dein Logbuch als PDF 📚",
-    "nativeTitle": "Premium Feature 🔒",
-    "restore": "Einkäufe wiederherstellen",
-    "restoreBtn": "Einkäufe wiederherstellen",
-    "stripeConflictTitle": "Sie haben bereits ein aktives Web-Abonnement (Stripe).",
-    "stripeConflictDesc": "Bitte verwalten Sie Ihr Abonnement auf aviosphere.com.",
-    "googlePlayConflictTitle": "Sie haben ein aktives App-Abonnement (Google Play).",
-    "googlePlayConflictDesc": "Bitte verwalten Sie Ihr Abonnement in der Android-App.",
-    "loadStat": "Lade Status..."
-  },
-
-  "landing": {
-    "headline": "Mache deine Reisen unvergesslich.",
-    "subheadline": "Das ultimative digitale Flugbuch für Vielflieger und Luftfahrt-Enthusiasten.",
-    "featureGlobus": "Interaktiver 3D-Globus deiner Reisen",
-    "featureStats": "Detaillierte Statistiken & Charts",
-    "featureAutopilot": "Autopilot: Daten per Flugnummer laden",
-    "featurePhotos": "Foto-Upload & PDF-Export",
-    "privacy": "Datenschutzerklärung",
-    "terms": "AGB & Impressum",
-    "loginBtn":	"Login / Registrieren",
-    "AcceptingRegText1": "Mit der Registrierung akzeptierst du unsere",
-    "AcceptingRegTerms": "AGB",
-    "AcceptingRegText2": "und",
-    "AcceptingRegPrivacy": "Datenschutz",
-    "backToLogin": "Zurück zum Login"
-  },
-
-  "toast": {
-    "errorTitle": "Fehler",
-    "successTitle": "Erfolg",
-    "infoTitle": "Info",
-    "notLoggedIn": "Nicht eingeloggt. Bitte neu laden.",
-    "airportNotFound": "Flughafencode nicht gefunden.",
-    "saveErrorTitle": "Speicherfehler",
-    "saveErrorBody": "Flug konnte nicht in der Datenbank gespeichert werden.",
-    "flightSaved": "Flug erfolgreich gespeichert.",
-    "sessionExpired": "Sitzung abgelaufen. Bitte neu einloggen.",
-    "updateErrorTitle": "Update-Fehler",
-    "updateErrorBody": "Änderungen konnten nicht gespeichert werden.",
-    "flightUpdated": "Flug erfolgreich aktualisiert.",
-    "deleteError": "Flug konnte nicht gelöscht werden.",
-    "importTitle": "Import",
-    "exportTitle": "Export",
-    "saveOffline": "Offline gespeichert",
-    "noInternet": "Kein Internet. Flug wurde lokal gespeichert und wird später übertragen.",
-    "syncTitle": "Sync",
-    "syncingDesc": "Übertrage {count} offline gespeicherte Flüge...",
-    "syncSuccess": "Sync erfolgreich",
-    "flightsTransferred": "{successCount} Flüge wurden nachgetragen.",
-    "offlinePhotoWarning": "Hinweis: Fotos können im Offline-Modus leider nicht gespeichert werden. Bitte fügen Sie diese später hinzu.",
-    "uploadErrorTitle": "Upload Fehler"
-  },
-
-  "map": {
-    "departure": "Abflug",
-    "arrival": "Ankunft"
-  },
-
-  "anim": {
-    "noFlights": "Keine Flüge zum Animieren.",
-    "paused": "Animation pausiert.",
-    "finished": "Reisechronik beendet. {count} Flüge angezeigt."
-  },
-
-  "auth": {
-    "registerSuccessTitle": "Registrierung erfolgreich!",
-    "registerSuccessBody": "Bitte bestätige deine E-Mail-Adresse.",
-    "welcomeBack": "Willkommen zurück!",
-    "enterNewPassword": "Bitte gib dein neues Passwort ein.",
-    "loginTitle": "Login",
-    "emailLabel": "E-Mail",
-    "passwordLabel": "Passwort",
-    "btn": "Anmelden / Registrieren",
-    "magicLinkSent": "Magic Link gesendet! Prüfe deine E-Mails.",
-    "resetEmailSentTitle": "E-Mail gesendet",
-    "resetEmailSentBody": "Falls ein Konto existiert, wurde ein Reset-Link verschickt.",
-    "passwordTooShort": "Das Passwort muss mindestens 6 Zeichen lang sein.",
-    "passwordUpdateFailed": "Passwort konnte nicht aktualisiert werden...",
-    "passwordUpdated": "Dein Passwort wurde geändert..."
-  },
-
-  "import": {
-    "confirmWarning": "WARNUNG! Du bist dabei, {count} Flüge zu importieren. Dies wird deine aktuellen Cloud-Daten ersetzen.",
-    "successTitle": "Import erfolgreich",
-    "successBody": "{count} Flüge importiert.",
-    "readingFile": "Datei wird gelesen...",
-    "wait": "Bitte warten.",
-    "processing": "Import läuft...",
-    "writing": "Daten werden geschrieben.",
-    "successReplace": "Liste komplett ersetzt ({count} Flüge).",
-    "successAppend": "{count} Flüge hinzugefügt.",
-    "errorTitle": "Fehler",
-    "errorNoArray": "Kein gültiges Array gefunden.",
-    "errorNoFlights": "Keine lesbaren Flüge gefunden.",
-    "errorFileCorrupt": "Datei fehlerhaft: {error}",
-    "saveError": "Konnte Daten nicht speichern.",
-    "modalTitle": "Import Optionen",
-    "modalBody": "Wir haben <strong>{count} Flüge</strong> in deiner Datei gefunden. Wie möchtest du fortfahren?",
-    "optionReplaceTitle": "⚠️ Alles Ersetzen (Clean Import)",
-    "optionReplaceDesc": "Löscht ALLE deine aktuellen Flüge in der App und fügt nur die neuen aus der Datei ein.<br>Ideal, wenn du eine vollständige Master-Liste importierst.",
-    "optionAppendTitle": "➕ Hinzufügen (Anhängen)",
-    "optionAppendDesc": "Behält bestehende Flüge und fügt die neuen unten an.<br>Achtung: Kann zu doppelten Einträgen führen!",
-    "cancel": "Abbrechen",
-    "failed": "Import fehlgeschlagen: {error}"
-  },
-
-  "export": {
-    "errorTitle": "Export-Fehler",
-    "noData": "Keine Daten zum Exportieren.",
-    "successTitle": "Export erfolgreich",
-    "successBody": "Daten als {file} exportiert.",
-    "shareTitle": "Flugbuch Export",
-    "shareText": "Hier ist mein AvioSphere Flugbuch-Export.",
-    "successBodyMobile": "Die Datei wurde zum Teilen bereitgestellt.",
-    "nativeErrorBody": "Export auf dem Gerät fehlgeschlagen: {error}",
-    "dialogTitle": "Export speichern unter...",
-    "errorPluginsMissing": "Capacitor Plugins fehlen."
-  },
-
-  "demo": {
-    "or": "oder",
-    "btn": "Ohne Account ausprobieren (Demo)",
-    "userBadge": "Demo Pilot 🚀",
-    "welcomeTitle": "Demo-Modus",
-    "welcomeBody": "Willkommen an Bord! Du siehst nun Beispieldaten.",
-    "errorTitle": "Fehler",
-    "errorBody": "Demo-Daten konnten nicht geladen werden.",
-    "exit": "🚪 Demo Beenden",
-    "demoModus": "Demo-Modus",
-    "noDataSaved": "Im Demo-Modus können keine Daten gespeichert werden.",
-    "noChangesSaved": "Im Demo-Modus können keine Änderungen gespeichert werden.",
-    "noDataDeleted": "Im Demo-Modus können keine Daten gelöscht werden.",
-    "noTripsCreated": "Im Demo-Modus können keine Trips erstellt werden."
-  },
-
-  "review": {
-    "title": "Gefällt dir AvioSphere?",
-    "body": "Du hast bereits 5 Flüge geloggt! ✈️\nWir würden uns riesig freuen, wenn du uns eine Bewertung im Play Store hinterlässt.",
-    "yesButton": "Ja, gerne! ⭐",
-    "feedbackButton": "Feedback geben",
-    "noButton": "Nein, danke"
-  },
-
-  "billing": {
-    "restoreSuccessTitle": "Erfolgreich",
-    "restoreSuccessDesc": "Käufe erfolgreich wiederhergestellt.",
-    "restoreInfoTitle": "Info",
-    "noSubFound": "Keine aktiven Abonnements gefunden.",
-    "restoreFailed": "Wiederherstellung fehlgeschlagen."
-  },
-
-  "registerFree": "Kostenlos Registrieren",
-  "loginWelcome": "Willkommen an Bord",
-  "loginSubtitle": "Melde dich an, um dein Logbuch zu starten.",
-  "regTermsPrefix": "Mit der Registrierung akzeptierst du unsere",
-  "and": "und",
-  "terms": "AGB",
-  "privacy": "Datenschutz"
+  }
 }

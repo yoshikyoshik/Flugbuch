@@ -2383,7 +2383,11 @@ document.getElementById("buy-pro-btn").addEventListener("click", async () => {
         
         // Türsteher A: Hat User schon Stripe UND ist aktuell PRO?
         if (window.currentUserSubscriptionSource === 'stripe' && currentUserSubscription === 'pro') {
-            showMessage("Bereits Premium", "Du hast ein aktives Web-Abo. Bitte verwalte es auf der Webseite.", "info");
+            showMessage(
+              getTranslation("premium.alreadyPremiumTitle") || "Bereits Premium",
+              getTranslation("premium.alreadyPremiumDesc") || "Du hast ein aktives Web-Abo. Bitte verwalte es auf der Webseite.",
+              "info"
+            );
             return;
         }
 
@@ -2408,7 +2412,7 @@ document.getElementById("buy-pro-btn").addEventListener("click", async () => {
         // ... Ab hier normaler Stripe Code ...
         const originalText = btn.innerHTML;
         btn.disabled = true;
-        btn.innerHTML = '⏳ Lade Checkout...';
+        btn.innerHTML = `⏳ ${getTranslation("premium.loadingCheckout") || "Lade Checkout..."}`;
 
         try {
             const { data: { user } } = await supabaseClient.auth.getUser();
@@ -2579,7 +2583,7 @@ async function createNewTrip() {
       return;
   }
 
-  const name = prompt("Name der neuen Reise (z.B. 'Sommerurlaub 2024'):");
+  const name = prompt(getTranslation("trips.promptName") || "Name der neuen Reise (z.B. 'Sommerurlaub 2024'):");
   if (!name || name.trim() === "") return;
 
   const { data: userData } = await supabaseClient.auth.getUser();
@@ -2596,7 +2600,11 @@ async function createNewTrip() {
 
     if (error) throw error;
 
-    showMessage("Erfolg", `Reise '${name}' angelegt.`, "success");
+    showMessage(
+      getTranslation("toast.successTitle") || "Erfolg",
+      (getTranslation("trips.created") || "Reise '{name}' angelegt.").replace("{name}", name),
+      "success"
+    );
     
     // Dropdown neu laden und den neuen Trip direkt auswählen
     if (data && data.length > 0) {
@@ -2605,7 +2613,11 @@ async function createNewTrip() {
 
   } catch (err) {
     console.error("Trip Fehler:", err);
-    showMessage("Fehler", "Reise konnte nicht erstellt werden.", "error");
+    showMessage(
+      getTranslation("toast.errorTitle") || "Fehler",
+      getTranslation("trips.createError") || "Reise konnte nicht erstellt werden.",
+      "error"
+    );
   }
 }
 
@@ -2614,7 +2626,7 @@ async function createNewTrip() {
 window.renderTripManager = async function() {
   const container = document.getElementById("trips-content");
   if (!container) return;
-  container.innerHTML = `<p class="text-gray-500">Lade Reisen...</p>`;
+  container.innerHTML = `<p class="text-gray-500">${getTranslation("trips.loading") || "Lade Reisen..."}</p>`;
 
   // 1. Trips laden
   const { data: trips } = await supabaseClient

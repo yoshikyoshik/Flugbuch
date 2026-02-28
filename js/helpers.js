@@ -246,7 +246,11 @@ async function manageSubscription() {
             return;
         }
 
-        showMessage("Lade...", getTranslation("messages.redirectingStripe"), "info");
+        showMessage(
+          getTranslation("toast.loadingTitle") || "Lade...", 
+          getTranslation("messages.redirectingStripe"), 
+          "info"
+        );
 
         // ✅ NEU: Plattform-Check
         // Wir prüfen, ob wir nativ (Android) sind.

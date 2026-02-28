@@ -1,734 +1,792 @@
 {
-  "appName": "AvioSphere",
-  "tagline": "您的 3D 可视化飞行日志。",
-  "lastFlightMap": "最后记录/编辑的航班",
-  "mapInfo": "正在可视化飞行路线。",
-  "autoPilot": "自动驾驶仪：通过航班号加载数据",
-  "autoFlightNumber": "航班号",
-  "autoFlightDate": "航班日期",
-  "autofillBtn": "获取数据",
-  "logNewFlight": "记录新航班",
-  "departureNewFlight": "出发地 (IATA/名称)",
-  "arrivalNewFlight": "目的地 (IATA/名称)",
-  "flightDateNewFlight": "航班日期 (可选)",
-  "flightClassNewFlight": "舱位/目的 (可选)",
-  "flightNumberNewFlight": "航班号 (可选)",
-  "airlineNewFlight": "航空公司 (可选)",
   "aircraftTypeNewFlight": "机型 (可选)",
-  "priceNewFlight": "票价 (可选)",
-  "currencyNewFlight": "货币 (可选)",
-  "flightPhotoNewFlight": "照片 (可选)",
-  "notesNewFlight": "备注 (可选)",
-  "estimatedDistanceNewFlight": "估算距离",
-  "estimatedFlightTimeNewFlight": "估算飞行时间",
-  "estimatedCO2Emissions": "估算 CO₂ 排放",
-  "logFlightNewFlight": "记录并保存航班",
-  "flightClassEconomy": "经济舱",
-  "flightClassBusiness": "商务舱",
-  "flightClassFirst": "头等舱",
-  "flightClassPrivat": "私人",
-  "flightClassCargo": "货运",
-  "register": "注册",
-  "login": "登录",
-  "forgotPWD": "忘记密码？",
-  "newMail4Link4PWD": "输入您的邮箱地址以接收重置密码链接。",
-  "reset": "请求重置链接",
-  "newPWD": "输入您的新密码。",
-  "saveNewPWD": "保存新密码",
-  "enterNewPWD": "输入您的新密码。",
+  "airlineNewFlight": "航空公司 (可选)",
+  "and": "和",
+  "appName": "AvioSphere",
+  "arrivalNewFlight": "目的地 (IATA/名称)",
+  "autoFlightDate": "航班日期",
+  "autoFlightNumber": "航班号",
+  "autoPilot": "自动驾驶仪：通过航班号加载数据",
+  "autofillBtn": "获取数据",
   "backToLogin": "返回登录",
+  "currencyNewFlight": "货币 (可选)",
+  "departureNewFlight": "出发地 (IATA/名称)",
+  "enterNewPWD": "请输入您的新密码。",
+  "estimatedCO2Emissions": "预计CO₂排放量",
+  "estimatedDistanceNewFlight": "预计距离",
+  "estimatedFlightTimeNewFlight": "预计飞行时间",
+  "flightClassBusiness": "商务舱",
+  "flightClassCargo": "货机",
+  "flightClassEconomy": "经济舱",
+  "flightClassFirst": "头等舱",
+  "flightClassNewFlight": "舱位/目的 (可选)",
+  "flightClassPrivat": "私人航班",
+  "flightDateNewFlight": "航班日期 (可选)",
+  "flightNumberNewFlight": "航班号 (可选)",
+  "flightPhotoNewFlight": "照片 (可选)",
+  "forgotPWD": "忘记密码？",
+  "lastFlightMap": "最后记录/编辑的航班",
+  "logFlightNewFlight": "记录并保存航班",
+  "logNewFlight": "记录新航班",
+  "login": "登录",
+  "loginSubtitle": "登录以开始您的飞行日志。",
+  "loginWelcome": "欢迎登机",
+  "mapInfo": "航班路线将被可视化。",
   "mapVisualization": "可视化：{depName} ({depCode}) → {arrName} ({arrCode})。",
-
-  "placeholder": {
-    "password": "密码",
-    "email": "邮箱",
-    "newPassword": "新密码 (至少 6 位)",
-    "egFlightNumber": "例如 LH202",
-    "egDeparture": "例如 PEK",
-    "egArrival": "例如 JFK",
-    "egAirline": "例如 Air China",
-    "egAircraft": "例如 B747-8",
-    "egPrice": "例如 199.99",
-    "egCurrency": "例如 CNY",
-    "egRegistration": "例如 B-2047"
+  "newMail4Link4PWD": "输入您的电子邮件地址以接收密码重置链接。",
+  "newPWD": "输入您的新密码",
+  "notesNewFlight": "备注 (可选)",
+  "priceNewFlight": "票价 (可选)",
+  "privacy": "隐私政策",
+  "regTermsPrefix": "注册即表示您接受我们的",
+  "register": "注册",
+  "registerFree": "免费注册",
+  "reset": "请求重置链接",
+  "saveNewPWD": "保存新密码",
+  "tagline": "您的飞行日志，3D可视化。",
+  "terms": "条款",
+  
+  "achievements": {
+    "co2_total": {
+      "1000": {
+        "description": "您记录了第一吨（1,000公斤）CO₂排放。",
+        "title": "意识：1吨"
+      },
+      "10000": {
+        "description": "您已记录10,000公斤CO₂排放。",
+        "title": "意识：10吨"
+      },
+      "100000": {
+        "description": "您已记录100,000公斤CO₂排放。",
+        "title": "意识：100吨"
+      },
+      "5000": {
+        "description": "您已记录5,000公斤CO₂排放。",
+        "title": "意识：5吨"
+      },
+      "50000": {
+        "description": "您已记录50,000公斤CO₂排放。",
+        "title": "意识：50吨"
+      }
+    },
+    "distance": {
+      "10000": {
+        "description": "飞行里程达到10,000公里",
+        "title": "一万公里大关"
+      },
+      "100000": {
+        "description": "达到100,000公里",
+        "title": "六位数距离"
+      },
+      "1000000": {
+        "description": "飞行里程达到一百万公里！",
+        "title": "距离百万富翁"
+      },
+      "250000": {
+        "description": "空中飞行250,000公里",
+        "title": "四分之一百万"
+      },
+      "384400": {
+        "description": "覆盖了到月球的距离（384,400公里）",
+        "title": "月球旅行者"
+      },
+      "40075": {
+        "description": "绕赤道飞行一圈（40,075公里）",
+        "title": "环球航行者"
+      },
+      "500000": {
+        "description": "飞行里程达到500,000公里",
+        "title": "五十万"
+      },
+      "768800": {
+        "description": "到月球并返回地球的距离（768,800公里）",
+        "title": "去而复返"
+      }
+    },
+    "flights": {
+      "1": {
+        "description": "您的第一次航班已记录！",
+        "title": "首次条目"
+      },
+      "10": {
+        "description": "记录了10次航班",
+        "title": "常客候选人"
+      },
+      "100": {
+        "description": "完成了100次航班！",
+        "title": "百次俱乐部"
+      },
+      "1000": {
+        "description": "记录了1,000次航班！",
+        "title": "天空之主"
+      },
+      "150": {
+        "description": "日志中有150次航班",
+        "title": "银卡状态"
+      },
+      "25": {
+        "description": "达到25次航班",
+        "title": "铜牌飞行员"
+      },
+      "250": {
+        "description": "达到250次航班！",
+        "title": "金卡状态"
+      },
+      "50": {
+        "description": "完成50次航班",
+        "title": "环球旅行家"
+      },
+      "500": {
+        "description": "500次航班，不可思议！",
+        "title": "航空传奇"
+      },
+      "750": {
+        "description": "750次航班，天空属于您！",
+        "title": "钻石状态"
+      }
+    },
+    "loading": "正在计算成就...",
+    "longestFlight": {
+      "12000": {
+        "description": "完成了一次超过12,000公里的史诗航班",
+        "title": "超长途航班"
+      },
+      "3000": {
+        "description": "一次超过3,000公里的航班",
+        "title": "长途首飞"
+      },
+      "5000": {
+        "description": "完成一次超过5,000公里的航班",
+        "title": "洲际跳跃者"
+      },
+      "8000": {
+        "description": "一次超过8,000公里的航班",
+        "title": "跨洋者"
+      }
+    },
+    "noFlights": "记录您的第一个航班以解锁成就！",
+    "recordsTitle": "个人记录与“首次”",
+    "tabBadges": "徽章",
+    "tabRecords": "记录",
+    "time": {
+      "100": {
+        "description": "超过100小时的飞行时间",
+        "title": "一百小时"
+      },
+      "1000": {
+        "description": "超过1,000小时的飞行时间",
+        "title": "一千小时飞行时间"
+      },
+      "24": {
+        "description": "在空中度过24小时",
+        "title": "全天候"
+      },
+      "2500": {
+        "description": "超过100天的飞行时间",
+        "title": "四千小时"
+      },
+      "500": {
+        "description": "在飞机上度过超过20天",
+        "title": "500小时大关"
+      },
+      "8760": {
+        "description": "在空中度过整整一年（8,760小时）",
+        "title": "天空中的一年"
+      }
+    },
+    "title": "您的成就",
+    "uniqueAirports": {
+      "10": {
+        "description": "访问过10个不同的机场",
+        "title": "探索者"
+      },
+      "100": {
+        "description": "飞往100个独特的机场！",
+        "title": "枢纽跳跃者"
+      },
+      "25": {
+        "description": "日志中有25个独特的机场",
+        "title": "世界旅行者"
+      },
+      "50": {
+        "description": "见识过50个不同的机场",
+        "title": "文化收藏家"
+      }
+    },
+    "unitAirports": "机场",
+    "unitCo2": "公斤 CO₂",
+    "unitFlights": "航班",
+    "unitHours": "小时",
+    "unitKm": "公里"
   },
-
-  "tabs": {
-    "newFlight": "新航班",
-    "flights": "航班",
-    "stats": "统计",
-    "charts": "图表",
-    "logbook": "日志",
-    "achievements": "成就",
-    "help": "帮助",
-    "trips": "我的旅行"
+  "anim": {
+    "finished": "旅行历史结束。显示了{count}个航班。",
+    "noFlights": "没有可制作动画的航班。",
+    "paused": "动画已暂停。"
   },
-
+  "auth": {
+    "btn": "登录 / 注册",
+    "emailLabel": "电子邮件",
+    "enterNewPassword": "请输入您的新密码。",
+    "loginTitle": "登录",
+    "magicLinkSent": "魔法链接已发送！请检查您的电子邮件。",
+    "passwordLabel": "密码",
+    "passwordTooShort": "密码必须至少包含6个字符。",
+    "passwordUpdated": "您的密码已更改...",
+    "passwordUpdateFailed": "密码更新失败...",
+    "registerSuccessBody": "请确认您的电子邮件地址。",
+    "registerSuccessTitle": "注册成功！",
+    "resetEmailSentBody": "如果账户存在，我们已发送重置链接。",
+    "resetEmailSentTitle": "电子邮件已发送",
+    "welcomeBack": "欢迎回来！"
+  },
+  "billing": {
+    "noSubFound": "未找到有效的订阅。",
+    "restoreFailed": "恢复失败。",
+    "restoreInfoTitle": "信息",
+    "restoreSuccessDesc": "购买已成功恢复。",
+    "restoreSuccessTitle": "成功"
+  },
   "burgerMenu": {
-    "newFlight": "新航班",
-    "flights": "航班",
-    "stats": "统计",
-    "charts": "图表",
-    "logbook": "日志",
     "achievements": "成就",
-    "help": "帮助",
-    "map": "3D 地图",
-    "importJSON": "导入数据 (JSON)...",
-    "import": "导入数据 (JSON, CSV)...",
+    "changePassword": "更改密码",
+    "charts": "图表",
     "export": "导出 (CSV / JSON)",
-    "exportJSON": "导出数据 (JSON)",
     "exportCSV": "导出数据 (CSV)",
-    "changePassword": "修改密码",
-    "toggleMode": "切换模式",
-    "logout": "退出登录",
+    "exportJSON": "导出数据 (JSON)",
+    "flights": "航班",
+    "help": "帮助",
+    "import": "导入数据 (JSON, CSV)...",
+    "importJSON": "导入数据 (JSON)...",
+    "logbook": "日志",
+    "logout": "注销",
     "manageSubscription": "⚙️ 管理订阅",
+    "map": "3D地图",
+    "newFlight": "新航班",
+    "stats": "统计",
+    "toggleMode": "切换模式",
     "trips": "我的旅行"
   },
-
-  "form": {
-    "autopilotTitle": "自动驾驶仪：通过航班号加载数据",
-    "flightNumber": "航班号",
-    "date": "航班日期",
-    "buttonFetch": "获取数据",
-    "buttonFetching": "搜索中...",
-    "logNewFlight": "记录新航班",
-    "from": "出发地 (IATA/名称)",
-    "to": "目的地 (IATA/名称)",
-    "dateOptional": "航班日期 (可选)",
-    "class": "舱位/目的 (可选)",
-    "flightNumberOptional": "航班号 (可选)",
-    "airline": "航空公司 (可选)",
-    "aircraft": "机型 (可选)",
-    "price": "票价 (可选)",
-    "currency": "货币 (可选)",
-    "photo": "照片 (可选)",
-    "notes": "备注 (可选)",
-    "notesPlaceholder": "特殊事件或个人笔记...",
-    "distEstimate": "估算距离",
-    "timeEstimate": "估算飞行时间",
-    "co2Estimate": "估算 CO₂ 排放",
-    "buttonLogFlight": "记录并保存航班",
-    "buttonSaveChanges": "保存更改",
-    "buttonCancel": "取消",
-    "chooseFile": "选择文件...",
-    "noFileSelected": "未选择文件",
-    "filesSelected": "已选 {count} 张照片。",
-    "registration": "注册 (可选)",
-    "reset": "重置",
-    "cancel": "取消",
-    "buttonSaving": "正在保存...",
-    "buttonUpdating": "正在更新...",
-    "confirmDeleteTitle": "删除航班？",
-    "confirmDeleteBody": "您确定要永久删除此航班吗？",
-    "yes": "是的，删除",
-    "no": "取消",
-    "tripLabel": "旅行 (可选)",
-    "tripNone": "-- 无旅行 / 单次航班 --"
+  "charts": {
+    "distanceOverTime": "距离随时间变化 (公里)",
+    "durationOverTime": "飞行时间随时间变化",
+    "flightsOverTime": "航班随时间变化",
+    "labelDistance": "总距离 (公里)",
+    "labelDuration": "总飞行时间",
+    "labelFlights": "航班数量",
+    "perMonth": "每月",
+    "perYear": "每年",
+    "title": "视觉分析",
+    "tooltipLabel": "{label}{hours} 小时 {minutes} 分钟"
   },
-
-  "messages": {
-    "noDataFound": "未找到此组合的航班数据。",
-    "futureData": "航班在未来或尚未起飞。航班只能从起飞时间开始记录。",
-    "fetchError": "发生问题。",
-    "importSuccess": "航班已导入。视图正在刷新。",
-    "importConfirm": "警告！您即将导入 {count} 个航班。您当前的所有云端数据将被删除并替换。",
-    "uploadLimitCount": "达到限制：每个航班最多允许 {count} 张照片。仅上传前 {count} 张新照片。",
-    "uploadLimitSize": "文件跳过：{fileName} 太大 (最大 3 MB)。",
-    "subscriptionExpired": "您的订阅已过期。您现在回到了免费模式。",
-    "statusUpdate": "状态更新",
-    "noStripeAccount": "已找到有效的 Play Store 订阅账户。",
-    "redirectingStripe": "正在重定向到客户门户...",
-    "confirmDelete": "您确定要永久删除此航班吗？",
-    "limitTitle": "达到限制",
-    "limitBody": "您已达到免费航班记录上限。升级到 Pro 以无限记录。"
+  "demo": {
+    "btn": "免账号体验 (演示)",
+    "demoModus": "演示模式",
+    "errorBody": "无法加载演示数据。",
+    "errorTitle": "错误",
+    "exit": "🚪 退出演示",
+    "noChangesSaved": "在演示模式下无法保存更改。",
+    "noDataDeleted": "在演示模式下无法删除数据。",
+    "noDataSaved": "在演示模式下无法保存数据。",
+    "noTripsCreated": "在演示模式下无法创建行程。",
+    "or": "或",
+    "userBadge": "演示飞行员 🚀",
+    "welcomeBody": "欢迎登机！您现在正在查看示例数据。",
+    "welcomeTitle": "演示模式"
   },
-
-  "records": {
-    "longestFlight": "最长航班",
-    "shortestFlight": "最短航班",
-    "mostExpensive": "最贵航班",
-    "highestCO2": "最高 CO₂ 排放",
-    "firstFlight": "首次飞行",
-    "firstLongHaul": "首次长途飞行 (>5000km)",
-    "firstPremiumFlight": "首次 {class} 飞行",
-    "firstA380": "首次 A380 飞行",
-    "firstEquator": "穿越赤道",
-    "firstArctic": "穿越北极圈",
-    "firstAntarctic": "穿越南极圈",
-    "firstMeridian": "穿越本初子午线",
-    "firstLongHaulDesc": "单次飞行超过 5,000 公里。",
-    "firstPremiumFlightDesc": "乘坐商务舱或头等舱飞行。",
-    "firstA380Desc": "记录一次 A380 航班。",
-    "firstEquatorDesc": "在飞行中穿越赤道。",
-    "firstArcticDesc": "穿越北极圈。",
-    "firstAntarcticDesc": "穿越南极圈。",
-    "firstMeridianDesc": "穿越本初子午线。",
-    "firstVisitAsia": "首次访问亚洲",
-    "firstVisitEurope": "首次访问欧洲",
-    "firstVisitNorthAmerica": "首次访问北美洲",
-    "firstVisitSouthAmerica": "首次访问南美洲",
-    "firstVisitAfrica": "首次访问非洲",
-    "firstVisitOceania": "首次访问大洋洲",
-    "firstVisitAntarctica": "首次访问南极洲",
-
-    "firstVisitAsiaDesc": "记录一次飞往亚洲目的地的航班。",
-    "firstVisitEuropeDesc": "记录一次飞往欧洲目的地的航班。",
-    "firstVisitNorthAmericaDesc": "记录一次飞往北美洲目的地的航班。",
-    "firstVisitSouthAmericaDesc": "记录一次飞往南美洲目的地的航班。",
-    "firstVisitAfricaDesc": "记录一次飞往非洲目的地的航班。",
-    "firstVisitOceaniaDesc": "记录一次飞往大洋洲目的地的航班。",
-    "firstVisitAntarcticaDesc": "记录一次飞往南极洲目的地的航班。"
+  "export": {
+    "dialogTitle": "将导出保存为...",
+    "errorNativeBody": "设备上导出失败：{error}",
+    "errorPluginsMissing": "缺少 Capacitor 插件。",
+    "errorTitle": "导出错误",
+    "noData": "没有要导出的数据。",
+    "shareText": "这是我的 AvioSphere 飞行日志导出。",
+    "shareTitle": "飞行日志导出",
+    "successBody": "数据已导出为 {file}。",
+    "successBodyMobile": "该文件已准备好分享。",
+    "successTitle": "导出成功"
   },
-
   "flights": {
-    "title": "已存航班",
-    "playChronicle": "▶️ 播放记录",
-    "pauseChronicle": "⏸️ 暂停",
+    "cancelEdit": "取消",
+    "co2Info": "🌍 {co2} 公斤 CO₂",
     "continueChronicle": "▶️ 继续",
-    "showAllRoutes": "显示所有路线",
-    "showSingleRoute": "显示单条路线",
-    "refresh": "刷新",
-    "filterTitle": "筛选航班",
-    "filterDeparture": "出发地 (IATA)",
+    "createBook": "创建日志书 (PDF)",
+    "deleteTitle": "删除航班",
+    "editTitle": "编辑航班",
     "filterArrival": "目的地 (IATA)",
+    "filterButton": "过滤",
     "filterDateFrom": "日期 (从)",
     "filterDateTo": "日期 (至)",
-    "filterButton": "筛选",
+    "filterDeparture": "出发地 (IATA)",
+    "filterPlaceholder": "搜索 (位置，航空公司，日期...)",
+    "filterTitle": "过滤航班",
+    "filterTripPlaceholder": "所有行程",
+    "flightDetails": "航班：{flightNumber} | 航空公司：{airline} | 机型：{aircraftType}",
+    "flightNumberTitle": "飞行日志编号",
+    "hideAllRoutes": "清除地图",
+    "hideMore": "隐藏详情...",
+    "logFlightBtn": "记录并保存航班",
+    "logReturnFlight": "✈️ 记录返程航班",
+    "mapNoFlights": "没有可显示概览的航班。",
+    "mapOverview": "概览：显示了 {count} 条独特的路线。",
+    "myFlightsTitle": "我的航班",
+    "nextButton": "下一页 ›",
+    "noFlights": "尚未记录任何航班。",
+    "notFound": "找不到要编辑的航班。",
+    "pageInfo": "第 {currentPage} 页，共 {totalPages} 页",
+    "pauseChronicle": "⏸️ 暂停",
+    "photoDeleteError": "无法删除旧照片，但已添加新照片。",
+    "playChronicle": "▶️ 播放历史",
+    "prevButton": "‹ 上一页",
+    "refresh": "刷新",
     "resetButton": "重置",
+    "saveChangesBtn": "保存更改",
+    "show3DGlobe": "🌍 3D地球仪",
+    "showAllRoutes": "显示所有路线",
+    "showMore": "显示详情...",
+    "showSingleRoute": "显示单一路线",
     "sortBy": "排序方式：",
     "sortDate": "日期",
-    "sortRoute": "路线",
     "sortDistance": "距离",
-    "prevButton": "‹ 上一页",
-    "nextButton": "下一页 ›",
-    "noFlights": "尚未记录航班。",
-    "pageInfo": "第 {currentPage} 页，共 {totalPages} 页",
-    "flightNumberTitle": "日志编号",
-    "editTitle": "编辑航班",
-    "deleteTitle": "删除航班",
-    "flightDetails": "航班: {flightNumber} | 航司: {airline} | 机型: {aircraftType}",
-    "co2Info": "🌍 {co2} kg CO₂",
-    "mapOverview": "概览：显示了 {count} 条独特的路线。",
-    "mapNoFlights": "没有航班可显示概览。",
-    "show3DGlobe": "🌍 3D 地球",
-    "showMore": "显示详情...",
-    "hideMore": "隐藏详情...",
-    "logReturnFlight": "✈️ 记录返程航班",
-    "createBook": "创建日志书 (PDF)",
-    "myFlightsTitle": "我的航班",
-    "filterPlaceholder": "搜索 (地点, 航司, 日期...)",
-    "hideAllRoutes": "清除地图",
-    "sortTrip": "旅行",
-    "filterTripPlaceholder": "所有旅行"
+    "sortRoute": "路线",
+    "sortTrip": "行程",
+    "title": "已存航班"
   },
-
-  "print": {
-    "nativeTitle": "正在创建 PDF...",
-    "nativeMessage": "应用程序正在生成 PDF。请稍候...",
-    "coverTitle": "我的数字飞行日志",
-    "coverSubtitle": "您记录的航班导出",
-    "summaryFor": "{count} 次航班的摘要",
-    "totalDistance": "总距离",
-    "totalTime": "总飞行时间",
-    "totalCO2": "总 CO₂ 排放",
-    "dateRange": "时间范围",
-    "flightTitle": "航班 #{number}: {departure} ➔ {arrival}",
-    "filteredTitle": "筛选后的航班列表",
-    "logbookTitle": "日志: {groupName}",
-    "createBookForGroup": "为 {groupName} 创建日志书 (PDF)",
-    "errorNoFlights": "当前筛选器中未找到可打印的航班。",
-    "errorNativeFailed": "无法创建原生 PDF。"
+  "form": {
+    "aircraft": "机型 (可选)",
+    "airline": "航空公司 (可选)",
+    "autopilotTitle": "自动驾驶仪：通过航班号加载数据",
+    "buttonCancel": "取消",
+    "buttonFetch": "获取数据",
+    "buttonFetching": "搜索中...",
+    "buttonLogFlight": "记录并保存航班",
+    "buttonSaveChanges": "保存更改",
+    "buttonSaving": "保存中...",
+    "buttonUpdating": "更新中...",
+    "cancel": "取消",
+    "chooseFile": "选择文件...",
+    "class": "舱位/目的 (可选)",
+    "co2Estimate": "预计CO₂排放量",
+    "confirmDeleteBody": "您确定要永久删除此航班吗？",
+    "confirmDeleteTitle": "删除航班？",
+    "currency": "货币 (可选)",
+    "date": "航班日期",
+    "dateOptional": "航班日期 (可选)",
+    "distEstimate": "预计距离",
+    "filesSelected": "已选择 {count} 张照片。",
+    "flightNumber": "航班号",
+    "flightNumberOptional": "航班号 (可选)",
+    "from": "出发地 (IATA/名称)",
+    "logNewFlight": "记录新航班",
+    "no": "取消",
+    "noFileSelected": "未选择任何文件",
+    "notes": "备注 (可选)",
+    "notesPlaceholder": "特殊情况或个人备注...",
+    "photo": "照片 (可选)",
+    "price": "票价 (可选)",
+    "registration": "注册号 (可选)",
+    "reset": "重置",
+    "save": "保存",
+    "timeEstimate": "预计飞行时间",
+    "to": "目的地 (IATA/名称)",
+    "tripLabel": "行程 (可选)",
+    "tripNone": "-- 无行程 / 单次航班 --",
+    "yes": "是的，删除"
   },
-
-  "stats": {
-    "totalFlights": "总航班数",
-    "totalDistance": "总距离",
-    "frequentAirport": "最常去机场",
-    "totalSpending": "总支出",
-    "mostExpensive": "最贵航班",
-    "leastExpensive": "最便宜航班",
-    "longestFlight": "最长航班",
-    "shortestFlight": "最短航班",
-    "avgDistance": "Ø 飞行距离",
-    "frequentAircraft": "最常见机型",
-    "avgCo2": "Ø 单次航班 CO₂",
-    "totalCo2": "总 CO₂ 足迹",
-    "yearlySummary": "年度摘要",
-    "noData": "-",
-    "flightRouteKm": "{departure} → {arrival} ({distance} km)",
-    "flightRoutePrice": "{departure} → {arrival} ({price} {currency})",
-    "aircraftTypeCount": "{type} ({count}x)",
-    "yearlySummaryContent": "{count} 次航班 | {distance} km",
-    "noYearlyData": "无年度数据。",
-    "total": "总计",
-    "title": "您的统计数据",
-    "topAirports": "热门机场",
-    "topAirlines": "热门航空公司",
-    "co2Title": "CO₂ 资产负债表",
-    "flights": "航班"
+  "globe": {
+    "buttonNormalMode": "🚀 正常模式",
+    "buttonStoryMode": "📖 故事模式",
+    "focus": "聚焦",
+    "noFlights": "没有可用的航班",
+    "screenshotErrorGenericMsg": "无法分享图像。",
+    "screenshotErrorGenericTitle": "哎呀",
+    "screenshotErrorSupport": "此设备不支持分享。",
+    "screenshotErrorTitle": "错误",
+    "screenshotSuccessMsg": "屏幕截图已下载。",
+    "screenshotSuccessTitle": "已保存",
+    "screenshotWaitMsg": "正在创建截图 📸",
+    "screenshotWaitTitle": "稍等片刻...",
+    "storyModeHint": "故事模式：点击航班查看详情。",
+    "visit": "访问",
+    "visits": "访问次数"
   },
-
-  "charts": {
-    "title": "可视化分析",
-    "perYear": "每年",
-    "perMonth": "每月",
-    "flightsOverTime": "随时间变化的航班数",
-    "distanceOverTime": "随时间变化的距离 (km)",
-    "durationOverTime": "随时间变化的飞行时间",
-    "labelFlights": "航班数量",
-    "labelDistance": "总距离 (km)",
-    "labelDuration": "总飞行时间",
-    "tooltipLabel": "{label}{hours}小时 {minutes}分"
+  "help": {
+    "collapse": "折叠",
+    "data": {
+      "content": "在右上角的汉堡菜单(≡)中，您可以将所有航班数据导出为JSON或CSV文件（备份！）。您也可以导入JSON文件（注意：这将覆盖所有当前数据）。在那里您还可以找到深色模式开关和语言选择。",
+      "title": "⚙️ 数据 (导入/导出 & 设置)"
+    },
+    "expand": "展开",
+    "globe": {
+      "content": "3D地球仪（'航班' > '3D地球仪'）可视化您所有的旅行。点击'📖 故事模式'停止地球自转。飞行路线变粗，您可以点击它们以查看详情（'互动日志'）。点击机场柱子或国家以聚焦该区域。点击海洋会重置焦点。",
+      "title": "🗺️ 3D地球仪与故事模式"
+    },
+    "logging": {
+      "content": "您可以通过两种方式添加航班：1. 手动添加，输入机场代码（例如，'FRA'）。应用程序会计算距离和时间。2. 通过'自动驾驶仪'，输入航班号（例如，'LH202'）和日期。这会自动填充大部分数据。点击'航班'列表中的编辑铅笔以修改航班。",
+      "title": "✈️ 记录航班 (手动 & 自动驾驶仪)"
+    },
+    "tabs": {
+      "content": "“统计”显示您的记录（最长航班、最常去机场）。“图表”随时间可视化您的航班和距离（每年或每月）。“日志”按机型或航空公司等标准对航班进行分组。点击 (i) 图标可获取相应类型的详细信息。",
+      "title": "📊 统计，图表与日志"
+    },
+    "title": "帮助与常见问题"
   },
-
+  "import": {
+    "cancel": "取消",
+    "confirmWarning": "警告！您即将导入 {count} 个航班。这将替换您当前的云数据。",
+    "errorFileCorrupt": "文件损坏：{error}",
+    "errorNoArray": "未找到有效的数组。",
+    "errorNoFlights": "未找到可读的航班。",
+    "errorTitle": "错误",
+    "failed": "导入失败：{error}",
+    "modalBody": "我们在您的文件中找到了 <strong>{count} 个航班</strong>。您希望如何继续？",
+    "modalTitle": "导入选项",
+    "optionAppendDesc": "保留现有航班并追加新航班。<br>警告：可能会导致重复条目！",
+    "optionAppendTitle": "➕ 追加 (添加到末尾)",
+    "optionReplaceDesc": "删除应用程序中所有当前的航班，仅插入文件中的新航班。<br>导入完整主列表时的理想选择。",
+    "optionReplaceTitle": "⚠️ 替换所有 (干净导入)",
+    "processing": "正在导入...",
+    "readingFile": "正在读取文件...",
+    "saveError": "无法保存数据。",
+    "successAppend": "已添加 {count} 个航班。",
+    "successBody": "成功导入 {count} 个航班。",
+    "successReplace": "列表已完全替换 ({count} 个航班)。",
+    "successTitle": "导入成功",
+    "wait": "请稍候。",
+    "writing": "正在写入数据。"
+  },
+  "landing": {
+    "AcceptingRegPrivacy": "隐私政策",
+    "AcceptingRegTerms": "条款",
+    "AcceptingRegText1": "注册即表示您接受我们的",
+    "AcceptingRegText2": "和",
+    "backToLogin": "返回登录",
+    "featureAutopilot": "自动驾驶仪：通过航班号加载数据",
+    "featureGlobus": "互动的3D旅行地球仪",
+    "featurePhotos": "照片上传和PDF导出",
+    "featureStats": "详细的统计数据和图表",
+    "headline": "让您的旅行难忘。",
+    "loginBtn": "登录 / 注册",
+    "privacy": "隐私政策",
+    "subheadline": "面向常旅客和航空爱好者的终极数字飞行日志。",
+    "terms": "条款与印记"
+  },
   "logbook": {
-    "title": "日志视图",
+    "aircraftCeiling": "飞行限高",
+    "aircraftCruiseSpeed": "巡航速度",
+    "aircraftEngineThrust": "推力",
+    "aircraftEngineType": "发动机类型",
+    "aircraftError": "无法加载详情。",
+    "aircraftManufacturer": "制造商",
+    "aircraftMaxSpeed": "最大速度",
+    "aircraftModel": "型号",
+    "aircraftNoDetails": "找不到此型号的详情。",
+    "aircraftRange": "航程",
+    "aircraftVariants": "找到的其他变体",
     "byAircraft": "按机型",
     "byAirline": "按航空公司",
     "byAirport": "按机场",
-    "loading": "正在加载日志数据...",
-    "noData": "此视图无可用数据。",
-    "unknown": "未知",
-    "summary": "({count} 次航班 / {distance} km)",
-    "flightEntry": "{date}: {departure} → {arrival} ({distance} km)",
-    "detailsTitleAirport": "显示 {key} 的详情",
-    "detailsTitleAircraft": "显示 {key} 的详情",
-    "aircraftManufacturer": "制造商",
-    "aircraftModel": "型号",
-    "aircraftEngineType": "引擎类型",
-    "aircraftEngineThrust": "推力",
-    "aircraftMaxSpeed": "最大速度",
-    "aircraftCruiseSpeed": "巡航速度",
-    "aircraftCeiling": "升限",
-    "aircraftRange": "航程",
-    "aircraftVariants": "发现的其他变体",
-    "aircraftNoDetails": "未找到此型号的详情。",
-    "aircraftError": "无法加载详情。",
-    "detailsTitleAirline": "显示 {key} 的详情",
     "byRegistration": "按注册号",
-    "flightEntryDate": "日期",
-    "flightEntryRoute": "航线",
-    "flightEntryDistance": "距离",
-    "flightEntryDuration": "时长",
-    "flightEntryAirline": "航司/航班号",
+    "detailsTitleAircraft": "显示 {key} 的详情",
+    "detailsTitleAirline": "显示 {key} 的详情",
+    "detailsTitleAirport": "显示 {key} 的详情",
+    "disambiguationButton": "航班 #{number} (日期 {date})",
+    "disambiguationIntro": "在此航线上找到了 {count} 个航班。请选择一个：",
+    "disambiguationTitle": "路线：{departure} → {arrival}",
+    "flightEntry": "{date}：{departure} → {arrival} ({distance} 公里)",
     "flightEntryAircraft": "飞机/注册号",
+    "flightEntryAirline": "航司/航班号",
+    "flightEntryDate": "日期",
+    "flightEntryDistance": "距离",
+    "flightEntryDuration": "飞行时间",
     "flightEntryNotes": "备注：",
-    "disambiguationTitle": "航线：{departure} → {arrival}",
-    "disambiguationIntro": "在此航线上找到 {count} 个航班。请选择一个：",
-    "disambiguationButton": "航班 #{number} ({date})",
-    "flightTitle": "航班 #{number}: {departure} → {arrival}",
+    "flightEntryRoute": "路线",
+    "flightEntryTrip": "行程：",
+    "flightTitle": "航班 #{number}：{departure} → {arrival}",
+    "icaoInfoNote": "详细的 (i) 信息目前仅适用于三字母的IATA机场代码。",
+    "loading": "正在加载日志数据...",
+    "noData": "此视图没有可用数据。",
     "routeSeparator": "至",
-    "icaoInfoNote": "详细的 (i) 信息目前仅适用于 3 字母 IATA 机场代码。"
+    "summary": "({count} 航班 / {distance} 公里)",
+    "title": "日志视图",
+    "unknown": "未知"
   },
-  "globe": {
-    "storyModeHint": "故事模式：点击航班查看详情。",
-    "buttonStoryMode": "📖 故事模式",
-    "buttonNormalMode": "🚀 普通模式",
-    "noFlights": "无可用航班",
-    "focus": "聚焦",
-    "visit": "访问",
-    "visits": "访问",
-    "screenshotWaitTitle": "请稍候...",
-    "screenshotWaitMsg": "正在生成截图... 📸",
-    "screenshotSuccessTitle": "已保存",
-    "screenshotSuccessMsg": "截图已下载。",
-    "screenshotErrorTitle": "错误",
-    "screenshotErrorSupport": "此设备不支持分享功能。",
-    "screenshotErrorGenericTitle": "哎呀",
-    "screenshotErrorGenericMsg": "无法分享图片。"
+  "map": {
+    "animationFailed": "动画失败。",
+    "animationProgress": "航班 {number} / {total}：{date} 从 {dep} 到 {arr}",
+    "arrival": "到达",
+    "departure": "出发"
   },
-
-  "units": {
-    "hoursShort": "小时",
-    "minutesShort": "分"
+  "messages": {
+    "confirmDelete": "您确定要永久删除此航班吗？",
+    "fetchError": "出现问题。",
+    "futureData": "航班在未来或尚未起飞。航班只能在起飞时间之后进行记录。",
+    "globeScreenshotError": "无法创建地球图像。",
+    "importConfirm": "警告！您即将导入 {count} 个航班。您当前的所有航班将被删除并替换。",
+    "importSuccess": "航班已导入。视图正在更新。",
+    "limitBody": "您已达到免费航班限制。升级到Pro享受无限记录。",
+    "limitTitle": "达到限制",
+    "noDataFound": "找不到此组合的航班数据。",
+    "noStripeAccount": "找到活跃的 Play Store 订阅账户。",
+    "photoUploadFailed": "照片 {fileName} 无法上传。",
+    "redirectingStripe": "正在重定向到客户门户...",
+    "statusUpdate": "状态更新",
+    "subscriptionExpired": "您的订阅已过期。您现在已回到免费模式。",
+    "uploadLimitCount": "达到限制：每个航班最多允许 {count} 张照片。只有前 {count} 张新照片将被上传。",
+    "uploadLimitSize": "跳过文件：{fileName} 太大（最大 3 MB）。"
   },
-
+  "modal": {
+    "loadingBody": "正在加载详情...",
+    "loadingTitle": "加载中...",
+    "shareDetails": "分享详情"
+  },
   "modalDetails": {
-    "loading": "正在加载详情...",
-    "airportTitle": "{key} 的详情",
-    "airportName": "名称：",
-    "airportLocation": "位置：",
-    "airportTimezone": "时区：",
-    "airportCoords": "坐标：",
-    "airportWebsite": "访问网站",
-    "airportNoDetails": "未找到此机场的详情。",
-    "airportError": "无法加载详情。",
-
-    "aircraftTitle": "{key} 的详情",
+    "aircraftCeiling": "升限 (米)：",
+    "aircraftEngineCount": "发动机数量：",
+    "aircraftEngineType": "发动机类型：",
+    "aircraftError": "无法加载详情。",
+    "aircraftLength": "长度 (米)：",
     "aircraftManufacturer": "制造商：",
     "aircraftModel": "型号：",
-    "aircraftEngineType": "引擎类型：",
-    "aircraftEngineCount": "引擎数量：",
-    "aircraftSpeed": "速度 (km/h)：",
-    "aircraftRange": "航程 (km)：",
-    "aircraftCeiling": "升限 (m)：",
-    "aircraftLength": "长度 (m)：",
-    "aircraftWingspan": "翼展 (m)：",
+    "aircraftNoDetails": "找不到此机型的详情。",
+    "aircraftRange": "航程 (公里)：",
+    "aircraftSpeed": "速度 (公里/小时)：",
+    "aircraftTitle": "{key} 的详情",
     "aircraftWeight": "最大起飞重量：",
-    "aircraftNoDetails": "未找到此机型的详情。",
-    "aircraftError": "无法加载详情。",
-    "notAvailable": "暂无",
-
-    "airlineTitle": "{key} 的详情",
-    "airlineName": "名称：",
-    "airlineCountry": "国家：",
-    "airlineIcao": "ICAO 代码：",
-    "airlineCallsign": "呼号：",
-    "airlineFleetSize": "机队规模：",
-    "airlineFleetAge": "平均机龄：",
-    "airlineWebsite": "访问网站",
-    "airlineNoDetails": "未找到此航空公司的详情。",
-    "airlineError": "无法加载详情。",
+    "aircraftWingspan": "翼展 (米)：",
     "airlineAgeUnit": "年",
-    "airlineBase": "基地",
-    "airlineYear": "成立",
-    "airlineFleetDetail": "机队构成"
+    "airlineBase": "主基地",
+    "airlineCallsign": "呼号：",
+    "airlineCountry": "国家：",
+    "airlineError": "无法加载详情。",
+    "airlineFleetAge": "平均机队机龄：",
+    "airlineFleetDetail": "机队组成",
+    "airlineFleetSize": "机队规模：",
+    "airlineIcao": "ICAO代码：",
+    "airlineName": "名称：",
+    "airlineNoDetails": "找不到此航空公司的详情。",
+    "airlineTitle": "{key} 的详情",
+    "airlineWebsite": "访问网站",
+    "airlineYear": "成立年份",
+    "airportCoords": "坐标：",
+    "airportError": "无法加载详情。",
+    "airportLocation": "位置：",
+    "airportName": "名称：",
+    "airportNoDetails": "找不到此机场的详情。",
+    "airportTimezone": "时区：",
+    "airportTitle": "{key} 的详情",
+    "airportWebsite": "访问网站",
+    "loading": "正在加载详情...",
+    "notAvailable": "N/A"
   },
-
-  "modal": {
-    "loadingTitle": "加载中...",
-    "loadingBody": "正在加载详情..."
+  "placeholder": {
+    "egAircraft": "例如：B747-8",
+    "egAirline": "例如：Lufthansa",
+    "egArrival": "例如：JFK",
+    "egCurrency": "例如：EUR",
+    "egDeparture": "例如：FRA",
+    "egFlightNumber": "例如：LH202",
+    "egPrice": "例如：199.99",
+    "egRegistration": "例如：D-AINC",
+    "email": "电子邮件",
+    "newPassword": "新密码 (至少6个字符)",
+    "password": "密码"
   },
-
-  "achievements": {
-    "title": "您的成就",
-    "recordsTitle": "个人记录与“第一次”",
-    "loading": "正在计算成就...",
-    "noFlights": "记录您的第一个航班以解锁成就！",
-    "unitFlights": "次航班",
-    "unitKm": "km",
-    "unitHours": "小时",
-    "unitAirports": "个机场",
-    "unitCo2": "kg CO₂",
-
-    "flights": {
-      "1": {
-        "title": "首次记录",
-        "description": "您的第一个航班已记录！"
-      },
-      "10": {
-        "title": "常旅客候选人",
-        "description": "记录了 10 次航班"
-      },
-      "25": { "title": "青铜飞行员", "description": "达到 25 次航班" },
-      "50": { "title": "环球旅行者", "description": "完成 50 次航班" },
-      "100": {
-        "title": "百次俱乐部",
-        "description": "掌握了 100 次航班！"
-      },
-      "150": {
-        "title": "白银等级",
-        "description": "日志中有 150 次航班"
-      },
-      "250": { "title": "黄金等级", "description": "达到 250 次航班！" },
-      "500": {
-        "title": "航空传奇",
-        "description": "500 次航班，不可思议！"
-      },
-      "750": {
-        "title": "钻石等级",
-        "description": "750 次航班，天空属于您！"
-      },
-      "1000": {
-        "title": "天空主宰",
-        "description": "记录了 1,000 次航班！"
-      }
-    },
-
-    "distance": {
-      "10000": {
-        "title": "万公里大关",
-        "description": "飞行了 10,000 km"
-      },
-      "40075": {
-        "title": "环绕地球",
-        "description": "绕赤道飞行一圈 (40,075 km)"
-      },
-      "100000": {
-        "title": "六位数距离",
-        "description": "突破 100,000 km"
-      },
-      "250000": {
-        "title": "四分之一百万",
-        "description": "空中飞行 250,000 km"
-      },
-      "384400": {
-        "title": "月球旅行者",
-        "description": "飞行距离达到地月距离 (384,400 km)"
-      },
-      "500000": {
-        "title": "五十万公里",
-        "description": "飞行了 500,000 km"
-      },
-      "768800": {
-        "title": "往返月球",
-        "description": "地月往返距离 (768,800 km)"
-      },
-      "1000000": {
-        "title": "百万公里",
-        "description": "飞行了一百万公里！"
-      }
-    },
-
-    "time": {
-      "24": {
-        "title": "全天候",
-        "description": "在空中度过了 24 小时"
-      },
-      "100": {
-        "title": "百小时",
-        "description": "超过 100 小时飞行时间"
-      },
-      "500": {
-        "title": "500 小时大关",
-        "description": "在飞机上度过了超过 20 天"
-      },
-      "1000": {
-        "title": "千小时飞行",
-        "description": "空中飞行超过 1,000 小时"
-      },
-      "2500": {
-        "title": "四千小时",
-        "description": "超过 100 天飞行时间"
-      },
-      "8760": {
-        "title": "天空中的一年",
-        "description": "在空中度过了整整一年 (8,760小时)"
-      }
-    },
-
-    "uniqueAirports": {
-      "10": {
-        "title": "探险家",
-        "description": "访问了 10 个不同的机场"
-      },
-      "25": {
-        "title": "环球客",
-        "description": "日志中有 25 个独特的机场"
-      },
-      "50": {
-        "title": "文化收藏家",
-        "description": "见过 50 个不同的机场"
-      },
-      "100": {
-        "title": "枢纽跳跃者",
-        "description": "飞往了 100 个独特的机场！"
-      }
-    },
-
-    "longestFlight": {
-      "3000": {
-        "title": "长途首秀",
-        "description": "一次超过 3,000 km 的飞行"
-      },
-      "5000": {
-        "title": "洲际跳跃者",
-        "description": "完成一次超过 5,000 km 的飞行"
-      },
-      "8000": {
-        "title": "越洋飞行",
-        "description": "一次超过 8,000 km 的飞行"
-      },
-      "12000": {
-        "title": "超长途",
-        "description": "掌握一次超过 12,000 km 的史诗级飞行"
-      }
-    },
-
-    "co2_total": {
-      "1000": {
-        "title": "意识：1 吨",
-        "description": "您已追踪了第一吨 (1,000 kg) CO₂。"
-      },
-      "5000": {
-        "title": "意识：5 吨",
-        "description": "您已追踪了 5,000 kg CO₂。"
-      },
-      "10000": {
-        "title": "意识：10 吨",
-        "description": "您已追踪了 10,000 kg CO₂。"
-      },
-      "50000": {
-        "title": "意识：50 吨",
-        "description": "您已追踪了 50,000 kg CO₂。"
-      },
-      "100000": {
-        "title": "意识：100 吨",
-        "description": "您已追踪了 100,000 kg CO₂。"
-      }
-    }
-  },
-
-  "tutorial": {
-    "title": "欢迎使用您的数字飞行日志！",
-    "intro": "以下是一些入门提示：",
-    "step1": {
-      "title": "记录航班",
-      "desc": "在“新航班”标签中，您可以手动输入航班（例如从“PEK”到“JFK”），或使用“自动驾驶仪”通过航班号（例如“CA981”）和日期输入。"
-    },
-    "step2": {
-      "title": "查看航班",
-      "desc": "在“航班”标签中查看列表。点击“显示所有路线”查看 2D 地图概览。"
-    },
-    "step3": {
-      "title": "探索地球",
-      "desc": "在“航班”标签中点击“3D 地球”。激活“故事模式”以停止旋转并通过点击航线查看详情。"
-    },
-    "button": "明白了，开始吧！"
-  },
-
-  "help": {
-    "title": "帮助与常见问题",
-    "logging": {
-      "title": "✈️ 记录航班 (手动 & 自动驾驶仪)",
-      "content": "您可以通过两种方式添加航班：1. 手动输入机场代码（例如 'PEK'）。应用程序会计算距离和时间。2. 通过“自动驾驶仪”输入航班号（例如 'CA981'）和日期。这将自动填充大部分数据。点击“航班”列表中的编辑铅笔图标可修改航班。"
-    },
-    "globe": {
-      "title": "🗺️ 3D 地球与故事模式",
-      "content": "3D 地球（'航班' > '3D 地球'）可视化您的所有旅行。点击 '📖 故事模式' 停止地球旋转。航线会变粗，点击它们可查看详情。点击机场柱状图或国家可聚焦该区域。点击海洋可重置焦点。"
-    },
-    "tabs": {
-      "title": "📊 统计、图表与日志",
-      "content": "“统计”显示您的记录（最长航班、最常去机场）。“图表”随时间可视化您的航班和距离。“日志”按机型或航空公司等标准对航班进行分组。点击 (i) 图标获取特定类型的详情。"
-    },
-    "data": {
-      "title": "⚙️ 数据 (导入/导出 & 设置)",
-      "content": "在右上角的汉堡菜单 (≡) 中，您可以将所有飞行数据导出为 JSON 或 CSV 文件（备份！）。您也可以导入 JSON 文件（注意：这将覆盖当前所有数据）。您还可以在那里找到暗黑模式开关和语言选择。"
-    },
-    "expand": "展开",
-    "collapse": "折叠"
-  },
-
   "premium": {
-    "title": "成为 Pro 旅行者 🚀",
-    "subtitle": "移除所有限制并解锁高级功能。",
-    "nativeHint": "注意：管理您的个人资料和订阅可通过我们的网站 <strong>aviosphere.com</strong> 进行。",
-    "feature1": "无限航班",
-    "desc1": "不再有 15 次航班的限制。",
-    "feature2": "交互式 3D 地球",
-    "desc2": "交互式 3D 旅行历史。",
-    "feature3": "照片上传与 PDF 导出",
-    "desc3": "保存回忆并制作书籍。",
+    "alreadyPremiumDesc": "您有一个有效的网络订阅。请在网站上进行管理。",
+    "alreadyPremiumTitle": "已经是Premium",
     "cta": "立即升级",
-    "menuBtn": "🚀 升级到 Pro",
-    "monthly": "每月",
-    "yearly": "每年",
+    "desc1": "不再有15次航班的限制。",
+    "desc2": "交互式的3D旅行历史。",
+    "desc3": "保存记忆并创建日志书。",
+    "feature1": "无限航班",
+    "feature2": "互动的3D地球仪",
+    "feature3": "照片上传和PDF导出",
+    "googlePlayConflictDesc": "请在安卓应用程序中管理您的订阅。",
+    "googlePlayConflictTitle": "您有一个有效的应用订阅 (Google Play)。",
+    "loadStat": "正在加载状态...",
+    "loadingCheckout": "正在加载结账页面...",
+    "menuBtn": "🚀 升级到Pro",
+    "monthly": "包月",
+    "nativeHint": "注意：您可以通过我们的网站 <strong>aviosphere.com</strong> 管理您的个人资料和订阅。",
+    "nativeTitle": "高级功能 🔒",
     "perMonth": "/ 月",
     "perYear": "/ 年",
-    "thankYou": "感谢您的关注！支付功能即将推出。",
-    "titleGlobe": "探索 3D 地球 🌍",
-    "titlePrint": "创建 PDF 日志 📚",
-    "nativeTitle": "高级功能 🔒",
-    "restore": "恢复购买"
+    "processingPurchase": "购买正在处理。请让应用程序保持打开片刻。",
+    "purchaseFailedTitle": "购买失败",
+    "restore": "恢复购买",
+    "restoreBtn": "恢复购买",
+    "stripeConflictDesc": "请在 aviosphere.com 上管理您的订阅。",
+    "stripeConflictTitle": "您已经有一个有效的网络订阅 (Stripe)。",
+    "subtitle": "消除所有限制并解锁高级功能。",
+    "thankYou": "感谢您的关注！付款即将开始。",
+    "title": "成为Pro飞行者 🚀",
+    "titleGlobe": "探索3D地球仪 🌍",
+    "titlePrint": "将您的日志创建为PDF 📚",
+    "tryAgain": "请重试。",
+    "yearly": "包年"
   },
-
-  "landing": {
-    "headline": "让您的旅行难忘。",
-    "subheadline": "专为常旅客和航空爱好者打造的终极数字飞行日志。",
-    "featureGlobus": "您旅行的交互式 3D 地球",
-    "featureStats": "详细的统计数据与图表",
-    "featureAutopilot": "自动驾驶仪：通过航班号加载数据",
-    "featurePhotos": "照片上传与 PDF 导出",
-    "privacy": "隐私政策",
-    "terms": "条款与版本说明"
+  "print": {
+    "coverSubtitle": "您已记录航班的导出",
+    "coverTitle": "我的数字飞行日志",
+    "createBookForGroup": "为 {groupName} 创建日志书 (PDF)",
+    "dateRange": "时间段",
+    "errorNativeFailed": "无法创建本地PDF。",
+    "errorNoFlights": "未在当前过滤器中找到可用于打印的航班。",
+    "filteredTitle": "过滤后的航班列表",
+    "flightTitle": "航班 #{number}：{departure} ➔ {arrival}",
+    "logbookTitle": "日志：{groupName}",
+    "nativeMessage": "应用程序正在生成PDF。请稍候...",
+    "nativeTitle": "正在创建PDF...",
+    "noFlights": "没有可用于这本日志书的航班。",
+    "pluginError": "此设备上无法使用本机打印。(插件错误)",
+    "summaryFor": "{count} 个航班的摘要",
+    "totalCO2": "总CO₂足迹",
+    "totalDistance": "总距离",
+    "totalTime": "总飞行时间"
   },
-
-  "toast": {
-    "errorTitle": "错误",
-    "successTitle": "成功",
-    "infoTitle": "信息",
-    "notLoggedIn": "未登录。请重新加载。",
-    "airportNotFound": "未找到机场代码。",
-    "saveErrorTitle": "保存错误",
-    "saveErrorBody": "无法将航班保存到数据库。",
-    "flightSaved": "航班保存成功。",
-    "sessionExpired": "会话已过期。请重新登录。",
-    "updateErrorTitle": "更新错误",
-    "updateErrorBody": "无法保存更改。",
-    "flightUpdated": "航班更新成功。",
-    "deleteError": "无法删除航班。",
-    "importTitle": "导入",
-    "exportTitle": "导出"
+  "records": {
+    "firstA380": "首次A380航班",
+    "firstA380Desc": "记录一次乘坐A380的航班。",
+    "firstAntarctic": "穿越穿南极圈",
+    "firstAntarcticDesc": "穿越穿南极圈。",
+    "firstArctic": "穿越北极圈",
+    "firstArcticDesc": "穿越北极圈。",
+    "firstEquator": "穿越赤道",
+    "firstEquatorDesc": "在飞行中穿越赤道。",
+    "firstFlight": "首次飞行",
+    "firstLongHaul": "首次长途飞行 (>5000公里)",
+    "firstLongHaulDesc": "单次飞行超过5,000公里。",
+    "firstMeridian": "穿越本初子午线",
+    "firstMeridianDesc": "穿越本初子午线。",
+    "firstPremiumFlight": "首次 {class} 航班",
+    "firstPremiumFlightDesc": "乘坐商务舱或头等舱飞行。",
+    "firstVisitAfrica": "首次访问非洲",
+    "firstVisitAfricaDesc": "记录一次飞往非洲的航班。",
+    "firstVisitAntarctica": "首次访问南极洲",
+    "firstVisitAntarcticaDesc": "记录一次飞往南极洲的航班。",
+    "firstVisitAsia": "首次访问亚洲",
+    "firstVisitAsiaDesc": "记录一次飞往亚洲的航班。",
+    "firstVisitEurope": "首次访问欧洲",
+    "firstVisitEuropeDesc": "记录一次飞往欧洲的航班。",
+    "firstVisitNorthAmerica": "首次访问北美",
+    "firstVisitNorthAmericaDesc": "记录一次飞往北美的航班。",
+    "firstVisitOceania": "首次访问大洋洲",
+    "firstVisitOceaniaDesc": "记录一次飞往大洋洲的航班。",
+    "firstVisitSouthAmerica": "首次访问南美",
+    "firstVisitSouthAmericaDesc": "记录一次飞往南美的航班。",
+    "highestCO2": "最高CO₂排放",
+    "longestFlight": "最长航班",
+    "mostExpensive": "最贵航班",
+    "shortestFlight": "最短航班"
   },
-
-  "map": {
-    "departure": "出发",
-    "arrival": "到达"
-  },
-
-  "anim": {
-    "noFlights": "没有可演示的航班。",
-    "paused": "动画已暂停。",
-    "finished": "旅行记录演示结束。已展示 {count} 次航班。"
-  },
-
-  "auth": {
-    "registerSuccessTitle": "注册成功！",
-    "registerSuccessBody": "请验证您的电子邮件地址。",
-    "welcomeBack": "欢迎回来！",
-    "enterNewPassword": "请输入您的新密码。",
-    "loginTitle": "登录",
-    "emailLabel": "邮箱",
-    "passwordLabel": "密码",
-    "btn": "登录 / 注册",
-    "magicLinkSent": "魔力链接已发送！请检查您的邮箱。"
-  },
-
-  "import": {
-    "confirmWarning": "警告！您即将导入 {count} 个航班。这将替换您当前的云端数据。",
-    "successTitle": "导入成功",
-    "successBody": "已导入 {count} 个航班。",
-    "readingFile": "正在读取文件...",
-    "wait": "请稍候。",
-    "processing": "正在导入...",
-    "writing": "正在写入数据。",
-    "successReplace": "列表已完全替换 ({count} 个航班)。",
-    "successAppend": "已添加 {count} 个航班。",
-    "errorTitle": "错误",
-    "errorNoArray": "未找到有效的数组。",
-    "errorNoFlights": "未找到可读的航班。",
-    "errorFileCorrupt": "文件损坏：{error}",
-    "saveError": "无法保存数据。",
-    "modalTitle": "导入选项",
-    "modalBody": "我们在您的文件中找到了 <strong>{count} 个航班</strong>。您希望如何继续？",
-    "optionReplaceTitle": "⚠️ 全部替换 (纯净导入)",
-    "optionReplaceDesc": "删除应用中当前的所有航班，仅插入文件中的新航班。<br>如果您要导入完整的主列表，这是理想选择。",
-    "optionAppendTitle": "➕ 添加 (追加)",
-    "optionAppendDesc": "保留现有航班并在底部添加新航班。<br>警告：可能会导致重复条目！",
-    "cancel": "取消"
-  },
-
-  "export": {
-    "errorTitle": "导出错误",
-    "noData": "没有可导出的数据。",
-    "successTitle": "导出成功",
-    "successBody": "数据已导出为 {file}。"
-  },
-
-  "demo": {
-    "or": "或",
-    "btn": "无账号试用 (演示)",
-    "userBadge": "演示飞行员 🚀",
-    "welcomeTitle": "演示模式",
-    "welcomeBody": "欢迎登机！您现在正在查看示例数据。",
-    "errorTitle": "错误",
-    "errorBody": "无法加载演示数据。",
-    "exit": "🚪 退出演示"
-  },
-
   "review": {
-    "title": "喜欢 AvioSphere 吗？",
-    "body": "你已经记录了 5 次航班！✈️\n如果你能在 Play Store 给我们要给好评，我们会非常高兴。",
-    "yesButton": "好呀！ ⭐",
+    "body": "您已经记录了5次航班！✈️\n如果您在Play Store留下评论，我们将不胜感激。",
     "feedbackButton": "提供反馈",
-    "noButton": "不，谢谢"
+    "noButton": "不，谢谢",
+    "title": "您喜欢 AvioSphere 吗？",
+    "yesButton": "是的，我很乐意！⭐"
   },
-
-  "registerFree": "免费注册",
-  "loginWelcome": "欢迎登机",
-  "loginSubtitle": "登录以开始您的日志。",
-  "regTermsPrefix": "注册即表示您接受我们的",
-  "and": "和",
-  "terms": "条款",
-  "privacy": "隐私"
+  "share": {
+    "downloaded": "图像已下载。",
+    "errorDesc": "分享错误：{error}",
+    "errorTitle": "哎呀",
+    "imageError": "无法创建图像。",
+    "prepDesc": "正在准备图像",
+    "prepTitle": "稍等片刻...",
+    "statImageError": "无法创建统计图像。",
+    "successTitle": "已保存"
+  },
+  "stats": {
+    "aircraftTypeCount": "{type} ({count}次)",
+    "avgCo2": "每次航班平均CO₂",
+    "avgDistance": "平均飞行距离",
+    "co2Title": "CO₂余额",
+    "flightRouteKm": "{departure} → {arrival} ({distance} 公里)",
+    "flightRoutePrice": "{departure} → {arrival} ({price} {currency})",
+    "flights": "航班",
+    "frequentAircraft": "最常用机型",
+    "frequentAirport": "最常去机场",
+    "leastExpensive": "最便宜航班",
+    "longestFlight": "最长航班",
+    "mostExpensive": "最贵航班",
+    "noData": "-",
+    "noYearlyData": "没有可用的年度数据。",
+    "shortestFlight": "最短航班",
+    "title": "您的统计数据",
+    "topAirlines": "顶级航空公司",
+    "topAirports": "顶级机场",
+    "total": "总计",
+    "totalCo2": "总CO₂足迹",
+    "totalDistance": "总距离",
+    "totalFlights": "总航班数",
+    "totalSpending": "总花费",
+    "yearlySummary": "年度总结",
+    "yearlySummaryContent": "{count} 次航班 | {distance} 公里"
+  },
+  "tabs": {
+    "achievements": "成就",
+    "charts": "图表",
+    "flights": "航班",
+    "help": "帮助",
+    "logbook": "日志",
+    "newFlight": "新航班",
+    "share": "分享",
+    "stats": "统计",
+    "trips": "我的旅行"
+  },
+  "toast": {
+    "airportNotFound": "未找到机场代码。",
+    "deleteError": "无法删除航班。",
+    "errorTitle": "错误",
+    "exportTitle": "导出",
+    "flightSaved": "航班已成功保存。",
+    "flightUpdated": "航班已成功更新。",
+    "importTitle": "导入",
+    "infoTitle": "信息",
+    "loadingTitle": "加载中...",
+    "noInternet": "没有互联网。航班已在本地保存，稍后将进行传输。",
+    "notLoggedIn": "未登录。请重新加载。",
+    "offlinePhotoWarning": "注意：遗憾的是，在离线模式下无法保存照片。请稍后添加。",
+    "saveErrorBody": "无法将航班保存到数据库。",
+    "saveErrorTitle": "保存错误",
+    "saveOffline": "离线保存",
+    "sessionExpired": "会话已过期。请重新登录。",
+    "successTitle": "成功",
+    "syncSuccess": "同步成功",
+    "syncTitle": "同步",
+    "syncingDesc": "正在传输 {count} 个离线保存的航班...",
+    "updateErrorBody": "无法保存更改。",
+    "updateErrorTitle": "更新错误",
+    "uploadErrorTitle": "上传错误",
+    "uploadLimitTitle": "上传限制"
+  },
+  "trips": {
+    "createError": "无法创建行程。",
+    "createNew": "创建新行程",
+    "created": "行程 '{name}' 已创建。",
+    "loading": "正在加载行程...",
+    "promptName": "新行程的名称（例如，“2024年暑假”）："
+  },
+  "tutorial": {
+    "button": "明白了，开始吧！",
+    "intro": "这里有一些开始的提示：",
+    "step1": {
+      "desc": "在'新航班'标签中，您可以手动记录航班（例如，'FRA' 到 'JFK'），或通过'自动驾驶仪'使用航班号（例如，'LH400'）和日期。",
+      "title": "记录航班"
+    },
+    "step2": {
+      "desc": "在'航班'标签中，您可以看到您的列表。点击'显示所有路线'以查看2D地图概览。",
+      "title": "查看航班"
+    },
+    "step3": {
+      "desc": "点击'航班'标签中的'3D地球仪'。激活'故事模式'以停止旋转，并通过点击飞行路线来查看详情。",
+      "title": "探索地球仪"
+    },
+    "title": "欢迎使用数字飞行日志！"
+  },
+  "units": {
+    "hoursShort": "小时",
+    "minutesShort": "分钟"
+  }
 }

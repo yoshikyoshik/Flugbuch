@@ -1,795 +1,792 @@
 {
-  "appName": "AvioSphere",
-  "tagline": "Your flight logbook, visualized in 3D.",
-  "lastFlightMap": "Last logged/edited flight",
-  "mapInfo": "Flight route is being visualized.",
-  "autoPilot": "Autopilot: Load flight data via flight number",
-  "autoFlightNumber": "Flight Number",
-  "autoFlightDate": "Flight Date",
-  "autofillBtn": "Fetch Data",
-  "logNewFlight": "Log New Flight",
-  "departureNewFlight": "Departure (IATA/Name)",
-  "arrivalNewFlight": "Arrival (IATA/Name)",
-  "flightDateNewFlight": "Flight Date (Optional)",
-  "flightClassNewFlight": "Class/Purpose (Optional)",
-  "flightNumberNewFlight": "Flight Number (Optional)",
+  "aircraftTypeNewFlight": "Aircraft type (Optional)",
   "airlineNewFlight": "Airline (Optional)",
-  "aircraftTypeNewFlight": "Aircraft Type (Optional)",
-  "priceNewFlight": "Ticket Price (Optional)",
+  "and": "and",
+  "appName": "AvioSphere",
+  "arrivalNewFlight": "Destination (IATA/Name)",
+  "autoFlightDate": "Flight date",
+  "autoFlightNumber": "Flight number",
+  "autoPilot": "Autopilot: Load flight data via flight number",
+  "autofillBtn": "Fetch data",
+  "backToLogin": "Back to login",
   "currencyNewFlight": "Currency (Optional)",
-  "flightPhotoNewFlight": "Photo (Optional)",
-  "notesNewFlight": "Notes (Optional)",
-  "estimatedDistanceNewFlight": "Estimated Distance",
-  "estimatedFlightTimeNewFlight": "Estimated Flight Time",
-  "estimatedCO2Emissions": "Est. CO₂ Emissions",
-  "logFlightNewFlight": "Log and Save Flight",
-  "flightClassEconomy": "Economy",
+  "departureNewFlight": "Departure (IATA/Name)",
+  "enterNewPWD": "Enter your new password.",
+  "estimatedCO2Emissions": "Estimated CO₂ emissions",
+  "estimatedDistanceNewFlight": "Estimated distance",
+  "estimatedFlightTimeNewFlight": "Estimated flight time",
   "flightClassBusiness": "Business",
-  "flightClassFirst": "First",
-  "flightClassPrivat": "Private",
   "flightClassCargo": "Cargo",
-  "register": "Register",
-  "login": "Login",
+  "flightClassEconomy": "Economy",
+  "flightClassFirst": "First",
+  "flightClassNewFlight": "Class/Purpose (Optional)",
+  "flightClassPrivat": "Private",
+  "flightDateNewFlight": "Flight date (Optional)",
+  "flightNumberNewFlight": "Flight number (Optional)",
+  "flightPhotoNewFlight": "Photo (Optional)",
   "forgotPWD": "Forgot password?",
-  "newMail4Link4PWD": "Enter your email address to receive a link to reset your password.",
-  "reset": "Request Reset Link",
-  "newPWD": "Enter your new password",
-  "saveNewPWD": "Save New Password",
-  "enterNewPWD": "Enter your new password",
-  "backToLogin": "Back to Login",
+  "lastFlightMap": "Last logged/edited flight",
+  "logFlightNewFlight": "Log and save flight",
+  "logNewFlight": "Log new flight",
+  "login": "Login",
+  "loginSubtitle": "Log in to start your logbook.",
+  "loginWelcome": "Welcome on board",
+  "mapInfo": "Flight route will be visualized.",
   "mapVisualization": "Visualization: {depName} ({depCode}) → {arrName} ({arrCode}).",
-
-  "placeholder": {
-    "password": "Password",
-    "email": "Email",
-    "newPassword": "New password (min. 6 chars)",
-    "egFlightNumber": "e.g. LH202",
-    "egDeparture": "e.g. LHR",
-    "egArrival": "e.g. JFK",
-    "egAirline": "e.g. Lufthansa",
-    "egAircraft": "e.g. B747-8",
-    "egPrice": "e.g. 199.99",
-    "egCurrency": "e.g. USD",
-    "egRegistration": "e.g. D-AINC"
+  "newMail4Link4PWD": "Enter your email address to receive a password reset link.",
+  "newPWD": "Enter your new password",
+  "notesNewFlight": "Notes (Optional)",
+  "priceNewFlight": "Ticket price (Optional)",
+  "privacy": "Privacy Policy",
+  "regTermsPrefix": "By registering, you accept our",
+  "register": "Register",
+  "registerFree": "Register for free",
+  "reset": "Request reset link",
+  "saveNewPWD": "Save new password",
+  "tagline": "Your flight log, visualized in 3D.",
+  "terms": "Terms",
+  
+  "achievements": {
+    "co2_total": {
+      "1000": {
+        "description": "You have recorded your first ton (1,000 kg) of CO₂.",
+        "title": "Awareness: 1 Ton"
+      },
+      "10000": {
+        "description": "You have recorded 10,000 kg of CO₂.",
+        "title": "Awareness: 10 Tons"
+      },
+      "100000": {
+        "description": "You have recorded 100,000 kg of CO₂.",
+        "title": "Awareness: 100 Tons"
+      },
+      "5000": {
+        "description": "You have recorded 5,000 kg of CO₂.",
+        "title": "Awareness: 5 Tons"
+      },
+      "50000": {
+        "description": "You have recorded 50,000 kg of CO₂.",
+        "title": "Awareness: 50 Tons"
+      }
+    },
+    "distance": {
+      "10000": {
+        "description": "Traveled 10,000 km",
+        "title": "Ten Thousand Mark"
+      },
+      "100000": {
+        "description": "Reached 100,000 km",
+        "title": "Six-Figure Distance"
+      },
+      "1000000": {
+        "description": "Flown one million kilometers!",
+        "title": "Distance Millionaire"
+      },
+      "250000": {
+        "description": "250,000 km in the air",
+        "title": "Quarter Millionaire"
+      },
+      "384400": {
+        "description": "Covered the distance to the moon (384,400 km)",
+        "title": "Moon Traveler"
+      },
+      "40075": {
+        "description": "Flown around the equator once (40,075 km)",
+        "title": "Circumnavigator"
+      },
+      "500000": {
+        "description": "Traveled 500,000 km",
+        "title": "Half a Million"
+      },
+      "768800": {
+        "description": "Distance to the moon and back to Earth (768,800 km)",
+        "title": "There and Back Again"
+      }
+    },
+    "flights": {
+      "1": {
+        "description": "Your first flight is logged!",
+        "title": "First Entry"
+      },
+      "10": {
+        "description": "10 flights logged",
+        "title": "Frequent Flyer Candidate"
+      },
+      "100": {
+        "description": "Mastered 100 flights!",
+        "title": "Century Club"
+      },
+      "1000": {
+        "description": "1,000 flights logged!",
+        "title": "Master of the Skies"
+      },
+      "150": {
+        "description": "150 flights in the logbook",
+        "title": "Silver Status"
+      },
+      "25": {
+        "description": "Reached 25 flights",
+        "title": "Bronze Flyer"
+      },
+      "250": {
+        "description": "Reached 250 flights!",
+        "title": "Gold Status"
+      },
+      "50": {
+        "description": "Completed 50 flights",
+        "title": "Globetrotter"
+      },
+      "500": {
+        "description": "500 flights, incredible!",
+        "title": "Aviation Legend"
+      },
+      "750": {
+        "description": "750 flights, the sky is yours!",
+        "title": "Diamond Status"
+      }
+    },
+    "loading": "Calculating achievements...",
+    "longestFlight": {
+      "12000": {
+        "description": "Mastered an epic flight over 12,000 km",
+        "title": "Ultra Long Haul"
+      },
+      "3000": {
+        "description": "A flight over 3,000 km",
+        "title": "Long Haul Debut"
+      },
+      "5000": {
+        "description": "Completed a flight over 5,000 km",
+        "title": "Continent Jumper"
+      },
+      "8000": {
+        "description": "A flight over 8,000 km",
+        "title": "Ocean Crosser"
+      }
+    },
+    "noFlights": "Log your first flight to unlock achievements!",
+    "recordsTitle": "Personal Records & \"Firsts\"",
+    "tabBadges": "Badges",
+    "tabRecords": "Records",
+    "time": {
+      "100": {
+        "description": "Over 100 hours of flight time",
+        "title": "One Hundred Hours"
+      },
+      "1000": {
+        "description": "Over 1,000 hours in the air",
+        "title": "Thousand Hours Flight Time"
+      },
+      "24": {
+        "description": "Spent 24 hours in the air",
+        "title": "Around the Clock"
+      },
+      "2500": {
+        "description": "More than 100 days of flight time",
+        "title": "Four Thousand Hours"
+      },
+      "500": {
+        "description": "Spent more than 20 days in an airplane",
+        "title": "500-Hour Mark"
+      },
+      "8760": {
+        "description": "Spent an entire year (8,760h) in the air",
+        "title": "A Year in the Sky"
+      }
+    },
+    "title": "Your Achievements",
+    "uniqueAirports": {
+      "10": {
+        "description": "Visited 10 different airports",
+        "title": "Explorer"
+      },
+      "100": {
+        "description": "Flew to 100 unique airports!",
+        "title": "Hub Hopper"
+      },
+      "25": {
+        "description": "25 unique airports in the logbook",
+        "title": "World Traveler"
+      },
+      "50": {
+        "description": "Seen 50 different airports",
+        "title": "Culture Collector"
+      }
+    },
+    "unitAirports": "Airports",
+    "unitCo2": "kg CO₂",
+    "unitFlights": "Flights",
+    "unitHours": "Hrs.",
+    "unitKm": "km"
   },
-
-  "tabs": {
-    "newFlight": "New Flight",
-    "flights": "Flights",
-    "stats": "Statistics",
-    "charts": "Charts",
-    "logbook": "Logbook",
-    "achievements": "Achievements",
-    "help": "Help",
-    "trips": "My Trips",
-    "share": "Share"
+  "anim": {
+    "finished": "Travel chronicle finished. {count} flights displayed.",
+    "noFlights": "No flights to animate.",
+    "paused": "Animation paused."
   },
-
+  "auth": {
+    "btn": "Login / Register",
+    "emailLabel": "Email",
+    "enterNewPassword": "Please enter your new password.",
+    "loginTitle": "Login",
+    "magicLinkSent": "Magic Link sent! Check your emails.",
+    "passwordLabel": "Password",
+    "passwordTooShort": "The password must be at least 6 characters long.",
+    "passwordUpdated": "Your password has been changed...",
+    "passwordUpdateFailed": "Password could not be updated...",
+    "registerSuccessBody": "Please verify your email address.",
+    "registerSuccessTitle": "Registration successful!",
+    "resetEmailSentBody": "If an account exists, a reset link has been sent.",
+    "resetEmailSentTitle": "Email sent",
+    "welcomeBack": "Welcome back!"
+  },
+  "billing": {
+    "noSubFound": "No active subscriptions found.",
+    "restoreFailed": "Restore failed.",
+    "restoreInfoTitle": "Info",
+    "restoreSuccessDesc": "Purchases successfully restored.",
+    "restoreSuccessTitle": "Successful"
+  },
   "burgerMenu": {
-    "newFlight": "New Flight",
-    "flights": "Flights",
-    "stats": "Statistics",
-    "charts": "Charts",
-    "logbook": "Logbook",
     "achievements": "Achievements",
-    "help": "Help",
-    "map": "3D Map",
-    "importJSON": "Import Data (JSON)...",
-    "import": "Import Data (JSON, CSV)...",
-    "export": "Export (CSV / JSON)",
-    "exportJSON": "Export Data (JSON)",
-    "exportCSV": "Export Data (CSV)",
     "changePassword": "Change Password",
-    "toggleMode": "Toggle Mode",
+    "charts": "Charts",
+    "export": "Export (CSV / JSON)",
+    "exportCSV": "Export Data (CSV)",
+    "exportJSON": "Export Data (JSON)",
+    "flights": "Flights",
+    "help": "Help",
+    "import": "Import Data (JSON, CSV)...",
+    "importJSON": "Import Data (JSON)...",
+    "logbook": "Logbook",
     "logout": "Logout",
     "manageSubscription": "⚙️ Manage Subscription",
+    "map": "3D Map",
+    "newFlight": "New Flight",
+    "stats": "Statistics",
+    "toggleMode": "Toggle Mode",
     "trips": "My Trips"
   },
-
-  "form": {
-    "autopilotTitle": "Autopilot: Load flight data via flight number",
-    "flightNumber": "Flight Number",
-    "date": "Flight Date",
-    "buttonFetch": "Fetch Data",
-    "buttonFetching": "Searching...",
-    "logNewFlight": "Log New Flight",
-    "from": "Departure (IATA/Name)",
-    "to": "Arrival (IATA/Name)",
-    "dateOptional": "Flight Date (Optional)",
-    "class": "Class/Purpose (Optional)",
-    "flightNumberOptional": "Flight Number (Optional)",
-    "airline": "Airline (Optional)",
-    "aircraft": "Aircraft Type (Optional)",
-    "price": "Ticket Price (Optional)",
-    "currency": "Currency (Optional)",
-    "photo": "Photo (Optional)",
-    "notes": "Notes (Optional)",
-    "notesPlaceholder": "Special events or personal notes...",
-    "distEstimate": "Estimated Distance",
-    "timeEstimate": "Estimated Flight Time",
-    "co2Estimate": "Estimated CO₂ Emissions",
-    "buttonLogFlight": "Log and Save Flight",
-    "buttonSaveChanges": "Save Changes",
-    "buttonCancel": "Cancel",
-    "chooseFile": "Choose file...",
-    "noFileSelected": "No file selected",
-    "filesSelected": "{count} photo(s) selected.",
-    "registration": "Registration (Optional)",
-    "reset": "Reset",
-    "cancel": "Cancel",
-    "save": "Save",
-    "buttonSaving": "Saving...",
-    "buttonUpdating": "Updating...",
-    "confirmDeleteTitle": "Delete Flight?",
-    "confirmDeleteBody": "Do you really want to permanently delete this flight?",
-    "yes": "Yes, delete",
-    "no": "Cancel",
-    "tripLabel": "Trip / Vacation (Optional)",
-    "tripNone": "-- No Trip / Single Flight --"
-  },
-
-  "messages": {
-    "noDataFound": "No flight data found for this combination.",
-    "futureData": "The flight is in the future or has not yet started. Flights can only be logged from the moment of take-off.",
-    "fetchError": "A problem occurred.",
-    "importSuccess": "Flights imported. View is refreshing.",
-    "importConfirm": "WARNING! You are about to import {count} flights. All your current flights will be deleted and replaced.",
-    "uploadLimitCount": "Limit reached: A maximum of {count} photos per flight are allowed. Only the first {count} new photos will be uploaded.",
-    "uploadLimitSize": "File skipped: {fileName} is too large (Max. 3 MB).",
-    "subscriptionExpired": "Your subscription has expired. You are now back in Free Mode.",
-    "statusUpdate": "Status Update",
-    "noStripeAccount": "Active Play Store subscription account found.",
-    "redirectingStripe": "Redirecting to customer portal...",
-    "confirmDelete": "Are you sure you want to permanently delete this flight?",
-    "limitTitle": "Limit Reached",
-    "limitBody": "You have reached the limit for free flights. Upgrade to Pro for unlimited logging.",
-    "photoUploadFailed": "Photo {fileName} could not be uploaded.",
-    "globeScreenshotError": "Could not create globe image."
-  },
-
-  "records": {
-    "longestFlight": "Longest Flight",
-    "shortestFlight": "Shortest Flight",
-    "mostExpensive": "Most Expensive Flight",
-    "highestCO2": "Highest CO₂ Emissions",
-    "firstFlight": "First Flight",
-    "firstLongHaul": "First Long-Haul Flight (>5000km)",
-    "firstPremiumFlight": "First {class} Flight",
-    "firstA380": "First A380 Flight",
-    "firstEquator": "Equator Crossed",
-    "firstArctic": "Arctic Circle Crossed",
-    "firstAntarctic": "Antarctic Circle Crossed",
-    "firstMeridian": "Prime Meridian Crossed",
-    "firstLongHaulDesc": "Fly over 5,000 km in one flight.",
-    "firstPremiumFlightDesc": "Fly in Business or First Class.",
-    "firstA380Desc": "Log a flight in an A380.",
-    "firstEquatorDesc": "Cross the Equator on a flight.",
-    "firstArcticDesc": "Cross the Arctic Circle.",
-    "firstAntarcticDesc": "Cross the Antarctic Circle.",
-    "firstMeridianDesc": "Cross the Prime Meridian.",
-    "firstVisitAsia": "First Visit to Asia",
-    "firstVisitEurope": "First Visit to Europe",
-    "firstVisitNorthAmerica": "First Visit to North America",
-    "firstVisitSouthAmerica": "First Visit to South America",
-    "firstVisitAfrica": "First Visit to Africa",
-    "firstVisitOceania": "First Visit to Oceania",
-    "firstVisitAntarctica": "First Visit to Antarctica",
-
-    "firstVisitAsiaDesc": "Log a flight to a destination in Asia.",
-    "firstVisitEuropeDesc": "Log a flight to a destination in Europe.",
-    "firstVisitNorthAmericaDesc": "Log a flight to a destination in North America.",
-    "firstVisitSouthAmericaDesc": "Log a flight to a destination in South America.",
-    "firstVisitAfricaDesc": "Log a flight to a destination in Africa.",
-    "firstVisitOceaniaDesc": "Log a flight to a destination in Oceania.",
-    "firstVisitAntarcticaDesc": "Log a flight to a destination in Antarctica."
-  },
-
-  "flights": {
-    "title": "Saved Flights",
-    "playChronicle": "▶️ Play Chronicle",
-    "pauseChronicle": "⏸️ Pause",
-    "continueChronicle": "▶️ Continue",
-    "showAllRoutes": "Show All Routes",
-    "showSingleRoute": "Show Single View",
-    "refresh": "Refresh",
-    "filterTitle": "Filter Flights",
-    "filterDeparture": "Departure (IATA)",
-    "filterArrival": "Arrival (IATA)",
-    "filterDateFrom": "Date (From)",
-    "filterDateTo": "Date (To)",
-    "filterButton": "Filter",
-    "resetButton": "Reset",
-    "sortBy": "Sort by:",
-    "sortDate": "Date",
-    "sortRoute": "Route",
-    "sortDistance": "Distance",
-    "prevButton": "‹ Previous",
-    "nextButton": "Next ›",
-    "noFlights": "No flights logged yet.",
-    "pageInfo": "Page {currentPage} of {totalPages}",
-    "flightNumberTitle": "Logbook Number",
-    "editTitle": "Edit Flight",
-    "deleteTitle": "Delete Flight",
-    "flightDetails": "Flight: {flightNumber} | Airline: {airline} | Type: {aircraftType}",
-    "co2Info": "🌍 {co2} kg CO₂",
-    "mapOverview": "Overview: {count} unique routes displayed.",
-    "mapNoFlights": "No flights available to show overview.",
-    "show3DGlobe": "🌍 3D Globe",
-    "showMore": "Show details...",
-    "hideMore": "Hide details...",
-    "logReturnFlight": "✈️ Log Return Flight",
-    "createBook": "Create Book (PDF)",
-    "myFlightsTitle": "My Flights",
-    "filterPlaceholder": "Search (Place, Airline, Date...)",
-    "hideAllRoutes": "Clear Map",
-    "sortTrip": "Trip",
-    "filterTripPlaceholder": "All Trips",
-    "notFound": "The flight to be processed could not be found.",
-    "photoDeleteError": "Old photos could not get deleted, but new ones added.",
-    "logFlightBtn": "Log and save flight",
-    "saveChangesBtn": "Save changes",
-    "cancelEdit": "Cancel"
-  },
-
-  "trips": {
-    "createNew": "Create new trip"
-  },
-
-  "print": {
-    "nativeTitle": "Creating PDF...",
-    "nativeMessage": "The app is generating the PDF. Please wait...",
-    "coverTitle": "My Digital Logbook",
-    "coverSubtitle": "An export of your logged flights",
-    "summaryFor": "Summary for {count} flights",
-    "totalDistance": "Total Distance",
-    "totalTime": "Total Flight Time",
-    "totalCO2": "Total CO₂ Emissions",
-    "dateRange": "Date Range",
-    "flightTitle": "Flight #{number}: {departure} ➔ {arrival}",
-    "filteredTitle": "Filtered Flight List",
-    "logbookTitle": "Logbook: {groupName}",
-    "createBookForGroup": "Create Book for {groupName} (PDF)",
-    "errorNoFlights": "No flights found in current filter for printing.",
-    "errorNativeFailed": "Could not create native PDF."
-  },
-
-  "stats": {
-    "totalFlights": "Total Flights",
-    "totalDistance": "Total Distance",
-    "frequentAirport": "Most Frequent Airport",
-    "totalSpending": "Total Spending",
-    "mostExpensive": "Most Expensive Flight",
-    "leastExpensive": "Least Expensive Flight",
-    "longestFlight": "Longest Flight",
-    "shortestFlight": "Shortest Flight",
-    "avgDistance": "Ø Flight Distance",
-    "frequentAircraft": "Most Frequent Aircraft",
-    "avgCo2": "Ø CO₂ per Flight",
-    "totalCo2": "Total CO₂ Footprint",
-    "yearlySummary": "Yearly Summary",
-    "noData": "-",
-    "flightRouteKm": "{departure} → {arrival} ({distance} km)",
-    "flightRoutePrice": "{departure} → {arrival} ({price} {currency})",
-    "aircraftTypeCount": "{type} ({count}x)",
-    "yearlySummaryContent": "{count} flights | {distance} km",
-    "noYearlyData": "No yearly data available.",
-    "total": "Total",
-    "title": "Your Statistics",
-    "topAirports": "Top Airports",
-    "topAirlines": "Top Airlines",
-    "co2Title": "CO₂ Balance",
-    "flights": "Flights"
-  },
-
   "charts": {
-    "title": "Visual Analysis",
-    "perYear": "Per Year",
-    "perMonth": "Per Month",
-    "flightsOverTime": "Flights over Time",
     "distanceOverTime": "Distance over Time (km)",
-    "durationOverTime": "Flight Time over Period",
-    "labelFlights": "Number of Flights",
+    "durationOverTime": "Flight Time over Time",
+    "flightsOverTime": "Flights over Time",
     "labelDistance": "Total Distance (km)",
     "labelDuration": "Total Flight Time",
-    "tooltipLabel": "{label}{hours}h {minutes}m"
+    "labelFlights": "Number of Flights",
+    "perMonth": "Per Month",
+    "perYear": "Per Year",
+    "title": "Visual Analysis",
+    "tooltipLabel": "{label}{hours} hrs {minutes} mins"
   },
-
+  "demo": {
+    "btn": "Try without account (Demo)",
+    "demoModus": "Demo Mode",
+    "errorBody": "Demo data could not be loaded.",
+    "errorTitle": "Error",
+    "exit": "🚪 Exit Demo",
+    "noChangesSaved": "Changes cannot be saved in demo mode.",
+    "noDataDeleted": "Data cannot be deleted in demo mode.",
+    "noDataSaved": "Data cannot be saved in demo mode.",
+    "noTripsCreated": "Trips cannot be created in demo mode.",
+    "or": "or",
+    "userBadge": "Demo Pilot 🚀",
+    "welcomeBody": "Welcome aboard! You are now viewing sample data.",
+    "welcomeTitle": "Demo Mode"
+  },
+  "export": {
+    "dialogTitle": "Save export as...",
+    "errorNativeBody": "Export on device failed: {error}",
+    "errorPluginsMissing": "Capacitor plugins are missing.",
+    "errorTitle": "Export Error",
+    "noData": "No data to export.",
+    "shareText": "Here is my AvioSphere flight log export.",
+    "shareTitle": "Flight Log Export",
+    "successBody": "Data exported as {file}.",
+    "successBodyMobile": "The file is ready to be shared.",
+    "successTitle": "Export successful"
+  },
+  "flights": {
+    "cancelEdit": "Cancel",
+    "co2Info": "🌍 {co2} kg CO₂",
+    "continueChronicle": "▶️ Continue",
+    "createBook": "Create Book (PDF)",
+    "deleteTitle": "Delete flight",
+    "editTitle": "Edit flight",
+    "filterArrival": "Destination (IATA)",
+    "filterButton": "Filter",
+    "filterDateFrom": "Date (from)",
+    "filterDateTo": "Date (to)",
+    "filterDeparture": "Departure (IATA)",
+    "filterPlaceholder": "Search (Location, Airline, Date...)",
+    "filterTitle": "Filter Flights",
+    "filterTripPlaceholder": "All Trips",
+    "flightDetails": "Flight: {flightNumber} | Airline: {airline} | Type: {aircraftType}",
+    "flightNumberTitle": "Flight Log Number",
+    "hideAllRoutes": "Clear Map",
+    "hideMore": "Hide details...",
+    "logFlightBtn": "Log and save flight",
+    "logReturnFlight": "✈️ Log return flight",
+    "mapNoFlights": "No flights available to display an overview.",
+    "mapOverview": "Overview: {count} unique routes displayed.",
+    "myFlightsTitle": "My Flights",
+    "nextButton": "Next ›",
+    "noFlights": "No flights logged yet.",
+    "notFound": "The flight to be edited could not be found.",
+    "pageInfo": "Page {currentPage} of {totalPages}",
+    "pauseChronicle": "⏸️ Pause",
+    "photoDeleteError": "Old photos could not be deleted, but new ones were added.",
+    "playChronicle": "▶️ Play Chronicle",
+    "prevButton": "‹ Previous",
+    "refresh": "Refresh",
+    "resetButton": "Reset",
+    "saveChangesBtn": "Save changes",
+    "show3DGlobe": "🌍 3D Globe",
+    "showAllRoutes": "Show All Routes",
+    "showMore": "Show details...",
+    "showSingleRoute": "Show Single Route",
+    "sortBy": "Sort by:",
+    "sortDate": "Date",
+    "sortDistance": "Distance",
+    "sortRoute": "Route",
+    "sortTrip": "Trip",
+    "title": "Saved Flights"
+  },
+  "form": {
+    "aircraft": "Aircraft type (Optional)",
+    "airline": "Airline (Optional)",
+    "autopilotTitle": "Autopilot: Load flight data via flight number",
+    "buttonCancel": "Cancel",
+    "buttonFetch": "Fetch data",
+    "buttonFetching": "Searching...",
+    "buttonLogFlight": "Log and save flight",
+    "buttonSaveChanges": "Save changes",
+    "buttonSaving": "Saving...",
+    "buttonUpdating": "Updating...",
+    "cancel": "Cancel",
+    "chooseFile": "Choose file...",
+    "class": "Class/Purpose (Optional)",
+    "co2Estimate": "Estimated CO₂ emissions",
+    "confirmDeleteBody": "Are you sure you want to permanently delete this flight?",
+    "confirmDeleteTitle": "Delete flight?",
+    "currency": "Currency (Optional)",
+    "date": "Flight date",
+    "dateOptional": "Flight date (Optional)",
+    "distEstimate": "Estimated distance",
+    "filesSelected": "{count} photo(s) selected.",
+    "flightNumber": "Flight number",
+    "flightNumberOptional": "Flight number (Optional)",
+    "from": "Departure (IATA/Name)",
+    "logNewFlight": "Log new flight",
+    "no": "Cancel",
+    "noFileSelected": "No file selected",
+    "notes": "Notes (Optional)",
+    "notesPlaceholder": "Special occurrences or personal notes...",
+    "photo": "Photo (Optional)",
+    "price": "Ticket price (Optional)",
+    "registration": "Registration (Optional)",
+    "reset": "Reset",
+    "save": "Save",
+    "timeEstimate": "Estimated flight time",
+    "to": "Destination (IATA/Name)",
+    "tripLabel": "Trip (Optional)",
+    "tripNone": "-- No Trip / Single Flight --",
+    "yes": "Yes, delete"
+  },
+  "globe": {
+    "buttonNormalMode": "🚀 Normal Mode",
+    "buttonStoryMode": "📖 Story Mode",
+    "focus": "Focus",
+    "noFlights": "No flights available",
+    "screenshotErrorGenericMsg": "Could not share the image.",
+    "screenshotErrorGenericTitle": "Oops",
+    "screenshotErrorSupport": "Sharing is not supported on this device.",
+    "screenshotErrorTitle": "Error",
+    "screenshotSuccessMsg": "Screenshot has been downloaded.",
+    "screenshotSuccessTitle": "Saved",
+    "screenshotWaitMsg": "Screenshot is being created 📸",
+    "screenshotWaitTitle": "Just a moment...",
+    "storyModeHint": "Story Mode: Click on flights to see details.",
+    "visit": "Visit",
+    "visits": "Visits"
+  },
+  "help": {
+    "collapse": "Collapse",
+    "data": {
+      "content": "In the Burger Menu (≡) top right, you can export all your flight data as a JSON or CSV file (Backup!). You can also import a JSON file (Attention: This overwrites all current data). There you will also find the Dark Mode switch and language selection.",
+      "title": "⚙️ Data (Import/Export & Settings)"
+    },
+    "expand": "Expand",
+    "globe": {
+      "content": "The 3D Globe ('Flights' > '3D Globe') visualizes all your trips. Click on '📖 Story Mode' to stop the earth's rotation. The flight paths become thicker, and you can click them to see details (the 'Interactive Logbook'). Click on airport pillars or countries to focus on that region. Clicking on the ocean resets the focus.",
+      "title": "🗺️ The 3D Globe & Story Mode"
+    },
+    "logging": {
+      "content": "You can add flights in two ways: 1. Manually, by entering airport codes (e.g., 'FRA'). The app calculates distance and time. 2. Via 'Autopilot', by entering a flight number (e.g., 'LH202') and a date. This automatically fills in most of the data. Click the Edit pencil in the 'Flights' list to change a flight.",
+      "title": "✈️ Logging Flights (Manual & Autopilot)"
+    },
+    "tabs": {
+      "content": "'Statistics' shows your records (longest flight, most frequent airport). 'Charts' visualizes your flights and distances over time (per year or month). 'Logbook' groups your flights by criteria like aircraft type or airline. Click the (i)-icon to fetch details for the respective type.",
+      "title": "📊 Statistics, Charts & Logbook"
+    },
+    "title": "Help & FAQ"
+  },
+  "import": {
+    "cancel": "Cancel",
+    "confirmWarning": "WARNING! You are about to import {count} flights. This will replace your current cloud data.",
+    "errorFileCorrupt": "File corrupt: {error}",
+    "errorNoArray": "No valid array found.",
+    "errorNoFlights": "No readable flights found.",
+    "errorTitle": "Error",
+    "failed": "Import failed: {error}",
+    "modalBody": "We found <strong>{count} flights</strong> in your file. How would you like to proceed?",
+    "modalTitle": "Import Options",
+    "optionAppendDesc": "Keeps existing flights and appends the new ones.<br>Warning: May result in duplicate entries!",
+    "optionAppendTitle": "➕ Append",
+    "optionReplaceDesc": "Deletes ALL your current flights in the app and only inserts the new ones from the file.<br>Ideal when importing a complete master list.",
+    "optionReplaceTitle": "⚠️ Replace All (Clean Import)",
+    "processing": "Import in progress...",
+    "readingFile": "Reading file...",
+    "saveError": "Could not save data.",
+    "successAppend": "{count} flights added.",
+    "successBody": "{count} flights imported.",
+    "successReplace": "List completely replaced ({count} flights).",
+    "successTitle": "Import successful",
+    "wait": "Please wait.",
+    "writing": "Writing data."
+  },
+  "landing": {
+    "AcceptingRegPrivacy": "Privacy Policy",
+    "AcceptingRegTerms": "Terms",
+    "AcceptingRegText1": "By registering, you accept our",
+    "AcceptingRegText2": "and",
+    "backToLogin": "Back to login",
+    "featureAutopilot": "Autopilot: Load data via flight number",
+    "featureGlobus": "Interactive 3D globe of your trips",
+    "featurePhotos": "Photo upload & PDF export",
+    "featureStats": "Detailed statistics & charts",
+    "headline": "Make your travels unforgettable.",
+    "loginBtn": "Login / Register",
+    "privacy": "Privacy Policy",
+    "subheadline": "The ultimate digital flight log for frequent flyers and aviation enthusiasts.",
+    "terms": "Terms & Imprint"
+  },
   "logbook": {
-    "title": "Logbook Views",
+    "aircraftCeiling": "Service Ceiling",
+    "aircraftCruiseSpeed": "Cruise Speed",
+    "aircraftEngineThrust": "Thrust",
+    "aircraftEngineType": "Engine Type",
+    "aircraftError": "Details could not be loaded.",
+    "aircraftManufacturer": "Manufacturer",
+    "aircraftMaxSpeed": "Max Speed",
+    "aircraftModel": "Model",
+    "aircraftNoDetails": "No details found for this model.",
+    "aircraftRange": "Range",
+    "aircraftVariants": "Other variants found",
     "byAircraft": "By Aircraft Type",
     "byAirline": "By Airline",
     "byAirport": "By Airport",
+    "byRegistration": "By Registration",
+    "detailsTitleAircraft": "Show details for {key}",
+    "detailsTitleAirline": "Show details for {key}",
+    "detailsTitleAirport": "Show details for {key}",
+    "disambiguationButton": "Flight #{number} (on {date})",
+    "disambiguationIntro": "Found {count} flights on this route. Please choose one:",
+    "disambiguationTitle": "Route: {departure} → {arrival}",
+    "flightEntry": "{date}: {departure} → {arrival} ({distance} km)",
+    "flightEntryAircraft": "Aircraft/Reg",
+    "flightEntryAirline": "Airline/Flight No.",
+    "flightEntryDate": "Date",
+    "flightEntryDistance": "Distance",
+    "flightEntryDuration": "Duration",
+    "flightEntryNotes": "Notes:",
+    "flightEntryRoute": "Route",
+    "flightEntryTrip": "Trip:",
+    "flightTitle": "Flight #{number}: {departure} → {arrival}",
+    "icaoInfoNote": "Detailed (i)-information is currently only available for 3-letter IATA airport codes.",
     "loading": "Loading logbook data...",
     "noData": "No data available for this view.",
-    "unknown": "Unknown",
-    "summary": "({count} flights / {distance} km)",
-    "flightEntry": "{date}: {departure} → {arrival} ({distance} km)",
-    "detailsTitleAirport": "Show details for {key}",
-    "detailsTitleAircraft": "Show details for {key}",
-    "aircraftManufacturer": "Manufacturer",
-    "aircraftModel": "Model",
-    "aircraftEngineType": "Engine Type",
-    "aircraftEngineThrust": "Thrust",
-    "aircraftMaxSpeed": "Max Speed",
-    "aircraftCruiseSpeed": "Cruise Speed",
-    "aircraftCeiling": "Ceiling",
-    "aircraftRange": "Range",
-    "aircraftVariants": "Other variants found",
-    "aircraftNoDetails": "No details found for this model.",
-    "aircraftError": "Could not load details.",
-    "detailsTitleAirline": "Show details for {key}",
-    "byRegistration": "By Registration",
-    "flightEntryDate": "Date",
-    "flightEntryRoute": "Route",
-    "flightEntryDistance": "Distance",
-    "flightEntryDuration": "Flight Time",
-    "flightEntryAirline": "Airline/Flt#",
-    "flightEntryAircraft": "Aircraft/Reg",
-    "flightEntryNotes": "Notes:",
-    "disambiguationTitle": "Route: {departure} → {arrival}",
-    "disambiguationIntro": "Found {count} flights on this route. Please select one:",
-    "disambiguationButton": "Flight #{number} (on {date})",
-    "flightTitle": "Flight #{number}: {departure} → {arrival}",
     "routeSeparator": "to",
-    "icaoInfoNote": "Detailed (i)-information is currently only available for 3-letter IATA airport codes."
+    "summary": "({count} flights / {distance} km)",
+    "title": "Logbook Views",
+    "unknown": "Unknown"
   },
-  "globe": {
-    "storyModeHint": "Story Mode: Click on flights to view details.",
-    "buttonStoryMode": "📖 Story Mode",
-    "buttonNormalMode": "🚀 Normal Mode",
-    "noFlights": "No flights available",
-    "focus": "Focus",
-    "visit": "Visit",
-    "visits": "Visits",
-    "screenshotWaitTitle": "Moment...",
-    "screenshotWaitMsg": "Creating screenshot 📸",
-    "screenshotSuccessTitle": "Saved",
-    "screenshotSuccessMsg": "Screenshot was downloaded.",
-    "screenshotErrorTitle": "Error",
-    "screenshotErrorSupport": "Sharing is not supported on this device.",
-    "screenshotErrorGenericTitle": "Oops",
-    "screenshotErrorGenericMsg": "Could not share the image."
+  "map": {
+    "animationFailed": "Animation failed.",
+    "animationProgress": "Flight {number} / {total}: {date} from {dep} to {arr}",
+    "arrival": "Arrival",
+    "departure": "Departure"
   },
-
-  "units": {
-    "hoursShort": "h",
-    "minutesShort": "m"
+  "messages": {
+    "confirmDelete": "Are you sure you want to permanently delete this flight?",
+    "fetchError": "A problem occurred.",
+    "futureData": "Flight is in the future or hasn't departed yet. Flights can only be logged from the time of departure.",
+    "globeScreenshotError": "The globe image could not be created.",
+    "importConfirm": "WARNING! You are about to import {count} flights. All your current flights will be deleted and replaced.",
+    "importSuccess": "Flights imported. The view is being updated.",
+    "limitBody": "You have reached the limit for free flights. Upgrade to Pro for unlimited logging.",
+    "limitTitle": "Limit reached",
+    "noDataFound": "No flight data found for this combination.",
+    "noStripeAccount": "Active Play Store subscription account found.",
+    "photoUploadFailed": "The photo {fileName} could not be uploaded.",
+    "redirectingStripe": "Redirecting to the customer portal...",
+    "statusUpdate": "Status Update",
+    "subscriptionExpired": "Your subscription has expired. You are now back in the Free mode.",
+    "uploadLimitCount": "Limit reached: A maximum of {count} photos per flight is allowed. Only the first {count} new photos will be uploaded.",
+    "uploadLimitSize": "File skipped: {fileName} is too large (Max. 3 MB)."
   },
-
-  "modalDetails": {
-    "loading": "Loading details...",
-    "airportTitle": "Details for {key}",
-    "airportName": "Name:",
-    "airportLocation": "Location:",
-    "airportTimezone": "Timezone:",
-    "airportCoords": "Coordinates:",
-    "airportWebsite": "Visit Website",
-    "airportNoDetails": "No details found for this airport.",
-    "airportError": "Could not load details.",
-
-    "aircraftTitle": "Details for {key}",
-    "aircraftManufacturer": "Manufacturer:",
-    "aircraftModel": "Model:",
-    "aircraftEngineType": "Engine Type:",
-    "aircraftEngineCount": "Engine Count:",
-    "aircraftSpeed": "Speed (km/h):",
-    "aircraftRange": "Range (km):",
-    "aircraftCeiling": "Ceiling (m):",
-    "aircraftLength": "Length (m):",
-    "aircraftWingspan": "Wingspan (m):",
-    "aircraftWeight": "Max Takeoff Weight:",
-    "aircraftNoDetails": "No details found for this aircraft type.",
-    "aircraftError": "Could not load details.",
-    "notAvailable": "n/a",
-
-    "airlineTitle": "Details for {key}",
-    "airlineName": "Name:",
-    "airlineCountry": "Country:",
-    "airlineIcao": "ICAO Code:",
-    "airlineCallsign": "Callsign:",
-    "airlineFleetSize": "Fleet Size:",
-    "airlineFleetAge": "Avg. Fleet Age:",
-    "airlineWebsite": "Visit Website",
-    "airlineNoDetails": "No details found for this airline.",
-    "airlineError": "Could not load details.",
-    "airlineAgeUnit": "years",
-    "airlineBase": "Home Base",
-    "airlineYear": "Founded",
-    "airlineFleetDetail": "Fleet Composition"
-  },
-
   "modal": {
-    "loadingTitle": "Loading...",
     "loadingBody": "Loading details...",
+    "loadingTitle": "Loading...",
     "shareDetails": "Share details"
   },
-
-  "achievements": {
-    "title": "Your Achievements",
-    "recordsTitle": "Personal Records & \"Firsts\"",
-    "loading": "Calculating achievements...",
-    "noFlights": "Log your first flight to unlock achievements!",
-    "unitFlights": "Flights",
-    "unitKm": "km",
-    "unitHours": "h",
-    "unitAirports": "Airports",
-    "unitCo2": "kg CO₂",
-    "tabBadges": "Badges",
-    "tabRecords": "Records",
-
-    "flights": {
-      "1": {
-        "title": "First Entry",
-        "description": "Your first flight is logged!"
-      },
-      "10": {
-        "title": "Frequent Flyer Aspirant",
-        "description": "10 flights logged"
-      },
-      "25": { "title": "Bronze Flyer", "description": "Reached 25 flights" },
-      "50": { "title": "Globetrotter", "description": "Completed 50 flights" },
-      "100": {
-        "title": "Century Club",
-        "description": "Mastered 100 flights!"
-      },
-      "150": {
-        "title": "Silver Status",
-        "description": "150 flights in the logbook"
-      },
-      "250": { "title": "Gold Status", "description": "Reached 250 flights!" },
-      "500": {
-        "title": "Aviation Legend",
-        "description": "500 flights, incredible!"
-      },
-      "750": {
-        "title": "Diamond Status",
-        "description": "750 flights, the sky is yours!"
-      },
-      "1000": {
-        "title": "Master of the Skies",
-        "description": "1,000 flights logged!"
-      }
-    },
-
-    "distance": {
-      "10000": {
-        "title": "Ten Thousand Mark",
-        "description": "Traveled 10,000 km"
-      },
-      "40075": {
-        "title": "Round the World",
-        "description": "Flown around the Equator once (40,075 km)"
-      },
-      "100000": {
-        "title": "Six-Figure Distance",
-        "description": "Cracked 100,000 km"
-      },
-      "250000": {
-        "title": "Quarter Millionaire",
-        "description": "250,000 km in the air"
-      },
-      "384400": {
-        "title": "Moon Traveler",
-        "description": "Traveled the distance to the Moon (384,400 km)"
-      },
-      "500000": {
-        "title": "Half Million",
-        "description": "Traveled 500,000 km"
-      },
-      "768800": {
-        "title": "There and Back",
-        "description": "Distance to the Moon and back to Earth (768,800 km)"
-      },
-      "1000000": {
-        "title": "Distance Millionaire",
-        "description": "Flown one million kilometers!"
-      }
-    },
-
-    "time": {
-      "24": {
-        "title": "Around the Clock",
-        "description": "Spent 24 hours in the air"
-      },
-      "100": {
-        "title": "Hundred Hours",
-        "description": "Over 100 hours flight time"
-      },
-      "500": {
-        "title": "500 Hour Mark",
-        "description": "Spent more than 20 days in a plane"
-      },
-      "1000": {
-        "title": "Thousand Hours Flight Time",
-        "description": "Over 1,000 hours in the air"
-      },
-      "2500": {
-        "title": "Four Thousand Hours",
-        "description": "More than 100 days flight time"
-      },
-      "8760": {
-        "title": "A Year in the Sky",
-        "description": "Spent a whole year (8,760h) in the air"
-      }
-    },
-
-    "uniqueAirports": {
-      "10": {
-        "title": "Explorer",
-        "description": "Visited 10 different airports"
-      },
-      "25": {
-        "title": "Globetrotter",
-        "description": "25 unique airports in the logbook"
-      },
-      "50": {
-        "title": "Culture Collector",
-        "description": "Seen 50 different airports"
-      },
-      "100": {
-        "title": "Hub Hopper",
-        "description": "Flew to 100 unique airports!"
-      }
-    },
-
-    "longestFlight": {
-      "3000": {
-        "title": "Long-Haul Debut",
-        "description": "A flight over 3,000 km"
-      },
-      "5000": {
-        "title": "Continent Jumper",
-        "description": "Completed a flight over 5,000 km"
-      },
-      "8000": {
-        "title": "Ocean Crosser",
-        "description": "A flight over 8,000 km"
-      },
-      "12000": {
-        "title": "Ultra Long-Haul",
-        "description": "Mastered an epic flight over 12,000 km"
-      }
-    },
-
-    "co2_total": {
-      "1000": {
-        "title": "Awareness: 1 Ton",
-        "description": "You have tracked your first ton (1,000 kg) of CO₂."
-      },
-      "5000": {
-        "title": "Awareness: 5 Tons",
-        "description": "You have tracked 5,000 kg of CO₂."
-      },
-      "10000": {
-        "title": "Awareness: 10 Tons",
-        "description": "You have tracked 10,000 kg of CO₂."
-      },
-      "50000": {
-        "title": "Awareness: 50 Tons",
-        "description": "You have tracked 50,000 kg of CO₂."
-      },
-      "100000": {
-        "title": "Awareness: 100 Tons",
-        "description": "You have tracked 100,000 kg of CO₂."
-      }
-    }
+  "modalDetails": {
+    "aircraftCeiling": "Ceiling (m):",
+    "aircraftEngineCount": "No. of Engines:",
+    "aircraftEngineType": "Engine Type:",
+    "aircraftError": "Details could not be loaded.",
+    "aircraftLength": "Length (m):",
+    "aircraftManufacturer": "Manufacturer:",
+    "aircraftModel": "Model:",
+    "aircraftNoDetails": "No details found for this aircraft type.",
+    "aircraftRange": "Range (km):",
+    "aircraftSpeed": "Speed (km/h):",
+    "aircraftTitle": "Details for {key}",
+    "aircraftWeight": "Max Takeoff Wt.:",
+    "aircraftWingspan": "Wingspan (m):",
+    "airlineAgeUnit": "Years",
+    "airlineBase": "Home Base",
+    "airlineCallsign": "Callsign:",
+    "airlineCountry": "Country:",
+    "airlineError": "Details could not be loaded.",
+    "airlineFleetAge": "Avg. Fleet Age:",
+    "airlineFleetDetail": "Fleet Composition",
+    "airlineFleetSize": "Fleet Size:",
+    "airlineIcao": "ICAO Code:",
+    "airlineName": "Name:",
+    "airlineNoDetails": "No details found for this airline.",
+    "airlineTitle": "Details for {key}",
+    "airlineWebsite": "Visit Website",
+    "airlineYear": "Founded",
+    "airportCoords": "Coordinates:",
+    "airportError": "Details could not be loaded.",
+    "airportLocation": "Location:",
+    "airportName": "Name:",
+    "airportNoDetails": "No details found for this airport.",
+    "airportTimezone": "Timezone:",
+    "airportTitle": "Details for {key}",
+    "airportWebsite": "Visit Website",
+    "loading": "Loading details...",
+    "notAvailable": "N/A"
   },
-
-  "tutorial": {
-    "title": "Welcome to your Digital Logbook!",
-    "intro": "Here are a few tips to get started:",
-    "step1": {
-      "title": "Log Flights",
-      "desc": "In the 'New Flight' tab, you can enter flights manually (e.g. 'LHR' to 'JFK') or use 'Autopilot' with flight number (e.g. 'LH400') and date."
-    },
-    "step2": {
-      "title": "View Flights",
-      "desc": "See your list in the 'Flights' tab. Click 'Show All Routes' for a 2D map overview."
-    },
-    "step3": {
-      "title": "Discover the Globe",
-      "desc": "Click '3D Globe' in the 'Flights' tab. Activate 'Story Mode' to stop rotation and view details by clicking on flight paths."
-    },
-    "button": "Got it, let's go!"
+  "placeholder": {
+    "egAircraft": "e.g. B747-8",
+    "egAirline": "e.g. Lufthansa",
+    "egArrival": "e.g. JFK",
+    "egCurrency": "e.g. EUR",
+    "egDeparture": "e.g. FRA",
+    "egFlightNumber": "e.g. LH202",
+    "egPrice": "e.g. 199.99",
+    "egRegistration": "e.g. D-AINC",
+    "email": "Email",
+    "newPassword": "New password (min. 6 characters)",
+    "password": "Password"
   },
-
-  "help": {
-    "title": "Help & FAQ",
-    "logging": {
-      "title": "✈️ Log Flights (Manual & Autopilot)",
-      "content": "You can add flights in two ways: 1. Manually by entering airport codes (e.g. 'LHR'). The app calculates distance and time. 2. Via 'Autopilot' by entering a flight number (e.g. 'LH202') and date. This automatically fills in most data. Click the edit pencil icon in the 'Flights' list to change a flight."
-    },
-    "globe": {
-      "title": "🗺️ The 3D Globe & Story Mode",
-      "content": "The 3D Globe ('Flights' > '3D Globe') visualizes all your travels. Click '📖 Story Mode' to stop the earth's rotation. The flight paths become thicker, and you can click them to see details (the 'Interactive Logbook'). Click on airport pillars or countries to focus on that region. Click on the ocean to reset focus."
-    },
-    "tabs": {
-      "title": "📊 Stats, Charts & Logbook",
-      "content": "'Stats' shows your records (longest flight, most frequent airport). 'Charts' visualizes your flights and distances over time (per year or month). 'Logbook' groups your flights by criteria like aircraft type or airline. Click the (i) icon to get details on the specific type."
-    },
-    "data": {
-      "title": "⚙️ Data (Import/Export & Settings)",
-      "content": "In the burger menu (≡) top right, you can export all your flight data as a JSON or CSV file (Backup!). You can also import a JSON file (Caution: This overwrites all current data). You will also find the Dark Mode toggle and language selection there."
-    },
-    "expand": "Expand",
-    "collapse": "Collapse"
-  },
-
   "premium": {
-    "title": "Become a Pro Traveler 🚀",
-    "subtitle": "Remove all limits and unlock premium features.",
-    "nativeHint": "Note: Managing your profile and subscription is possible via our website <strong>aviosphere.com</strong>.",
-    "feature1": "Unlimited Flights",
-    "desc1": "No more 15-flight limit.",
-    "feature2": "Interactive 3D Globe",
-    "desc2": "Interactive 3D travel history.",
-    "feature3": "Photo Uploads & PDF Export",
-    "desc3": "Save memories & create books.",
+    "alreadyPremiumDesc": "You have an active web subscription. Please manage it on the website.",
+    "alreadyPremiumTitle": "Already Premium",
     "cta": "Upgrade Now",
+    "desc1": "No more 15-flight limit.",
+    "desc2": "Interactive 3D travel history.",
+    "desc3": "Save memories & create books.",
+    "feature1": "Unlimited Flights",
+    "feature2": "Interactive 3D Globe",
+    "feature3": "Photo Uploads & PDF Export",
+    "googlePlayConflictDesc": "Please manage your subscription in the Android app.",
+    "googlePlayConflictTitle": "You have an active app subscription (Google Play).",
+    "loadStat": "Loading Status...",
+    "loadingCheckout": "Loading Checkout...",
     "menuBtn": "🚀 Upgrade to Pro",
     "monthly": "Monthly",
-    "yearly": "Yearly",
-    "perMonth": "/ month",
-    "perYear": "/ year",
-    "thankYou": "Thanks for your interest! Payment will follow soon.",
-    "titleGlobe": "Explore the 3D Globe 🌍",
-    "titlePrint": "Create your logbook as PDF 📚",
+    "nativeHint": "Note: Managing your profile and subscription is possible via our website <strong>aviosphere.com</strong>.",
     "nativeTitle": "Premium Feature 🔒",
+    "perMonth": "/ Month",
+    "perYear": "/ Year",
+    "processingPurchase": "Purchase is processing. Please leave the app open for a moment.",
+    "purchaseFailedTitle": "Purchase failed",
     "restore": "Restore Purchases",
     "restoreBtn": "Restore Purchases",
+    "stripeConflictDesc": "Please manage your subscription on aviosphere.com.",
     "stripeConflictTitle": "You already have an active web subscription (Stripe).",
-    "stripeConflictDesc": "Please manage your subscription at aviosphere.com.",
-    "googlePlayConflictTitle": "You have an active app subscription (Google Play).",
-    "googlePlayConflictDesc": "Please manage your subscription in the Android app.",
-    "loadStat": "Loading Status..."
+    "subtitle": "Remove all limits and unlock premium features.",
+    "thankYou": "Thank you for your interest! Payment follows shortly.",
+    "title": "Become a Pro Traveler 🚀",
+    "titleGlobe": "Discover the 3D Globe 🌍",
+    "titlePrint": "Create your Logbook as PDF 📚",
+    "tryAgain": "Please try again.",
+    "yearly": "Yearly"
   },
-
-  "landing": {
-    "headline": "Make your travels unforgettable.",
-    "subheadline": "The ultimate digital flight logbook for frequent flyers and aviation enthusiasts.",
-    "featureGlobus": "Interactive 3D Globe of your trips",
-    "featureStats": "Detailed Statistics & Charts",
-    "featureAutopilot": "Autopilot: Load data via flight number",
-    "featurePhotos": "Photo Upload & PDF Export",
-    "privacy": "Privacy Policy",
-    "terms": "Terms & Imprint",
-    "loginBtn":	"Login / Register",
-    "AcceptingRegText1": "With registering you accept our",
-    "AcceptingRegTerms": "terms",
-    "AcceptingRegText2": "and",
-    "AcceptingRegPrivacy": "privacy",
-    "backToLogin": "Back to Login"
+  "print": {
+    "coverSubtitle": "An export of your logged flights",
+    "coverTitle": "My Digital Flight Log",
+    "createBookForGroup": "Create Book for {groupName} (PDF)",
+    "dateRange": "Time Period",
+    "errorNativeFailed": "Native PDF could not be created.",
+    "errorNoFlights": "No flights found in the current filter for printing.",
+    "filteredTitle": "Filtered Flight List",
+    "flightTitle": "Flight #{number}: {departure} ➔ {arrival}",
+    "logbookTitle": "Logbook: {groupName}",
+    "nativeMessage": "The app is generating the PDF. Please wait...",
+    "nativeTitle": "Creating PDF...",
+    "noFlights": "No flights available for the book.",
+    "pluginError": "Native printing is not available on this device. (Plugin error)",
+    "summaryFor": "Summary for {count} flights",
+    "totalCO2": "Total CO₂ Footprint",
+    "totalDistance": "Total Distance",
+    "totalTime": "Total Flight Time"
   },
-
-  "toast": {
-    "errorTitle": "Error",
-    "successTitle": "Success",
-    "infoTitle": "Info",
-    "notLoggedIn": "Not logged in. Please reload.",
-    "airportNotFound": "Airport code not found.",
-    "saveErrorTitle": "Save Error",
-    "saveErrorBody": "Could not save flight to database.",
-    "flightSaved": "Flight saved successfully.",
-    "sessionExpired": "Session expired. Please login again.",
-    "updateErrorTitle": "Update Error",
-    "updateErrorBody": "Changes could not be saved.",
-    "flightUpdated": "Flight updated successfully.",
-    "deleteError": "Could not delete flight.",
-    "importTitle": "Import",
-    "exportTitle": "Export",
-    "saveOffline": "Saved offline",
-    "noInternet": "No internet. Flight saved local and will be transferred later to database.",
-    "syncTitle": "Sync",
-    "toast.syncingDesc": "Transferring {count} offline saved flights...",
-    "syncSuccess": "Sync successful",
-    "flightsTransferred": "{successCount} Flights successfully saved in database.",
-    "offlinePhotoWarning": "Note: Photos cannot be saved in offline mode unfortunately. Please add them later.",
-    "uploadErrorTitle": "Upload Error"
+  "records": {
+    "firstA380": "First A380 Flight",
+    "firstA380Desc": "Log a flight in an A380.",
+    "firstAntarctic": "Antarctic Circle Crossed",
+    "firstAntarcticDesc": "Cross the Antarctic Circle.",
+    "firstArctic": "Arctic Circle Crossed",
+    "firstArcticDesc": "Cross the Arctic Circle.",
+    "firstEquator": "Equator Crossed",
+    "firstEquatorDesc": "Cross the Equator on a flight.",
+    "firstFlight": "First Flight",
+    "firstLongHaul": "First Long Haul Flight (>5000km)",
+    "firstLongHaulDesc": "Fly over 5,000 km in one flight.",
+    "firstMeridian": "Prime Meridian Crossed",
+    "firstMeridianDesc": "Cross the Prime Meridian.",
+    "firstPremiumFlight": "First {class} Flight",
+    "firstPremiumFlightDesc": "Fly in Business or First Class.",
+    "firstVisitAfrica": "First Visit to Africa",
+    "firstVisitAfricaDesc": "Log a flight to a destination in Africa.",
+    "firstVisitAntarctica": "First Visit to Antarctica",
+    "firstVisitAntarcticaDesc": "Log a flight to a destination in Antarctica.",
+    "firstVisitAsia": "First Visit to Asia",
+    "firstVisitAsiaDesc": "Log a flight to a destination in Asia.",
+    "firstVisitEurope": "First Visit to Europe",
+    "firstVisitEuropeDesc": "Log a flight to a destination in Europe.",
+    "firstVisitNorthAmerica": "First Visit to North America",
+    "firstVisitNorthAmericaDesc": "Log a flight to a destination in North America.",
+    "firstVisitOceania": "First Visit to Oceania",
+    "firstVisitOceaniaDesc": "Log a flight to a destination in Oceania.",
+    "firstVisitSouthAmerica": "First Visit to South America",
+    "firstVisitSouthAmericaDesc": "Log a flight to a destination in South America.",
+    "highestCO2": "Highest CO₂ Emissions",
+    "longestFlight": "Longest Flight",
+    "mostExpensive": "Most Expensive Flight",
+    "shortestFlight": "Shortest Flight"
   },
-
-  "map": {
-    "departure": "Departure",
-    "arrival": "Arrival"
-  },
-
-  "anim": {
-    "noFlights": "No flights to animate.",
-    "paused": "Animation paused.",
-    "finished": "Travel chronicle finished. {count} flights shown."
-  },
-
-  "auth": {
-    "registerSuccessTitle": "Registration successful!",
-    "registerSuccessBody": "Please confirm your email address.",
-    "welcomeBack": "Welcome back!",
-    "enterNewPassword": "Please enter your new password.",
-    "loginTitle": "Login",
-    "emailLabel": "Email",
-    "passwordLabel": "Password",
-    "btn": "Login / Register",
-    "magicLinkSent": "Magic Link sent! Check your emails.",
-    "resetEmailSentTitle": "E-Mail sent",
-    "resetEmailSentBody": "If account exists, reset link is sent.",
-    "passwordTooShort": "The password must be at least 6 characters long.",
-    "passwordUpdateFailed": "Password could not be updated...",
-    "passwordUpdated": "Your password has been changed..."
-  },
-
-  "import": {
-    "confirmWarning": "WARNING! You are about to import {count} flights. This will replace your current cloud data.",
-    "successTitle": "Import successful",
-    "successBody": "{count} flights imported.",
-    "readingFile": "Reading file...",
-    "wait": "Please wait.",
-    "processing": "Importing...",
-    "writing": "Writing data.",
-    "successReplace": "List completely replaced ({count} flights).",
-    "successAppend": "{count} flights added.",
-    "errorTitle": "Error",
-    "errorNoArray": "No valid array found.",
-    "errorNoFlights": "No readable flights found.",
-    "errorFileCorrupt": "File corrupt: {error}",
-    "saveError": "Could not save data.",
-    "modalTitle": "Import Options",
-    "modalBody": "We found <strong>{count} flights</strong> in your file. How would you like to proceed?",
-    "optionReplaceTitle": "⚠️ Replace All (Clean Import)",
-    "optionReplaceDesc": "Deletes ALL your current flights in the app and inserts only the new ones from the file.<br>Ideal if you are importing a complete master list.",
-    "optionAppendTitle": "➕ Add (Append)",
-    "optionAppendDesc": "Keeps existing flights and adds the new ones at the bottom.<br>Warning: May result in duplicate entries!",
-    "cancel": "Cancel",
-    "failed": "Import failed: {error}"
-  },
-
-  "export": {
-    "errorTitle": "Export Error",
-    "noData": "No data to export.",
-    "successTitle": "Export successful",
-    "successBody": "Data exported as {file}.",
-    "shareTitle": "Flugbuch Export",
-    "shareText": "Hier ist mein AvioSphere Flugbuch-Export.",
-    "successBodyMobile": "Die Datei wurde zum Teilen bereitgestellt.",
-    "nativeErrorBody": "Export auf dem Gerät fehlgeschlagen: {error}",
-    "dialogTitle": "Export speichern unter...",
-    "errorPluginsMissing": "Capacitor Plugins fehlen."
-  },
-
-  "demo": {
-    "or": "or",
-    "btn": "Try without account (Demo)",
-    "userBadge": "Demo Pilot 🚀",
-    "welcomeTitle": "Demo Mode",
-    "welcomeBody": "Welcome aboard! You are now viewing sample data.",
-    "errorTitle": "Error",
-    "errorBody": "Could not load demo data.",
-    "exit": "🚪 Exit Demo",
-    "demoModus": "Demo Mode",
-    "noDataSaved": "Data cannot be saved in demo mode.",
-    "noChangesSaved": "Changes cannot be saved in demo mode.",
-    "noDataDeleted": "Data cannot be deleted in demo mode.",
-    "noTripsCreated": "Trips cannot be created in demo mode."
-  },
-
   "review": {
-    "title": "Enjoying AvioSphere?",
-    "body": "You've already logged 5 flights! ✈️\nWe'd love it if you left us a review on the Play Store.",
-    "yesButton": "Yes, sure! ⭐",
+    "body": "You have already logged 5 flights! ✈️\nWe would be thrilled if you left us a review in the Play Store.",
     "feedbackButton": "Give Feedback",
-    "noButton": "No, thanks"
+    "noButton": "No thanks",
+    "title": "Do you like AvioSphere?",
+    "yesButton": "Yes, I'd love to! ⭐"
   },
-
-  "billing": {
-    "restoreSuccessTitle": "Success",
-    "restoreSuccessDesc": "Purchases successfully restored.",
-    "restoreInfoTitle": "Info",
-    "noSubFound": "No active subscriptions found.",
-    "restoreFailed": "Restore failed."
+  "share": {
+    "downloaded": "Image has been downloaded.",
+    "errorDesc": "Error sharing: {error}",
+    "errorTitle": "Oops",
+    "imageError": "Could not create image.",
+    "prepDesc": "Image is being prepared",
+    "prepTitle": "Just a moment...",
+    "statImageError": "Could not create statistics image.",
+    "successTitle": "Saved"
   },
-
-  "registerFree": "Register for Free",
-  "loginWelcome": "Welcome Aboard",
-  "loginSubtitle": "Log in to start your logbook.",
-  "regTermsPrefix": "By registering, you accept our",
-  "and": "and",
-  "terms": "Terms",
-  "privacy": "Privacy"
+  "stats": {
+    "aircraftTypeCount": "{type} ({count}x)",
+    "avgCo2": "Avg CO₂ per Flight",
+    "avgDistance": "Avg Flight Distance",
+    "co2Title": "CO₂ Balance",
+    "flightRouteKm": "{departure} → {arrival} ({distance} km)",
+    "flightRoutePrice": "{departure} → {arrival} ({price} {currency})",
+    "flights": "Flights",
+    "frequentAircraft": "Most Frequent Aircraft",
+    "frequentAirport": "Most Frequent Airport",
+    "leastExpensive": "Cheapest Flight",
+    "longestFlight": "Longest Flight",
+    "mostExpensive": "Most Expensive Flight",
+    "noData": "-",
+    "noYearlyData": "No yearly data available.",
+    "shortestFlight": "Shortest Flight",
+    "title": "Your Statistics",
+    "topAirlines": "Top Airlines",
+    "topAirports": "Top Airports",
+    "total": "Total",
+    "totalCo2": "Total CO₂ Footprint",
+    "totalDistance": "Total Distance",
+    "totalFlights": "Total Flights",
+    "totalSpending": "Total Spending",
+    "yearlySummary": "Yearly Summary",
+    "yearlySummaryContent": "{count} Flights | {distance} km"
+  },
+  "tabs": {
+    "achievements": "Achievements",
+    "charts": "Charts",
+    "flights": "Flights",
+    "help": "Help",
+    "logbook": "Logbook",
+    "newFlight": "New Flight",
+    "share": "Share",
+    "stats": "Statistics",
+    "trips": "My Trips"
+  },
+  "toast": {
+    "airportNotFound": "Airport code not found.",
+    "deleteError": "Flight could not be deleted.",
+    "errorTitle": "Error",
+    "exportTitle": "Export",
+    "flightSaved": "Flight successfully saved.",
+    "flightUpdated": "Flight successfully updated.",
+    "importTitle": "Import",
+    "infoTitle": "Info",
+    "loadingTitle": "Loading...",
+    "noInternet": "No Internet. Flight was saved locally and will be transferred later.",
+    "notLoggedIn": "Not logged in. Please reload.",
+    "offlinePhotoWarning": "Note: Photos cannot be saved in offline mode unfortunately. Please add them later.",
+    "saveErrorBody": "Flight could not be saved to the database.",
+    "saveErrorTitle": "Save Error",
+    "saveOffline": "Saved Offline",
+    "sessionExpired": "Session expired. Please log in again.",
+    "successTitle": "Success",
+    "syncSuccess": "Sync successful",
+    "syncTitle": "Sync",
+    "syncingDesc": "Transferring {count} offline saved flights...",
+    "updateErrorBody": "Changes could not be saved.",
+    "updateErrorTitle": "Update Error",
+    "uploadErrorTitle": "Upload Error",
+    "uploadLimitTitle": "Upload Limit"
+  },
+  "trips": {
+    "createError": "Trip could not be created.",
+    "createNew": "Create New Trip",
+    "created": "Trip '{name}' created.",
+    "loading": "Loading trips...",
+    "promptName": "Name of the new trip (e.g. 'Summer Vacation 2024'):"
+  },
+  "tutorial": {
+    "button": "Got it, let's go!",
+    "intro": "Here are a few tips to get started:",
+    "step1": {
+      "desc": "In the 'New Flight' tab, you can log flights manually (e.g. 'FRA' to 'JFK') or via 'Autopilot' using a flight number (e.g. 'LH400') and date.",
+      "title": "Log Flights"
+    },
+    "step2": {
+      "desc": "In the 'Flights' tab, you can see your list. Click on 'Show All Routes' for a 2D map overview.",
+      "title": "View Flights"
+    },
+    "step3": {
+      "desc": "Click on '3D Globe' in the 'Flights' tab. Activate 'Story Mode' to stop the rotation and see details by clicking on the flight paths.",
+      "title": "Discover the Globe"
+    },
+    "title": "Welcome to the Digital Flight Log!"
+  },
+  "units": {
+    "hoursShort": "Hrs.",
+    "minutesShort": "Min."
+  }
 }

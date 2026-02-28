@@ -989,7 +989,12 @@ async function runAnimationLoop() {
       const color = chronicleColors[i % chronicleColors.length];
 
       if (flight.depLat && flight.arrLat) {
-        mapInfo.textContent = `Flug ${flight.flightLogNumber} / ${sortedFlights.length}: ${flight.date} von ${flight.departure} nach ${flight.arrival}`;
+        mapInfo.textContent = (getTranslation("map.animationProgress") || "Flug {number} / {total}: {date} von {dep} nach {arr}")
+          .replace("{number}", flight.flightLogNumber)
+          .replace("{total}", sortedFlights.length)
+          .replace("{date}", flight.date)
+          .replace("{dep}", flight.departure)
+          .replace("{arr}", flight.arrival);
 
         L.marker([flight.depLat, flight.depLon]).addTo(routeLayer);
         L.marker([flight.arrLat, flight.arrLon]).addTo(routeLayer);
@@ -1060,7 +1065,7 @@ async function runAnimationLoop() {
     }
   } catch (error) {
     console.error("Fehler bei der Reise-Chronik Animation:", error);
-    mapInfo.textContent = "Animation fehlgeschlagen.";
+    mapInfo.textContent = getTranslation("map.animationFailed") || "Animation fehlgeschlagen.";
   } finally {
     // Setzt den Zustand zurück, WENN die Animation nicht pausiert wurde
     if (animationState !== "paused") {

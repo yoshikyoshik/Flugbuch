@@ -201,9 +201,17 @@ async function buyNative(planKey) {
             console.error("Billing: Kauf Fehler:", error);
             // Spezifische Meldung für den Fehler im Screenshot
             if(error.message && error.message.includes("acknowledge")) {
-                 showMessage("Hinweis", "Kauf wird verarbeitet. Bitte App kurz offen lassen.", "info");
+                 showMessage(
+                    getTranslation("toast.infoTitle") || "Hinweis", 
+                    getTranslation("premium.processingPurchase") || "Kauf wird verarbeitet. Bitte App kurz offen lassen.", 
+                    "info"
+                    );
             } else {
-                 showMessage("Kauf fehlgeschlagen", error.message || "Bitte erneut versuchen.", "error");
+                 showMessage(
+                    getTranslation("premium.purchaseFailedTitle") || "Kauf fehlgeschlagen", 
+                    error.message || getTranslation("premium.tryAgain") || "Bitte erneut versuchen.", 
+                    "error"
+                    );
             }
         }
     }

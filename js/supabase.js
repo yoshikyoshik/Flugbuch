@@ -32,7 +32,11 @@ async function uploadFlightPhotos(filesToUpload) {
       const errorMsg = (
         getTranslation("messages.uploadLimitSize") || "Datei übersprungen"
       ).replace("{fileName}", file.name);
-      showMessage("Upload-Limit", errorMsg, "error");
+      sshowMessage(
+        getTranslation("toast.uploadLimitTitle") || "Upload-Limit", 
+        errorMsg, 
+        "error"
+      );
       continue;
     }
     const filePath = `${Date.now()}-${file.name}`;

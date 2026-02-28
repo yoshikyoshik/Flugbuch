@@ -1588,7 +1588,7 @@ async function buildAndPrintHtml(flightsToPrint, title) {
                 <p><strong>${getTranslation("logbook.flightEntryDate")}:</strong> ${flight.date}</p>
                 
                 ${ flight.trips && flight.trips.name 
-                    ? `<p><strong>Reise / Trip:</strong> ${flight.trips.name}</p>` 
+                    ? `<p><strong>${getTranslation("logbook.flightEntryTrip") || "Reise / Trip:"}</strong> ${flight.trips.name}</p>` 
                     : '' 
                 }
                 <p><strong>${getTranslation("logbook.flightEntryRoute")}:</strong> ${flight.depName || flight.departure} ${getTranslation("logbook.routeSeparator")} ${flight.arrName || flight.arrival}</p>
@@ -1655,7 +1655,7 @@ async function buildAndPrintHtml(flightsToPrint, title) {
       });
     } catch (e) {
       console.error("Eigenes 'MyPrinter'-Plugin konnte nicht geladen werden:", e);
-      alert("Die native Druckfunktion ist auf diesem Gerät nicht verfügbar. (Plugin-Fehler)");
+      alert(getTranslation("print.pluginError") || "Die native Druckfunktion ist auf diesem Gerät nicht verfügbar. (Plugin-Fehler)");
     }
   } else {
     // Browser Druck
@@ -1697,7 +1697,11 @@ async function triggerPrintView_FlightsTab() {
 
   // Sicherheits-Check: Gibt es überhaupt Daten zum Drucken?
   if (!flightsToPrint || flightsToPrint.length === 0) {
-    showMessage("Info", "Keine Flüge für das Buch vorhanden.", "info");
+    showMessage(
+      getTranslation("toast.infoTitle") || "Info",
+      getTranslation("print.noFlights") || "Keine Flüge für das Buch vorhanden.",
+      "info"
+    );
     return;
   }
 
@@ -1954,7 +1958,11 @@ function handleRatingAction(action) {
  */
 async function shareImageBase64(dataURL, filenamePrefix = "aviosphere_share") {
     // 1. Visuelles Feedback
-    showMessage("Moment...", "Bild wird aufbereitet 📸", "info");
+    showMessage(
+      getTranslation("share.prepTitle") || "Moment...",
+      getTranslation("share.prepDesc") || "Bild wird aufbereitet 📸",
+      "info"
+    );
 
     const isNative = typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform();
 
@@ -1987,7 +1995,11 @@ async function shareImageBase64(dataURL, filenamePrefix = "aviosphere_share") {
         } catch (e) {
             console.error("Fehler beim Teilen:", e);
             if (e.message !== 'Share canceled') {
-                showMessage("Ups", "Fehler beim Teilen: " + e.message, "error");
+                showMessage(
+                  getTranslation("share.errorTitle") || "Ups",
+                  (getTranslation("share.errorDesc") || "Fehler beim Teilen: {error}").replace("{error}", e.message),
+                  "error"
+                );
             }
         }
     } else {
@@ -1998,7 +2010,11 @@ async function shareImageBase64(dataURL, filenamePrefix = "aviosphere_share") {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        showMessage("Gespeichert", "Bild wurde heruntergeladen.", "success");
+        showMessage(
+          getTranslation("share.successTitle") || "Gespeichert",
+          getTranslation("share.downloaded") || "Bild wurde heruntergeladen.",
+          "success"
+        );
     }
 }
 
@@ -2051,7 +2067,11 @@ async function shareStatsScreenshot() {
 
     } catch (e) {
         console.error("html2canvas Fehler:", e);
-        showMessage("Fehler", "Konnte Statistik-Bild nicht erstellen.", "error");
+        showMessage(
+          getTranslation("toast.errorTitle") || "Fehler",
+          getTranslation("share.statImageError") || "Konnte Statistik-Bild nicht erstellen.",
+          "error"
+        );
     } finally {
         // --- AUFRÄUMEN (Wichtig!) ---
         // Egal ob Fehler oder Erfolg: Wir müssen das Dropdown wieder anzeigen
@@ -2094,7 +2114,11 @@ async function shareInfoModalScreenshot() {
 
     } catch (e) {
         console.error("Screenshot Fehler:", e);
-        showMessage("Fehler", "Konnte Bild nicht erstellen.", "error");
+        showMessage(
+          getTranslation("toast.errorTitle") || "Fehler",
+          getTranslation("share.imageError") || "Konnte Bild nicht erstellen.",
+          "error"
+        );
     } finally {
         // Buttons wieder anzeigen
         buttons.forEach(b => b.style.visibility = 'visible');
