@@ -294,6 +294,12 @@
     "welcomeBody": "¡Bienvenido a bordo! Ahora estás viendo datos de muestra.",
     "welcomeTitle": "Modo Demo"
   },
+  "easterEgg": {
+  "level1": "¡Fiuuu! 🛸",
+  "level2": "¡Gran OVNI acercándose! 🛸",
+  "level3": "¡INVASIÓN ALIENÍGENA! 👽",
+  "unlocked": "¡Nivel {level} de Piloto desbloqueado!"
+  },
   "export": {
     "dialogTitle": "Guardar exportación como...",
     "errorNativeBody": "Fallo en la exportación en el dispositivo: {error}",
@@ -398,6 +404,8 @@
     "buttonStoryMode": "📖 Modo Historia",
     "focus": "Foco",
     "noFlights": "No hay vuelos disponibles",
+    "loadingTimeline": "Cargando línea de tiempo...",
+    "saveScreenshot": "Guardar captura de pantalla",
     "screenshotErrorGenericMsg": "No se pudo compartir la imagen.",
     "screenshotErrorGenericTitle": "Uy",
     "screenshotErrorSupport": "Compartir no es compatible con este dispositivo.",
@@ -429,7 +437,8 @@
       "content": "'Estadísticas' muestra tus récords (vuelo más largo, aeropuerto más frecuente). 'Gráficos' visualiza tus vuelos y distancias a lo largo del tiempo (por año o mes). 'Bitácora' agrupa tus vuelos por criterios como tipo de avión o aerolínea. Haz clic en el ícono (i) para obtener detalles sobre el tipo respectivo.",
       "title": "📊 Estadísticas, Gráficos y Bitácora"
     },
-    "title": "Ayuda y Preguntas Frecuentes"
+    "title": "Ayuda y Preguntas Frecuentes",
+    "legal": "Legal"
   },
   "import": {
     "cancel": "Cancelar",
@@ -472,6 +481,10 @@
     "terms": "Términos e Imprimir"
   },
   "logbook": {
+    "tabAircraft": "Aeronaves",
+    "tabAirline": "Compañías aéreas",
+    "tabAirport": "Aeropuertos",
+    "tabRegistration": "Regulaciones",
     "aircraftCeiling": "Techo de vuelo",
     "aircraftCruiseSpeed": "Vel. de crucero",
     "aircraftEngineThrust": "Empuje",
@@ -595,6 +608,8 @@
   "premium": {
     "alreadyPremiumDesc": "Tienes una suscripción web activa. Por favor, gestiónala en el sitio web.",
     "alreadyPremiumTitle": "Ya eres Premium",
+    "googlePlayConflictDesc2": "Te has suscrito a través de la aplicación Android (Google Play). Gestiona tu suscripción en la aplicación.",
+    "checkoutError": "No se ha podido iniciar el proceso de pago.",
     "cta": "Mejorar Ahora",
     "desc1": "Se acabaron los límites de 15 vuelos.",
     "desc2": "Historial de viaje en 3D interactivo.",
@@ -695,7 +710,9 @@
     "prepDesc": "La imagen se está preparando",
     "prepTitle": "Un momento...",
     "statImageError": "No se pudo crear la imagen de estadísticas.",
-    "successTitle": "Guardado"
+    "successTitle": "Guardado",
+    "statsTitle": "Estadísticas de AvioSphere",
+    "statsText": "¡Mis estadísticas de vuelo en AvioSphere! ✈️📊"
   },
   "stats": {
     "aircraftTypeCount": "{type} ({count}x)",
@@ -766,7 +783,9 @@
     "createNew": "Crear Nuevo Viaje",
     "created": "Viaje '{name}' creado.",
     "loading": "Cargando viajes...",
-    "promptName": "Nombre del nuevo viaje (ej. 'Vacaciones de verano 2024'):"
+    "promptName": "Nombre del nuevo viaje (ej. 'Vacaciones de verano 2024'):",
+    "noFlightsLoaded": "No hay vuelos cargados.",
+    "noTripsCreated": "Aún no has creado ningún viaje."
   },
   "tutorial": {
     "button": "¡Entendido, vamos!",

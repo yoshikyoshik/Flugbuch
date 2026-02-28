@@ -294,6 +294,12 @@
     "welcomeBody": "Welcome aboard! You are now viewing sample data.",
     "welcomeTitle": "Demo Mode"
   },
+  "easterEgg": {
+  "level1": "Whoosh! 🛸",
+  "level2": "Big Ufo Incoming! 🛸",
+  "level3": "ALIEN INVASION! 👽",
+  "unlocked": "Level {level} Pilot Mode unlocked!"
+  },
   "export": {
     "dialogTitle": "Save export as...",
     "errorNativeBody": "Export on device failed: {error}",
@@ -398,6 +404,8 @@
     "buttonStoryMode": "📖 Story Mode",
     "focus": "Focus",
     "noFlights": "No flights available",
+    "loadingTimeline": "Loading timeline...",
+    "saveScreenshot": "Save screenshot",
     "screenshotErrorGenericMsg": "Could not share the image.",
     "screenshotErrorGenericTitle": "Oops",
     "screenshotErrorSupport": "Sharing is not supported on this device.",
@@ -429,7 +437,8 @@
       "content": "'Statistics' shows your records (longest flight, most frequent airport). 'Charts' visualizes your flights and distances over time (per year or month). 'Logbook' groups your flights by criteria like aircraft type or airline. Click the (i)-icon to fetch details for the respective type.",
       "title": "📊 Statistics, Charts & Logbook"
     },
-    "title": "Help & FAQ"
+    "title": "Help & FAQ",
+    "legal": "Legal"
   },
   "import": {
     "cancel": "Cancel",
@@ -472,6 +481,10 @@
     "terms": "Terms & Imprint"
   },
   "logbook": {
+    "tabAircraft": "Aircraft",
+    "tabAirline": "Airlines",
+    "tabAirport": "Airports",
+    "tabRegistration": "Registration",
     "aircraftCeiling": "Service Ceiling",
     "aircraftCruiseSpeed": "Cruise Speed",
     "aircraftEngineThrust": "Thrust",
@@ -595,6 +608,8 @@
   "premium": {
     "alreadyPremiumDesc": "You have an active web subscription. Please manage it on the website.",
     "alreadyPremiumTitle": "Already Premium",
+    "googlePlayConflictDesc2": "You subscribed via the Android App (Google Play). Please manage your subscription in the app.",
+    "checkoutError": "Could not start checkout.",
     "cta": "Upgrade Now",
     "desc1": "No more 15-flight limit.",
     "desc2": "Interactive 3D travel history.",
@@ -695,7 +710,9 @@
     "prepDesc": "Image is being prepared",
     "prepTitle": "Just a moment...",
     "statImageError": "Could not create statistics image.",
-    "successTitle": "Saved"
+    "successTitle": "Saved",
+    "statsTitle": "AvioSphere Stats",
+    "statsText": "My flight statistics on AvioSphere! ✈️📊"
   },
   "stats": {
     "aircraftTypeCount": "{type} ({count}x)",
@@ -766,7 +783,9 @@
     "createNew": "Create New Trip",
     "created": "Trip '{name}' created.",
     "loading": "Loading trips...",
-    "promptName": "Name of the new trip (e.g. 'Summer Vacation 2024'):"
+    "promptName": "Name of the new trip (e.g. 'Summer Vacation 2024'):",
+    "noFlightsLoaded": "No flights loaded.",
+    "noTripsCreated": "You haven't created any trips yet."
   },
   "tutorial": {
     "button": "Got it, let's go!",

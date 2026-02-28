@@ -294,6 +294,12 @@
     "welcomeBody": "Willkommen an Bord! Du siehst nun Beispieldaten.",
     "welcomeTitle": "Demo-Modus"
   },
+  "easterEgg": {
+  "level1": "Whoosh! 🛸",
+  "level2": "Big Ufo Incoming! 🛸",
+  "level3": "ALIEN INVASION! 👽",
+  "unlocked": "Level {level} Pilot Mode unlocked!"
+  },
   "export": {
     "dialogTitle": "Export speichern unter...",
     "errorNativeBody": "Export auf dem Gerät fehlgeschlagen: {error}",
@@ -398,6 +404,8 @@
     "buttonStoryMode": "📖 Story-Modus",
     "focus": "Fokus",
     "noFlights": "Keine Flüge verfügbar",
+    "loadingTimeline": "Lade Zeitstrahl...",
+    "saveScreenshot": "Screenshot speichern",
     "screenshotErrorGenericMsg": "Konnte das Bild nicht teilen.",
     "screenshotErrorGenericTitle": "Ups",
     "screenshotErrorSupport": "Teilen wird auf diesem Gerät nicht unterstützt.",
@@ -429,7 +437,8 @@
       "content": "'Statistiken' zeigt dir deine Rekorde (längster Flug, häufigster Flughafen). 'Charts' visualisiert deine Flüge und Distanzen über die Zeit (pro Jahr oder Monat). 'Logbuch' gruppiert deine Flüge nach Kriterien wie Flugzeugtyp oder Airline. Klicke auf das (i)-Symbol, um Details zum jeweiligen Typ abzurufen.",
       "title": "📊 Statistiken, Charts & Logbuch"
     },
-    "title": "Hilfe & FAQ"
+    "title": "Hilfe & FAQ",
+    "legal": "Rechtliches"
   },
   "import": {
     "cancel": "Abbrechen",
@@ -472,6 +481,10 @@
     "terms": "AGB & Impressum"
   },
   "logbook": {
+    "tabAircraft": "Flugzeugtyp",
+    "tabAirline": "Fluggesellschaft",
+    "tabAirport": "Flughafen",
+    "tabRegistration": "Registrierung",
     "aircraftCeiling": "Flughöhe",
     "aircraftCruiseSpeed": "Reisetempo",
     "aircraftEngineThrust": "Schubkraft",
@@ -595,6 +608,8 @@
   "premium": {
     "alreadyPremiumDesc": "Du hast ein aktives Web-Abo. Bitte verwalte es auf der Webseite.",
     "alreadyPremiumTitle": "Bereits Premium",
+    "googlePlayConflictDesc2": "Sie haben sich über die Android-App (Google Play) angemeldet. Bitte verwalten Sie Ihr Abonnement in der App.",
+    "checkoutError": "Der Bezahlvorgang konnte nicht gestartet werden.",
     "cta": "Jetzt Upgraden",
     "desc1": "Kein 15-Flüge-Limit mehr.",
     "desc2": "Interaktive 3D-Reisehistorie.",
@@ -695,7 +710,9 @@
     "prepDesc": "Bild wird aufbereitet",
     "prepTitle": "Moment...",
     "statImageError": "Konnte Statistik-Bild nicht erstellen.",
-    "successTitle": "Gespeichert"
+    "successTitle": "Gespeichert",
+    "statsTitle": "AvioSphere-Statistiken",
+    "statsText": "Meine Flugstatistiken auf AvioSphere! ✈️📊"
   },
   "stats": {
     "aircraftTypeCount": "{type} ({count}x)",
@@ -766,7 +783,9 @@
     "createNew": "Neue Reise anlegen",
     "created": "Reise '{name}' angelegt.",
     "loading": "Lade Reisen...",
-    "promptName": "Name der neuen Reise (z.B. 'Sommerurlaub 2024'):"
+    "promptName": "Name der neuen Reise (z.B. 'Sommerurlaub 2024'):",
+    "noFlightsLoaded": "Keine Flüge geladen.",
+    "noTripsCreated": "Sie haben noch keine Reisen erstellt."
   },
   "tutorial": {
     "button": "Verstanden, los geht's!",

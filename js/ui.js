@@ -567,26 +567,38 @@ function showTab(tabName) {
   document.getElementById("tab-content-hilfe").classList.add("hidden");
   document.getElementById("tab-content-trips")?.classList.add("hidden"); // <--- Diese Zeile ergänzen
 
+  // 1. Zuerst ALLE Buttons auf "inaktiv" setzen
   document.querySelectorAll(".tab-btn").forEach((btn) => {
-    btn.classList.remove("border-indigo-500", "text-indigo-600");
+    // Entferne das aktive Pillen-Styling
+    btn.classList.remove(
+      "bg-white", "shadow-md", "text-indigo-900", "font-extrabold",
+      "dark:bg-indigo-500", "dark:text-white"
+    );
+    // Setze das inaktive Styling (angepasst an den kräftigeren Hintergrund)
     btn.classList.add(
-      "border-transparent",
-      "text-gray-500",
-      "hover:text-gray-700",
-      "hover:border-gray-300"
+      "font-medium", 
+      "text-indigo-800/70", "hover:text-indigo-900", "hover:bg-indigo-300/50",
+      "dark:text-indigo-300/70", "dark:hover:text-indigo-100", "dark:hover:bg-indigo-800/50"
     );
   });
 
+  // 2. Den AKTIVEN Button extrem stark hervorheben ("Pillen"-Effekt)
   const activeBtn = document.getElementById(`tab-btn-${tabName}`);
   const activeContent = document.getElementById(`tab-content-${tabName}`);
+  
   if (activeBtn && activeContent) {
     activeContent.classList.remove("hidden");
-    activeBtn.classList.add("border-indigo-500", "text-indigo-600");
+    
+    // Entferne das inaktive Styling
     activeBtn.classList.remove(
-      "border-transparent",
-      "text-gray-500",
-      "hover:text-gray-700",
-      "hover:border-gray-300"
+      "font-medium",
+      "text-indigo-800/70", "hover:text-indigo-900", "hover:bg-indigo-300/50",
+      "dark:text-indigo-300/70", "dark:hover:text-indigo-100", "dark:hover:bg-indigo-800/50"
+    );
+    // Füge das stark abhebende "Pillen"-Styling hinzu
+    activeBtn.classList.add(
+      "bg-white", "shadow-md", "text-indigo-900", "font-extrabold",
+      "dark:bg-indigo-500", "dark:text-white"
     );
   }
 
@@ -783,7 +795,7 @@ window.renderFlights = async function (
                             ${depName} (${flight.departure}) ➔ ${arrName} (${flight.arrival})
                         </p>
                         <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                            📅 ${flight.date} | ⏱️ ${flight.time} | 📏 ${flight.distance.toLocaleString("de-DE")} km
+                            📅 ${flight.date} | ⏱️ ${(flight.time || "").replace("Std.", getTranslation("units.hoursShort") || "Std.").replace("Min.", getTranslation("units.minutesShort") || "Min.")} | 📏 ${flight.distance.toLocaleString("de-DE")} ${getTranslation("achievements.unitKm") || "km"}
                         </p>
                         <div class="mt-2 text-sm text-gray-500 dark:text-gray-400 truncate flex items-center gap-2">
                             ${flight.airline_logo ? `<img src="${flight.airline_logo}" alt="Logo" class="h-5 w-auto object-contain" />` : ''}
@@ -1269,9 +1281,11 @@ var updateStatisticsDisplay = function (flights) {
 
     const updateYearlyDisplay = (year) => {
       const data = stats.yearlyData[year];
-      yearlySummary.textContent = getTranslation("stats.yearlySummaryContent")
-        .replace("{count}", data.count)
-        .replace("{distance}", data.distance.toLocaleString("de-DE"));
+      // Wir nutzen innerHTML und verpacken die übersetzbaren Wörter in Spans!
+      yearlySummary.innerHTML = `
+        ${data.count} <span data-i18n="stats.flights">${getTranslation("stats.flights") || "Flüge"}</span> | 
+        ${data.distance.toLocaleString("de-DE")} <span data-i18n="achievements.unitKm">${getTranslation("achievements.unitKm") || "km"}</span>
+      `;
     };
 
     yearSelect.onchange = (event) => {
@@ -1756,7 +1770,7 @@ function renderHelpContent() {
 
     html += `
         <hr class="my-6 border-gray-300 dark:border-gray-600">
-        <h3 class="text-lg font-semibold text-indigo-600 dark:text-indigo-400 mb-2">${isGerman ? 'Rechtliches' : 'Legal'}</h3>
+        <h3 class="text-lg font-semibold text-indigo-600 dark:text-indigo-400 mb-2">${getTranslation("help.legal") || "Rechtliches"}</h3>
         <div class="flex flex-col space-y-2">
             <a href="${privacyLink}" target="_blank" class="text-indigo-500 hover:underline flex items-center gap-2">
                 🛡️ ${privacyTitle}
@@ -1855,13 +1869,12 @@ function launchPaperPlane() {
     document.body.appendChild(plane);
 
     // 3. Nachricht anpassen
-    let msg = "Whoosh! 🛸";
-    if (eggLevel > 3) msg = "Big Ufo Incoming! 🛸";
-    if (eggLevel > 6) msg = "ALIEN INVASION! 👽";
+    let msg = getTranslation("easterEgg.level1") || "Whoosh! 🛸";
+    if (eggLevel > 3) msg = getTranslation("easterEgg.level2") || "Big Ufo Incoming! 🛸";
+    if (eggLevel > 6) msg = getTranslation("easterEgg.level3") || "ALIEN INVASION! 👽";
 
-    // Wir nutzen den Easter-Egg Style für den Toast
     if (typeof showMessage === "function") {
-        showMessage(msg, `Level ${eggLevel} Pilot Mode unlocked!`, "easter-egg");
+        showMessage(msg, (getTranslation("easterEgg.unlocked") || "Level {level} Pilot Mode unlocked!").replace("{level}", eggLevel), "easter-egg");
     }
 
     // 4. Aufräumen (Timer passend zum CSS, z.B. 7s)
@@ -1987,8 +2000,8 @@ async function shareImageBase64(dataURL, filenamePrefix = "aviosphere_share") {
 
             // C) Teilen
             await Share.share({
-                title: 'AvioSphere Stats',
-                text: 'Meine Flugstatistik auf AvioSphere! ✈️📊',
+                title: getTranslation("share.statsTitle") || 'AvioSphere Stats',
+                text: getTranslation("share.statsText") || 'Meine Flugstatistik auf AvioSphere! ✈️📊',
                 files: [result.uri]
             });
 

@@ -2402,8 +2402,8 @@ document.getElementById("buy-pro-btn").addEventListener("click", async () => {
         // auch wenn in der DB noch kurzzeitig 'pro' stand.
         if (window.currentUserSubscriptionSource === 'google_play' && currentUserSubscription === 'pro') {
             showMessage(
-                "Bereits Premium", 
-                "Du hast dein Abo über die Android App (Google Play) abgeschlossen. Bitte verwalte dein Abo in der App.", 
+                getTranslation("premium.alreadyPremiumTitle") || "Bereits Premium", 
+                getTranslation("premium.googlePlayConflictDesc2") || "Du hast dein Abo über die Android App (Google Play) abgeschlossen. Bitte verwalte dein Abo in der App.", 
                 "info"
             );
             return; 
@@ -2437,7 +2437,11 @@ document.getElementById("buy-pro-btn").addEventListener("click", async () => {
 
         } catch (error) {
             console.error("Checkout Fehler:", error);
-            showMessage("Fehler", "Konnte Checkout nicht starten.", "error");
+            showMessage(
+                getTranslation("toast.errorTitle") || "Fehler", 
+                getTranslation("premium.checkoutError") || "Konnte Checkout nicht starten.", 
+                "error"
+            );
             btn.disabled = false;
             btn.innerHTML = originalText;
         }
@@ -2638,12 +2642,12 @@ window.renderTripManager = async function() {
   const allFlights = await getFlights();
 
   if (!allFlights || allFlights.length === 0) {
-      container.innerHTML = `<p class="text-gray-500">Keine Flüge geladen.</p>`;
+      container.innerHTML = `<p class="text-gray-500">${getTranslation("trips.noFlightsLoaded") || "Keine Flüge geladen."}</p>`;
       return;
   }
 
   if (!trips || trips.length === 0) {
-      container.innerHTML = `<p class="text-gray-500">Du hast noch keine Reisen angelegt.</p>`;
+      container.innerHTML = `<p class="text-gray-500">${getTranslation("trips.noTripsCreated") || "Du hast noch keine Reisen angelegt."}</p>`;
       return;
   }
 
@@ -2664,17 +2668,17 @@ window.renderTripManager = async function() {
         <div class="bg-gray-50 dark:bg-gray-900/50 p-5 rounded-xl border border-gray-200 dark:border-gray-700">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-lg font-bold text-indigo-700 dark:text-indigo-400">🏝️ ${trip.name}</h3>
-                <span class="text-sm font-semibold text-gray-500 px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded-full">${tripFlights.length} Flüge</span>
+                <span class="text-sm font-semibold text-gray-500 px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded-full">${tripFlights.length} ${getTranslation("stats.flights") || "Flüge"}</span>
             </div>
             
             <div class="grid grid-cols-3 gap-3 text-sm text-center mb-4">
                 <div class="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
                     <div class="font-extrabold text-gray-800 dark:text-gray-200 text-lg">${totalDist.toLocaleString("de-DE")} km</div>
-                    <div class="text-xs text-gray-400 uppercase tracking-wide mt-1">Distanz</div>
+                    <div class="text-xs text-gray-400 uppercase tracking-wide mt-1">${getTranslation("flights.sortDistance") || "Distanz"}</div>
                 </div>
                 <div class="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
                      <div class="font-extrabold text-green-600 dark:text-green-400 text-lg">${totalPrice} ${currency}</div>
-                     <div class="text-xs text-gray-400 uppercase tracking-wide mt-1">Kosten</div>
+                     <div class="text-xs text-gray-400 uppercase tracking-wide mt-1">${getTranslation("stats.totalSpending") || "Kosten"}</div>
                 </div>
                 <div class="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
                      <div class="font-extrabold text-orange-600 dark:text-orange-400 text-lg">${totalCO2.toLocaleString("de-DE")} kg</div>
