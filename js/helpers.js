@@ -360,6 +360,32 @@ async function setLanguage(lang) {
   }
   
   updateLockVisuals();
+
+  // --- NEU: Dynamische Ansichten nach Sprachwechsel sofort neu rendern ---
+  
+  // 1. Flugliste, Statistiken und Charts aktualisieren (behält Filter & Seite bei!)
+  if (typeof renderFlights === 'function') {
+      const flightsToRender = (typeof currentlyFilteredFlights !== 'undefined' && currentlyFilteredFlights) ? currentlyFilteredFlights : null;
+      const page = typeof currentPage !== 'undefined' ? currentPage : 1;
+      // renderFlights aufrufen (aktualisiert Liste, Charts und Stats gleichzeitig)
+      renderFlights(flightsToRender, null, page);
+  }
+
+  // 2. Reisen-Tab aktualisieren (falls der Nutzer sich gerade in diesem Tab befindet)
+  if (typeof renderTripManager === 'function' && document.getElementById("tab-content-trips") && !document.getElementById("tab-content-trips").classList.contains("hidden")) {
+      renderTripManager();
+  }
+
+  // 3. Logbuch-Tab aktualisieren (falls der Nutzer sich gerade in diesem Tab befindet)
+  if (typeof renderLogbookView === 'function' && document.getElementById("tab-content-logbook") && !document.getElementById("tab-content-logbook").classList.contains("hidden")) {
+      // Prüfen, welcher der 4 kleinen Logbuch-Buttons gerade aktiv ist
+      if (document.getElementById("logbook-view-aircraft").classList.contains("bg-white")) renderLogbookView("aircraftType");
+      else if (document.getElementById("logbook-view-airline").classList.contains("bg-white")) renderLogbookView("airline");
+      else if (document.getElementById("logbook-view-airport").classList.contains("bg-white")) renderLogbookView("airport");
+      else if (document.getElementById("logbook-view-registration").classList.contains("bg-white")) renderLogbookView("registration");
+  }
+  // -----------------------------------------------------------------------
+
 }
 
 /**

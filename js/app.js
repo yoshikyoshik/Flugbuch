@@ -99,6 +99,9 @@ async function initializeApp() {
       const manageBtn = document.getElementById("menu-manage-sub-btn");
 
       if (statusBadge) {
+        // 🔥 FIX: Wir entfernen das i18n-Attribut, damit die Übersetzung das "PRO/FREE" nicht mehr überschreibt!
+        statusBadge.removeAttribute("data-i18n");
+
         if (currentUserSubscription === "pro") {
           // PRO Design
           statusBadge.textContent = "PRO";
@@ -154,11 +157,7 @@ async function initializeApp() {
     ////.getElementById("burger-menu-btn")
     ////.addEventListener("click", toggleBurgerMenu);
   document.getElementById("menu-logout-btn").addEventListener("click", logout);
-  document.getElementById("menu-theme-toggle").addEventListener("click", (e) => {
-    e.preventDefault(); // Verhindert, dass die Seite nach oben springt (wegen href="#")
-    toggleDarkMode();   // Schaltet Hell/Dunkel um
-    toggleBurgerMenu(); // Schließt das Menü
-});
+  
 
   // Listener, um das Menü zu schließen, wenn man daneben klickt
   document.addEventListener("click", function (event) {
@@ -653,13 +652,19 @@ function lockUiForDemo() {
         const sections = burgerMenu.querySelectorAll('div.border-b, div.border-t, div.md\\:hidden');
         sections.forEach(el => el.classList.add('hidden'));
 
-        // B) Alle Links/Buttons verstecken
+        // B) Alle Links/Buttons verstecken (Ausnahme: Exit & Theme-Toggle)
         const allInteractives = burgerMenu.querySelectorAll('a, button');
         allInteractives.forEach(el => {
-            if (el.id !== 'menu-exit-demo-btn') {
+            if (el.id !== 'menu-exit-demo-btn' && el.id !== 'menu-theme-toggle') {
                 el.classList.add('hidden');
             }
         });
+
+        // Sicherstellen, dass der Theme-Toggle auch wirklich sichtbar ist
+        const themeToggleBtn = document.getElementById('menu-theme-toggle');
+        if (themeToggleBtn) {
+            themeToggleBtn.classList.remove('hidden');
+        }
 
         // C) Exit Button anzeigen
         const exitBtn = document.getElementById('menu-exit-demo-btn');
@@ -2188,6 +2193,16 @@ document.addEventListener("DOMContentLoaded", async function () {
       burgerBtn.addEventListener('click', toggleBurgerMenu);
   }
   // ENDE EINFÜGEN
+
+  // --- GLOBALER THEME-TOGGLE (Funktioniert auch im Demo-Modus!) ---
+  const themeToggleBtn = document.getElementById("menu-theme-toggle");
+  if (themeToggleBtn) {
+      themeToggleBtn.addEventListener("click", (e) => {
+          e.preventDefault(); 
+          if (typeof toggleDarkMode === 'function') toggleDarkMode();   
+          if (typeof toggleBurgerMenu === 'function') toggleBurgerMenu(); 
+      });
+  }
 
   // --- HIER EINFÜGEN (damit der Button auch ohne Login geht) ---
   const demoBtn = document.getElementById('demo-btn');
