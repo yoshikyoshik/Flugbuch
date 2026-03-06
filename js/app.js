@@ -2749,3 +2749,132 @@ async function populateTripFilterDropdown() {
   // Alten Wert wiederherstellen
   if (currentVal) filterSelect.value = currentVal;
 }
+
+// =================================================================
+// BOARDING PASS SCANNER LOGIC
+// =================================================================
+
+/**
+ * Entschlüsselt den IATA BCBP (Barcode Boarding Pass) Standard
+ */
+function parseIataBarcode(barcode) {
+    // Bordkarten-Strings beginnen fast immer mit "M1"
+    if (!barcode.startsWith('M1')) {
+        return null;
+    }
+
+    try {
+        // Der Standard definiert feste Zeichen-Positionen (0-basiert):
+        // 30-33: Abflughafen (3 Zeichen)
+        const departure = barcode.substring(30, 33).trim();
+        // 33-36: Zielflughafen (3 Zeichen)
+        const arrival = barcode.substring(33, 36).trim();
+        // 36-39: Airline Code (z.B. "LH ", "UA ")
+        const airlineCode = barcode.substring(36, 39).trim();
+        // 39-44: Flugnummer (mit führenden Nullen, z.B. "0400")
+        const flightNumRaw = barcode.substring(39, 44).trim();
+        // Wir entfernen die Nullen (LH0400 -> LH400)
+        const flightNumber = airlineCode + flightNumRaw.replace(/^0+/, ''); 
+
+        return { departure, arrival, airlineCode, flightNumber };
+    } catch(e) {
+        console.error("Fehler beim Parsen des Barcodes:", e);
+        return null;
+    }
+}
+
+/**
+ * Startet den Kamera-Scanner
+ */
+window.startBoardingPassScanner = async function() {
+    // Demo-Check
+    if (typeof isDemoMode !== 'undefined' && isDemoMode) {
+        showMessage("Demo-Modus", "Der Scanner ist im Demo-Modus nicht verfügbar.", "info");
+        return;
+    }
+
+    // Prüfen, ob wir in der nativen App sind
+    if (typeof Capacitor === 'undefined' || !Capacitor.isNativePlatform()) {
+        showMessage(
+            getTranslation("toast.infoTitle") || "Hinweis", 
+            getTranslation("scanner.onlyMobile") || "Der Scanner ist nur in der mobilen App verfügbar.", 
+            "info"
+        );
+        return;
+    }
+
+    try {
+        const { BarcodeScanner } = Capacitor.Plugins;
+
+        // Erlaubnis prüfen/einholen
+        const status = await BarcodeScanner.checkPermission({ force: true });
+        if (!status.granted) {
+            showMessage(getTranslation("toast.errorTitle") || "Fehler", getTranslation("scanner.noPermission") || "Kamerazugriff verweigert.", "error");
+            return;
+        }
+
+        // UI für den Scanner vorbereiten (Hintergrund transparent machen)
+        document.body.style.background = "transparent";
+        document.body.classList.add("bg-transparent");
+        document.getElementById("app-container").classList.add("hidden");
+        
+        // Scan-Overlay einblenden
+        const overlay = document.getElementById("scanner-overlay");
+        if (overlay) overlay.classList.remove("hidden");
+
+        // Scanner starten (PDF_417 ist das typische Format für Bordkarten, QR_CODE als Fallback)
+        const result = await BarcodeScanner.startScan({ targetedFormats: ['PDF_417', 'QR_CODE'] });
+
+        // UI wiederherstellen
+        cleanupScannerUI();
+
+        if (result.hasContent) {
+            const parsedData = parseIataBarcode(result.content);
+            
+            if (parsedData) {
+                // Formular ausfüllen
+                document.getElementById('departure').value = parsedData.departure;
+                document.getElementById('arrival').value = parsedData.arrival;
+                document.getElementById('flightNumber').value = parsedData.flightNumber;
+                document.getElementById('airline').value = parsedData.airlineCode; // API wird später den echten Namen suchen
+                
+                // Formular-Ansicht sicherstellen & Distanzen aktualisieren
+                showTab('neue-fluege');
+                updateFlightDetails();
+
+                showMessage(
+                    getTranslation("toast.successTitle") || "Erfolg", 
+                    getTranslation("scanner.success") || "Bordkarte erfolgreich ausgelesen!", 
+                    "success"
+                );
+                
+                // Scroll zum Formular
+                document.getElementById("departure").scrollIntoView({ behavior: "smooth", block: "center" });
+            } else {
+                showMessage(
+                    getTranslation("toast.errorTitle") || "Fehler", 
+                    getTranslation("scanner.invalidCode") || "Code ist keine gültige IATA-Bordkarte.", 
+                    "error"
+                );
+            }
+        }
+    } catch (err) {
+        cleanupScannerUI();
+        console.error("Scanner Error:", err);
+        showMessage(getTranslation("toast.errorTitle") || "Fehler", "Scanner-Fehler.", "error");
+    }
+};
+
+window.stopScanner = async function() {
+    const { BarcodeScanner } = Capacitor.Plugins;
+    await BarcodeScanner.stopScan();
+    cleanupScannerUI();
+};
+
+function cleanupScannerUI() {
+    document.body.style.background = "";
+    document.body.classList.remove("bg-transparent");
+    document.getElementById("app-container").classList.remove("hidden");
+    const overlay = document.getElementById("scanner-overlay");
+    if (overlay) overlay.classList.add("hidden");
+}

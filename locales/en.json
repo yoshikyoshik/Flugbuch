@@ -702,6 +702,15 @@
     "title": "Do you like AvioSphere?",
     "yesButton": "Yes, I'd love to! ⭐"
   },
+  "scanner": {
+  "title": "Scan Boarding Pass",
+  "subtitle": "Capture QR or barcode with your camera",
+  "onlyMobile": "The scanner is only available in the mobile app.",
+  "noPermission": "Camera access denied.",
+  "instruction": "Align the barcode within the frame",
+  "success": "Boarding pass successfully read!",
+  "invalidCode": "Code is not a valid IATA boarding pass."
+  },
   "share": {
     "downloaded": "Image has been downloaded.",
     "errorDesc": "Error sharing: {error}",

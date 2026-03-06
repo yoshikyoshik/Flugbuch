@@ -702,6 +702,15 @@
     "title": "Gefällt dir AvioSphere?",
     "yesButton": "Ja, gerne! ⭐"
   },
+  "scanner": {
+  "title": "Bordkarte scannen",
+  "subtitle": "QR- oder Barcode mit der Kamera erfassen",
+  "onlyMobile": "Der Scanner ist nur in der mobilen App verfügbar.",
+  "noPermission": "Kamerazugriff verweigert.",
+  "instruction": "Richte den Barcode im Rahmen aus",
+  "success": "Bordkarte erfolgreich ausgelesen!",
+  "invalidCode": "Code ist keine gültige IATA-Bordkarte."
+  },
   "share": {
     "downloaded": "Bild wurde heruntergeladen.",
     "errorDesc": "Fehler beim Teilen: {error}",

@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/yoshikyoshik/Flugbuch#readme",
   "dependencies": {
+    "@capacitor-community/barcode-scanner": "^4.0.1",
     "@capacitor/android": "^7.4.3",
     "@capacitor/browser": "^7.0.2",
     "@capacitor/cli": "^7.4.3",
