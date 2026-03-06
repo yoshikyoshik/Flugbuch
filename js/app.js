@@ -2755,28 +2755,53 @@ async function populateTripFilterDropdown() {
 // =================================================================
 
 /**
- * Entschlüsselt den IATA BCBP (Barcode Boarding Pass) Standard
+ * Entschlüsselt den IATA BCBP (Barcode Boarding Pass) Standard (Upgrade)
  */
 function parseIataBarcode(barcode) {
-    // Bordkarten-Strings beginnen fast immer mit "M1"
     if (!barcode.startsWith('M1')) {
         return null;
     }
 
     try {
-        // Der Standard definiert feste Zeichen-Positionen (0-basiert):
-        // 30-33: Abflughafen (3 Zeichen)
         const departure = barcode.substring(30, 33).trim();
-        // 33-36: Zielflughafen (3 Zeichen)
         const arrival = barcode.substring(33, 36).trim();
-        // 36-39: Airline Code (z.B. "LH ", "UA ")
         const airlineCode = barcode.substring(36, 39).trim();
-        // 39-44: Flugnummer (mit führenden Nullen, z.B. "0400")
         const flightNumRaw = barcode.substring(39, 44).trim();
-        // Wir entfernen die Nullen (LH0400 -> LH400)
         const flightNumber = airlineCode + flightNumRaw.replace(/^0+/, ''); 
 
-        return { departure, arrival, airlineCode, flightNumber };
+        // 1. DATUM BERECHNEN (Julianischer Tag des Jahres: Zeichen 44-46)
+        const julianDateStr = barcode.substring(44, 47).trim();
+        let flightDate = "";
+        
+        if (julianDateStr && !isNaN(julianDateStr)) {
+            const julianDay = parseInt(julianDateStr, 10);
+            const now = new Date();
+            let currentYear = now.getFullYear();
+
+            // Datum ausrechnen (1. Januar + X Tage)
+            const dateObj = new Date(currentYear, 0, 1);
+            dateObj.setDate(julianDay);
+
+            // Logik-Trick: Wenn jemand im Januar eine Bordkarte aus dem Dezember scannt 
+            // (Datum liegt mehr als 6 Monate in der Zukunft), ziehen wir ein Jahr ab!
+            if (dateObj > new Date(now.getTime() + 180 * 24 * 60 * 60 * 1000)) {
+                dateObj.setFullYear(currentYear - 1);
+            }
+
+            // Als YYYY-MM-DD für das HTML-Input-Feld formatieren
+            const yyyy = dateObj.getFullYear();
+            const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const dd = String(dateObj.getDate()).padStart(2, '0');
+            flightDate = `${yyyy}-${mm}-${dd}`;
+        }
+
+        // 2. KLASSE ERMITTELN (Buchungsklasse: Zeichen 47)
+        const classCode = barcode.substring(47, 48).toUpperCase();
+        let flightClass = "Economy"; // Fallback
+        if (['F', 'A', 'P'].includes(classCode)) flightClass = "First";
+        else if (['J', 'C', 'D', 'I', 'Z'].includes(classCode)) flightClass = "Business";
+
+        return { departure, arrival, airlineCode, flightNumber, flightDate, flightClass };
     } catch(e) {
         console.error("Fehler beim Parsen des Barcodes:", e);
         return null;
@@ -2837,6 +2862,14 @@ window.startBoardingPassScanner = async function() {
                 document.getElementById('arrival').value = parsedData.arrival;
                 document.getElementById('flightNumber').value = parsedData.flightNumber;
                 document.getElementById('airline').value = parsedData.airlineCode; // API wird später den echten Namen suchen
+
+                // NEU: Datum und Klasse einfügen
+                if (parsedData.flightDate) {
+                    document.getElementById('flightDate').value = parsedData.flightDate;
+                }
+                if (parsedData.flightClass) {
+                    document.getElementById('flightClass').value = parsedData.flightClass;
+                }
                 
                 // Formular-Ansicht sicherstellen & Distanzen aktualisieren
                 showTab('neue-fluege');
