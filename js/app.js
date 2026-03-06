@@ -2831,23 +2831,46 @@ window.startBoardingPassScanner = async function() {
             return;
         }
 
-        // 🚨 WICHTIG: Das macht den nativen App-Hintergrund für die Kamera durchsichtig!
+        // Native App komplett durchsichtig machen
         await BarcodeScanner.hideBackground();
-
-        // HTML-Hintergründe deaktivieren (löscht den Indigo-Farbverlauf)
-        document.documentElement.style.backgroundColor = "transparent";
-        document.body.style.backgroundColor = "transparent";
-        document.body.style.backgroundImage = "none";
+        document.documentElement.style.background = "transparent";
+        document.body.style.background = "transparent";
         
-        // App ausblenden, Scanner-Visier einblenden
-        document.getElementById("app-container").classList.add("hidden");
-        const overlay = document.getElementById("scanner-overlay");
-        if (overlay) overlay.classList.remove("hidden");
+        // App-Inhalt sicher ausblenden
+        document.getElementById("app-container").style.display = "none";
 
-        // Scanvorgang starten
+        // --- NEU: DYNAMISCHES, KUGELSICHERES OVERLAY ---
+        let scannerUI = document.getElementById('dynamic-scanner-ui');
+        if (!scannerUI) {
+            scannerUI = document.createElement('div');
+            scannerUI.id = 'dynamic-scanner-ui';
+            // Harte Inline-Styles, die nicht von Tailwind beeinflusst werden können
+            scannerUI.style.cssText = 'position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 999999; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: auto;';
+            
+            // Fadenkreuz, Text und Button
+            scannerUI.innerHTML = `
+                <div style="position: relative; width: 280px; height: 200px; border: 4px solid #6366f1; border-radius: 16px; box-shadow: 0 0 0 9999px rgba(0,0,0,0.6);">
+                    <div style="position: absolute; width: 100%; height: 2px; background: #818cf8; top: 50%; box-shadow: 0 0 15px #4f46e5;"></div>
+                </div>
+                <p style="color: white; font-weight: bold; margin-top: 32px; background: rgba(0,0,0,0.7); padding: 8px 20px; border-radius: 9999px; z-index: 100;">
+                    ${getTranslation("scanner.instruction") || "Richte die Bordkarte im Rahmen aus"}
+                </p>
+                <button onclick="stopScanner()" style="position: absolute; bottom: 50px; padding: 15px 40px; background: #dc2626; color: white; font-weight: bold; font-size: 18px; border-radius: 9999px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 101; cursor: pointer;">
+                    ${getTranslation("form.cancel") || "Abbrechen"}
+                </button>
+            `;
+            document.body.appendChild(scannerUI);
+        }
+        // ----------------------------------------------
+
+        // WICHTIG: Einen Sekundenbruchteil warten, damit der Bildschirm den Button fertig zeichnet,
+        // bevor der native Scanner den Haupt-Thread beansprucht!
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        // Scan starten
         const result = await BarcodeScanner.startScan({ targetedFormats: ['PDF_417', 'QR_CODE'] });
 
-        // Wenn er etwas gefunden hat, UI direkt wieder aufräumen
+        // Sofort aufräumen
         cleanupScannerUI();
 
         if (result.hasContent) {
@@ -2881,26 +2904,28 @@ window.startBoardingPassScanner = async function() {
 window.stopScanner = async function() {
     try {
         const { BarcodeScanner } = Capacitor.Plugins;
-        await BarcodeScanner.stopScan(); // Stoppt die Kamera
+        await BarcodeScanner.stopScan(); 
     } catch (e) {
         console.error("Fehler beim Stoppen:", e);
     } finally {
-        cleanupScannerUI(); // UI immer wiederherstellen
+        cleanupScannerUI();
     }
 };
 
 function cleanupScannerUI() {
-    // 🚨 WICHTIG: Den nativen Hintergrund wieder einschalten
+    // Native Kamera stoppen / Hintergrund wieder füllen
     if (typeof Capacitor !== 'undefined' && Capacitor.Plugins.BarcodeScanner) {
         Capacitor.Plugins.BarcodeScanner.showBackground();
     }
 
-    // Die Tailwind-Farbverläufe wieder zulassen
-    document.documentElement.style.backgroundColor = "";
-    document.body.style.backgroundColor = "";
-    document.body.style.backgroundImage = "";
-    
-    document.getElementById("app-container").classList.remove("hidden");
-    const overlay = document.getElementById("scanner-overlay");
-    if (overlay) overlay.classList.add("hidden");
+    // App-Container und Hintergrund wieder herstellen
+    document.documentElement.style.background = "";
+    document.body.style.background = "";
+    document.getElementById("app-container").style.display = "";
+
+    // Das dynamische Overlay restlos löschen
+    const scannerUI = document.getElementById('dynamic-scanner-ui');
+    if (scannerUI) {
+        scannerUI.remove();
+    }
 }
