@@ -2899,9 +2899,16 @@ window.startBoardingPassScanner = async function() {
 };
 
 window.stopScanner = async function() {
-    const { BarcodeScanner } = Capacitor.Plugins;
-    await BarcodeScanner.stopScan();
-    cleanupScannerUI();
+    try {
+        const { BarcodeScanner } = Capacitor.Plugins;
+        // Stoppt den Kamera-Feed im Hintergrund
+        await BarcodeScanner.stopScan();
+    } catch (e) {
+        console.error("Fehler beim Stoppen des Scanners:", e);
+    } finally {
+        // UI auf jeden Fall wiederherstellen
+        cleanupScannerUI();
+    }
 };
 
 function cleanupScannerUI() {
