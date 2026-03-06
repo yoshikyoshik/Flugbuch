@@ -1758,17 +1758,17 @@
   </div>
 </div>
 	
-  <div id="scanner-overlay" class="hidden fixed inset-0 z-[999] flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm pointer-events-auto">
+  <div id="scanner-overlay" class="hidden fixed inset-0 z-[999] flex flex-col items-center justify-center pointer-events-auto bg-transparent">
     
     <div class="relative w-72 h-48 border-4 border-indigo-500 rounded-2xl flex items-center justify-center shadow-[0_0_0_9999px_rgba(0,0,0,0.6)]">
         <div class="absolute w-full h-0.5 bg-indigo-400 opacity-70 animate-pulse shadow-[0_0_15px_rgba(79,70,229,1)]"></div>
     </div>
     
-    <p class="text-white font-bold mt-6 bg-black/50 px-4 py-2 rounded-full" data-i18n="scanner.instruction">
+    <p class="text-white font-bold mt-8 bg-black/60 px-4 py-2 rounded-full z-10 shadow-lg" data-i18n="scanner.instruction">
         Richte die Bordkarte im Rahmen aus
     </p>
     
-    <button onclick="stopScanner()" class="mt-8 px-8 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-full shadow-lg transition-colors" data-i18n="form.cancel">
+    <button onclick="stopScanner()" class="absolute bottom-12 px-10 py-4 bg-red-600 hover:bg-red-700 text-white font-bold text-lg rounded-full shadow-2xl transition-colors z-20" data-i18n="form.cancel">
         Abbrechen
     </button>
 

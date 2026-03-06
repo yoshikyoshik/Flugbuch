@@ -2812,83 +2812,63 @@ function parseIataBarcode(barcode) {
  * Startet den Kamera-Scanner
  */
 window.startBoardingPassScanner = async function() {
-    // Demo-Check
     if (typeof isDemoMode !== 'undefined' && isDemoMode) {
         showMessage("Demo-Modus", "Der Scanner ist im Demo-Modus nicht verfügbar.", "info");
         return;
     }
 
-    // Prüfen, ob wir in der nativen App sind
     if (typeof Capacitor === 'undefined' || !Capacitor.isNativePlatform()) {
-        showMessage(
-            getTranslation("toast.infoTitle") || "Hinweis", 
-            getTranslation("scanner.onlyMobile") || "Der Scanner ist nur in der mobilen App verfügbar.", 
-            "info"
-        );
+        showMessage(getTranslation("toast.infoTitle") || "Hinweis", getTranslation("scanner.onlyMobile") || "Der Scanner ist nur in der mobilen App verfügbar.", "info");
         return;
     }
 
     try {
         const { BarcodeScanner } = Capacitor.Plugins;
 
-        // Erlaubnis prüfen/einholen
         const status = await BarcodeScanner.checkPermission({ force: true });
         if (!status.granted) {
             showMessage(getTranslation("toast.errorTitle") || "Fehler", getTranslation("scanner.noPermission") || "Kamerazugriff verweigert.", "error");
             return;
         }
 
-        // UI für den Scanner vorbereiten (Hintergrund transparent machen)
-        document.body.style.background = "transparent";
-        document.body.classList.add("bg-transparent");
-        document.getElementById("app-container").classList.add("hidden");
+        // 🚨 WICHTIG: Das macht den nativen App-Hintergrund für die Kamera durchsichtig!
+        await BarcodeScanner.hideBackground();
+
+        // HTML-Hintergründe deaktivieren (löscht den Indigo-Farbverlauf)
+        document.documentElement.style.backgroundColor = "transparent";
+        document.body.style.backgroundColor = "transparent";
+        document.body.style.backgroundImage = "none";
         
-        // Scan-Overlay einblenden
+        // App ausblenden, Scanner-Visier einblenden
+        document.getElementById("app-container").classList.add("hidden");
         const overlay = document.getElementById("scanner-overlay");
         if (overlay) overlay.classList.remove("hidden");
 
-        // Scanner starten (PDF_417 ist das typische Format für Bordkarten, QR_CODE als Fallback)
+        // Scanvorgang starten
         const result = await BarcodeScanner.startScan({ targetedFormats: ['PDF_417', 'QR_CODE'] });
 
-        // UI wiederherstellen
+        // Wenn er etwas gefunden hat, UI direkt wieder aufräumen
         cleanupScannerUI();
 
         if (result.hasContent) {
             const parsedData = parseIataBarcode(result.content);
             
             if (parsedData) {
-                // Formular ausfüllen
                 document.getElementById('departure').value = parsedData.departure;
                 document.getElementById('arrival').value = parsedData.arrival;
                 document.getElementById('flightNumber').value = parsedData.flightNumber;
-                document.getElementById('airline').value = parsedData.airlineCode; // API wird später den echten Namen suchen
-
-                // NEU: Datum und Klasse einfügen
-                if (parsedData.flightDate) {
-                    document.getElementById('flightDate').value = parsedData.flightDate;
-                }
-                if (parsedData.flightClass) {
-                    document.getElementById('flightClass').value = parsedData.flightClass;
-                }
+                document.getElementById('airline').value = parsedData.airlineCode;
                 
-                // Formular-Ansicht sicherstellen & Distanzen aktualisieren
+                if (parsedData.flightDate) document.getElementById('flightDate').value = parsedData.flightDate;
+                if (parsedData.flightClass) document.getElementById('flightClass').value = parsedData.flightClass;
+                
                 showTab('neue-fluege');
                 updateFlightDetails();
 
-                showMessage(
-                    getTranslation("toast.successTitle") || "Erfolg", 
-                    getTranslation("scanner.success") || "Bordkarte erfolgreich ausgelesen!", 
-                    "success"
-                );
-                
-                // Scroll zum Formular
+                showMessage(getTranslation("toast.successTitle") || "Erfolg", getTranslation("scanner.success") || "Bordkarte erfolgreich ausgelesen!", "success");
                 document.getElementById("departure").scrollIntoView({ behavior: "smooth", block: "center" });
             } else {
-                showMessage(
-                    getTranslation("toast.errorTitle") || "Fehler", 
-                    getTranslation("scanner.invalidCode") || "Code ist keine gültige IATA-Bordkarte.", 
-                    "error"
-                );
+                showMessage(getTranslation("toast.errorTitle") || "Fehler", getTranslation("scanner.invalidCode") || "Code ist keine gültige IATA-Bordkarte.", "error");
             }
         }
     } catch (err) {
@@ -2901,19 +2881,25 @@ window.startBoardingPassScanner = async function() {
 window.stopScanner = async function() {
     try {
         const { BarcodeScanner } = Capacitor.Plugins;
-        // Stoppt den Kamera-Feed im Hintergrund
-        await BarcodeScanner.stopScan();
+        await BarcodeScanner.stopScan(); // Stoppt die Kamera
     } catch (e) {
-        console.error("Fehler beim Stoppen des Scanners:", e);
+        console.error("Fehler beim Stoppen:", e);
     } finally {
-        // UI auf jeden Fall wiederherstellen
-        cleanupScannerUI();
+        cleanupScannerUI(); // UI immer wiederherstellen
     }
 };
 
 function cleanupScannerUI() {
-    document.body.style.background = "";
-    document.body.classList.remove("bg-transparent");
+    // 🚨 WICHTIG: Den nativen Hintergrund wieder einschalten
+    if (typeof Capacitor !== 'undefined' && Capacitor.Plugins.BarcodeScanner) {
+        Capacitor.Plugins.BarcodeScanner.showBackground();
+    }
+
+    // Die Tailwind-Farbverläufe wieder zulassen
+    document.documentElement.style.backgroundColor = "";
+    document.body.style.backgroundColor = "";
+    document.body.style.backgroundImage = "";
+    
     document.getElementById("app-container").classList.remove("hidden");
     const overlay = document.getElementById("scanner-overlay");
     if (overlay) overlay.classList.add("hidden");
