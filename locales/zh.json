@@ -614,9 +614,11 @@
     "desc1": "不再有15次航班的限制。",
     "desc2": "交互式的3D旅行历史。",
     "desc3": "保存记忆并创建日志书。",
+    "desc4": "在几秒钟内扫描登机牌。",
     "feature1": "无限航班",
     "feature2": "互动的3D地球仪",
     "feature3": "照片上传和PDF导出",
+    "feature4": "扫描登机牌",
     "googlePlayConflictDesc": "请在安卓应用程序中管理您的订阅。",
     "googlePlayConflictTitle": "您有一个有效的应用订阅 (Google Play)。",
     "loadStat": "正在加载状态...",
@@ -701,6 +703,16 @@
     "noButton": "不，谢谢",
     "title": "您喜欢 AvioSphere 吗？",
     "yesButton": "是的，我很乐意！⭐"
+  },
+  "scanner": {
+  "title": "扫描登机牌",
+  "subtitle": "使用相机捕捉二维码或条形码",
+  "onlyMobile": "扫描仪仅在移动应用程序中可用。",
+  "noPermission": "相机访问被拒绝。",
+  "instruction": "将条形码对准框内",
+  "success": "成功读取登机牌！",
+  "invalidCode": "该代码不是有效的IATA登机牌。",
+  "demoDisabled": "扫描仪在演示模式下不可用。"
   },
   "share": {
     "downloaded": "图像已下载。",

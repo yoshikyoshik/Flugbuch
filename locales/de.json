@@ -614,9 +614,11 @@
     "desc1": "Kein 15-Flüge-Limit mehr.",
     "desc2": "Interaktive 3D-Reisehistorie.",
     "desc3": "Speichere Erinnerungen & erstelle Bücher.",
+    "desc4": "Scanne Bordkarten in wenigen Sekunden.",
     "feature1": "Unbegrenzte Flüge",
     "feature2": "Interaktiver 3D-Globus",
     "feature3": "Foto-Uploads & PDF-Export",
+    "feature4": "Bordkarten scannen",
     "googlePlayConflictDesc": "Bitte verwalten Sie Ihr Abonnement in der Android-App.",
     "googlePlayConflictTitle": "Sie haben ein aktives App-Abonnement (Google Play).",
     "loadStat": "Lade Status...",
@@ -709,7 +711,8 @@
   "noPermission": "Kamerazugriff verweigert.",
   "instruction": "Richte den Barcode im Rahmen aus",
   "success": "Bordkarte erfolgreich ausgelesen!",
-  "invalidCode": "Code ist keine gültige IATA-Bordkarte."
+  "invalidCode": "Code ist keine gültige IATA-Bordkarte.",
+  "demoDisabled": "Der Scanner ist im Demo-Modus nicht verfügbar."
   },
   "share": {
     "downloaded": "Bild wurde heruntergeladen.",

@@ -614,9 +614,11 @@
     "desc1": "Se acabaron los límites de 15 vuelos.",
     "desc2": "Historial de viaje en 3D interactivo.",
     "desc3": "Guarda recuerdos y crea libros.",
+    "desc4": "Escanea tarjetas de embarque en segundos.",
     "feature1": "Vuelos Ilimitados",
     "feature2": "Globo 3D Interactivo",
     "feature3": "Subida de Fotos y Exp. a PDF",
+    "feature4": "Escanear tarjetas de embarque",
     "googlePlayConflictDesc": "Por favor, gestiona tu suscripción en la app de Android.",
     "googlePlayConflictTitle": "Tienes una suscripción activa de aplicación (Google Play).",
     "loadStat": "Cargando Estado...",
@@ -701,6 +703,16 @@
     "noButton": "No, gracias",
     "title": "¿Te gusta AvioSphere?",
     "yesButton": "¡Sí, me encantaría! ⭐"
+  },
+  "scanner": {
+  "title": "Escanear tarjeta de embarque",
+  "subtitle": "Capturar código QR o de barras con la cámara",
+  "onlyMobile": "El escáner solo está disponible en la aplicación móvil.",
+  "noPermission": "Acceso a la cámara denegado.",
+  "instruction": "Alinea el código de barras en el marco",
+  "success": "¡Tarjeta de embarque leída con éxito!",
+  "invalidCode": "El código no es una tarjeta de embarque IATA válida.",
+  "demoDisabled": "El escáner no está disponible en modo demo."
   },
   "share": {
     "downloaded": "La imagen ha sido descargada.",

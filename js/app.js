@@ -2812,11 +2812,27 @@ function parseIataBarcode(barcode) {
  * Startet den Kamera-Scanner
  */
 window.startBoardingPassScanner = async function() {
+    // 1. Demo-Modus Check
     if (typeof isDemoMode !== 'undefined' && isDemoMode) {
-        showMessage("Demo-Modus", "Der Scanner ist im Demo-Modus nicht verfügbar.", "info");
+        showMessage(
+            getTranslation("demo.demoModus") || "Demo-Modus", 
+            getTranslation("scanner.demoDisabled") || "Der Scanner ist im Demo-Modus nicht verfügbar.", 
+            "info"
+        );
         return;
     }
 
+    // --- 2. NEU: PRO-ABO CHECK ---
+    if (typeof currentUserSubscription !== 'undefined' && currentUserSubscription !== "pro") {
+        // Öffnet sofort das schöne Premium-Upgrade-Fenster!
+        if (typeof openPremiumModal === 'function') {
+            openPremiumModal(); 
+        }
+        return;
+    }
+    // -----------------------------
+
+    // 3. Native App Check
     if (typeof Capacitor === 'undefined' || !Capacitor.isNativePlatform()) {
         showMessage(getTranslation("toast.infoTitle") || "Hinweis", getTranslation("scanner.onlyMobile") || "Der Scanner ist nur in der mobilen App verfügbar.", "info");
         return;

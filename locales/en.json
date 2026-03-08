@@ -614,9 +614,11 @@
     "desc1": "No more 15-flight limit.",
     "desc2": "Interactive 3D travel history.",
     "desc3": "Save memories & create books.",
+    "desc4": "Scan boarding passes in seconds.",
     "feature1": "Unlimited Flights",
     "feature2": "Interactive 3D Globe",
     "feature3": "Photo Uploads & PDF Export",
+    "feature4": "Scan boarding passes",
     "googlePlayConflictDesc": "Please manage your subscription in the Android app.",
     "googlePlayConflictTitle": "You have an active app subscription (Google Play).",
     "loadStat": "Loading Status...",
@@ -709,7 +711,8 @@
   "noPermission": "Camera access denied.",
   "instruction": "Align the barcode within the frame",
   "success": "Boarding pass successfully read!",
-  "invalidCode": "Code is not a valid IATA boarding pass."
+  "invalidCode": "Code is not a valid IATA boarding pass.",
+  "demoDisabled": "The scanner is not available in demo mode."
   },
   "share": {
     "downloaded": "Image has been downloaded.",
