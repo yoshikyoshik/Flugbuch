@@ -1660,14 +1660,13 @@ async function handleImport(event) {
     try {
       const content = e.target.result;
       let flightsToImport = [];
-      let importedTrips = []; // ✅ NEU: Liste der Reisen aus JSON
+      let importedTrips = [];
 
       // 1. PARSEN
       try {
         const jsonContent = JSON.parse(content);
         if (jsonContent.flights && Array.isArray(jsonContent.flights)) {
             flightsToImport = jsonContent.flights;
-            // Falls JSON Trips enthält, merken wir uns die
             if (jsonContent.trips && Array.isArray(jsonContent.trips)) {
                 importedTrips = jsonContent.trips;
             }
@@ -1681,68 +1680,120 @@ async function handleImport(event) {
       }
 
       if (!flightsToImport || flightsToImport.length === 0) {
-        throw new Error(getTranslation("import.errorNoFlights") || "Keine Flüge.");
+        throw new Error(getTranslation("import.errorNoFlights") || "Keine Flüge gefunden.");
       }
 
       const { data: userData } = await supabaseClient.auth.getUser();
       const userId = userData.user.id;
 
-      // 2. DATEN AUFBEREITEN
-      const cleanFlights = flightsToImport.map(f => {
-        // Foto Logik (wie gehabt) ...
+      // 2. DATEN AUFBEREITEN & ENRICHMENT (Die Magie passiert hier!)
+      const cleanFlights = [];
+      
+      for (const f of flightsToImport) {
+        // Foto Logik
         let parsedPhotos = [];
-        if (f.photo_url) { /* ... dein Foto Code ... */ 
+        if (f.photo_url) {
              if (Array.isArray(f.photo_url)) parsedPhotos = f.photo_url;
              else if (typeof f.photo_url === 'string' && f.photo_url.startsWith("[")) {
                  try { parsedPhotos = JSON.parse(f.photo_url.replace(/'/g, '"')); } catch(e){}
              } else if (f.photo_url.startsWith("http")) parsedPhotos = [f.photo_url];
         }
 
-        // ✅ TRIP NAME ERMITTELN
-        // CSV hat 'trip_name', JSON hat oft 'trips: { name: ... }'
         let tripName = "";
         if (f.trip_name) tripName = f.trip_name;
         else if (f.trips && f.trips.name) tripName = f.trips.name;
 
-        return {
+        // Basis-Werte sichern
+        let depCode = f.departure ? f.departure.toUpperCase() : "";
+        let arrCode = f.arrival ? f.arrival.toUpperCase() : "";
+        let distance = f.distance ? parseInt(f.distance) : 0;
+        let time = f.time || "";
+        let flightClass = f.class || "Economy";
+        let co2_kg = f.co2_kg ? parseFloat(f.co2_kg) : 0;
+        
+        let depLat = f.depLat ? parseFloat(f.depLat) : null;
+        let depLon = f.depLon ? parseFloat(f.depLon) : null;
+        let arrLat = f.arrLat ? parseFloat(f.arrLat) : null;
+        let arrLon = f.arrLon ? parseFloat(f.arrLon) : null;
+        let depName = f.depName || "";
+        let arrName = f.arrName || "";
+
+        // 🚨 MISSING DATA ENRICHMENT: Fehlen Daten? Wir berechnen sie neu!
+        if (distance === 0 || !depLat || !arrLat) {
+            let depAirport = typeof findAirport === 'function' ? findAirport(depCode) : null;
+            let arrAirport = typeof findAirport === 'function' ? findAirport(arrCode) : null;
+
+            // API Fallback, falls der Flughafen nicht im Offline-Cache ist
+            if (!depAirport && typeof window.fetchExternalAirport === 'function') {
+                const res = await window.fetchExternalAirport(depCode);
+                if (res && res.length > 0) depAirport = res[0];
+            }
+            if (!arrAirport && typeof window.fetchExternalAirport === 'function') {
+                const res = await window.fetchExternalAirport(arrCode);
+                if (res && res.length > 0) arrAirport = res[0];
+            }
+
+            if (depAirport && arrAirport) {
+                // Koordinaten & Namen auffüllen
+                if (!depLat) depLat = depAirport.lat;
+                if (!depLon) depLon = depAirport.lon;
+                if (!arrLat) arrLat = arrAirport.lat;
+                if (!arrLon) arrLon = arrAirport.lon;
+                if (!depName) depName = depAirport.name;
+                if (!arrName) arrName = arrAirport.name;
+
+                // Distanz berechnen
+                if (distance === 0 && typeof calculateDistance === 'function') {
+                    distance = Math.round(calculateDistance(depLat, depLon, arrLat, arrLon));
+                }
+            }
+        }
+
+        // Zeit berechnen (falls fehlend)
+        if (time === "" && distance > 0 && typeof estimateFlightTime === 'function') {
+            time = estimateFlightTime(distance);
+        }
+
+        // CO2 berechnen (falls fehlend)
+        if (co2_kg === 0 && distance > 0 && typeof calculateCO2 === 'function') {
+            co2_kg = calculateCO2(distance, flightClass);
+        }
+
+        // Flug dem finalen Array hinzufügen
+        cleanFlights.push({
             user_id: userId,
-            flight_id: f.flight_id ? parseInt(f.flight_id) : (new Date().getTime() + Math.floor(Math.random()*1000)),
+            flight_id: f.flight_id ? parseInt(f.flight_id) : (new Date().getTime() + Math.floor(Math.random()*10000)),
             date: f.date,
             flightNumber: f.flightNumber || f.flight_number || "",
-            departure: f.departure,
-            arrival: f.arrival,
-            // ... alle anderen Felder ...
-            airline: f.airline,
+            departure: depCode,
+            arrival: arrCode,
+            airline: f.airline || "",
             airline_logo: f.airline_logo || null,
             aircraftType: f.aircraftType || f.aircraft || "",
             registration: f.registration || "",
-            time: f.time || "",
-            distance: f.distance ? parseInt(f.distance) : 0,
+            time: time,
+            distance: distance,
             notes: f.notes || f.note || "",
-            class: f.class || "Economy",
+            class: flightClass,
+            co2_kg: co2_kg,
             price: f.price ? parseFloat(f.price) : null,
             currency: f.currency || null,
-            depLat: f.depLat ? parseFloat(f.depLat) : null,
-            depLon: f.depLon ? parseFloat(f.depLon) : null,
-            arrLat: f.arrLat ? parseFloat(f.arrLat) : null,
-            arrLon: f.arrLon ? parseFloat(f.arrLon) : null,
-            depName: f.depName || "",
-            arrName: f.arrName || "",
+            depLat: depLat,
+            depLon: depLon,
+            arrLat: arrLat,
+            arrLon: arrLon,
+            depName: depName,
+            arrName: arrName,
             photo_url: parsedPhotos,
-            
-            // WICHTIG: Wir speichern den NAMEN temporär im Objekt, 
-            // um ihn später in executeImport in eine ID umzuwandeln
             _tempTripName: tripName 
-        };
-      });
+        });
+      }
 
-      // Wir übergeben auch die importierten Trips (aus JSON) an die nächste Funktion
+      // 3. LIMIT LOGIK (Pro/Free)
       const originalCount = cleanFlights.length;
       let finalFlightsToImport = cleanFlights;
 
-      // 🚨 PRO/FREE LIMIT LOGIK
-      if (currentUserSubscription !== "pro" && originalCount > 15) {
-          // Wir sortieren sicherheitshalber nach Datum (neueste zuerst), bevor wir abschneiden
+      if (typeof currentUserSubscription !== 'undefined' && currentUserSubscription !== "pro" && originalCount > 15) {
           finalFlightsToImport.sort((a, b) => new Date(b.date) - new Date(a.date));
           finalFlightsToImport = finalFlightsToImport.slice(0, 15);
       }
@@ -1757,8 +1808,9 @@ async function handleImport(event) {
         "error"
       );
     }
-    event.target.value = '';
+    event.target.value = ''; // Input zurücksetzen
   };
+  
   reader.readAsText(file);
 }
 
