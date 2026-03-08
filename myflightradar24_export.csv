@@ -1,0 +1,4 @@
+Date,Flight number,From,To,Departure time,Arrival time,Airline,Aircraft,Seat,Class,Reason,Registration,Note
+2023-05-12,LH400,FRA,JFK,10:30,13:05,Lufthansa,Boeing 747-8,3A,Business,Leisure,D-ABYA,Great flight
+2023-08-20,BA990,LHR,TXL,08:15,11:05,British Airways,Airbus A320,12F,Economy,Business,G-EUYW,Delayed
+2024-01-15,UA1543,SFO,EWR,13:00,21:30,United Airlines,Boeing 737 MAX 9,21C,Economy,Leisure,N37510,

@@ -293,10 +293,14 @@
                 </a>
                 <label
                   for="import-file-input"
-                  data-i18n="burgerMenu.import"
-                  class="block px-4 py-2 text-sm text-red-500 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
+                  class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer group"
                 >
-                  Daten Importieren (JSON)...
+                  <div class="text-sm font-bold text-red-500 dark:text-red-400 group-hover:text-red-600 dark:group-hover:text-red-300 transition-colors" data-i18n="burgerMenu.import">
+                    Daten importieren
+                  </div>
+                  <div class="text-[10px] leading-tight text-gray-500 dark:text-gray-400 mt-0.5" data-i18n="burgerMenu.importSub">
+                    JSON, CSV (Flightradar24, App in the Air)
+                  </div>
                 </label>
                 <input
                   type="file"
@@ -384,9 +388,21 @@
                 data-i18n="form.logNewFlight"
                 class="text-gray-500 dark:text-gray-400 mb-8"
               >
-                Wählen Sie einen Flughafen aus der Liste oder geben Sie einen
-                Code/Namen manuell ein.
+                Neuen Flug loggen
               </p>
+
+              <div id="import-promo-container" class="relative mt-6 mb-8">
+    
+                  <button onclick="dismissImportPromo(event)" class="absolute -top-3 -right-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 rounded-full w-8 h-8 flex items-center justify-center shadow-md z-10 transition-colors" title="Ausblenden">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                  </button>
+
+                  <button onclick="document.getElementById('import-file-input').click()" class="w-full p-5 border-2 border-dashed border-indigo-300 bg-indigo-50 dark:bg-indigo-900/30 dark:border-indigo-700 rounded-xl hover:bg-indigo-100 dark:hover:bg-indigo-800/50 transition flex flex-col items-center justify-center gap-2 group">
+                      <span class="text-3xl group-hover:scale-110 transition-transform duration-300">📦</span>
+                      <span class="font-bold text-indigo-700 dark:text-indigo-400 text-center text-sm md:text-base" data-i18n="import.promoTitle">Wechselst du von MyFlightradar24 oder App in the Air?</span>
+                      <span class="text-xs text-indigo-500 dark:text-indigo-300 text-center px-4" data-i18n="import.promoSub">Lade deinen CSV-Export hoch. Wir erkennen das Format automatisch!</span>
+                  </button>
+              </div>
 
               <details
                 class="bg-slate-50/50 dark:bg-slate-800/50 p-6 rounded-2xl mb-8 shadow-sm border border-slate-200 dark:border-slate-700 group transition-all duration-300"

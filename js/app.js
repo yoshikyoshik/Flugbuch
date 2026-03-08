@@ -1737,7 +1737,17 @@ async function handleImport(event) {
       });
 
       // Wir übergeben auch die importierten Trips (aus JSON) an die nächste Funktion
-      showImportDecisionModal(cleanFlights, importedTrips);
+      const originalCount = cleanFlights.length;
+      let finalFlightsToImport = cleanFlights;
+
+      // 🚨 PRO/FREE LIMIT LOGIK
+      if (currentUserSubscription !== "pro" && originalCount > 15) {
+          // Wir sortieren sicherheitshalber nach Datum (neueste zuerst), bevor wir abschneiden
+          finalFlightsToImport.sort((a, b) => new Date(b.date) - new Date(a.date));
+          finalFlightsToImport = finalFlightsToImport.slice(0, 15);
+      }
+
+      showImportDecisionModal(finalFlightsToImport, importedTrips, originalCount);
 
     } catch (err) {
       console.error(err);
@@ -1755,16 +1765,37 @@ async function handleImport(event) {
 // app.js - showImportDecisionModal (KORRIGIERT)
 
 // WICHTIG: Achte auf 'importedTrips = []' in der Klammer!
-function showImportDecisionModal(flightsData, importedTrips = []) {
+function showImportDecisionModal(flightsData, importedTrips = [], originalCount = 0) {
   const title = getTranslation("import.modalTitle") || "Import Optionen";
   const bodyTpl = getTranslation("import.modalBody") || "Gefunden: {count} Flüge.";
-  const bodyText = bodyTpl.replace("{count}", flightsData.length);
+  
+  // Wir zeigen die ECHTE Anzahl gefundener Flüge an
+  const displayCount = originalCount > 0 ? originalCount : flightsData.length;
+  const bodyText = bodyTpl.replace("{count}", displayCount);
+
+  // Upsell Banner, wenn Flüge (wegen Free) abgeschnitten wurden
+  let upsellHtml = "";
+  if (originalCount > flightsData.length) {
+      upsellHtml = `
+        <div class="mt-4 p-4 bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 dark:border-yellow-800 dark:from-yellow-900/30 dark:to-orange-900/30 rounded-lg">
+            <p class="text-sm text-yellow-800 dark:text-yellow-300 font-medium flex items-start gap-2">
+                <span class="text-lg">⚠️</span> 
+                <span data-i18n="import.upsellWarning">Du bist im <b>Free-Tarif</b>. Es werden nur die neuesten 15 Flüge importiert.</span>
+            </p>
+            <button onclick="closeInfoModal(); openPremiumModal()" class="mt-3 w-full py-2 bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-extrabold rounded-md shadow-sm transition transform hover:scale-[1.02]">
+                ${(getTranslation("import.upsellButton") || "🚀 PRO freischalten für alle {count} Flüge!").replace("{count}", originalCount)}
+            </button>
+        </div>
+      `;
+  }
 
   const content = `
     <div class="space-y-4">
       <p class="text-gray-700 dark:text-gray-300">
         ${bodyText}
       </p>
+      
+      ${upsellHtml}
 
       <div class="grid grid-cols-1 gap-3 mt-4">
         <button id="btn-import-replace" class="w-full p-4 border border-red-200 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:border-red-800 rounded-lg text-left group transition">
@@ -1888,79 +1919,6 @@ async function executeImport(flightsData, mode, importedTripsSource = []) {
     console.error("Datenbank Fehler:", err);
     showMessage(getTranslation("import.errorTitle") || "Fehler", (getTranslation("import.saveError") || "Fehler: ") + err.message, "error");
   }
-}
-
-// app.js - parseCSV (ROBUST)
-
-function parseCSV(csvText) {
-  const lines = csvText.split(/\r?\n/).filter(line => line.trim() !== '');
-  if (lines.length === 0) return [];
-
-  const separator = lines[0].includes(";") ? ";" : ",";
-  
-  // Header säubern: Anführungszeichen und Leerzeichen weg
-  const headers = lines[0].split(separator).map(h => h.trim().replace(/^"|"$/g, ''));
-
-  const result = [];
-
-  for (let i = 1; i < lines.length; i++) {
-    const currentLine = lines[i];
-    // Einfacherer, robuster Split für CSV (ignoriert Semikolons in Quotes ist hier komplex, 
-    // aber für Standard-Export reicht oft Split + Replace)
-    
-    // Wir nutzen hier eine Logik, die Anführungszeichen am Anfang/Ende jedes Werts entfernt
-    // und doppelte Anführungszeichen ("") zu einfachen (") macht.
-    const rowData = currentLine.split(separator).map(v => {
-        let val = v.trim();
-        if (val.startsWith('"') && val.endsWith('"')) {
-            val = val.slice(1, -1);
-        }
-        return val.replace(/""/g, '"');
-    });
-
-    if (rowData.length === headers.length) {
-      const obj = {};
-      headers.forEach((header, index) => {
-        const val = rowData[index];
-        const h = header.toLowerCase(); // Case-insensitive Vergleich
-
-        // Standard Felder
-        if (h === 'date') obj.date = val;
-        if (h.includes('departure') || h === 'dep' || h === 'depcode') obj.departure = val;
-        if (h.includes('arrival') || h === 'arr' || h === 'arrcode') obj.arrival = val;
-        if (h.includes('flightnumber') || h === 'flight_number') obj.flightNumber = val;
-        if (h === 'airline') obj.airline = val;
-        if (h === 'airline_logo') obj.airline_logo = val;
-        if (h.includes('aircraft')) obj.aircraftType = val;
-        if (h.includes('reg')) obj.registration = val;
-        if (h === 'time' || h === 'duration') obj.time = val;
-        if (h === 'distance') obj.distance = val;
-        if (h === 'notes' || h === 'note') obj.notes = val;
-        if (h === 'class') obj.class = val;
-        if (h === 'price') obj.price = val;
-        if (h === 'currency') obj.currency = val;
-        
-        // Tech Felder
-        if (header === 'depLat') obj.depLat = val;
-        if (header === 'depLon') obj.depLon = val;
-        if (header === 'arrLat') obj.arrLat = val;
-        if (header === 'arrLon') obj.arrLon = val;
-        if (header === 'depName') obj.depName = val;
-        if (header === 'arrName') obj.arrName = val;
-        if (header === 'photo_url') obj.photo_url = val;
-        if (header === 'flight_id') obj.flight_id = val;
-
-        // ✅ Trip Name (sicher erkennen)
-        if (header === 'trip_name' || header === 'trip' || header === 'reise') {
-            obj.trip_name = val;
-            // Wichtig für executeImport Logik:
-            obj._tempTripName = val; 
-        }
-      });
-      result.push(obj);
-    }
-  }
-  return result;
 }
 
 // AUTH LOGIC
@@ -2109,7 +2067,7 @@ function prefillReturnFlight(departureIata, arrivalIata) {
     .scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
-// app.js - parseCSV (FINAL & KORRIGIERT FÜR DEINEN EXPORT)
+// app.js - parseCSV (FINAL, INTELLIGENT & KORRIGIERT FÜR ALLE EXPORTE)
 
 function parseCSV(csvText) {
   // BOM entfernen, falls vorhanden (Excel-Artefakt)
@@ -2119,7 +2077,7 @@ function parseCSV(csvText) {
   
   if (lines.length < 2) return [];
 
-  // Trennzeichen-Erkennung
+  // Trennzeichen-Erkennung (; oder ,)
   const firstLine = lines[0];
   const semicolonCount = (firstLine.match(/;/g) || []).length;
   const commaCount = (firstLine.match(/,/g) || []).length;
@@ -2140,41 +2098,43 @@ function parseCSV(csvText) {
         // Wert säubern (Anführungszeichen entfernen)
         let val = values[index] ? values[index].trim().replace(/^"|"$/g, '').replace(/"/g, '') : "";
         
-        // --- BASIS DATEN ---
-        if (header.includes('date') || header === 'datum') obj.date = val;
+        // --- BASIS DATEN (Unterstützt AvioSphere, MyFlightradar24 & App In The Air) ---
+        if (header === 'date' || header === 'flight date' || header === 'datum') obj.date = val;
         
-        // WICHTIG: Striktere Prüfung, damit wir Departure-Code nicht mit Departure-Name verwechseln
-        if (header === 'departure' || header === 'start') obj.departure = val;
-        if (header === 'arrival' || header === 'ziel') obj.arrival = val;
+        // WICHTIG: From/To für MyFlightradar24 hinzugefügt!
+        if (header === 'departure' || header === 'from' || header === 'start') obj.departure = val;
+        if (header === 'arrival' || header === 'to' || header === 'ziel') obj.arrival = val;
         
-        if (header.includes('flightnumber') || header.includes('flight_number')) obj.flightNumber = val;
+        if (header.includes('flightnumber') || header.includes('flight number') || header === 'flight' || header === 'flight_number') obj.flightNumber = val;
         if (header === 'airline') obj.airline = val;
         if (header === 'airline_logo') obj.airline_logo = val;
-        if (header.includes('aircraft') || header.includes('type')) obj.aircraftType = val;
-        if (header === 'registration') obj.registration = val;
+        if (header.includes('aircraft') || header === 'aircraft type' || header.includes('type')) obj.aircraftType = val;
+        if (header === 'registration' || header === 'reg') obj.registration = val;
         if (header === 'time' || header === 'duration') obj.time = val;
         if (header === 'distance') obj.distance = val;
-        if (header === 'class') obj.class = val;
+        if (header === 'class' || header === 'cabin') obj.class = val;
         if (header.includes('note')) obj.notes = val;
         if (header === 'price') obj.price = val;
         if (header === 'currency') obj.currency = val;
 
-        // --- 🚨 WICHTIG: KOORDINATEN & NAMEN (Das hat gefehlt!) ---
-        // Deine CSV Headers sind: depLat, depLon, arrLat, arrLon ...
+        // --- TECH & GEO DATEN ---
         if (header === 'deplat') obj.depLat = val;
         if (header === 'deplon') obj.depLon = val;
         if (header === 'arrlat') obj.arrLat = val;
         if (header === 'arrlon') obj.arrLon = val;
-        
         if (header === 'depname') obj.depName = val;
         if (header === 'arrname') obj.arrName = val;
 
-        // --- 🚨 WICHTIG: FOTOS & ID ---
+        // --- FOTOS & METADATEN ---
         if (header === 'photo_url') obj.photo_url = val; 
         if (header === 'flight_id') obj.flight_id = val; 
+        if (header === 'trip_name' || header === 'trip' || header === 'reise') {
+            obj.trip_name = val;
+            obj._tempTripName = val; 
+        }
     });
 
-    // Validierung: Mindestens Datum und Route muss da sein
+    // Validierung: Mindestens Datum und Route (Start & Ziel) müssen da sein
     if (obj.date && obj.departure && obj.arrival) {
         result.push(obj);
     }
@@ -2186,6 +2146,14 @@ function parseCSV(csvText) {
 document.addEventListener("DOMContentLoaded", async function () {
   const preferredLanguage = localStorage.getItem("preferredLanguage") || "de";
   await setLanguage(preferredLanguage);
+
+  // --- Check: Hat der User die Import-Werbung weggedrückt? ---
+  if (localStorage.getItem('hideImportPromo') === 'true') {
+      const promoContainer = document.getElementById('import-promo-container');
+      if (promoContainer) {
+          promoContainer.style.display = 'none';
+      }
+  }
 
   // FÜGE DIESEN BLOCK HIER EIN:
   const burgerBtn = document.getElementById('burger-menu-btn');
@@ -2945,3 +2913,15 @@ function cleanupScannerUI() {
         scannerUI.remove();
     }
 }
+
+window.dismissImportPromo = function(event) {
+    if (event) event.stopPropagation(); // Verhindert, dass der Klick den Import auslöst
+    
+    const container = document.getElementById('import-promo-container');
+    if (container) {
+        container.style.display = 'none'; // Kasten sofort verstecken
+    }
+    
+    // Im lokalen Speicher des Geräts hinterlegen, dass der User das nicht mehr sehen will
+    localStorage.setItem('hideImportPromo', 'true');
+};

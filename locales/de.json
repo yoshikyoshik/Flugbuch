@@ -256,7 +256,8 @@
     "exportJSON": "Daten Exportieren (JSON)",
     "flights": "Flüge",
     "help": "Hilfe",
-    "import": "Daten Importieren (JSON, CSV)...",
+    "import": "Daten importieren",
+    "importSub": "JSON, CSV (auch Flightradar24, App in the Air)",
     "importJSON": "Daten Importieren (JSON)...",
     "logbook": "Logbuch",
     "logout": "Abmelden",
@@ -462,7 +463,11 @@
     "successReplace": "Liste komplett ersetzt ({count} Flüge).",
     "successTitle": "Import erfolgreich",
     "wait": "Bitte warten.",
-    "writing": "Daten werden geschrieben."
+    "writing": "Daten werden geschrieben.",
+    "upsellWarning": "Du bist im <b>Free-Tarif</b>. Es werden nur die neuesten 15 Flüge importiert.",
+    "upsellButton": "🚀 PRO freischalten für alle {count} Flüge!",
+    "promoTitle": "Wechselst du von MyFlightradar24 oder App in the Air?",
+    "promoSub": "Lade deinen CSV-Export hoch. Wir erkennen das Format automatisch!"
   },
   "landing": {
     "AcceptingRegPrivacy": "Datenschutz",
