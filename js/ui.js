@@ -1944,11 +1944,14 @@ async function shareImageBase64(dataURL, filenamePrefix = "aviosphere_share") {
                 throw new Error("Plugins fehlen.");
             }
 
-            // A) Base64 Header entfernen
+            // A) Base64 Header entfernen und Dateityp dynamisch erkennen
+            const mimeType = dataURL.split(';')[0].split(':')[1]; 
+            const ext = mimeType === 'image/jpeg' ? '.jpg' : '.png';
             const base64Data = dataURL.split(',')[1];
-            const fileName = `${filenamePrefix}_${new Date().getTime()}.png`;
+            
+            const fileName = `${filenamePrefix}_${new Date().getTime()}${ext}`;
 
-            // B) Datei schreiben
+            // B) Datei schreiben (Das Nadelöhr! Mit JPEG flutscht es hier jetzt durch)
             const result = await Filesystem.writeFile({
                 path: fileName,
                 data: base64Data,
@@ -1973,9 +1976,14 @@ async function shareImageBase64(dataURL, filenamePrefix = "aviosphere_share") {
             }
         }
     } else {
-        // Web Fallback
+        // Web Fallback (für den PC)
+        
+        // Dateiendung dynamisch auslesen (.jpg oder .png)
+        const mimeType = dataURL.split(';')[0].split(':')[1]; 
+        const ext = mimeType === 'image/jpeg' ? '.jpg' : '.png';
+        
         const link = document.createElement("a");
-        link.download = `${filenamePrefix}_${new Date().toISOString().slice(0, 10)}.png`;
+        link.download = `${filenamePrefix}_${new Date().toISOString().slice(0, 10)}${ext}`; // Nutzt jetzt die korrekte Endung
         link.href = dataURL;
         document.body.appendChild(link);
         link.click();
@@ -2134,85 +2142,78 @@ async function shareFlightDetailsScreenshot() {
     const scrollArea = modalContent.querySelector('.overflow-y-auto');
     if (!modalContent || !scrollArea) return;
 
-    // 1. UI Aufräumen: Buttons verstecken
+    // 1. UI Aufräumen: Buttons KOMPLETT aus dem DOM nehmen (Android hakt sonst beim Blur-Effekt)
     const actionBtns = document.getElementById('fd-action-buttons');
     const closeBtn = document.getElementById('fd-close-btn');
     
-    if (actionBtns) actionBtns.style.visibility = 'hidden';
-    if (closeBtn) closeBtn.style.visibility = 'hidden';
+    if (actionBtns) actionBtns.style.display = 'none';
+    if (closeBtn) closeBtn.style.display = 'none';
 
-    // Kurzes Feedback
     showMessage(getTranslation("share.prepTitle") || "Moment...", getTranslation("share.prepDesc") || "Bordkarte wird exportiert...", "info");
 
     // 2. PARALLELER BILDER-PROXY (Nur für kleine, fremde Bilder!)
     const images = modalContent.querySelectorAll('img');
     const originalSrcs = new Map();
-    const fetchPromises = []; // Wir laden alles parallel für maximalen Speed
+    const fetchPromises = []; 
 
     for (let img of images) {
-        // Wir filtern strikt: Nur HTTP-Bilder, KEIN localhost, KEINE Supabase-Bilder 
-        // (denn Supabase Bilder haben wir in Schritt 1 schon CORS-sauber geladen!)
-        if (img.src && 
-            img.src.startsWith('http') && 
-            !img.src.includes(window.location.host) &&
-            !img.src.includes('supabase.co')) { 
-
+        if (img.src && img.src.startsWith('http') && !img.src.includes(window.location.host) && !img.src.includes('supabase.co')) { 
             originalSrcs.set(img, img.src);
-
-            // Asynchroner Download-Job
             const proxyJob = (async () => {
                 try {
                     const fetchUrl = `https://corsproxy.io/?url=${encodeURIComponent(img.src)}`;
                     const response = await fetch(fetchUrl);
                     if (!response.ok) throw new Error("Netzwerkfehler");
-                    
                     const blob = await response.blob();
                     const base64 = await new Promise((resolve) => {
                         const reader = new FileReader();
                         reader.onloadend = () => resolve(reader.result);
                         reader.readAsDataURL(blob);
                     });
-                    
                     img.src = base64; 
                 } catch (err) {
-                    console.warn("Proxy übersprungen für:", img.src);
-                    img.crossOrigin = "anonymous"; // Fallback
+                    img.crossOrigin = "anonymous";
                 }
             })();
-            
             fetchPromises.push(proxyJob);
         }
     }
 
-    // Wir warten, bis alle fremden Bilder (Planespotters etc.) geladen sind
     await Promise.all(fetchPromises);
 
-    // 3. Scroll-Limit aufheben
     const originalMaxHeight = modalContent.style.maxHeight;
     const originalOverflow = scrollArea.style.overflowY;
-    
     modalContent.style.maxHeight = 'none';
     scrollArea.style.overflowY = 'visible';
 
+    // 🚀 NEU: Finde heraus, wo wir sind (Handy oder PC?)
+    const isNative = typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform();
+    const isDark = document.documentElement.classList.contains('dark');
+    const bgColor = isDark ? '#111827' : '#f3f4f6'; // gray-900 für dark, gray-100 für light
+
     try {
-        // 4. Screenshot machen
+        // 3. Screenshot machen (mit Performance-Boost)
         const canvas = await html2canvas(modalContent, {
             useCORS: true, 
             allowTaint: false, 
-            backgroundColor: null, 
-            scale: 2 
+            // PC: Transparente Ecken (null) | Handy: Feste Farbe für das JPEG
+            backgroundColor: isNative ? bgColor : null, 
+            scale: window.innerWidth < 768 ? 1 : 2 
         });
 
-        const dataURL = canvas.toDataURL("image/png");
+        // 🚀 DER GAMECHANGER: Dynamisches Format!
+        // Handy = JPG (Winzige Datei, flutscht in Millisekunden durch die Bridge)
+        // PC = PNG (Verlustfreie Qualität mit perfekten Kanten)
+        const dataURL = isNative 
+            ? canvas.toDataURL("image/jpeg", 0.85) 
+            : canvas.toDataURL("image/png");
         
-        // 5. Teilen-Funktion aufrufen
         await shareImageBase64(dataURL, "aviosphere_boardingpass");
 
     } catch (e) {
         console.error("Screenshot Fehler:", e);
         showMessage(getTranslation("toast.errorTitle") || "Fehler", "Konnte Bild nicht erstellen.", "error");
     } finally {
-        // 6. Aufräumen
         modalContent.style.maxHeight = originalMaxHeight;
         scrollArea.style.overflowY = originalOverflow;
         
@@ -2221,7 +2222,8 @@ async function shareFlightDetailsScreenshot() {
             img.removeAttribute('crossOrigin');
         });
         
-        if (actionBtns) actionBtns.style.visibility = 'visible';
-        if (closeBtn) closeBtn.style.visibility = 'visible';
+        // Buttons wieder einblenden
+        if (actionBtns) actionBtns.style.display = 'flex';
+        if (closeBtn) closeBtn.style.display = 'block';
     }
 }
