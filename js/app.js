@@ -1789,16 +1789,14 @@ async function handleImport(event) {
         });
       }
 
-      // 3. LIMIT LOGIK (Pro/Free)
-      const originalCount = cleanFlights.length;
-      let finalFlightsToImport = cleanFlights;
+      // 3. LIMIT LOGIK VORBEREITEN
+      // Wir schneiden hier noch NICHTS ab, sondern holen uns erst den aktuellen Stand der DB!
+      const currentFlights = await getFlights();
+      const currentDbCount = currentFlights.length;
 
-      if (typeof currentUserSubscription !== 'undefined' && currentUserSubscription !== "pro" && originalCount > 15) {
-          finalFlightsToImport.sort((a, b) => new Date(b.date) - new Date(a.date));
-          finalFlightsToImport = finalFlightsToImport.slice(0, 15);
-      }
-
-      showImportDecisionModal(finalFlightsToImport, importedTrips, originalCount);
+      // Wir übergeben ALLE neuen Flüge und den aktuellen DB-Stand an das Modal.
+      // Das Modal entscheidet dann anhand des Klicks (Ersetzen/Hinzufügen), wie hart limitiert wird.
+      showImportDecisionModal(cleanFlights, importedTrips, currentDbCount);
 
     } catch (err) {
       console.error(err);
@@ -1817,51 +1815,70 @@ async function handleImport(event) {
 // app.js - showImportDecisionModal (KORRIGIERT)
 
 // WICHTIG: Achte auf 'importedTrips = []' in der Klammer!
-function showImportDecisionModal(flightsData, importedTrips = [], originalCount = 0) {
+function showImportDecisionModal(incomingFlights, importedTrips = [], currentDbCount = 0) {
+  const incomingCount = incomingFlights.length;
+  const isFree = (typeof currentUserSubscription !== 'undefined' && currentUserSubscription !== "pro");
+
+  // Berechnen, wie viele Flüge bei welcher Aktion maximal erlaubt sind
+  const replaceAllowed = isFree ? Math.min(15, incomingCount) : incomingCount;
+  const availableSlots = isFree ? Math.max(0, 15 - currentDbCount) : incomingCount;
+  const appendAllowed = isFree ? Math.min(availableSlots, incomingCount) : incomingCount;
+
   const title = getTranslation("import.modalTitle") || "Import Optionen";
   const bodyTpl = getTranslation("import.modalBody") || "Gefunden: {count} Flüge.";
-  
-  // Wir zeigen die ECHTE Anzahl gefundener Flüge an
-  const displayCount = originalCount > 0 ? originalCount : flightsData.length;
-  const bodyText = bodyTpl.replace("{count}", displayCount);
+  const bodyText = bodyTpl.replace("{count}", incomingCount);
 
-  // Upsell Banner, wenn Flüge (wegen Free) abgeschnitten wurden
+  // Warn-Banner für Free-Nutzer
   let upsellHtml = "";
-  if (originalCount > flightsData.length) {
+  if (isFree && (incomingCount > replaceAllowed || incomingCount > appendAllowed)) {
       upsellHtml = `
         <div class="mt-4 p-4 bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 dark:border-yellow-800 dark:from-yellow-900/30 dark:to-orange-900/30 rounded-lg">
             <p class="text-sm text-yellow-800 dark:text-yellow-300 font-medium flex items-start gap-2">
                 <span class="text-lg">⚠️</span> 
-                <span data-i18n="import.upsellWarning">Du bist im <b>Free-Tarif</b>. Es werden nur die neuesten 15 Flüge importiert.</span>
+                <span>Du bist im <b>Free-Tarif</b> (Maximal 15 Flüge gesamt).</span>
             </p>
             <button onclick="closeInfoModal(); openPremiumModal()" class="mt-3 w-full py-2 bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-extrabold rounded-md shadow-sm transition transform hover:scale-[1.02]">
-                ${(getTranslation("import.upsellButton") || "🚀 PRO freischalten für alle {count} Flüge!").replace("{count}", originalCount)}
+                🚀 PRO freischalten für alle Flüge!
             </button>
         </div>
       `;
+  }
+
+  // Hinzufügen-Button dynamisch gestalten (Sperren, wenn voll)
+  let appendButtonClass = "w-full p-4 border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/20 dark:border-indigo-800 rounded-lg text-left transition";
+  let appendTitleClass = "font-bold text-indigo-700 dark:text-indigo-400 mb-1 flex items-center";
+  let appendText = (getTranslation("import.optionAppendTitle") || "➕ Hinzufügen") + (isFree ? ` (${appendAllowed} möglich)` : "");
+  let appendDisabled = "";
+
+  if (isFree && appendAllowed <= 0) {
+      appendButtonClass = "w-full p-4 border border-gray-200 bg-gray-50 dark:bg-gray-800 dark:border-gray-700 rounded-lg text-left opacity-50 cursor-not-allowed";
+      appendTitleClass = "font-bold text-gray-500 dark:text-gray-400 mb-1 flex items-center";
+      appendText = "➕ Hinzufügen (Limit erreicht)";
+      appendDisabled = "disabled";
   }
 
   const content = `
     <div class="space-y-4">
       <p class="text-gray-700 dark:text-gray-300">
         ${bodyText}
+        <br><span class="text-sm text-gray-500">Aktuell gespeichert: ${currentDbCount} Flüge.</span>
       </p>
-      
+
       ${upsellHtml}
 
       <div class="grid grid-cols-1 gap-3 mt-4">
         <button id="btn-import-replace" class="w-full p-4 border border-red-200 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:border-red-800 rounded-lg text-left group transition">
           <div class="font-bold text-red-700 dark:text-red-400 mb-1 flex items-center">
-             ${getTranslation("import.optionReplaceTitle") || "⚠️ Alles Ersetzen"}
+             ${getTranslation("import.optionReplaceTitle") || "⚠️ Alles Ersetzen"} ${isFree ? `(Max. ${replaceAllowed})` : ""}
           </div>
           <div class="text-sm text-red-600/80 dark:text-red-400/70">
             ${getTranslation("import.optionReplaceDesc") || "Löscht ALLE deine aktuellen Flüge und ersetzt sie."}
           </div>
         </button>
 
-        <button id="btn-import-append" class="w-full p-4 border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/20 dark:border-indigo-800 rounded-lg text-left transition">
-          <div class="font-bold text-indigo-700 dark:text-indigo-400 mb-1 flex items-center">
-             ${getTranslation("import.optionAppendTitle") || "➕ Hinzufügen"}
+        <button id="btn-import-append" class="${appendButtonClass}" ${appendDisabled}>
+          <div class="${appendTitleClass}">
+             ${appendText}
           </div>
           <div class="text-sm text-indigo-600/80 dark:text-indigo-400/70">
             ${getTranslation("import.optionAppendDesc") || "Fügt neue Flüge unten an."}
@@ -1881,9 +1898,13 @@ function showImportDecisionModal(flightsData, importedTrips = [], originalCount 
   document.getElementById("info-modal-content").innerHTML = content;
   openInfoModal();
 
-  // Hier lag der Fehler: 'importedTrips' muss oben als Parameter existieren
-  document.getElementById("btn-import-replace").onclick = () => executeImport(flightsData, 'replace', importedTrips);
-  document.getElementById("btn-import-append").onclick = () => executeImport(flightsData, 'append', importedTrips);
+  // Wir übergeben das genau ausgerechnete Limit an die Ausführungsfunktion!
+  document.getElementById("btn-import-replace").onclick = () => executeImport(incomingFlights, 'replace', importedTrips, replaceAllowed);
+  
+  const btnAppend = document.getElementById("btn-import-append");
+  if (btnAppend && !appendDisabled) {
+      btnAppend.onclick = () => executeImport(incomingFlights, 'append', importedTrips, appendAllowed);
+  }
 }
 
 // app.js - executeImport (Final & Silent)
@@ -1897,6 +1918,23 @@ async function executeImport(flightsData, mode, importedTripsSource = []) {
   showMessage(getTranslation("import.processing") || "Import läuft...", getTranslation("import.writing") || "Schreibe Daten...", "info");
 
   try {
+    // --- 🚨 NEU: HARTES LIMIT ANWENDEN ---
+    let finalFlightsToProcess = flightsData;
+    
+    // Wenn ein Limit übergeben wurde und wir zu viele Flüge haben
+    if (allowedCount !== null && finalFlightsToProcess.length > allowedCount) {
+        // Sortieren, damit wir die neuesten behalten
+        finalFlightsToProcess.sort((a, b) => new Date(b.date) - new Date(a.date));
+        // Array radikal abschneiden
+        finalFlightsToProcess = finalFlightsToProcess.slice(0, allowedCount);
+    }
+
+    if (finalFlightsToProcess.length === 0 && mode === 'append') {
+        showMessage("Limit erreicht", "Du hast bereits die maximale Anzahl an Flügen gespeichert.", "info");
+        return;
+    }
+    // ------------------------------------
+
     // 1. CLEANUP BEI REPLACE
     if (mode === 'replace') {
       await supabaseClient.from("flights").delete().eq("user_id", userId);
@@ -1904,7 +1942,7 @@ async function executeImport(flightsData, mode, importedTripsSource = []) {
     }
 
     // 2. TRIPS MANAGEN
-    const tripNamesFromFlights = flightsData.map(f => f._tempTripName).filter(n => n);
+    const tripNamesFromFlights = finalFlightsToProcess.map(f => f._tempTripName).filter(n => n);
     const tripNamesFromJSON = importedTripsSource.map(t => t.name).filter(n => n);
     const uniqueTripNames = [...new Set([...tripNamesFromFlights, ...tripNamesFromJSON])];
     
@@ -1935,7 +1973,7 @@ async function executeImport(flightsData, mode, importedTripsSource = []) {
     }
 
     // 3. FLÜGE VORBEREITEN & SÄUBERN
-    const finalFlights = flightsData.map(f => {
+    const finalFlights = finalFlightsToProcess.map(f => {  // <--- Hier auch 'finalFlightsToProcess' nutzen!
         const tripId = f._tempTripName ? tripNameIdMap[f._tempTripName] : null;
         
         // Aufräumen: Alles weg, was nicht in die DB gehört
