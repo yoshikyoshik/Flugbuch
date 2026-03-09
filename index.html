@@ -1800,6 +1800,97 @@
     </div>
   </div>
 </div>
+
+<div id="flight-details-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity duration-300 opacity-0">
+    <div class="bg-white dark:bg-gray-800 rounded-3xl overflow-hidden shadow-2xl w-full max-w-lg relative flex flex-col max-h-[90vh] transform transition-transform duration-300 scale-95" id="fd-modal-content">
+        
+        <div class="relative h-48 sm:h-56 bg-gray-200 dark:bg-gray-700 shrink-0">
+            <img id="fd-hero-img" src="" class="w-full h-full object-cover" alt="Aircraft">
+            <div class="absolute inset-0 bg-gradient-to-t from-gray-900/90 via-gray-900/40 to-transparent"></div>
+            
+            <button id="fd-close-btn" onclick="closeFlightDetails()" class="absolute top-4 left-4 bg-black/30 hover:bg-black/60 text-white rounded-full p-2 backdrop-blur-md transition-colors z-10">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            
+            <div class="absolute top-4 right-4 flex gap-2 z-10" id="fd-action-buttons">
+                <button onclick="shareFlightDetailsScreenshot()" class="bg-black/30 hover:bg-black/60 text-white rounded-full p-2 backdrop-blur-md transition shadow-lg border border-white/20" title="Bordkarte teilen">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path></svg>
+                </button>
+                <button id="fd-edit-btn" class="bg-indigo-600/90 hover:bg-indigo-600 text-white rounded-full p-2 backdrop-blur-md transition shadow-lg border border-indigo-400/30" title="Bearbeiten">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                </button>
+            </div>
+            
+            <div class="absolute bottom-4 left-6 right-6 text-white">
+                <div class="text-xs font-medium uppercase tracking-wider text-gray-300 mb-1" id="fd-date"></div>
+                <div class="text-3xl font-black tracking-tight flex items-center gap-3">
+                    <span id="fd-dep"></span>
+                    <svg class="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                    <span id="fd-arr"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-6 overflow-y-auto custom-scrollbar">
+            <div class="flex items-center justify-between border-b border-gray-100 dark:border-gray-700 pb-4 mb-4">
+                <div class="flex items-center gap-3">
+                    <img id="fd-airline-logo" src="" class="w-10 h-10 object-contain rounded-md hidden bg-white p-1">
+                    <div>
+                        <div class="font-bold text-gray-800 dark:text-gray-100 text-lg leading-tight" id="fd-airline"></div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400" id="fd-flight-number"></div>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <div class="font-bold text-indigo-600 dark:text-indigo-400" id="fd-class"></div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 mb-6">
+                <div class="bg-gray-50 dark:bg-gray-900/50 p-3 rounded-xl border border-gray-100 dark:border-gray-800">
+                    <div class="text-[10px] text-gray-400 uppercase tracking-wide font-bold">Flugzeug</div>
+                    <div class="font-bold text-gray-800 dark:text-gray-200 mt-0.5 text-sm" id="fd-aircraft"></div>
+                </div>
+                <div class="bg-gray-50 dark:bg-gray-900/50 p-3 rounded-xl border border-gray-100 dark:border-gray-800">
+                    <div class="text-[10px] text-gray-400 uppercase tracking-wide font-bold">Registrierung</div>
+                    <div class="font-bold text-gray-800 dark:text-gray-200 mt-0.5 text-sm" id="fd-reg"></div>
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center mb-6 px-2">
+                <div class="text-center">
+                    <div class="font-extrabold text-gray-800 dark:text-gray-200" id="fd-distance"></div>
+                    <div class="text-[10px] text-gray-400 uppercase tracking-wide font-bold mt-1">Distanz</div>
+                </div>
+                <div class="text-center border-l border-r border-gray-200 dark:border-gray-700 px-6">
+                    <div class="font-extrabold text-gray-800 dark:text-gray-200" id="fd-duration"></div>
+                    <div class="text-[10px] text-gray-400 uppercase tracking-wide font-bold mt-1">Flugzeit</div>
+                </div>
+                <div class="text-center">
+                    <div class="font-extrabold text-orange-500" id="fd-co2"></div>
+                    <div class="text-[10px] text-gray-400 uppercase tracking-wide font-bold mt-1">CO₂</div>
+                </div>
+            </div>
+
+            <div id="fd-notes-container" class="mb-6 hidden">
+                <div class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Notizen</div>
+                <p class="text-sm text-gray-600 dark:text-gray-300 italic bg-yellow-50 dark:bg-yellow-900/10 p-3 rounded-lg border-l-4 border-yellow-400" id="fd-notes"></p>
+            </div>
+
+            <div id="fd-user-photos-container" class="hidden pb-2">
+                <div class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3 flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    Meine Fotos
+                </div>
+                <div class="flex gap-3 overflow-x-auto pb-4 custom-scrollbar" id="fd-user-photos">
+                    </div>
+            </div>
+            
+            <div class="text-[9px] text-gray-400 text-center mt-2 hidden" id="fd-planespotters-credit">
+                Titelbild: Planespotters.net / <span id="fd-photographer"></span>
+            </div>
+        </div>
+    </div>
+</div>
 	
   
 

@@ -540,10 +540,10 @@ function showFlightDisambiguationModal(flights) {
       .replace("{number}", flight.flightLogNumber)
       .replace("{date}", flight.date);
 
-    // Klick-Aktion: Ruft die Detailansicht FÜR DIESEN FLUG auf
+    // Klick-Aktion: Ruft die neue digitale Bordkarte auf!
     button.addEventListener("click", () => {
-      showFlightDetailsInModal(flight);
-      // WICHTIG: Die Funktion ändert nur den Inhalt des bereits geöffneten Modals
+      closeInfoModal(); // Altes Listen-Modal schließen
+      viewFlightDetails(flight.id || flight.flight_id); // Neue Bordkarte öffnen
     });
 
     listContainer.appendChild(button);
@@ -780,75 +780,32 @@ window.renderFlights = async function (
                     #${flight.flightLogNumber || "-"}
                 </div>
 
-                <details class="flex-grow group">
-                    <summary class="list-none md:list-item cursor-pointer">
-                        
-                        ${flight.trips && flight.trips.name 
-                            ? `<div class="mb-1">
-                                 <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200 border border-indigo-200 dark:border-indigo-700">
-                                   🏝️ ${flight.trips.name}
-                                 </span>
-                               </div>` 
-                            : ''
-                        }
-                        <p class="text-base md:text-lg font-bold text-indigo-700 dark:text-indigo-400">
-                            ${depName} (${flight.departure}) ➔ ${arrName} (${flight.arrival})
-                        </p>
-                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                            📅 ${flight.date} | ⏱️ ${(flight.time || "").replace("Std.", getTranslation("units.hoursShort") || "Std.").replace("Min.", getTranslation("units.minutesShort") || "Min.")} | 📏 ${flight.distance.toLocaleString("de-DE")} ${getTranslation("achievements.unitKm") || "km"}
-                        </p>
-                        <div class="mt-2 text-sm text-gray-500 dark:text-gray-400 truncate flex items-center gap-2">
-                            ${flight.airline_logo ? `<img src="${flight.airline_logo}" alt="Logo" class="h-5 w-auto object-contain" />` : ''}
-                            <span class="font-medium">${flight.airline || '-'}</span>
-                        </div>
-                        
-                        <p class="text-xs text-gray-400 dark:text-gray-500 mt-1 group-open:hidden">
-                            ${getTranslation("flights.showMore") || "Details anzeigen..."}
-                        </p>
-                        
-                        <p class="text-xs text-gray-400 dark:text-gray-500 mt-1 hidden group-open:block">
-                            ${getTranslation("flights.hideMore") || "Details ausblenden..."}
-                        </p>
-                    </summary>
-
-                    <div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-                        <p class="text-sm font-semibold text-red-600 dark:text-red-400">
-                            ${getTranslation("flights.co2Info").replace(
-                              "{co2}",
-                              flight.co2_kg
-                                ? flight.co2_kg.toLocaleString("de-DE")
-                                : "k.A."
-                            )}
-                        </p>
-                        
-                        <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                              ${getTranslation("flights.flightDetails")
-                                .replace("{flightNumber}", flight.flightNumber || "-")
-                                .replace("{airline}", flight.airline || "-")
-                                .replace("{aircraftType}", flight.aircraftType || "-")
-                              }
-                        </p>
-                        
-                        ${
-                          flight.photo_url && flight.photo_url.length > 0
-                            ? `<div class="mt-2 flex gap-2">${flight.photo_url
-                                .map((url) => `
-                                <a href="${url}" target="_blank">
-                                    <img src="${url}" alt="Flugfoto" class="h-12 w-12 rounded-md object-cover shadow-sm hover:scale-110 transition">
-                                </a>`
-                                ).join("")}
-                               </div>`
-                            : ""
-                        }
-                        ${
-                          flight.notes
-                            ? `<p class="text-xs text-gray-700 dark:text-gray-300 italic mt-2 border-l-2 border-indigo-400 pl-2">
-                                  ${flight.notes}
-                              </p>`
-                            : ""
-                        }
+                <div class="flex-grow cursor-pointer group" onclick="viewFlightDetails(${flight.id})">
+                    
+                    ${flight.trips && flight.trips.name 
+                        ? `<div class="mb-1">
+                             <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200 border border-indigo-200 dark:border-indigo-700">
+                               🏝️ ${flight.trips.name}
+                             </span>
+                           </div>` 
+                        : ''
+                    }
+                    <p class="text-base md:text-lg font-bold text-indigo-700 dark:text-indigo-400 group-hover:text-indigo-500 transition-colors">
+                        ${depName} (${flight.departure}) ➔ ${arrName} (${flight.arrival})
+                    </p>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                        📅 ${flight.date} | ⏱️ ${(flight.time || "").replace("Std.", getTranslation("units.hoursShort") || "Std.").replace("Min.", getTranslation("units.minutesShort") || "Min.")} | 📏 ${flight.distance.toLocaleString("de-DE")} ${getTranslation("achievements.unitKm") || "km"}
+                    </p>
+                    <div class="mt-2 text-sm text-gray-500 dark:text-gray-400 truncate flex items-center gap-2">
+                        ${flight.airline_logo ? `<img src="${flight.airline_logo}" alt="Logo" class="h-5 w-auto object-contain" />` : ''}
+                        <span class="font-medium">${flight.airline || '-'}</span>
                     </div>
-                </details>
+                    
+                    <p class="text-xs text-indigo-500 dark:text-indigo-400 mt-3 font-semibold flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                        Bordkarte anzeigen...
+                    </p>
+                </div>
             </div>
             
             ${actionButtonsHtml}
@@ -2168,3 +2125,103 @@ window.toggleAuthSheet = function(show) {
         if(errorText) errorText.textContent = "";
     }
 };
+
+/**
+ * Erstellt einen Screenshot der digitalen Bordkarte (Tagebuch) und teilt diesen.
+ */
+async function shareFlightDetailsScreenshot() {
+    const modalContent = document.getElementById('fd-modal-content');
+    const scrollArea = modalContent.querySelector('.overflow-y-auto');
+    if (!modalContent || !scrollArea) return;
+
+    // 1. UI Aufräumen: Buttons verstecken
+    const actionBtns = document.getElementById('fd-action-buttons');
+    const closeBtn = document.getElementById('fd-close-btn');
+    
+    if (actionBtns) actionBtns.style.visibility = 'hidden';
+    if (closeBtn) closeBtn.style.visibility = 'hidden';
+
+    // Kurzes Feedback
+    showMessage(getTranslation("share.prepTitle") || "Moment...", getTranslation("share.prepDesc") || "Bordkarte wird exportiert...", "info");
+
+    // 2. PARALLELER BILDER-PROXY (Nur für kleine, fremde Bilder!)
+    const images = modalContent.querySelectorAll('img');
+    const originalSrcs = new Map();
+    const fetchPromises = []; // Wir laden alles parallel für maximalen Speed
+
+    for (let img of images) {
+        // Wir filtern strikt: Nur HTTP-Bilder, KEIN localhost, KEINE Supabase-Bilder 
+        // (denn Supabase Bilder haben wir in Schritt 1 schon CORS-sauber geladen!)
+        if (img.src && 
+            img.src.startsWith('http') && 
+            !img.src.includes(window.location.host) &&
+            !img.src.includes('supabase.co')) { 
+
+            originalSrcs.set(img, img.src);
+
+            // Asynchroner Download-Job
+            const proxyJob = (async () => {
+                try {
+                    const fetchUrl = `https://corsproxy.io/?url=${encodeURIComponent(img.src)}`;
+                    const response = await fetch(fetchUrl);
+                    if (!response.ok) throw new Error("Netzwerkfehler");
+                    
+                    const blob = await response.blob();
+                    const base64 = await new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => resolve(reader.result);
+                        reader.readAsDataURL(blob);
+                    });
+                    
+                    img.src = base64; 
+                } catch (err) {
+                    console.warn("Proxy übersprungen für:", img.src);
+                    img.crossOrigin = "anonymous"; // Fallback
+                }
+            })();
+            
+            fetchPromises.push(proxyJob);
+        }
+    }
+
+    // Wir warten, bis alle fremden Bilder (Planespotters etc.) geladen sind
+    await Promise.all(fetchPromises);
+
+    // 3. Scroll-Limit aufheben
+    const originalMaxHeight = modalContent.style.maxHeight;
+    const originalOverflow = scrollArea.style.overflowY;
+    
+    modalContent.style.maxHeight = 'none';
+    scrollArea.style.overflowY = 'visible';
+
+    try {
+        // 4. Screenshot machen
+        const canvas = await html2canvas(modalContent, {
+            useCORS: true, 
+            allowTaint: false, 
+            backgroundColor: null, 
+            scale: 2 
+        });
+
+        const dataURL = canvas.toDataURL("image/png");
+        
+        // 5. Teilen-Funktion aufrufen
+        await shareImageBase64(dataURL, "aviosphere_boardingpass");
+
+    } catch (e) {
+        console.error("Screenshot Fehler:", e);
+        showMessage(getTranslation("toast.errorTitle") || "Fehler", "Konnte Bild nicht erstellen.", "error");
+    } finally {
+        // 6. Aufräumen
+        modalContent.style.maxHeight = originalMaxHeight;
+        scrollArea.style.overflowY = originalOverflow;
+        
+        originalSrcs.forEach((src, img) => {
+            img.src = src;
+            img.removeAttribute('crossOrigin');
+        });
+        
+        if (actionBtns) actionBtns.style.visibility = 'visible';
+        if (closeBtn) closeBtn.style.visibility = 'visible';
+    }
+}

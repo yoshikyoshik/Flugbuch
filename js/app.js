@@ -3118,3 +3118,113 @@ window.dismissImportPromo = function(event) {
     // Im lokalen Speicher des Geräts hinterlegen, dass der User das nicht mehr sehen will
     localStorage.setItem('hideImportPromo', 'true');
 };
+
+// ==========================================
+// TAGEBUCH / DIGITAL BOARDING PASS
+// ==========================================
+
+window.viewFlightDetails = async function(id) {
+    // Flug aus der Liste holen
+    const flights = await getFlights(); 
+    const flight = flights.find(f => f.id === id || f.flight_id === id); 
+    if (!flight) return;
+
+    // 1. Textdaten einfügen
+    document.getElementById('fd-date').textContent = new Date(flight.date).toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' });
+    document.getElementById('fd-dep').textContent = flight.departure;
+    document.getElementById('fd-arr').textContent = flight.arrival;
+    document.getElementById('fd-airline').textContent = flight.airline || "Unbekannte Airline";
+    document.getElementById('fd-flight-number').textContent = flight.flightNumber || "";
+    document.getElementById('fd-class').textContent = flight.class || "Economy";
+    document.getElementById('fd-aircraft').textContent = flight.aircraftType || "Unbekannt";
+    document.getElementById('fd-reg').textContent = flight.registration || "-";
+    document.getElementById('fd-distance').textContent = flight.distance ? `${flight.distance.toLocaleString()} km` : "-";
+    document.getElementById('fd-duration').textContent = flight.time || "-";
+    document.getElementById('fd-co2').textContent = flight.co2_kg ? `${flight.co2_kg.toLocaleString()} kg` : "-";
+
+    // 2. Airline Logo
+    const logoEl = document.getElementById('fd-airline-logo');
+    if (flight.airline_logo) {
+        logoEl.src = flight.airline_logo;
+        logoEl.classList.remove('hidden');
+    } else {
+        logoEl.classList.add('hidden');
+    }
+
+    // 3. Notizen
+    const notesContainer = document.getElementById('fd-notes-container');
+    if (flight.notes && flight.notes.trim() !== "") {
+        document.getElementById('fd-notes').textContent = flight.notes;
+        notesContainer.classList.remove('hidden');
+    } else {
+        notesContainer.classList.add('hidden');
+    }
+
+    // 4. Hero Image (Planespotters)
+    const heroImg = document.getElementById('fd-hero-img');
+    const creditContainer = document.getElementById('fd-planespotters-credit');
+    if (flight.planespotters_url) {
+        heroImg.src = flight.planespotters_url;
+        document.getElementById('fd-photographer').textContent = flight.planespotters_photographer || "Unbekannt";
+        creditContainer.classList.remove('hidden');
+    } else {
+        // Geniales Fallback-Bild, wenn es kein Planespotters-Bild gibt!
+        heroImg.src = "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?q=80&w=1000&auto=format&fit=crop"; 
+        creditContainer.classList.add('hidden');
+    }
+
+    // 5. EIGENE Fotos (Die kleine Galerie unten)
+    const userPhotosContainer = document.getElementById('fd-user-photos-container');
+    const userPhotosDiv = document.getElementById('fd-user-photos');
+    userPhotosDiv.innerHTML = ""; // Vorherige löschen
+    
+    if (flight.photo_url && flight.photo_url.length > 0) {
+        flight.photo_url.forEach(url => {
+            const img = document.createElement('img');
+            
+            // 🚀 DER TRICK: Wir sagen dem Browser, er soll das Bild sofort mit offiziellen 
+            // CORS-Rechten laden. Dann kann html2canvas es später in 1 Millisekunde lesen!
+            if (url.includes('supabase.co')) {
+                img.crossOrigin = "anonymous"; 
+            }
+            
+            img.src = url;
+            img.onclick = () => window.open(url, '_blank'); 
+            img.className = "h-24 w-24 sm:h-28 sm:w-28 object-cover rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 shrink-0 cursor-pointer hover:opacity-80 transition";
+            userPhotosDiv.appendChild(img);
+        });
+        userPhotosContainer.classList.remove('hidden');
+    } else {
+        userPhotosContainer.classList.add('hidden');
+    }
+
+    // 6. Der "Bearbeiten" Button (Verlinkt zum alten Formular)
+    document.getElementById('fd-edit-btn').onclick = () => {
+        closeFlightDetails();
+        // Hier rufen wir deine alte Funktion auf!
+        if (typeof editFlight === 'function') editFlight(id);
+    };
+
+    // 7. Modal geschmeidig einblenden
+    const modal = document.getElementById('flight-details-modal');
+    const modalContent = document.getElementById('fd-modal-content');
+    modal.classList.remove('hidden');
+    // Mini-Verzögerung für die CSS-Animation
+    setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        modalContent.classList.remove('scale-95');
+    }, 10);
+};
+
+window.closeFlightDetails = function() {
+    const modal = document.getElementById('flight-details-modal');
+    const modalContent = document.getElementById('fd-modal-content');
+    
+    // Animation rückwärts
+    modal.classList.add('opacity-0');
+    modalContent.classList.add('scale-95');
+    
+    setTimeout(() => {
+        modal.classList.add('hidden');
+    }, 300); // Warten bis die CSS Transition fertig ist
+};
