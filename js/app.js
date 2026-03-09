@@ -1909,7 +1909,7 @@ function showImportDecisionModal(incomingFlights, importedTrips = [], currentDbC
 
 // app.js - executeImport (Final & Silent)
 
-async function executeImport(flightsData, mode, importedTripsSource = []) {
+async function executeImport(flightsData, mode, importedTripsSource = [], allowedCount = null) {
   closeInfoModal();
   const { data: userData } = await supabaseClient.auth.getUser();
   if (!userData?.user) return;
@@ -1941,7 +1941,7 @@ async function executeImport(flightsData, mode, importedTripsSource = []) {
       await supabaseClient.from("trips").delete().eq("user_id", userId);
     }
 
-    // 2. TRIPS MANAGEN
+    // 2. TRIPS MANAGEN (Hier wird jetzt finalFlightsToProcess genutzt!)
     const tripNamesFromFlights = finalFlightsToProcess.map(f => f._tempTripName).filter(n => n);
     const tripNamesFromJSON = importedTripsSource.map(t => t.name).filter(n => n);
     const uniqueTripNames = [...new Set([...tripNamesFromFlights, ...tripNamesFromJSON])];
@@ -1949,8 +1949,6 @@ async function executeImport(flightsData, mode, importedTripsSource = []) {
     const tripNameIdMap = {};
 
     for (const name of uniqueTripNames) {
-        // HIER IST DER FIX: .maybeSingle() statt .single()
-        // Das verhindert den 406 Fehler in der Konsole, wenn der Trip noch nicht existiert.
         let { data: existing } = await supabaseClient
             .from("trips")
             .select("id")
@@ -1966,14 +1964,14 @@ async function executeImport(flightsData, mode, importedTripsSource = []) {
                 .from("trips")
                 .insert([{ user_id: userId, name: name }])
                 .select()
-                .maybeSingle(); // Auch hier sicherheitshalber maybeSingle
+                .maybeSingle();
             
             if (newTrip) tripNameIdMap[name] = newTrip.id;
         }
     }
 
-    // 3. FLÜGE VORBEREITEN & SÄUBERN
-    const finalFlights = finalFlightsToProcess.map(f => {  // <--- Hier auch 'finalFlightsToProcess' nutzen!
+    // 3. FLÜGE VORBEREITEN & SÄUBERN (Auch hier finalFlightsToProcess!)
+    const finalFlights = finalFlightsToProcess.map(f => {
         const tripId = f._tempTripName ? tripNameIdMap[f._tempTripName] : null;
         
         // Aufräumen: Alles weg, was nicht in die DB gehört
@@ -2001,9 +1999,11 @@ async function executeImport(flightsData, mode, importedTripsSource = []) {
 
     showMessage(getTranslation("import.successTitle") || "Erfolg", successBody, "success");
 
-    loadTripsIntoDropdown(); 
-    allFlightsUnfiltered = await getFlights();
-    renderFlights(allFlightsUnfiltered);
+    if (typeof loadTripsIntoDropdown === 'function') loadTripsIntoDropdown(); 
+    if (typeof getFlights === 'function') {
+        allFlightsUnfiltered = await getFlights();
+        if (typeof renderFlights === 'function') renderFlights(allFlightsUnfiltered);
+    }
 
   } catch (err) {
     console.error("Datenbank Fehler:", err);
