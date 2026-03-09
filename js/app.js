@@ -4,6 +4,43 @@
 
 let isDemoMode = false; // Neue Flagge
 
+// Globale Variable für das aktuell geladene Flugzeug-Foto
+let currentPlanespottersData = null;
+
+// API-Aufruf zu Planespotters.net
+async function fetchAircraftPhoto(registration) {
+    if (!registration || registration.trim().length < 3) return null;
+    
+    try {
+        const cleanReg = registration.trim().toUpperCase();
+        // Planespotters API aufrufen
+        const response = await fetch(`https://api.planespotters.net/pub/photos/reg/${cleanReg}`);
+        
+        if (!response.ok) return null;
+        
+        const data = await response.json();
+        
+        // Prüfen, ob Fotos gefunden wurden
+        if (data && data.photos && data.photos.length > 0) {
+            const photo = data.photos[0]; // Wir nehmen das erste (beliebteste/neueste) Bild
+            return {
+                url: photo.thumbnail_large.src,
+                photographer: photo.photographer,
+                link: photo.link
+            };
+        }
+    } catch (err) {
+        console.warn("Planespotters API Fehler:", err);
+    }
+    return null;
+}
+
+// Manuelles Leeren der Vorschau
+window.clearPlanespottersPreview = function() {
+    document.getElementById('planespotters-preview').classList.add('hidden');
+    currentPlanespottersData = null;
+};
+
 async function initializeApp() {
   if (isAppInitialized) return;
   isAppInitialized = true;
@@ -377,6 +414,21 @@ async function syncOfflineFlights() {
     for (const flight of queue) {
         // Aufräumen: Interne Offline-Flags entfernen
         const { _isOffline, _timestamp, ...flightForDb } = flight;
+
+        // --- 📸 NEU: Planespotters Foto beim Sync automatisch nachladen! ---
+        if (!flightForDb.planespotters_url && flightForDb.registration) {
+            try {
+                // Wir rufen die Funktion auf, die wir vorhin angelegt haben
+                const photoData = await fetchAircraftPhoto(flightForDb.registration);
+                if (photoData) {
+                    flightForDb.planespotters_url = photoData.url;
+                    flightForDb.planespotters_photographer = photoData.photographer;
+                }
+            } catch (e) {
+                console.warn("Konnte Flugzeugbild beim Sync nicht nachladen", e);
+            }
+        }
+        // -----------------------------------------------------------------
 
         // Versuchen zu senden
         const { error } = await supabaseClient
@@ -867,7 +919,7 @@ window.logFlight = async function () {
     // ✅ NEU HINZUFÜGEN:
     trip_id: document.getElementById("tripSelect").value || null,
     airline: finalAirlineName,       // Name aus API oder Eingabefeld
-airline_logo: finalAirlineLogo,  // Das neue Logo-Feld
+    airline_logo: finalAirlineLogo,  // Das neue Logo-Feld
     aircraftType: document.getElementById("aircraftType").value.trim(),
     notes: document.getElementById("notes").value.trim(),
     depLat: departureAirport.lat,
@@ -886,6 +938,9 @@ airline_logo: finalAirlineLogo,  // Das neue Logo-Feld
     registration:
       document.getElementById("registration").value.trim().toUpperCase() ||
       null,
+    // 📸 NEU: Planespotters Daten speichern
+    planespotters_url: currentPlanespottersData ? currentPlanespottersData.url : null,
+    planespotters_photographer: currentPlanespottersData ? currentPlanespottersData.photographer : null,
   };
 
   // --- OFFLINE CHECK & SAVE ---
@@ -1157,6 +1212,9 @@ async function updateFlight() {
     registration:
       document.getElementById("registration").value.trim().toUpperCase() ||
       null,
+    // 📸 NEU: Planespotters updaten (oder das alte behalten, falls nicht neu gesucht wurde)
+    planespotters_url: currentPlanespottersData ? currentPlanespottersData.url : (currentlyEditingFlightData.planespotters_url || null),
+    planespotters_photographer: currentPlanespottersData ? currentPlanespottersData.photographer : (currentlyEditingFlightData.planespotters_photographer || null),
   };
 
   const { error } = await supabaseClient
@@ -1275,6 +1333,9 @@ window.resetForm = function () {
   // ✅ NEU: Auch die "existing"-Vorschau löschen
   document.getElementById("existing-photos-preview").innerHTML = "";
 
+  // Planespotters Vorschau zurücksetzen
+  if (typeof clearPlanespottersPreview === 'function') clearPlanespottersPreview();
+
   // Zustand zurücksetzen
   currentlyEditingFlightData = null;
 
@@ -1370,6 +1431,19 @@ window.editFlight = async function (id) {
   document.getElementById("currency").value = flightToEdit.currency || "";
   document.getElementById("registration").value =
     flightToEdit.registration || "";
+  // 📸 NEU: Planespotters Vorschau beim Bearbeiten laden
+  if (flightToEdit.planespotters_url) {
+      currentPlanespottersData = {
+          url: flightToEdit.planespotters_url,
+          photographer: flightToEdit.planespotters_photographer,
+          link: "#" // Fallback, da wir den Link nicht extra speichern
+      };
+      document.getElementById('planespotters-img').src = flightToEdit.planespotters_url;
+      document.getElementById('planespotters-credit').textContent = flightToEdit.planespotters_photographer || "Planespotters";
+      document.getElementById('planespotters-preview').classList.remove('hidden');
+  } else {
+      if (typeof clearPlanespottersPreview === 'function') clearPlanespottersPreview();
+  }
 
   // Bearbeitungszustand setzen
   currentlyEditingFlightData = flightToEdit;
@@ -2417,6 +2491,35 @@ document.addEventListener("DOMContentLoaded", async function () {
         });
     } else {
         console.error("Fehler: Element mit ID 'app-header-logo' nicht gefunden!");
+    }
+
+    // --- NEU: Listener für Planespotters Live-Vorschau ---
+  const regInput = document.getElementById("registration");
+  if (regInput) {
+      regInput.addEventListener("blur", async (e) => {
+          const reg = e.target.value;
+          const previewContainer = document.getElementById('planespotters-preview');
+          const previewImg = document.getElementById('planespotters-img');
+          const previewCredit = document.getElementById('planespotters-credit');
+          const previewLink = document.getElementById('planespotters-link');
+
+          if (!reg) {
+              clearPlanespottersPreview();
+              return;
+          }
+
+          const photoData = await fetchAircraftPhoto(reg);
+          
+          if (photoData) {
+              currentPlanespottersData = photoData;
+              previewImg.src = photoData.url;
+              previewCredit.textContent = photoData.photographer;
+              previewLink.href = photoData.link;
+              previewContainer.classList.remove('hidden');
+          } else {
+              clearPlanespottersPreview();
+          }
+      });
     }
 
 /*

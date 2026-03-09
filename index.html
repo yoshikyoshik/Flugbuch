@@ -642,6 +642,17 @@
                       data-i18n="placeholder.egRegistration"
                       class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3"
                     />
+                    <div id="planespotters-preview" class="hidden mt-3 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 shadow-sm relative group transition-all duration-300">
+                      <img id="planespotters-img" src="" alt="Aircraft Preview" class="w-full h-40 object-cover">
+                      
+                      <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 pt-6 text-white text-[10px] text-right opacity-80 group-hover:opacity-100 transition-opacity">
+                          Foto: <span id="planespotters-credit" class="font-semibold"></span> | via <a id="planespotters-link" href="#" target="_blank" class="underline hover:text-indigo-300">Planespotters.net</a>
+                      </div>
+                      
+                      <button type="button" onclick="clearPlanespottersPreview()" class="absolute top-2 right-2 bg-black/50 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold transition-colors">
+                          &times;
+                      </button>
+                  </div>
                   </div>
                   <div class="lg:col-span-2">
                     <label
