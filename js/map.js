@@ -15,6 +15,63 @@ function hexToRgba(hex, alpha) {
     return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
+// --- NEU: Custom Tooltip CSS für die 2D-Karte injizieren ---
+if (!document.getElementById('custom-map-tooltip-style')) {
+    const style = document.createElement('style');
+    style.id = 'custom-map-tooltip-style';
+    style.innerHTML = `
+        .custom-map-tooltip {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+        }
+        .custom-map-tooltip::before, .custom-map-tooltip::after {
+            display: none !important; /* Entfernt den weißen Pfeil von Leaflet */
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+// --- NEU: Wunderschöner HTML-Tooltip Generator für Strecken ---
+window.buildMapTooltipHtml = function(flight, count) {
+    const countText = count > 1 ? `<div style="background: #4f46e5; color: white; font-size: 10px; padding: 2px 6px; border-radius: 10px; display: inline-block; margin-top: 5px; font-weight: bold;">${count} Flüge</div>` : '';
+    
+    let imgHtml = "";
+    if (flight.planespotters_url) {
+        // Planespotters Bild
+        imgHtml = `<div style="position: relative;"><img src="${flight.planespotters_url}" style="width: 100%; height: 90px; object-fit: cover; border-bottom: 1px solid #374151;"></div>`;
+    } else if (flight.photo_url && flight.photo_url.length > 0) {
+        // Eigenes Bild
+        imgHtml = `<img src="${flight.photo_url[0]}" style="width: 100%; height: 90px; object-fit: cover; border-bottom: 1px solid #374151;">`;
+    } else {
+         // Eleganter Fallback-Farbverlauf ohne Bild
+         imgHtml = `<div style="width: 100%; height: 35px; background: linear-gradient(to right, #4f46e5, #ec4899); border-bottom: 1px solid #374151;"></div>`;
+    }
+
+    return `
+        <div style="background: rgba(17, 24, 39, 0.95); border: 1px solid #374151; border-radius: 10px; min-width: 170px; text-align: center; font-family: 'Inter', sans-serif; box-shadow: 0 10px 25px rgba(0,0,0,0.5); overflow: hidden; pointer-events: none;">
+            ${imgHtml}
+            <div style="padding: 10px 12px 12px 12px; line-height: 1.3;">
+                <div style="font-weight: 900; color: white; font-size: 15px; letter-spacing: 0.5px;">${flight.departure} <span style="color: #6366f1;">➔</span> ${flight.arrival}</div>
+                ${flight.airline ? `<div style="color: #d1d5db; font-size: 12px; font-weight: 600; margin-top: 4px;">${flight.airline}</div>` : ''}
+                ${flight.aircraftType ? `<div style="color: #9ca3af; font-size: 10px; margin-top: 1px;">${flight.aircraftType}</div>` : ''}
+                ${countText}
+            </div>
+        </div>
+    `;
+};
+
+// --- NEU: Wunderschöner HTML-Tooltip Generator für Flughäfen ---
+window.buildAirportTooltipHtml = function(name, code, subtitle) {
+    return `
+        <div style="background: rgba(17, 24, 39, 0.95); border: 1px solid #374151; border-radius: 8px; padding: 10px 14px; text-align: center; font-family: 'Inter', sans-serif; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5); pointer-events: none;">
+            <div style="font-weight: 900; color: white; font-size: 15px;">${name} <span style="color: #9ca3af; font-weight: normal;">(${code})</span></div>
+            ${subtitle ? `<div style="color: #6366f1; font-size: 13px; margin-top: 4px; font-weight: bold;">${subtitle}</div>` : ''}
+        </div>
+    `;
+};
+
 window.drawRouteOnMap = async function (
   depLat,
   depLon,
@@ -23,7 +80,8 @@ window.drawRouteOnMap = async function (
   depCode,
   arrCode,
   depName,
-  arrName
+  arrName,
+  flightData // <-- NEU: Das Flug-Objekt für den Tooltip
 ) {
   var mapInfo = document.getElementById("map-info");
   routeLayer.clearLayers();
@@ -40,11 +98,13 @@ window.drawRouteOnMap = async function (
     return;
   }
 
-  const depPopupContent = `<b>${getTranslation("map.departure") || "Departure"}:</b> ${depName} (${depCode})`;
-  const arrPopupContent = `<b>${getTranslation("map.arrival") || "Arrival"}:</b> ${arrName} (${arrCode})`;
+  // --- NEU: Schicke Hover-Tooltips für Abflug und Ankunft ---
+  const depHtml = window.buildAirportTooltipHtml(depName, depCode, `🛫 ${getTranslation("map.departure") || "Abflug"}`);
+  const arrHtml = window.buildAirportTooltipHtml(arrName, arrCode, `🛬 ${getTranslation("map.arrival") || "Ankunft"}`);
 
-  const depMarker = L.marker([depLat, depLon]).bindPopup(depPopupContent);
-  const arrMarker = L.marker([arrLat, arrLon]).bindPopup(arrPopupContent);
+  // bindTooltip statt bindPopup macht es zum Hover-Effekt!
+  const depMarker = L.marker([depLat, depLon]).bindTooltip(depHtml, { sticky: true, className: 'custom-map-tooltip' });
+  const arrMarker = L.marker([arrLat, arrLon]).bindTooltip(arrHtml, { sticky: true, className: 'custom-map-tooltip' });
 
   const flightPath = L.polyline(
     [
@@ -53,6 +113,18 @@ window.drawRouteOnMap = async function (
     ],
     { color: "#10B981", weight: 3 }
   );
+
+  // --- NEU: Hover & Klick für die Einzelroute ---
+  if (flightData) {
+      const popupHtml = window.buildMapTooltipHtml(flightData, 1);
+      flightPath.bindTooltip(popupHtml, { sticky: true, className: 'custom-map-tooltip' });
+      flightPath.on('click', () => {
+          if (typeof showFlightDetailsInModal === 'function') {
+              showFlightDetailsInModal(flightData);
+          }
+      });
+  }
+  // ----------------------------------------------
 
   routeLayer.addLayer(depMarker);
   routeLayer.addLayer(arrMarker);
@@ -78,14 +150,9 @@ window.drawRouteOnMap = async function (
     .replace("{arrName}", arrName)
     .replace("{arrCode}", arrCode);
 
-  const returnFlightContainer = document.getElementById(
-    "return-flight-container"
-  );
+  const returnFlightContainer = document.getElementById("return-flight-container");
   const returnFlightBtn = document.getElementById("return-flight-btn");
-  returnFlightBtn.setAttribute(
-    "onclick",
-    `prefillReturnFlight('${arrCode}', '${depCode}')`
-  );
+  returnFlightBtn.setAttribute("onclick", `prefillReturnFlight('${arrCode}', '${depCode}')`);
   returnFlightContainer.classList.remove("hidden");
 };
 
@@ -117,9 +184,11 @@ window.drawAllRoutesOnMap = function (flights) {
             [flight.arrLat, flight.arrLon],
           ],
           flightNumbers: [],
+          flights: []
         };
       }
       routeGroups[routeKey].flightNumbers.push(flight.flightLogNumber);
+      routeGroups[routeKey].flights.push(flight);
       if (!uniqueAirports[flight.departure])
         uniqueAirports[flight.departure] = {
           name: flight.depName,
@@ -142,6 +211,25 @@ window.drawAllRoutesOnMap = function (flights) {
       weight: Math.min(1.5 + (group.flightNumbers.length - 1) * 0.5, 8),
       opacity: 0.6 + group.flightNumbers.length * 0.05,
     });
+    // --- NEU: Schicker Tooltip & Klick-Action für die 2D-Karte ---
+    const sampleFlight = group.flights[0];
+    const popupHtml = window.buildMapTooltipHtml(sampleFlight, group.flights.length);
+    
+    // Hover-Fenster anheften
+    flightPath.bindTooltip(popupHtml, { 
+        sticky: true, 
+        className: 'custom-map-tooltip' 
+    });
+
+    // Bei Klick direkt das neue Bordkarten-Modal aufrufen!
+    flightPath.on('click', () => {
+        if (group.flights.length > 1) {
+            showFlightDisambiguationModal(group.flights);
+        } else {
+            showFlightDetailsInModal(sampleFlight); // Unsere Umleitung von vorhin!
+        }
+    });
+    // -------------------------------------------------------------
     flightPath.addTo(routeLayer);
     bounds.push(group.latLngs[0]);
     bounds.push(group.latLngs[1]);
@@ -150,7 +238,11 @@ window.drawAllRoutesOnMap = function (flights) {
   Object.keys(uniqueAirports).forEach((iataCode) => {
     const airport = uniqueAirports[iataCode];
     const marker = L.marker([airport.lat, airport.lon]);
-    marker.bindPopup(`<b>${airport.name}</b> (${iataCode})`);
+    
+    // NEU: Schicker Hover-Tooltip für alle Flughäfen
+    const popupHtml = window.buildAirportTooltipHtml(airport.name, iataCode, "📍 Flughafen");
+    marker.bindTooltip(popupHtml, { sticky: true, className: 'custom-map-tooltip' });
+    
     markerClusterGroup.addLayer(marker);
   });
   map.addLayer(markerClusterGroup);
@@ -335,7 +427,8 @@ async function openGlobeModal() {
       //.globeImageUrl("//unpkg.com/three-globe/example/img/earth-night.jpg")
       .globeImageUrl("pictures/earth-night.jpg")
       .arcsData(progressiveData.arcData)
-      .arcLabel("name")
+      // --- NEU: Reichhaltiger Tooltip für die Routen (Hover) ---
+      .arcLabel((d) => window.buildMapTooltipHtml(d.originalFlight, d.allFlightsOnRoute ? d.allFlightsOnRoute.length : 1))
             
             // --- 1. FARBE (Jetzt: Bunt aber Transparent) ---
             .arcColor((d) => {
@@ -414,9 +507,14 @@ async function openGlobeModal() {
       .pointLat("lat")
       .pointLng("lon")
       .pointLabel((d) => {
-    const visitText = d.count > 1 ? getTranslation("globe.visits") : getTranslation("globe.visit");
-    return `${d.name} (${d.count} ${visitText})`;
-})
+          const visitText = d.count > 1 ? getTranslation("globe.visits") || "Besuche" : getTranslation("globe.visit") || "Besuch";
+          return `
+              <div style="background: rgba(17, 24, 39, 0.95); border: 1px solid #374151; border-radius: 8px; padding: 10px 14px; text-align: center; font-family: 'Inter', sans-serif; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5);">
+                  <div style="font-weight: 900; color: white; font-size: 15px;">${d.name} <span style="color: #9ca3af; font-weight: normal;">(${d.code})</span></div>
+                  <div style="color: #6366f1; font-size: 13px; margin-top: 4px; font-weight: bold;">📍 ${d.count} ${visitText}</div>
+              </div>
+          `;
+      })
       .pointColor(() => "#fde047")
       .pointRadius(
         (d) =>
@@ -701,7 +799,8 @@ async function openGlobeModal() {
                         isStoryModeActive ? (d.isActive ? 2.5 : 0.8) : 0.5 // ✅ Korrigiert (0.8 statt 0.3)
                     ));
 
-                    globeInstance.arcLabel((d) => d === arc ? d.name : "");
+                    // --- NEU: Tooltip Update (Hover State) ---
+                    globeInstance.arcLabel((d) => d === arc ? window.buildMapTooltipHtml(d.originalFlight, d.allFlightsOnRoute ? d.allFlightsOnRoute.length : 1) : "");
 
                 } else {
                     // +++ RESET (Maus weg) - HIER WAR DER FEHLER +++
@@ -720,7 +819,8 @@ async function openGlobeModal() {
                         return 0.5;
                     });
                     
-                    globeInstance.arcLabel((d) => d.name);
+                    // --- NEU: Tooltip Reset ---
+                    globeInstance.arcLabel((d) => window.buildMapTooltipHtml(d.originalFlight, d.allFlightsOnRoute ? d.allFlightsOnRoute.length : 1));
                 }
             })
     // +++ ENDE EVENT-HANDLER +++

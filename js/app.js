@@ -1414,7 +1414,8 @@ window.editFlight = async function (id) {
     flightToEdit.departure,
     flightToEdit.arrival,
     flightToEdit.depName,
-    flightToEdit.arrName
+    flightToEdit.arrName,
+    flightToEdit
   );
 
   // Formular mit den Flugdaten füllen

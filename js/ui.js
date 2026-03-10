@@ -429,69 +429,17 @@ async function showAircraftDetails(modelCode) {
 }
 
 /**
- * ANGEPASST: Öffnet das Info-Modal und zeigt die Details eines geklickten Fluges an.
- * (Verwendet jetzt i18n-Übersetzungen)
+ * ANGEPASST: Leitet den Klick auf der Karte jetzt direkt auf die neue digitale Bordkarte um!
  */
-function showFlightDetailsInModal(flight) {
-  // 1. Titel des Modals setzen (JETZT MIT ÜBERSETZUNG)
-  const titleTemplate =
-    getTranslation("logbook.flightTitle") ||
-    "Flug #{number}: {departure} → {arrival}";
-  document.getElementById("info-modal-title").textContent = titleTemplate
-    .replace("{number}", flight.flightLogNumber)
-    .replace("{departure}", flight.departure)
-    .replace("{arrival}", flight.arrival);
-
-  // 2. Inhalt des Modals erstellen
-  const contentContainer = document.getElementById("info-modal-content");
-
-  // 3. Foto(s) anzeigen, falls vorhanden
-  let photoHtml = "";
-  if (flight.photo_url && flight.photo_url.length > 0) {
-    photoHtml = `<img src="${flight.photo_url[0]}" alt="Flugfoto" class="w-full h-48 object-cover rounded-md mb-3 shadow-md">`;
+window.showFlightDetailsInModal = function(flight) {
+  // 1. Falls ein altes Info-Modal noch offen sein sollte, schließen wir es
+  if (typeof closeInfoModal === 'function') closeInfoModal();
+  
+  // 2. Wir rufen direkt unser neues Premium-Tagebuch auf!
+  if (flight && (flight.id || flight.flight_id)) {
+      viewFlightDetails(flight.id || flight.flight_id);
   }
-
-  // --- 4. Übersetzungen abrufen (mit Fallback) ---
-  const keyDate = getTranslation("logbook.flightEntryDate") || "Datum";
-  const keyRoute = getTranslation("logbook.flightEntryRoute") || "Strecke";
-  const keyDistance =
-    getTranslation("logbook.flightEntryDistance") || "Distanz";
-  const keyDuration =
-    getTranslation("logbook.flightEntryDuration") || "Flugzeit";
-  const keyAirline =
-    getTranslation("logbook.flightEntryAirline") || "Airline/Flugnr";
-  const keyAircraft =
-    getTranslation("logbook.flightEntryAircraft") || "Flugzeug/Reg";
-  const keyNotes = getTranslation("logbook.flightEntryNotes") || "Notizen:";
-  const keySeparator = getTranslation("logbook.routeSeparator") || "nach";
-  // --- Ende Neu ---
-
-  // 5. HTML zusammenbauen
-  contentContainer.innerHTML = `
-            ${photoHtml}
-            <div class="space-y-2 text-sm">
-                <p><strong>${keyDate}:</strong> ${flight.date}</p>
-                <p><strong>${keyRoute}:</strong> ${flight.depName || flight.departure} ${keySeparator} ${flight.arrName || flight.arrival}</p>
-                <p><strong>${keyDistance}:</strong> ${flight.distance.toLocaleString("de-DE")} km</p>
-                <p><strong>${keyDuration}:</strong> ${estimateFlightTime(flight.distance)}</p> <hr class="my-2 dark:border-gray-600">
-                <p><strong>${keyAirline}:</strong> ${flight.airline || "-"} (${flight.flightNumber || "-"})</p>
-                <p><strong>${keyAircraft}:</strong> ${flight.aircraftType || "-"} (${flight.registration || "-"})</p>
-                
-                ${
-                  flight.notes
-                    ? `
-                    <hr class="my-2 dark:border-gray-600">
-                    <p class="font-semibold">${keyNotes}</p>
-                    <p class="italic text-gray-600 dark:text-gray-400 whitespace-pre-wrap">${flight.notes}</p>
-                `
-                    : ""
-                }
-            </div>
-        `;
-
-  // 6. Modal öffnen (Diese Funktion existiert bereits)
-  openInfoModal();
-}
+};
 
 /**
  * Öffnet das Info-Modal mit einer Auswahlliste für überlappende Flüge.
@@ -719,7 +667,8 @@ window.renderFlights = async function (
       flightForMap.departure,
       flightForMap.arrival,
       flightForMap.depName,
-      flightForMap.arrName
+      flightForMap.arrName,
+      flightForMap
     );
   } else {
     window.drawRouteOnMap();
@@ -755,13 +704,6 @@ window.renderFlights = async function (
       if (!isDemo) {
           actionButtonsHtml = `
             <div class="flex flex-col md:flex-row items-center ml-2">
-                <button 
-                  onclick="event.stopPropagation(); editFlight(${flight.id})" 
-                  class="p-2 text-blue-500 hover:text-blue-700 transition" 
-                  title="${getTranslation("flights.editTitle") || "Bearbeiten"}"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" /><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" /></svg>
-                </button>
                 <button 
                   onclick="event.stopPropagation(); deleteFlight(${flight.id})" 
                   class="p-2 text-red-500 hover:text-red-700 transition" 
