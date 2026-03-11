@@ -134,6 +134,7 @@ async function initializeApp() {
       const statusBadge = document.getElementById("subscription-status-badge");
       const upgradeBtn = document.getElementById("menu-upgrade-btn");
       const manageBtn = document.getElementById("menu-manage-sub-btn");
+      const scannerLock = document.getElementById("scanner-lock"); // 🔒 NEU: Das Schloss-Element suchen
 
       if (statusBadge) {
         // 🔥 FIX: Wir entfernen das i18n-Attribut, damit die Übersetzung das "PRO/FREE" nicht mehr überschreibt!
@@ -148,6 +149,7 @@ async function initializeApp() {
           // Buttons umschalten
           if (upgradeBtn) upgradeBtn.classList.add("hidden");
           if (manageBtn) manageBtn.classList.remove("hidden"); // "Verwalten" zeigen
+          if (scannerLock) scannerLock.classList.add("hidden"); // 🔒 NEU: Schloss ausblenden!
         } else {
           // FREE Design
           statusBadge.textContent = "FREE";
@@ -161,6 +163,7 @@ async function initializeApp() {
           }
           
           if (manageBtn) manageBtn.classList.add("hidden");
+          if (scannerLock) scannerLock.classList.remove("hidden"); // 🔒 NEU: Schloss anzeigen!
         }
       }
     } else {
@@ -3124,14 +3127,29 @@ window.dismissImportPromo = function(event) {
 // TAGEBUCH / DIGITAL BOARDING PASS
 // ==========================================
 
+// --- NEU: Globale Variablen für die Swipe-Logik ---
+window.currentSwipeIndex = -1;
+window.currentSwipeFlights = [];
+
 window.viewFlightDetails = async function(id) {
-    // Flug aus der Liste holen
-    const flights = await getFlights(); 
-    const flight = flights.find(f => f.id === id || f.flight_id === id); 
+    // 1. Alle Flüge holen, nummerieren und chronologisch sortieren (älteste zuerst)
+    let allFlights = await getFlights(); 
+    allFlights = resequenceAndAssignNumbers(allFlights);
+    allFlights.sort((a, b) => a.flightLogNumber - b.flightLogNumber);
+
+    // 2. Aktuellen Flug finden
+    const currentIndex = allFlights.findIndex(f => f.id === id || f.flight_id === id); 
+    const flight = allFlights[currentIndex]; 
     if (!flight) return;
 
-    // 1. Textdaten einfügen
+    // Swipe-Daten für später speichern
+    window.currentSwipeIndex = currentIndex;
+    window.currentSwipeFlights = allFlights;
+
+    // 3. Textdaten einfügen
     document.getElementById('fd-date').textContent = new Date(flight.date).toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' });
+    document.getElementById('fd-log-number').textContent = `#${flight.flightLogNumber}`; // 🎫 Flugnummer setzen
+    
     document.getElementById('fd-dep').textContent = flight.departure;
     document.getElementById('fd-arr').textContent = flight.arrival;
     document.getElementById('fd-airline').textContent = flight.airline || "Unbekannte Airline";
@@ -3143,25 +3161,18 @@ window.viewFlightDetails = async function(id) {
     document.getElementById('fd-duration').textContent = flight.time || "-";
     document.getElementById('fd-co2').textContent = flight.co2_kg ? `${flight.co2_kg.toLocaleString()} kg` : "-";
 
-    // 2. Airline Logo
+    // 4. Airline Logo & Notizen
     const logoEl = document.getElementById('fd-airline-logo');
-    if (flight.airline_logo) {
-        logoEl.src = flight.airline_logo;
-        logoEl.classList.remove('hidden');
-    } else {
-        logoEl.classList.add('hidden');
-    }
+    if (flight.airline_logo) { logoEl.src = flight.airline_logo; logoEl.classList.remove('hidden'); } 
+    else { logoEl.classList.add('hidden'); }
 
-    // 3. Notizen
     const notesContainer = document.getElementById('fd-notes-container');
     if (flight.notes && flight.notes.trim() !== "") {
         document.getElementById('fd-notes').textContent = flight.notes;
         notesContainer.classList.remove('hidden');
-    } else {
-        notesContainer.classList.add('hidden');
-    }
+    } else { notesContainer.classList.add('hidden'); }
 
-    // 4. Hero Image (Planespotters)
+    // 5. Hero Image (Planespotters)
     const heroImg = document.getElementById('fd-hero-img');
     const creditContainer = document.getElementById('fd-planespotters-credit');
     if (flight.planespotters_url) {
@@ -3169,27 +3180,20 @@ window.viewFlightDetails = async function(id) {
         document.getElementById('fd-photographer').textContent = flight.planespotters_photographer || "Unbekannt";
         creditContainer.classList.remove('hidden');
     } else {
-        // Geniales Fallback-Bild, wenn es kein Planespotters-Bild gibt!
         heroImg.src = "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?q=80&w=1000&auto=format&fit=crop"; 
         creditContainer.classList.add('hidden');
     }
 
-    // 5. EIGENE Fotos (Die kleine Galerie unten)
+    // 6. EIGENE Fotos (Die kleine Galerie unten)
     const userPhotosContainer = document.getElementById('fd-user-photos-container');
     const userPhotosDiv = document.getElementById('fd-user-photos');
-    userPhotosDiv.innerHTML = ""; // Vorherige löschen
+    userPhotosDiv.innerHTML = ""; 
     
     if (flight.photo_url && flight.photo_url.length > 0) {
         flight.photo_url.forEach(url => {
             const img = document.createElement('img');
-            
-            // 🚀 DER TRICK: Wir sagen dem Browser, er soll das Bild sofort mit offiziellen 
-            // CORS-Rechten laden. Dann kann html2canvas es später in 1 Millisekunde lesen!
-            if (url.includes('supabase.co')) {
-                img.crossOrigin = "anonymous"; 
-            }
-            
             img.src = url;
+            if (url.includes('supabase.co')) img.crossOrigin = "anonymous"; 
             img.onclick = () => window.open(url, '_blank'); 
             img.className = "h-24 w-24 sm:h-28 sm:w-28 object-cover rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 shrink-0 cursor-pointer hover:opacity-80 transition";
             userPhotosDiv.appendChild(img);
@@ -3199,33 +3203,92 @@ window.viewFlightDetails = async function(id) {
         userPhotosContainer.classList.add('hidden');
     }
 
-    // 6. Der "Bearbeiten" Button (Verlinkt zum alten Formular)
+    // 7. Button Logik (Bearbeiten)
     document.getElementById('fd-edit-btn').onclick = () => {
         closeFlightDetails();
-        // Hier rufen wir deine alte Funktion auf!
         if (typeof editFlight === 'function') editFlight(id);
     };
 
-    // 7. Modal geschmeidig einblenden
-    const modal = document.getElementById('flight-details-modal');
+    // --- 8. NEU: NAVIGATION BUTTONS (PC) ---
+    const prevBtn = document.getElementById('fd-prev-btn');
+    const nextBtn = document.getElementById('fd-next-btn');
+    
+    if (prevBtn) {
+        if (currentIndex > 0) {
+            prevBtn.style.display = 'flex';
+            prevBtn.onclick = () => viewFlightDetails(allFlights[currentIndex - 1].id || allFlights[currentIndex - 1].flight_id);
+        } else { prevBtn.style.display = 'none'; }
+    }
+    if (nextBtn) {
+        if (currentIndex < allFlights.length - 1) {
+            nextBtn.style.display = 'flex';
+            nextBtn.onclick = () => viewFlightDetails(allFlights[currentIndex + 1].id || allFlights[currentIndex + 1].flight_id);
+        } else { nextBtn.style.display = 'none'; }
+    }
+
+    // --- 9. NEU: Wischgesten (SWIPE) für Handys anbinden ---
     const modalContent = document.getElementById('fd-modal-content');
+    if (modalContent && !modalContent.dataset.swipeBound) {
+        let touchstartX = 0;
+        let touchstartY = 0;
+
+        modalContent.addEventListener('touchstart', e => {
+            touchstartX = e.changedTouches[0].screenX;
+            touchstartY = e.changedTouches[0].screenY;
+        }, {passive: true});
+
+        modalContent.addEventListener('touchend', e => {
+            const touchendX = e.changedTouches[0].screenX;
+            const touchendY = e.changedTouches[0].screenY;
+            
+            const deltaX = touchendX - touchstartX;
+            const deltaY = touchendY - touchstartY;
+
+            // Logik: Nur wischen, wenn mehr horizontal als vertikal bewegt (verhindert Auslösen beim Scrollen)
+            if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 40) {
+                if (deltaX < 0) {
+                    // Nach links wischen -> Neuerer Flug
+                    if (window.currentSwipeIndex < window.currentSwipeFlights.length - 1) {
+                        const nextF = window.currentSwipeFlights[window.currentSwipeIndex + 1];
+                        viewFlightDetails(nextF.id || nextF.flight_id);
+                    }
+                } else {
+                    // Nach rechts wischen -> Älterer Flug
+                    if (window.currentSwipeIndex > 0) {
+                        const prevF = window.currentSwipeFlights[window.currentSwipeIndex - 1];
+                        viewFlightDetails(prevF.id || prevF.flight_id);
+                    }
+                }
+            }
+        }, {passive: true});
+        
+        modalContent.dataset.swipeBound = 'true'; // Verhindert, dass das Event mehrfach feuert
+    }
+
+    // Modal geschmeidig einblenden
+    const modal = document.getElementById('flight-details-modal');
     modal.classList.remove('hidden');
-    // Mini-Verzögerung für die CSS-Animation
     setTimeout(() => {
         modal.classList.remove('opacity-0');
         modalContent.classList.remove('scale-95');
     }, 10);
 };
 
+// --- NEU: Funktion zum Schließen der Flug-Karte (inkl. weicher Animation) ---
 window.closeFlightDetails = function() {
     const modal = document.getElementById('flight-details-modal');
     const modalContent = document.getElementById('fd-modal-content');
     
-    // Animation rückwärts
-    modal.classList.add('opacity-0');
-    modalContent.classList.add('scale-95');
-    
-    setTimeout(() => {
-        modal.classList.add('hidden');
-    }, 300); // Warten bis die CSS Transition fertig ist
+    if (modal) {
+        // 1. Animation rückwärts abspielen (weich ausblenden)
+        modal.classList.add('opacity-0');
+        if (modalContent) {
+            modalContent.classList.add('scale-95');
+        }
+        
+        // 2. Nach der Animation (z.B. 200ms) das Element komplett verstecken
+        setTimeout(() => {
+            modal.classList.add('hidden');
+        }, 200);
+    }
 };

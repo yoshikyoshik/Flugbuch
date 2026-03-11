@@ -2087,9 +2087,17 @@ async function shareFlightDetailsScreenshot() {
     // 1. UI Aufräumen: Buttons KOMPLETT aus dem DOM nehmen (Android hakt sonst beim Blur-Effekt)
     const actionBtns = document.getElementById('fd-action-buttons');
     const closeBtn = document.getElementById('fd-close-btn');
+    const prevBtn = document.getElementById('fd-prev-btn'); // ⬅️ NEU
+    const nextBtn = document.getElementById('fd-next-btn'); // ➡️ NEU
     
+    // Original-Zustand merken
+    const prevBtnOrig = prevBtn ? prevBtn.style.display : '';
+    const nextBtnOrig = nextBtn ? nextBtn.style.display : '';
+
     if (actionBtns) actionBtns.style.display = 'none';
     if (closeBtn) closeBtn.style.display = 'none';
+    if (prevBtn) prevBtn.style.display = 'none'; // ⬅️ NEU
+    if (nextBtn) nextBtn.style.display = 'none'; // ➡️ NEU
 
     showMessage(getTranslation("share.prepTitle") || "Moment...", getTranslation("share.prepDesc") || "Bordkarte wird exportiert...", "info");
 
@@ -2167,5 +2175,7 @@ async function shareFlightDetailsScreenshot() {
         // Buttons wieder einblenden
         if (actionBtns) actionBtns.style.display = 'flex';
         if (closeBtn) closeBtn.style.display = 'block';
+        if (prevBtn) prevBtn.style.display = prevBtnOrig; // ⬅️ NEU
+        if (nextBtn) nextBtn.style.display = nextBtnOrig; // ➡️ NEU
     }
 }

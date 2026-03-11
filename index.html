@@ -472,7 +472,7 @@
                     <div>
                       <h3 class="text-lg font-extrabold flex items-center gap-2">
                           <span data-i18n="scanner.title">Bordkarte scannen</span>
-                          <span class="text-sm opacity-80" title="Pro Feature">🔒</span>
+                          <span id="scanner-lock" class="text-sm opacity-80" title="Pro Feature">🔒</span>
         </h3>
                       <p class="text-indigo-200 text-sm font-medium mt-0.5" data-i18n="scanner.subtitle">QR- oder Barcode mit der Kamera erfassen</p>
                     </div>
@@ -1820,9 +1820,12 @@
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                 </button>
             </div>
-            
-            <div class="absolute bottom-4 left-6 right-6 text-white">
-                <div class="text-xs font-medium uppercase tracking-wider text-gray-300 mb-1" id="fd-date"></div>
+
+              <div class="absolute bottom-4 left-6 right-6 text-white">
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="text-xs font-medium uppercase tracking-wider text-gray-300" id="fd-date"></span>
+                    <span id="fd-log-number" class="bg-indigo-600 text-white px-2 py-0.5 rounded text-[10px] font-bold shadow-sm"></span>
+                </div>
                 <div class="text-3xl font-black tracking-tight flex items-center gap-3">
                     <span id="fd-dep"></span>
                     <svg class="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
@@ -1888,8 +1891,17 @@
             <div class="text-[9px] text-gray-400 text-center mt-2 hidden" id="fd-planespotters-credit">
                 Titelbild: Planespotters.net / <span id="fd-photographer"></span>
             </div>
-        </div>
-    </div>
+        </div> 
+        <button id="fd-prev-btn" class="hidden sm:flex absolute left-2 top-[310px] -translate-y-1/2 bg-gray-800/80 hover:bg-black text-white rounded-full p-2 backdrop-blur-md transition shadow-xl border border-white/20 z-50" title="Vorheriger Flug">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+        </button>
+
+        <button id="fd-next-btn" class="hidden sm:flex absolute right-2 top-[310px] -translate-y-1/2 bg-gray-800/80 hover:bg-black text-white rounded-full p-2 backdrop-blur-md transition shadow-xl border border-white/20 z-50" title="Nächster Flug">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+        </button>
+
+    </div> 
+  </div>
 </div>
 	
   
