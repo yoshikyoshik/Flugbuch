@@ -114,11 +114,20 @@ window.drawRouteOnMap = async function (
     { color: "#10B981", weight: 3 }
   );
 
-  // --- NEU: Hover & Klick für die Einzelroute ---
+  // --- 🎯 DER TRICK: Unsichtbare, extra dicke Hitbox für fette Finger ---
+  const hitBox = L.polyline(
+    [
+      [depLat, depLon],
+      [arrLat, arrLon],
+    ],
+    { color: "transparent", weight: 30, opacity: 0 } // 30px breiter Klick-Bereich!
+  );
+
+  // --- NEU: Hover & Klick hängen jetzt an der dicken Hitbox ---
   if (flightData) {
       const popupHtml = window.buildMapTooltipHtml(flightData, 1);
-      flightPath.bindTooltip(popupHtml, { sticky: true, className: 'custom-map-tooltip' });
-      flightPath.on('click', () => {
+      hitBox.bindTooltip(popupHtml, { sticky: true, className: 'custom-map-tooltip' });
+      hitBox.on('click', () => {
           if (typeof showFlightDetailsInModal === 'function') {
               showFlightDetailsInModal(flightData);
           }
@@ -129,6 +138,7 @@ window.drawRouteOnMap = async function (
   routeLayer.addLayer(depMarker);
   routeLayer.addLayer(arrMarker);
   routeLayer.addLayer(flightPath);
+  routeLayer.addLayer(hitBox); // <--- WICHTIG: Die Hitbox zur Karte hinzufügen
 
   map.fitBounds(
     [
@@ -211,26 +221,35 @@ window.drawAllRoutesOnMap = function (flights) {
       weight: Math.min(1.5 + (group.flightNumbers.length - 1) * 0.5, 8),
       opacity: 0.6 + group.flightNumbers.length * 0.05,
     });
-    // --- NEU: Schicker Tooltip & Klick-Action für die 2D-Karte ---
+
+    // --- 🎯 DER TRICK: Unsichtbare Hitbox für die Gesamtansicht ---
+    const hitBox = L.polyline(group.latLngs, {
+      color: "transparent",
+      weight: 35, // Noch etwas dicker (35px), da man hier öfter rauszoomt
+      opacity: 0
+    });
+
+    // --- Schicker Tooltip & Klick-Action hängen an der Hitbox ---
     const sampleFlight = group.flights[0];
     const popupHtml = window.buildMapTooltipHtml(sampleFlight, group.flights.length);
     
-    // Hover-Fenster anheften
-    flightPath.bindTooltip(popupHtml, { 
+    hitBox.bindTooltip(popupHtml, { 
         sticky: true, 
         className: 'custom-map-tooltip' 
     });
 
-    // Bei Klick direkt das neue Bordkarten-Modal aufrufen!
-    flightPath.on('click', () => {
+    hitBox.on('click', () => {
         if (group.flights.length > 1) {
             showFlightDisambiguationModal(group.flights);
         } else {
-            showFlightDetailsInModal(sampleFlight); // Unsere Umleitung von vorhin!
+            showFlightDetailsInModal(sampleFlight); 
         }
     });
     // -------------------------------------------------------------
+    
     flightPath.addTo(routeLayer);
+    hitBox.addTo(routeLayer); // <--- Hitbox als unsichtbaren Layer drauflegen
+
     bounds.push(group.latLngs[0]);
     bounds.push(group.latLngs[1]);
   });
