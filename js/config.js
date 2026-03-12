@@ -655,11 +655,14 @@ async function updateAchievements() {
         `achievements.${type.category}.${achievement.key}.description`
       );
 
+      // 🚀 NEU: onclick Event hinzufügen und Hover-Effekte für Klickbarkeit einbauen!
+      const clickableClasses = isUnlocked 
+            ? "hover:bg-gray-200 dark:hover:bg-gray-600 cursor-pointer shadow-sm hover:shadow transition-all transform hover:-translate-y-0.5" 
+            : "opacity-40 hover:opacity-60 cursor-pointer transition-all";
+
       html += `
-                        <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg flex items-center gap-4 ${
-                          isUnlocked ? "" : "opacity-40"
-                        }">
-                            <span class="text-3xl">${achievement.emoji}</span>
+                        <div onclick="viewAchievementDetails('${type.category}', '${achievement.key}')" class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg flex items-center gap-4 ${clickableClasses}">
+                            <span class="text-3xl drop-shadow-sm">${achievement.emoji}</span>
                             <div>
                                 <h3 class="font-bold text-gray-800 dark:text-white">${title}</h3>
                                 <p class="text-sm text-gray-600 dark:text-gray-400">${description}</p>

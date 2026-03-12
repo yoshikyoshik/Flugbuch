@@ -3729,3 +3729,181 @@ window.viewLogbookDetails = async function(type, key) {
         document.getElementById('ld-modal-content').classList.remove('scale-95');
     }, 10);
 };
+
+// =================================================================
+// ACHIEVEMENT KARTEN LOGIK (Trophäen)
+// =================================================================
+
+window.currentSwipeAchievementIndex = -1;
+window.currentSwipeAchievements = [];
+
+window.closeAchievementDetails = function() {
+    const modal = document.getElementById('achievement-details-modal');
+    const modalContent = document.getElementById('ad-modal-content');
+    if (modal) {
+        modal.classList.add('opacity-0');
+        if (modalContent) modalContent.classList.add('scale-95');
+        setTimeout(() => modal.classList.add('hidden'), 200);
+    }
+};
+
+window.switchAchievementCard = function(index, direction) {
+    const modalContent = document.getElementById('ad-modal-content');
+    if (!modalContent) return;
+
+    modalContent.style.transition = 'transform 0.2s ease-in, opacity 0.2s ease-in';
+    modalContent.style.opacity = '0';
+    modalContent.style.transform = direction === 'left' ? 'translateX(-50px) scale(0.98)' : 'translateX(50px) scale(0.98)';
+
+    setTimeout(() => {
+        const nextAch = window.currentSwipeAchievements[index];
+        viewAchievementDetails(nextAch.category, nextAch.key, true); 
+
+        modalContent.style.transition = 'none';
+        modalContent.style.transform = direction === 'left' ? 'translateX(50px) scale(0.98)' : 'translateX(-50px) scale(0.98)';
+
+        setTimeout(() => {
+            modalContent.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s ease-out';
+            modalContent.style.opacity = '1';
+            modalContent.style.transform = 'translateX(0) scale(1)';
+            
+            setTimeout(() => {
+                modalContent.style.transition = '';
+                modalContent.style.transform = '';
+                modalContent.style.opacity = '';
+            }, 300);
+        }, 20); 
+    }, 200); 
+};
+
+window.viewAchievementDetails = async function(category, key, isSwitching = false) {
+    // 1. Daten zusammensammeln (falls wir nicht schon swipen)
+    if (!isSwitching || window.currentSwipeAchievements.length === 0) {
+        const allFlights = typeof isDemoMode !== 'undefined' && isDemoMode && typeof flights !== 'undefined' ? [...flights] : await getFlights();
+        
+        // Werte berechnen (Gleiche Logik wie in ui.js)
+        const totalFlights = allFlights.length;
+        const totalDistance = allFlights.reduce((sum, f) => sum + (f.distance || 0), 0);
+        const totalMinutes = allFlights.reduce((sum, f) => sum + (typeof parseFlightTimeToMinutes === 'function' ? parseFlightTimeToMinutes(f.time) : 0), 0);
+        const totalHours = totalMinutes / 60;
+        const uniqueAirports = new Set(allFlights.flatMap(f => [f.departure, f.arrival]));
+        const longestFlightDistance = allFlights.length > 0 ? Math.max(...allFlights.map(f => f.distance || 0)) : 0;
+        const totalCO2 = allFlights.reduce((sum, f) => sum + (f.co2_kg || 0), 0);
+
+        const values = { flights: totalFlights, distance: totalDistance, time: totalHours, uniqueAirports: uniqueAirports.size, longestFlight: longestFlightDistance, co2_total: totalCO2 };
+        const units = { flights: getTranslation("achievements.unitFlights"), distance: getTranslation("achievements.unitKm"), time: getTranslation("achievements.unitHours"), uniqueAirports: getTranslation("achievements.unitAirports"), longestFlight: getTranslation("achievements.unitKm"), co2_total: getTranslation("achievements.unitCo2") };
+
+        // Flache Liste aller Trophäen bauen
+        let flatList = [];
+        Object.keys(achievements).forEach(cat => {
+            achievements[cat].forEach(ach => {
+                const isUnlocked = values[cat] >= ach.milestone;
+                flatList.push({ category: cat, key: ach.key, milestone: ach.milestone, emoji: ach.emoji, currentValue: values[cat], unit: units[cat], isUnlocked: isUnlocked, title: getTranslation(`achievements.${cat}.${ach.key}.title`), description: getTranslation(`achievements.${cat}.${ach.key}.description`) });
+            });
+        });
+        window.currentSwipeAchievements = flatList;
+    }
+
+    // 2. Den richtigen Index finden
+    const currentIndex = window.currentSwipeAchievements.findIndex(a => a.category === category && a.key === key);
+    if (currentIndex === -1) return;
+    window.currentSwipeAchievementIndex = currentIndex;
+    const ach = window.currentSwipeAchievements[currentIndex];
+
+    // 3. Texte setzen
+    document.getElementById('ad-title').textContent = ach.title;
+    document.getElementById('ad-desc').textContent = ach.description;
+    document.getElementById('ad-icon').textContent = ach.emoji;
+    
+    // 4. Fortschrittsbalken
+    document.getElementById('ad-progress-text').textContent = `${Math.round(ach.currentValue).toLocaleString("de-DE")} / ${ach.milestone.toLocaleString("de-DE")} ${ach.unit}`;
+    const progressPercent = Math.min((ach.currentValue / ach.milestone) * 100, 100);
+    const bar = document.getElementById('ad-progress-bar');
+    bar.style.width = `${progressPercent}%`;
+
+    // 5. Visuelles Styling (Gesperrt vs. Freigeschaltet)
+    const headerBg = document.getElementById('ad-header-bg');
+    const icon = document.getElementById('ad-icon');
+    const shine = document.getElementById('ad-shine');
+
+    // Reset aller dynamischen Klassen
+    headerBg.className = "relative h-40 sm:h-48 shrink-0 flex items-center justify-center p-6 text-center overflow-hidden transition-colors duration-500";
+    icon.className = "text-7xl sm:text-8xl drop-shadow-2xl transform transition-transform hover:scale-110 z-10 duration-500";
+
+    if (ach.isUnlocked) {
+        // FREIGESCHALTET: Glänzendes Gold/Gelb
+        headerBg.classList.add("bg-gradient-to-br", "from-yellow-400", "via-yellow-500", "to-yellow-600");
+        bar.className = `absolute top-0 left-0 h-full transition-all duration-1000 ease-out ${ach.category === 'co2_total' ? 'bg-red-500' : 'bg-indigo-500'}`;
+        shine.classList.remove('hidden');
+
+        // ✨ Animation: Licht-Reflexion (Shine-Effekt) auslösen
+        shine.style.transition = 'none';
+        shine.style.transform = 'translateX(-100%) skewX(-12deg)';
+        setTimeout(() => {
+            shine.style.transition = 'transform 1.5s ease-in-out';
+            shine.style.transform = 'translateX(200%) skewX(-12deg)';
+        }, 100);
+
+    } else {
+        // GESPERRT: Grau und trüb
+        headerBg.classList.add("bg-gradient-to-br", "from-gray-300", "via-gray-400", "to-gray-500", "dark:from-gray-700", "dark:via-gray-800", "dark:to-gray-900");
+        bar.className = "absolute top-0 left-0 h-full bg-gray-400 dark:bg-gray-600 transition-all duration-1000 ease-out";
+        icon.classList.add("grayscale", "opacity-40");
+        shine.classList.add('hidden');
+    }
+
+    // 6. Navigation (Pfeile & Swipe)
+    const prevBtn = document.getElementById('ad-prev-btn');
+    const nextBtn = document.getElementById('ad-next-btn');
+    const isNativeApp = typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform();
+
+    if (isNativeApp) {
+        if (prevBtn) prevBtn.style.display = 'none';
+        if (nextBtn) nextBtn.style.display = 'none';
+    } else {
+        if (prevBtn) {
+            if (currentIndex > 0) {
+                prevBtn.style.display = 'flex';
+                prevBtn.onclick = () => switchAchievementCard(currentIndex - 1, 'right');
+            } else { prevBtn.style.display = 'none'; }
+        }
+        if (nextBtn) {
+            if (currentIndex < window.currentSwipeAchievements.length - 1) {
+                nextBtn.style.display = 'flex';
+                nextBtn.onclick = () => switchAchievementCard(currentIndex + 1, 'left');
+            } else { nextBtn.style.display = 'none'; }
+        }
+    }
+
+    // Touch-Event (Swipe)
+    const modalContent = document.getElementById('ad-modal-content');
+    if (modalContent && !modalContent.dataset.swipeBound) {
+        let touchstartX = 0; let touchstartY = 0;
+        modalContent.addEventListener('touchstart', e => {
+            touchstartX = e.changedTouches[0].screenX;
+            touchstartY = e.changedTouches[0].screenY;
+        }, {passive: true});
+        modalContent.addEventListener('touchend', e => {
+            const deltaX = e.changedTouches[0].screenX - touchstartX;
+            const deltaY = e.changedTouches[0].screenY - touchstartY;
+            if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 40) {
+                if (deltaX < 0 && window.currentSwipeAchievementIndex < window.currentSwipeAchievements.length - 1) {
+                    switchAchievementCard(window.currentSwipeAchievementIndex + 1, 'left');
+                } else if (deltaX > 0 && window.currentSwipeAchievementIndex > 0) {
+                    switchAchievementCard(window.currentSwipeAchievementIndex - 1, 'right');
+                }
+            }
+        }, {passive: true});
+        modalContent.dataset.swipeBound = 'true';
+    }
+
+    // 7. Modal anzeigen
+    const modal = document.getElementById('achievement-details-modal');
+    modal.classList.remove('hidden');
+    if (!isSwitching) {
+        setTimeout(() => {
+            modal.classList.remove('opacity-0');
+            modalContent.classList.remove('scale-95');
+        }, 10);
+    }
+};

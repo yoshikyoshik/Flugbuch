@@ -2015,6 +2015,50 @@
     </div>
 </div>
 
+<div id="achievement-details-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-gray-900/80 backdrop-blur-sm transition-opacity opacity-0">
+    
+    <button id="ad-prev-btn" class="hidden md:flex absolute left-4 lg:left-12 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white rounded-full p-4 backdrop-blur-md transition shadow-2xl border border-white/20 z-50">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+    </button>
+
+    <button id="ad-next-btn" class="hidden md:flex absolute right-4 lg:right-12 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white rounded-full p-4 backdrop-blur-md transition shadow-2xl border border-white/20 z-50">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+    </button>
+
+    <div id="ad-modal-content" class="bg-white dark:bg-gray-800 w-full max-w-sm sm:max-w-md rounded-2xl shadow-2xl overflow-hidden flex flex-col transition-transform transform scale-95 relative mx-4">
+        
+        <div id="ad-header-bg" class="relative h-40 sm:h-48 bg-gradient-to-br from-yellow-400 via-yellow-500 to-yellow-600 shrink-0 flex items-center justify-center p-6 text-center overflow-hidden">
+            
+            <button onclick="closeAchievementDetails()" class="absolute top-4 left-4 bg-black/20 hover:bg-black/40 text-white rounded-full p-2 backdrop-blur-md transition-colors z-10">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            
+            <div id="ad-icon" class="text-7xl sm:text-8xl drop-shadow-2xl transform transition-transform hover:scale-110 z-10">🏆</div>
+            
+            <div id="ad-shine" class="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/30 to-white/0 transform -skew-x-12 translate-x-full z-0"></div>
+        </div>
+
+        <div class="p-6 text-center">
+            <h2 id="ad-title" class="text-2xl font-black text-gray-900 dark:text-white mb-2 tracking-tight">Titel</h2>
+            <p id="ad-desc" class="text-sm text-gray-500 dark:text-gray-400 mb-6 leading-relaxed">Beschreibung</p>
+            
+            <div class="mb-2 flex justify-between items-end">
+                <span class="text-xs font-bold text-gray-400 uppercase tracking-wider" id="ad-status-label">Fortschritt</span>
+                <span id="ad-progress-text" class="text-sm font-black text-indigo-600 dark:text-indigo-400">0 / 10</span>
+            </div>
+            <div class="h-4 w-full bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden shadow-inner relative">
+                <div id="ad-progress-bar" class="absolute top-0 left-0 h-full bg-indigo-500 transition-all duration-1000 ease-out" style="width: 0%;"></div>
+            </div>
+
+            <div class="md:hidden text-center mt-6 mb-1 opacity-50 flex items-center justify-center gap-2 text-xs font-medium text-gray-500 dark:text-gray-400">
+                <svg class="w-4 h-4 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                <span>Wischen zum Blättern</span>
+                <svg class="w-4 h-4 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+            </div>
+        </div>
+    </div>
+</div>
+
 </div>
 	
   
