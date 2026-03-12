@@ -722,7 +722,7 @@ window.renderFlights = async function (
                     #${flight.flightLogNumber || "-"}
                 </div>
 
-                <div class="flex-grow cursor-pointer group" onclick="viewFlightDetails(${flight.id})">
+                <div class="flex-grow cursor-pointer group" onclick="viewFlightDetails('${flight.id || flight.flight_id || flight.flightLogNumber}')">
                     
                     ${flight.trips && flight.trips.name 
                         ? `<div class="mb-1">

@@ -1802,7 +1802,14 @@
 </div>
 
 <div id="flight-details-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity duration-300 opacity-0">
-    <div class="bg-white dark:bg-gray-800 rounded-3xl overflow-hidden shadow-2xl w-full max-w-lg relative flex flex-col max-h-[90vh] transform transition-transform duration-300 scale-95" id="fd-modal-content">
+    <button id="fd-prev-btn" class="hidden sm:flex absolute left-2 top-[310px] -translate-y-1/2 bg-gray-800/80 hover:bg-black text-white rounded-full p-2 backdrop-blur-md transition shadow-xl border border-white/20 z-50" title="Vorheriger Flug">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+        </button>
+
+        <button id="fd-next-btn" class="hidden sm:flex absolute right-2 top-[310px] -translate-y-1/2 bg-gray-800/80 hover:bg-black text-white rounded-full p-2 backdrop-blur-md transition shadow-xl border border-white/20 z-50" title="Nächster Flug">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+        </button>
+      <div class="bg-white dark:bg-gray-800 rounded-3xl overflow-hidden shadow-2xl w-full max-w-lg relative flex flex-col max-h-[90vh] transform transition-transform duration-300 scale-95" id="fd-modal-content">
         
         <div class="relative h-48 sm:h-56 bg-gray-200 dark:bg-gray-700 shrink-0">
             <img id="fd-hero-img" src="" class="w-full h-full object-cover" alt="Aircraft">
@@ -1888,18 +1895,16 @@
                     </div>
             </div>
             
+            <div class="md:hidden text-center mt-6 mb-2 opacity-50 flex items-center justify-center gap-2 text-xs font-medium text-gray-500 dark:text-gray-400">
+                <svg class="w-4 h-4 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                <span>Wischen zum Blättern</span>
+                <svg class="w-4 h-4 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+            </div>
+
             <div class="text-[9px] text-gray-400 text-center mt-2 hidden" id="fd-planespotters-credit">
                 Titelbild: Planespotters.net / <span id="fd-photographer"></span>
             </div>
         </div> 
-        <button id="fd-prev-btn" class="hidden sm:flex absolute left-2 top-[310px] -translate-y-1/2 bg-gray-800/80 hover:bg-black text-white rounded-full p-2 backdrop-blur-md transition shadow-xl border border-white/20 z-50" title="Vorheriger Flug">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
-        </button>
-
-        <button id="fd-next-btn" class="hidden sm:flex absolute right-2 top-[310px] -translate-y-1/2 bg-gray-800/80 hover:bg-black text-white rounded-full p-2 backdrop-blur-md transition shadow-xl border border-white/20 z-50" title="Nächster Flug">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-        </button>
-
     </div> 
   </div>
 </div>

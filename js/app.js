@@ -3132,15 +3132,28 @@ window.currentSwipeIndex = -1;
 window.currentSwipeFlights = [];
 
 window.viewFlightDetails = async function(id) {
-    // 1. Alle Flüge holen, nummerieren und chronologisch sortieren (älteste zuerst)
-    let allFlights = await getFlights(); 
+    // 1. Alle Flüge holen (Datenquelle dynamisch wählen!)
+    let allFlights = [];
+    if (typeof isDemoMode !== 'undefined' && isDemoMode && typeof flights !== 'undefined') {
+        // Im Demo-Modus greifen wir auf die lokale Demo-Akte zu
+        allFlights = [...flights]; 
+    } else {
+        // Im normalen Modus fragen wir die Supabase-Datenbank
+        allFlights = await getFlights(); 
+    }
+
     allFlights = resequenceAndAssignNumbers(allFlights);
     allFlights.sort((a, b) => a.flightLogNumber - b.flightLogNumber);
 
-    // 2. Aktuellen Flug finden
-    const currentIndex = allFlights.findIndex(f => f.id === id || f.flight_id === id); 
+    // 2. Aktuellen Flug finden (Robuster Check für Demo-Daten)
+    // Wir nutzen "==", damit "1" (String) und 1 (Zahl) gleich behandelt werden
+    const currentIndex = allFlights.findIndex(f => f.id == id || f.flight_id == id || f.flightLogNumber == id); 
     const flight = allFlights[currentIndex]; 
-    if (!flight) return;
+    
+    if (!flight) {
+        console.warn("Flug-Karte konnte nicht geöffnet werden. ID nicht gefunden:", id);
+        return;
+    }
 
     // Swipe-Daten für später speichern
     window.currentSwipeIndex = currentIndex;
@@ -3204,26 +3217,47 @@ window.viewFlightDetails = async function(id) {
     }
 
     // 7. Button Logik (Bearbeiten)
-    document.getElementById('fd-edit-btn').onclick = () => {
-        closeFlightDetails();
-        if (typeof editFlight === 'function') editFlight(id);
-    };
+    const editBtn = document.getElementById('fd-edit-btn');
+    if (typeof isDemoMode !== 'undefined' && isDemoMode) {
+        // Im Demo-Modus wird der Stift komplett ausgeblendet
+        if (editBtn) editBtn.style.display = 'none';
+    } else {
+        // Im normalen Modus ist der Stift sichtbar und klickbar
+        if (editBtn) {
+            editBtn.style.display = ''; 
+            editBtn.onclick = () => {
+                closeFlightDetails();
+                // 🚀 BUGHUNT-FIX: Wir nutzen die Original-ID aus dem Flug-Objekt (behält den Typ Zahl/String bei!)
+                if (typeof editFlight === 'function') editFlight(flight.id || flight.flight_id);
+            };
+        }
+    }
 
     // --- 8. NEU: NAVIGATION BUTTONS (PC) ---
     const prevBtn = document.getElementById('fd-prev-btn');
     const nextBtn = document.getElementById('fd-next-btn');
     
-    if (prevBtn) {
-        if (currentIndex > 0) {
-            prevBtn.style.display = 'flex';
-            prevBtn.onclick = () => viewFlightDetails(allFlights[currentIndex - 1].id || allFlights[currentIndex - 1].flight_id);
-        } else { prevBtn.style.display = 'none'; }
-    }
-    if (nextBtn) {
-        if (currentIndex < allFlights.length - 1) {
-            nextBtn.style.display = 'flex';
-            nextBtn.onclick = () => viewFlightDetails(allFlights[currentIndex + 1].id || allFlights[currentIndex + 1].flight_id);
-        } else { nextBtn.style.display = 'none'; }
+    // Prüfen: Sind wir in der echten Android/iOS App?
+    const isNativeApp = typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform();
+
+    if (isNativeApp) {
+        // Auf dem Handy erzwingen wir IMMER das Ausblenden der Pfeile (Es wird nur gewischt!)
+        if (prevBtn) prevBtn.style.display = 'none';
+        if (nextBtn) nextBtn.style.display = 'none';
+    } else {
+        // Auf dem PC/Web: Normale Logik für die Pfeile
+        if (prevBtn) {
+            if (currentIndex > 0) {
+                prevBtn.style.display = 'flex';
+                prevBtn.onclick = () => viewFlightDetails(allFlights[currentIndex - 1].id || allFlights[currentIndex - 1].flight_id);
+            } else { prevBtn.style.display = 'none'; }
+        }
+        if (nextBtn) {
+            if (currentIndex < allFlights.length - 1) {
+                nextBtn.style.display = 'flex';
+                nextBtn.onclick = () => viewFlightDetails(allFlights[currentIndex + 1].id || allFlights[currentIndex + 1].flight_id);
+            } else { nextBtn.style.display = 'none'; }
+        }
     }
 
     // --- 9. NEU: Wischgesten (SWIPE) für Handys anbinden ---
