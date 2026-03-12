@@ -846,94 +846,66 @@ async function renderLogbookView(groupBy) {
     // ... (Vorheriger Code in renderLogbookView)
 
     if (isAirportView && key !== unknownKey) {
-      titleKey = getTranslation("logbook.detailsTitleAirport").replace(
-        "{key}",
-        key
-      );
-
-      // ✅ NEU: Feature Gating für Airport-Details
+      titleKey = getTranslation("logbook.detailsTitleAirport").replace("{key}", key);
       if (currentUserSubscription === "pro") {
-        // PRO: Text + Button anzeigen
+        // 🚀 NEU: Ruft viewLogbookDetails auf
         titleHtml = `
-						${key}
-						<button onclick="event.stopPropagation(); showAirportDetails('${key}')" class="ml-2 p-1 rounded-full text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors duration-150" title="${titleKey}">
-							<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z" /></svg>
-						</button>
-					`;
+            ${key}
+            <button onclick="event.stopPropagation(); viewLogbookDetails('airport', '${key}')" class="ml-2 p-1 rounded-full text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors duration-150" title="${titleKey}">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z" /></svg>
+            </button>
+        `;
       } else {
-        // ✅ TEASER VERSION
-        titleHtml = `
-						${key}
-						<button onclick="event.stopPropagation(); openPremiumModal('default')" class="ml-2 p-1 rounded-full text-gray-400 hover:bg-gray-100 transition">
-							<span class="text-xs">🔒</span>
-						</button>
-					`;
+        titleHtml = `${key} <button onclick="event.stopPropagation(); openPremiumModal('default')" class="ml-2 p-1 rounded-full text-gray-400 hover:bg-gray-100 transition"><span class="text-xs">🔒</span></button>`;
       }
     } else if (isAirlineView && key !== unknownKey) {
-      const firstFlightWithName = group.flights.find(
-        (f) => f.airline && f.airline.trim() !== ""
-      );
-      
-      // Prüfen: Ist der Key (Gruppenname) ungleich dem vollen Namen? 
-      // Z.B. Key="LH", Name="Lufthansa" -> "Lufthansa (LH)"
-      // Aber: Key="Lufthansa", Name="Lufthansa" -> "Lufthansa"
+      const firstFlightWithName = group.flights.find((f) => f.airline && f.airline.trim() !== "");
       let displayLabel = key;
       if (firstFlightWithName && firstFlightWithName.airline !== key) {
           displayLabel = `${firstFlightWithName.airline} (${key})`;
       }
-      titleKey = getTranslation("logbook.detailsTitleAirline").replace(
-        "{key}",
-        key
-      );
-
-      // ✅ NEU: Feature Gating für Airline-Details
+      titleKey = getTranslation("logbook.detailsTitleAirline").replace("{key}", key);
+      
       if (currentUserSubscription === "pro") {
-        // PRO: Text + Button anzeigen
+        // 🚀 NEU: Ruft viewLogbookDetails auf
         titleHtml = `
-						${displayLabel}
-						<button onclick="event.stopPropagation(); showAirlineDetails('${key}')" class="ml-2 p-1 rounded-full text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors duration-150" title="${titleKey}">
-							<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z" /></svg>
-						</button>
-					`;
+            ${displayLabel}
+            <button onclick="event.stopPropagation(); viewLogbookDetails('airline', '${key}')" class="ml-2 p-1 rounded-full text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors duration-150" title="${titleKey}">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z" /></svg>
+            </button>
+        `;
       } else {
-        // ✅ TEASER VERSION
-        titleHtml = `
-						${key}
-						<button onclick="event.stopPropagation(); openPremiumModal('default')" class="ml-2 p-1 rounded-full text-gray-400 hover:bg-gray-100 transition">
-							<span class="text-xs">🔒</span>
-						</button>
-					`;
+        titleHtml = `${key} <button onclick="event.stopPropagation(); openPremiumModal('default')" class="ml-2 p-1 rounded-full text-gray-400 hover:bg-gray-100 transition"><span class="text-xs">🔒</span></button>`;
       }
     } else if (isAircraftTypeView && key !== unknownKey) {
-      titleKey = getTranslation("logbook.detailsTitleAircraft").replace(
-        "{key}",
-        key
-      );
-
-      // ✅ NEU: Feature Gating für Aircraft-Details
+      titleKey = getTranslation("logbook.detailsTitleAircraft").replace("{key}", key);
+      
       if (currentUserSubscription === "pro") {
-        // PRO: Text + Button anzeigen
+        // 🚀 NEU: Ruft viewLogbookDetails auf
         titleHtml = `
-						${key}
-						<button onclick="event.stopPropagation(); showAircraftDetails('${key}')" class="ml-2 p-1 rounded-full text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors duration-150" title="${titleKey}">
-							<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z" /></svg>
-						</button>
-					`;
+            ${key}
+            <button onclick="event.stopPropagation(); viewLogbookDetails('aircraft', '${key}')" class="ml-2 p-1 rounded-full text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors duration-150" title="${titleKey}">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z" /></svg>
+            </button>
+        `;
       } else {
-        // ✅ TEASER VERSION
+        titleHtml = `${key} <button onclick="event.stopPropagation(); openPremiumModal('default')" class="ml-2 p-1 rounded-full text-gray-400 hover:bg-gray-100 transition"><span class="text-xs">🔒</span></button>`;
+      }
+    } else if (isRegistrationView && key !== unknownKey) {
+      // 🚀 NEU: Vorher gab es hier keinen Button. Jetzt haben wir eine Karte für Registrierungen!
+      if (currentUserSubscription === "pro") {
         titleHtml = `
-						${key}
-						<button onclick="event.stopPropagation(); openPremiumModal('default')" class="ml-2 p-1 rounded-full text-gray-400 hover:bg-gray-100 transition">
-							<span class="text-xs">🔒</span>
-						</button>
-					`;
+            ${key}
+            <button onclick="event.stopPropagation(); viewLogbookDetails('registration', '${key}')" class="ml-2 p-1 rounded-full text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors duration-150" title="Flugzeug Details">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z" /></svg>
+            </button>
+        `;
+      } else {
+        titleHtml = `${key} <button onclick="event.stopPropagation(); openPremiumModal('default')" class="ml-2 p-1 rounded-full text-gray-400 hover:bg-gray-100 transition"><span class="text-xs">🔒</span></button>`;
       }
     }
-    // ...
 
-    // KEIN Info-Button für Registrierung, da es keine API dafür gibt
-
-    summaryElement.innerHTML = `${titleHtml}`; // Entfernt die (Anzahl/Distanz) aus dem Titel
+    summaryElement.innerHTML = `${titleHtml}`;
 
     const flightListDiv = document.createElement("div");
     flightListDiv.className =

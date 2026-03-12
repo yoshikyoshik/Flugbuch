@@ -1966,6 +1966,55 @@
     </div>
   </div>
 
+  <div id="logbook-details-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-gray-900/80 backdrop-blur-sm transition-opacity opacity-0">
+    <div id="ld-modal-content" class="bg-white dark:bg-gray-800 w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] transition-transform transform scale-95 relative mx-4">
+        
+        <div class="relative h-40 sm:h-48 bg-gradient-to-br from-blue-600 via-indigo-700 to-indigo-900 shrink-0 flex items-center justify-center p-6 text-center overflow-hidden">
+            
+            <img id="ld-hero-img" src="" class="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-overlay hidden transition-opacity duration-300" alt="Background">
+            <div id="ld-hero-overlay" class="absolute inset-0 bg-gradient-to-t from-gray-900/80 to-transparent hidden"></div>
+
+            <button onclick="closeLogbookDetails()" class="absolute top-4 left-4 bg-black/30 hover:bg-black/60 text-white rounded-full p-2 backdrop-blur-md transition-colors z-10">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            
+            <div class="z-10 flex flex-col items-center mt-2">
+                <div class="bg-white p-2 rounded-xl mb-3 shadow-lg hidden" id="ld-logo-container">
+                    <img id="ld-logo" src="" class="h-10 sm:h-12 w-auto object-contain" alt="Logo">
+                </div>
+                <div id="ld-icon" class="text-4xl mb-2 drop-shadow-md">✈️</div>
+                
+                <h2 id="ld-title" class="text-2xl sm:text-3xl font-black text-white tracking-tight drop-shadow-md">Titel</h2>
+                <p id="ld-subtitle" class="text-xs sm:text-sm font-medium text-blue-200 uppercase tracking-wider mt-1 drop-shadow">Kategorie</p>
+            </div>
+            
+            <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wNSkiLz48L3N2Zz4=')] opacity-50"></div>
+        </div>
+
+        <div class="p-6 overflow-y-auto custom-scrollbar">
+            
+            <div class="grid grid-cols-3 gap-3 mb-6">
+                <div class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-xl border border-gray-100 dark:border-gray-700 text-center">
+                    <p class="text-[10px] text-gray-500 dark:text-gray-400 font-bold mb-1 uppercase">Flüge</p>
+                    <p class="text-lg font-black text-indigo-600 dark:text-indigo-400" id="ld-flight-count">-</p>
+                </div>
+                <div class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-xl border border-gray-100 dark:border-gray-700 text-center">
+                    <p class="text-[10px] text-gray-500 dark:text-gray-400 font-bold mb-1 uppercase" id="ld-stat2-label">Distanz</p>
+                    <p class="text-lg font-black text-gray-900 dark:text-white" id="ld-stat2-value">-</p>
+                </div>
+                <div class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-xl border border-gray-100 dark:border-gray-700 text-center">
+                    <p class="text-[10px] text-gray-500 dark:text-gray-400 font-bold mb-1 uppercase" id="ld-stat3-label">Typen</p>
+                    <p class="text-lg font-black text-orange-600 dark:text-orange-500" id="ld-stat3-value">-</p>
+                </div>
+            </div>
+
+            <h3 class="text-xs font-bold text-gray-400 dark:text-gray-500 mb-3 uppercase tracking-wider">Zugehörige Flüge</h3>
+            <div id="ld-flight-list" class="space-y-2 mb-2 border-l-2 border-indigo-100 dark:border-indigo-900/50 pl-4 ml-2">
+                </div>
+        </div>
+    </div>
+</div>
+
 </div>
 	
   

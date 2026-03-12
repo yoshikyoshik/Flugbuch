@@ -3556,3 +3556,176 @@ window.viewTripDetails = async function(tripId, isSwitching = false) {
         }, 10);
     }
 };
+
+// =================================================================
+// LOGBOOK KARTEN LOGIK
+// =================================================================
+
+window.closeLogbookDetails = function() {
+    const modal = document.getElementById('logbook-details-modal');
+    const modalContent = document.getElementById('ld-modal-content');
+    
+    if (modal) {
+        modal.classList.add('opacity-0');
+        if (modalContent) modalContent.classList.add('scale-95');
+        setTimeout(() => modal.classList.add('hidden'), 200);
+    }
+};
+
+window.viewLogbookDetails = async function(type, key) {
+    // 1. Alle Flüge holen und nummerieren (für den "Scope")
+    let allFlights = typeof isDemoMode !== 'undefined' && isDemoMode && typeof flights !== 'undefined' ? [...flights] : await getFlights();
+    allFlights = resequenceAndAssignNumbers(allFlights);
+
+    let filteredFlights = [];
+    let title = key;
+    let subtitle = "";
+    let icon = "✈️";
+    let logoUrl = null;
+    let heroImgUrl = null; // 📸 NEU: Variable für das Hintergrundbild
+
+    // 2. Flüge nach der angeklickten Kategorie filtern
+    if (type === 'airline') {
+        filteredFlights = allFlights.filter(f => f.airline === key);
+        subtitle = "Airline";
+        icon = "🏢";
+        // Wir schnappen uns das Logo vom ersten Flug, der eins hat!
+        const flightWithLogo = filteredFlights.find(f => f.airline_logo);
+        if (flightWithLogo) logoUrl = flightWithLogo.airline_logo;
+        
+    } else if (type === 'aircraft') {
+        filteredFlights = allFlights.filter(f => f.aircraftType === key);
+        subtitle = "Flugzeugtyp";
+        icon = "🛫";
+        
+        // 📸 NEU: Bild-Suche auch für den gesamten Flugzeugtyp
+        const flightWithPhoto = filteredFlights.find(f => f.planespotters_url);
+        if (flightWithPhoto) heroImgUrl = flightWithPhoto.planespotters_url;
+        
+    } else if (type === 'airport') {
+        filteredFlights = allFlights.filter(f => f.departure === key || f.arrival === key);
+        subtitle = "Flughafen";
+        icon = "📍";
+        if (typeof airportData !== 'undefined' && airportData[key]) {
+            title = `${airportData[key].name} (${key})`;
+        }
+        
+    } else if (type === 'registration') {
+        filteredFlights = allFlights.filter(f => f.registration === key);
+        subtitle = "Registrierung";
+        icon = "🏷️";
+        
+        // 📸 NEU: Bild für diese exakte Registrierung suchen
+        const flightWithPhoto = filteredFlights.find(f => f.planespotters_url);
+        if (flightWithPhoto) {
+            heroImgUrl = flightWithPhoto.planespotters_url;
+        } else {
+            // Fallback: Deine eigenen hochgeladenen Fotos nutzen
+            const flightWithOwnPhoto = filteredFlights.find(f => f.photo_url && f.photo_url.length > 0);
+            if (flightWithOwnPhoto) heroImgUrl = flightWithOwnPhoto.photo_url[0];
+        }
+    }
+
+    if (filteredFlights.length === 0) return;
+
+    // Sortierung: Neuester Flug oben
+    filteredFlights.sort((a, b) => new Date(b.date) - new Date(a.date));
+    window.currentLogbookFlights = filteredFlights;
+
+    // 3. Header-Texte & Icons setzen
+    document.getElementById('ld-title').textContent = title;
+    document.getElementById('ld-subtitle').textContent = subtitle;
+    
+    const logoContainer = document.getElementById('ld-logo-container');
+    const logoImg = document.getElementById('ld-logo');
+    const iconEl = document.getElementById('ld-icon');
+    
+    // 📸 NEU: Bildelemente holen
+    const heroImg = document.getElementById('ld-hero-img');
+    const heroOverlay = document.getElementById('ld-hero-overlay');
+
+    // Logo Logik (Airline)
+    if (logoUrl) {
+        logoImg.src = logoUrl;
+        logoContainer.classList.remove('hidden');
+        iconEl.classList.add('hidden');
+    } else {
+        logoContainer.classList.add('hidden');
+        iconEl.textContent = icon;
+        iconEl.classList.remove('hidden');
+    }
+
+    // 📸 NEU: Hero Image Logik einblenden
+    if (heroImgUrl && heroImg && heroOverlay) {
+        heroImg.src = heroImgUrl;
+        heroImg.classList.remove('hidden');
+        heroOverlay.classList.remove('hidden');
+        iconEl.classList.add('hidden'); // Emoji verstecken, da das Bild schon wirkt
+    } else if (heroImg && heroOverlay) {
+        // Sicherstellen, dass es versteckt ist (z.B. bei Flughäfen)
+        heroImg.classList.add('hidden');
+        heroOverlay.classList.add('hidden');
+    }
+
+    // 4. Statistiken berechnen (Dynamisch je nach Typ!)
+    let totalDist = 0;
+    const uniqueTypes = new Set();
+    const uniqueRoutes = new Set();
+
+    filteredFlights.forEach(f => {
+        totalDist += (f.distance || 0);
+        if (f.aircraftType) uniqueTypes.add(f.aircraftType);
+        if (f.departure && f.arrival) uniqueRoutes.add(`${f.departure}-${f.arrival}`);
+    });
+
+    document.getElementById('ld-flight-count').textContent = filteredFlights.length;
+    document.getElementById('ld-stat2-value').textContent = `${totalDist.toLocaleString("de-DE")} km`;
+
+    const stat3Label = document.getElementById('ld-stat3-label');
+    const stat3Value = document.getElementById('ld-stat3-value');
+
+    if (type === 'airline') {
+        stat3Label.textContent = "Geflogene Typen";
+        stat3Value.textContent = uniqueTypes.size;
+    } else {
+        stat3Label.textContent = "Verschiedene Routen";
+        stat3Value.textContent = uniqueRoutes.size;
+    }
+
+    // 5. Flug-Liste aufbauen
+    const listContainer = document.getElementById('ld-flight-list');
+    listContainer.innerHTML = '';
+
+    filteredFlights.forEach((f, idx) => {
+        const isLast = idx === filteredFlights.length - 1;
+        const el = document.createElement('div');
+        el.className = `relative pb-4 ${isLast ? '' : ''}`;
+        
+        // Klick auf den Flug öffnet die Flug-Karte und übergibt den Logbuch-Scope!
+        el.innerHTML = `
+            <div class="absolute -left-[21px] top-1 w-2.5 h-2.5 rounded-full bg-indigo-400 border-2 border-white dark:border-gray-800"></div>
+            <div class="flex justify-between items-center group cursor-pointer" onclick="viewFlightDetails('${f.id || f.flight_id}', false, window.currentLogbookFlights)">
+                <div>
+                    <p class="text-sm font-bold text-gray-800 dark:text-gray-200 group-hover:text-indigo-600 transition">
+                        ${f.departure} ➔ ${f.arrival}
+                    </p>
+                    <p class="text-xs text-gray-500">${f.date} • Flug #${f.flightLogNumber}</p>
+                </div>
+                <div class="bg-gray-100 dark:bg-gray-700 p-1.5 rounded text-gray-400 group-hover:bg-indigo-100 group-hover:text-indigo-600 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                </div>
+            </div>
+        `;
+        listContainer.appendChild(el);
+    });
+
+    // 6. Modal anzeigen (Z-Index etwas niedriger als die Flug-Karte, damit die drüber passt)
+    const modal = document.getElementById('logbook-details-modal');
+    modal.style.zIndex = '50';
+    modal.classList.remove('hidden');
+    
+    setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        document.getElementById('ld-modal-content').classList.remove('scale-95');
+    }, 10);
+};
