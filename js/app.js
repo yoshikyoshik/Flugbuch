@@ -2843,12 +2843,15 @@ window.renderTripManager = async function() {
       const totalPrice = tripFlights.reduce((sum, f) => sum + (f.price || 0), 0).toFixed(2);
       const currency = tripFlights.find(f => f.currency)?.currency || "";
 
-      // HTML für die Karte (jetzt ohne Popup-Rand, passend für den Tab)
+      // HTML für die Karte (jetzt klickbar mit Hover-Effekt!)
       htmlContent += `
-        <div class="bg-gray-50 dark:bg-gray-900/50 p-5 rounded-xl border border-gray-200 dark:border-gray-700">
+        <div onclick="viewTripDetails('${trip.id}')" class="bg-gray-50 dark:bg-gray-900/50 p-5 rounded-xl border border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 hover:shadow-md transition-all group">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-bold text-indigo-700 dark:text-indigo-400">🏝️ ${trip.name}</h3>
-                <span class="text-sm font-semibold text-gray-500 px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded-full">${tripFlights.length} ${getTranslation("stats.flights") || "Flüge"}</span>
+                <h3 class="text-lg font-bold text-indigo-700 dark:text-indigo-400 group-hover:text-indigo-500 transition-colors">🏝️ ${trip.name}</h3>
+                <div class="flex items-center gap-2">
+                    <span class="text-sm font-semibold text-gray-500 px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded-full">${tripFlights.length} ${getTranslation("stats.flights") || "Flüge"}</span>
+                    <svg class="w-5 h-5 text-gray-400 group-hover:text-indigo-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                </div>
             </div>
             
             <div class="grid grid-cols-3 gap-3 text-sm text-center mb-4">
@@ -3142,8 +3145,8 @@ window.switchFlightCard = function(flightId, direction) {
     modalContent.style.transform = direction === 'left' ? 'translateX(-50px) scale(0.98)' : 'translateX(50px) scale(0.98)';
 
     setTimeout(() => {
-        // 2. Daten aktualisieren (Das 'true' sagt der Funktion, dass wir animieren)
-        viewFlightDetails(flightId, true); 
+        // 2. Daten aktualisieren und SCOPE weitergeben!
+        viewFlightDetails(flightId, true, window.currentSwipeFlights); 
 
         // 3. Karte auf die andere Seite teleportieren (unsichtbar)
         modalContent.style.transition = 'none';
@@ -3165,30 +3168,28 @@ window.switchFlightCard = function(flightId, direction) {
     }, 200); // Entspricht der 0.2s Raus-Animation
 };
 
-// 🚀 ANPASSUNG: Wir fügen "isSwitching = false" als zweiten Parameter hinzu!
-window.viewFlightDetails = async function(id, isSwitching = false) {
-    // 1. Alle Flüge holen (Datenquelle dynamisch wählen!)
+// 🚀 ANPASSUNG: Wir akzeptieren jetzt einen 3. Parameter "customScope"
+window.viewFlightDetails = async function(id, isSwitching = false, customScope = null) {
     let allFlights = [];
-    if (typeof isDemoMode !== 'undefined' && isDemoMode && typeof flights !== 'undefined') {
-        // Im Demo-Modus greifen wir auf die lokale Demo-Akte zu
-        allFlights = [...flights]; 
+    
+    // 1. Datenquelle wählen (Trip-Scope oder Alle Flüge)
+    if (customScope) {
+        allFlights = customScope; // Wir nutzen NUR die Flüge dieser Reise!
+        allFlights.sort((a, b) => a.flightLogNumber - b.flightLogNumber);
     } else {
-        // Im normalen Modus fragen wir die Supabase-Datenbank
-        allFlights = await getFlights(); 
+        if (typeof isDemoMode !== 'undefined' && isDemoMode && typeof flights !== 'undefined') {
+            allFlights = [...flights]; 
+        } else {
+            allFlights = await getFlights(); 
+        }
+        allFlights = resequenceAndAssignNumbers(allFlights);
+        allFlights.sort((a, b) => a.flightLogNumber - b.flightLogNumber);
     }
 
-    allFlights = resequenceAndAssignNumbers(allFlights);
-    allFlights.sort((a, b) => a.flightLogNumber - b.flightLogNumber);
-
-    // 2. Aktuellen Flug finden (Robuster Check für Demo-Daten)
-    // Wir nutzen "==", damit "1" (String) und 1 (Zahl) gleich behandelt werden
+    // 2. Aktuellen Flug finden
     const currentIndex = allFlights.findIndex(f => f.id == id || f.flight_id == id || f.flightLogNumber == id); 
     const flight = allFlights[currentIndex]; 
-    
-    if (!flight) {
-        console.warn("Flug-Karte konnte nicht geöffnet werden. ID nicht gefunden:", id);
-        return;
-    }
+    if (!flight) return;
 
     // Swipe-Daten für später speichern
     window.currentSwipeIndex = currentIndex;
@@ -3336,9 +3337,9 @@ window.viewFlightDetails = async function(id, isSwitching = false) {
 
     // Modal geschmeidig einblenden
     const modal = document.getElementById('flight-details-modal');
+    modal.style.zIndex = '60'; // <-- 🚀 NEU: Legt die Flug-Karte sicher ÜBER die Reise-Karte!
     modal.classList.remove('hidden');
     
-    // 🚀 WICHTIG: Normale Einblend-Animation NUR ausführen, wenn wir die Karte FRISCH öffnen
     if (!isSwitching) {
         setTimeout(() => {
             modal.classList.remove('opacity-0');
@@ -3363,5 +3364,195 @@ window.closeFlightDetails = function() {
         setTimeout(() => {
             modal.classList.add('hidden');
         }, 200);
+    }
+};
+
+// =================================================================
+// TRIP KARTEN LOGIK (Swipe & View)
+// =================================================================
+
+window.currentSwipeTripIndex = -1;
+window.currentSwipeTrips = [];
+
+// Animations-Helfer
+window.switchTripCard = function(tripId, direction) {
+    const modalContent = document.getElementById('td-modal-content');
+    if (!modalContent) return;
+
+    modalContent.style.transition = 'transform 0.2s ease-in, opacity 0.2s ease-in';
+    modalContent.style.opacity = '0';
+    modalContent.style.transform = direction === 'left' ? 'translateX(-50px) scale(0.98)' : 'translateX(50px) scale(0.98)';
+
+    setTimeout(() => {
+        viewTripDetails(tripId, true); 
+
+        modalContent.style.transition = 'none';
+        modalContent.style.transform = direction === 'left' ? 'translateX(50px) scale(0.98)' : 'translateX(-50px) scale(0.98)';
+
+        setTimeout(() => {
+            modalContent.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s ease-out';
+            modalContent.style.opacity = '1';
+            modalContent.style.transform = 'translateX(0) scale(1)';
+            
+            setTimeout(() => {
+                modalContent.style.transition = '';
+                modalContent.style.transform = '';
+                modalContent.style.opacity = '';
+            }, 300);
+        }, 20); 
+    }, 200); 
+};
+
+// Schließen-Helfer
+window.closeTripDetails = function() {
+    const modal = document.getElementById('trip-details-modal');
+    const modalContent = document.getElementById('td-modal-content');
+    
+    if (modal) {
+        modal.classList.add('opacity-0');
+        if (modalContent) modalContent.classList.add('scale-95');
+        setTimeout(() => modal.classList.add('hidden'), 200);
+    }
+};
+
+// Hauptfunktion zum Öffnen der Reise
+window.viewTripDetails = async function(tripId, isSwitching = false) {
+    // 1. Alle Reisen abrufen (Supabase)
+    const { data: trips, error } = await supabaseClient.from('trips').select('*').order('created_at', { ascending: false });
+    if (error || !trips) return;
+    
+    // 2. Alle Flüge abrufen und chronologisch nummerieren (wichtig für die Flug-Nummern!)
+    let allFlights = typeof isDemoMode !== 'undefined' && isDemoMode && typeof flights !== 'undefined' ? [...flights] : await getFlights();
+    allFlights = resequenceAndAssignNumbers(allFlights); // <-- NEU
+    
+    // 3. Den aktuellen Trip finden
+    const currentIndex = trips.findIndex(t => t.id == tripId);
+    const trip = trips[currentIndex];
+    if (!trip) return;
+
+    window.currentSwipeTripIndex = currentIndex;
+    window.currentSwipeTrips = trips;
+
+    // 4. Die Flüge für DIESEN Trip herausfiltern und sortieren (chronologisch)
+    const tripFlights = allFlights.filter(f => f.trip_id == trip.id);
+    tripFlights.sort((a, b) => new Date(a.date) - new Date(b.date));
+    window.currentTripFlights = tripFlights; // <-- NEU: Scope für Swipen speichern
+
+    // 5. Statistiken der Reise berechnen
+    let totalDist = 0;
+    let totalCO2 = 0;
+    tripFlights.forEach(f => {
+        totalDist += (f.distance || 0);
+        totalCO2 += (f.co2_kg || 0);
+    });
+
+    let dateRange = "Keine Flüge";
+    if (tripFlights.length > 0) {
+        const first = new Date(tripFlights[0].date).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
+        const last = new Date(tripFlights[tripFlights.length - 1].date).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
+        dateRange = tripFlights.length === 1 ? first : `${first} – ${last}`;
+    }
+
+    // 6. Werte ins HTML eintragen
+    document.getElementById('td-name').textContent = trip.name;
+    document.getElementById('td-date-range').textContent = dateRange;
+    document.getElementById('td-flight-count').textContent = tripFlights.length;
+    document.getElementById('td-distance').textContent = `${totalDist.toLocaleString("de-DE")} km`;
+    document.getElementById('td-co2').textContent = `${totalCO2.toLocaleString("de-DE")} kg`;
+
+    // 7. Die kleine Flugliste generieren
+    const listContainer = document.getElementById('td-flight-list');
+    listContainer.innerHTML = '';
+
+    if (tripFlights.length === 0) {
+        listContainer.innerHTML = `<p class="text-sm text-gray-500 italic">Noch keine Flüge hinzugefügt.</p>`;
+    } else {
+        tripFlights.forEach((f, idx) => {
+            const isLast = idx === tripFlights.length - 1;
+            const el = document.createElement('div');
+            el.className = `relative pb-4 ${isLast ? '' : ''}`; // Für den Timeline-Look
+            
+            // Kleiner Kreis links auf der Border-Linie
+            el.innerHTML = `
+                <div class="absolute -left-[21px] top-1 w-2.5 h-2.5 rounded-full bg-indigo-400 border-2 border-white dark:border-gray-800"></div>
+                <div class="flex justify-between items-center group cursor-pointer" onclick="viewFlightDetails('${f.id || f.flight_id}', false, window.currentTripFlights)">
+                    <div>
+                        <p class="text-sm font-bold text-gray-800 dark:text-gray-200 group-hover:text-indigo-600 transition">
+                            ${f.departure} ➔ ${f.arrival}
+                        </p>
+                        <p class="text-xs text-gray-500">${f.date} • ${f.airline || 'Unbekannt'}</p>
+                    </div>
+                    <div class="bg-gray-100 dark:bg-gray-700 p-1.5 rounded text-gray-400 group-hover:bg-indigo-100 group-hover:text-indigo-600 transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                    </div>
+                </div>
+            `;
+            listContainer.appendChild(el);
+        });
+    }
+
+    // 8. Pfeil-Logik (PC) & Swipe-Logik (Handy) - Exakt wie bei den Flügen
+    const prevBtn = document.getElementById('td-prev-btn');
+    const nextBtn = document.getElementById('td-next-btn');
+    const isNativeApp = typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform();
+
+    if (isNativeApp) {
+        if (prevBtn) prevBtn.style.display = 'none';
+        if (nextBtn) nextBtn.style.display = 'none';
+    } else {
+        if (prevBtn) {
+            if (currentIndex > 0) {
+                prevBtn.style.display = 'flex';
+                prevBtn.onclick = () => switchTripCard(trips[currentIndex - 1].id, 'right');
+            } else { prevBtn.style.display = 'none'; }
+        }
+        if (nextBtn) {
+            if (currentIndex < trips.length - 1) {
+                nextBtn.style.display = 'flex';
+                nextBtn.onclick = () => switchTripCard(trips[currentIndex + 1].id, 'left');
+            } else { nextBtn.style.display = 'none'; }
+        }
+    }
+
+    // Touch-Event für Swipe anhängen
+    const modalContent = document.getElementById('td-modal-content');
+    if (modalContent && !modalContent.dataset.swipeBound) {
+        let touchstartX = 0;
+        let touchstartY = 0;
+
+        modalContent.addEventListener('touchstart', e => {
+            touchstartX = e.changedTouches[0].screenX;
+            touchstartY = e.changedTouches[0].screenY;
+        }, {passive: true});
+
+        modalContent.addEventListener('touchend', e => {
+            const touchendX = e.changedTouches[0].screenX;
+            const touchendY = e.changedTouches[0].screenY;
+            const deltaX = touchendX - touchstartX;
+            const deltaY = touchendY - touchstartY;
+
+            if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 40) {
+                if (deltaX < 0) {
+                    if (window.currentSwipeTripIndex < window.currentSwipeTrips.length - 1) {
+                        switchTripCard(window.currentSwipeTrips[window.currentSwipeTripIndex + 1].id, 'left');
+                    }
+                } else {
+                    if (window.currentSwipeTripIndex > 0) {
+                        switchTripCard(window.currentSwipeTrips[window.currentSwipeTripIndex - 1].id, 'right');
+                    }
+                }
+            }
+        }, {passive: true});
+        modalContent.dataset.swipeBound = 'true';
+    }
+
+    // 9. Karte anzeigen
+    const modal = document.getElementById('trip-details-modal');
+    modal.classList.remove('hidden');
+    if (!isSwitching) {
+        setTimeout(() => {
+            modal.classList.remove('opacity-0');
+            modalContent.classList.remove('scale-95');
+        }, 10);
     }
 };
