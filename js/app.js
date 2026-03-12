@@ -3131,7 +3131,42 @@ window.dismissImportPromo = function(event) {
 window.currentSwipeIndex = -1;
 window.currentSwipeFlights = [];
 
-window.viewFlightDetails = async function(id) {
+// --- 🚀 NEU: Animations-Helfer für das Swipen ---
+window.switchFlightCard = function(flightId, direction) {
+    const modalContent = document.getElementById('fd-modal-content');
+    if (!modalContent) return;
+
+    // 1. Sanftes Rausgleiten (in Wisch-Richtung)
+    modalContent.style.transition = 'transform 0.2s ease-in, opacity 0.2s ease-in';
+    modalContent.style.opacity = '0';
+    modalContent.style.transform = direction === 'left' ? 'translateX(-50px) scale(0.98)' : 'translateX(50px) scale(0.98)';
+
+    setTimeout(() => {
+        // 2. Daten aktualisieren (Das 'true' sagt der Funktion, dass wir animieren)
+        viewFlightDetails(flightId, true); 
+
+        // 3. Karte auf die andere Seite teleportieren (unsichtbar)
+        modalContent.style.transition = 'none';
+        modalContent.style.transform = direction === 'left' ? 'translateX(50px) scale(0.98)' : 'translateX(-50px) scale(0.98)';
+
+        // 4. Sanftes Reingleiten
+        setTimeout(() => {
+            modalContent.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s ease-out';
+            modalContent.style.opacity = '1';
+            modalContent.style.transform = 'translateX(0) scale(1)';
+            
+            // 5. Aufräumen, damit Schließen & Öffnen danach normal funktionieren
+            setTimeout(() => {
+                modalContent.style.transition = '';
+                modalContent.style.transform = '';
+                modalContent.style.opacity = '';
+            }, 300);
+        }, 20); // Kurzer Moment, damit der Browser die Start-Position rendert
+    }, 200); // Entspricht der 0.2s Raus-Animation
+};
+
+// 🚀 ANPASSUNG: Wir fügen "isSwitching = false" als zweiten Parameter hinzu!
+window.viewFlightDetails = async function(id, isSwitching = false) {
     // 1. Alle Flüge holen (Datenquelle dynamisch wählen!)
     let allFlights = [];
     if (typeof isDemoMode !== 'undefined' && isDemoMode && typeof flights !== 'undefined') {
@@ -3237,25 +3272,24 @@ window.viewFlightDetails = async function(id) {
     const prevBtn = document.getElementById('fd-prev-btn');
     const nextBtn = document.getElementById('fd-next-btn');
     
-    // Prüfen: Sind wir in der echten Android/iOS App?
     const isNativeApp = typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform();
 
     if (isNativeApp) {
-        // Auf dem Handy erzwingen wir IMMER das Ausblenden der Pfeile (Es wird nur gewischt!)
         if (prevBtn) prevBtn.style.display = 'none';
         if (nextBtn) nextBtn.style.display = 'none';
     } else {
-        // Auf dem PC/Web: Normale Logik für die Pfeile
         if (prevBtn) {
             if (currentIndex > 0) {
                 prevBtn.style.display = 'flex';
-                prevBtn.onclick = () => viewFlightDetails(allFlights[currentIndex - 1].id || allFlights[currentIndex - 1].flight_id);
+                // 🚀 NEU: Nutzt die flüssige Switch-Animation nach RECHTS
+                prevBtn.onclick = () => switchFlightCard(allFlights[currentIndex - 1].id || allFlights[currentIndex - 1].flight_id, 'right');
             } else { prevBtn.style.display = 'none'; }
         }
         if (nextBtn) {
             if (currentIndex < allFlights.length - 1) {
                 nextBtn.style.display = 'flex';
-                nextBtn.onclick = () => viewFlightDetails(allFlights[currentIndex + 1].id || allFlights[currentIndex + 1].flight_id);
+                // 🚀 NEU: Nutzt die flüssige Switch-Animation nach LINKS
+                nextBtn.onclick = () => switchFlightCard(allFlights[currentIndex + 1].id || allFlights[currentIndex + 1].flight_id, 'left');
             } else { nextBtn.style.display = 'none'; }
         }
     }
@@ -3278,34 +3312,39 @@ window.viewFlightDetails = async function(id) {
             const deltaX = touchendX - touchstartX;
             const deltaY = touchendY - touchstartY;
 
-            // Logik: Nur wischen, wenn mehr horizontal als vertikal bewegt (verhindert Auslösen beim Scrollen)
             if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 40) {
                 if (deltaX < 0) {
                     // Nach links wischen -> Neuerer Flug
                     if (window.currentSwipeIndex < window.currentSwipeFlights.length - 1) {
                         const nextF = window.currentSwipeFlights[window.currentSwipeIndex + 1];
-                        viewFlightDetails(nextF.id || nextF.flight_id);
+                        // 🚀 NEU: Nutzt die Switch-Animation
+                        switchFlightCard(nextF.id || nextF.flight_id, 'left');
                     }
                 } else {
                     // Nach rechts wischen -> Älterer Flug
                     if (window.currentSwipeIndex > 0) {
                         const prevF = window.currentSwipeFlights[window.currentSwipeIndex - 1];
-                        viewFlightDetails(prevF.id || prevF.flight_id);
+                        // 🚀 NEU: Nutzt die Switch-Animation
+                        switchFlightCard(prevF.id || prevF.flight_id, 'right');
                     }
                 }
             }
         }, {passive: true});
         
-        modalContent.dataset.swipeBound = 'true'; // Verhindert, dass das Event mehrfach feuert
+        modalContent.dataset.swipeBound = 'true';
     }
 
     // Modal geschmeidig einblenden
     const modal = document.getElementById('flight-details-modal');
     modal.classList.remove('hidden');
-    setTimeout(() => {
-        modal.classList.remove('opacity-0');
-        modalContent.classList.remove('scale-95');
-    }, 10);
+    
+    // 🚀 WICHTIG: Normale Einblend-Animation NUR ausführen, wenn wir die Karte FRISCH öffnen
+    if (!isSwitching) {
+        setTimeout(() => {
+            modal.classList.remove('opacity-0');
+            modalContent.classList.remove('scale-95');
+        }, 10);
+    }
 };
 
 // --- NEU: Funktion zum Schließen der Flug-Karte (inkl. weicher Animation) ---
