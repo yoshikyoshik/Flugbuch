@@ -47,6 +47,7 @@
   "terms": "Términos y condiciones",
   
   "achievements": {
+    "progress": "Progreso",
     "co2_total": {
       "1000": {
         "description": "Has registrado tu primera tonelada (1.000 kg) de CO₂.",

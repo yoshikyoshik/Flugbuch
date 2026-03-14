@@ -47,6 +47,7 @@
   "terms": "AGB",
   
   "achievements": {
+    "progress": "Fortschritt",
     "co2_total": {
       "1000": {
         "description": "Du hast deine erste Tonne (1.000 kg) CO₂ erfasst.",

@@ -47,6 +47,7 @@
   "terms": "Terms",
   
   "achievements": {
+    "progress": "Progress",
     "co2_total": {
       "1000": {
         "description": "You have recorded your first ton (1,000 kg) of CO₂.",

@@ -47,6 +47,7 @@
   "terms": "条款",
   
   "achievements": {
+    "progress": "进度",
     "co2_total": {
       "1000": {
         "description": "您记录了第一吨（1,000公斤）CO₂排放。",

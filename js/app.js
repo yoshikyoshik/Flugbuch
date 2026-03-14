@@ -3813,7 +3813,8 @@ window.viewAchievementDetails = async function(category, key, isSwitching = fals
     // 3. Texte setzen
     document.getElementById('ad-title').textContent = ach.title;
     document.getElementById('ad-desc').textContent = ach.description;
-    document.getElementById('ad-icon').textContent = ach.emoji;
+    const adImg = document.getElementById('ad-img');
+    adImg.src = `pictures/achievements/${ach.category}_${ach.key}.png`;
     
     // 4. Fortschrittsbalken
     document.getElementById('ad-progress-text').textContent = `${Math.round(ach.currentValue).toLocaleString("de-DE")} / ${ach.milestone.toLocaleString("de-DE")} ${ach.unit}`;
@@ -3821,22 +3822,31 @@ window.viewAchievementDetails = async function(category, key, isSwitching = fals
     const bar = document.getElementById('ad-progress-bar');
     bar.style.width = `${progressPercent}%`;
 
-    // 5. Visuelles Styling (Gesperrt vs. Freigeschaltet)
+    // 5. Visuelles Styling (Museums-Look für die 3D-Icons)
     const headerBg = document.getElementById('ad-header-bg');
-    const icon = document.getElementById('ad-icon');
     const shine = document.getElementById('ad-shine');
 
-    // Reset aller dynamischen Klassen
-    headerBg.className = "relative h-40 sm:h-48 shrink-0 flex items-center justify-center p-6 text-center overflow-hidden transition-colors duration-500";
-    icon.className = "text-7xl sm:text-8xl drop-shadow-2xl transform transition-transform hover:scale-110 z-10 duration-500";
+    // 🧹 ALTE RESTE LÖSCHEN: Wir entfernen die blockierenden Inline-Styles von vorhin
+    adImg.style.cssText = "";
+    headerBg.style.cssText = "";
+
+    // 🚀 DER FIX: Wir setzen die Klassen neu, ABER BEHALTEN DIE GRÖSSEN!
+    // w-64 (256px) auf dem Handy, w-80 (320px) auf dem PC!
+    adImg.className = "w-64 h-64 sm:w-80 sm:h-80 object-contain transform transition-transform duration-500 hover:scale-110 z-10";
+    
+    // Auch der Header bekommt seine Höhe per Tailwind ZURÜCK (h-80 auf Handy, h-96 auf PC)
+    headerBg.className = "relative h-80 sm:h-96 shrink-0 flex items-center justify-center p-6 text-center overflow-hidden transition-colors duration-500";
 
     if (ach.isUnlocked) {
-        // FREIGESCHALTET: Glänzendes Gold/Gelb
-        headerBg.classList.add("bg-gradient-to-br", "from-yellow-400", "via-yellow-500", "to-yellow-600");
-        bar.className = `absolute top-0 left-0 h-full transition-all duration-1000 ease-out ${ach.category === 'co2_total' ? 'bg-red-500' : 'bg-indigo-500'}`;
+        // FREIGESCHALTET: Edler, dunkler Museums-Hintergrund & fetter 3D-Schatten
+        headerBg.classList.add("bg-gradient-to-br", "from-slate-800", "via-slate-900", "to-black");
+        adImg.style.filter = "drop-shadow(0 25px 35px rgba(0,0,0,0.7))"; // Nur Schatten
+        
+        const bar = document.getElementById('ad-progress-bar');
+        if (bar) bar.className = `absolute top-0 left-0 h-full transition-all duration-1000 ease-out ${ach.category === 'co2_total' ? 'bg-red-500' : 'bg-indigo-500'}`;
         shine.classList.remove('hidden');
 
-        // ✨ Animation: Licht-Reflexion (Shine-Effekt) auslösen
+        // ✨ Animation: Licht-Reflexion
         shine.style.transition = 'none';
         shine.style.transform = 'translateX(-100%) skewX(-12deg)';
         setTimeout(() => {
@@ -3845,10 +3855,12 @@ window.viewAchievementDetails = async function(category, key, isSwitching = fals
         }, 100);
 
     } else {
-        // GESPERRT: Grau und trüb
-        headerBg.classList.add("bg-gradient-to-br", "from-gray-300", "via-gray-400", "to-gray-500", "dark:from-gray-700", "dark:via-gray-800", "dark:to-gray-900");
-        bar.className = "absolute top-0 left-0 h-full bg-gray-400 dark:bg-gray-600 transition-all duration-1000 ease-out";
-        icon.classList.add("grayscale", "opacity-40");
+        // GESPERRT: Düster, mysteriös und Bild in Graustufen
+        headerBg.classList.add("bg-gradient-to-br", "from-gray-800", "via-gray-900", "to-black");
+        adImg.style.filter = "drop-shadow(0 20px 30px rgba(0,0,0,0.8)) grayscale(100%) brightness(0.4) opacity(0.8)"; // Schatten + Grau + Dunkel
+        
+        const bar = document.getElementById('ad-progress-bar');
+        if (bar) bar.className = "absolute top-0 left-0 h-full bg-gray-500 transition-all duration-1000 ease-out";
         shine.classList.add('hidden');
     }
 

@@ -565,123 +565,93 @@ function toggleBurgerMenu() {
  */
 async function updateAchievements() {
   const container = document.getElementById("achievements-container");
-  container.innerHTML = `<p class="text-gray-500">${getTranslation(
-    "achievements.loading"
-  )}</p>`;
+
+  // 🚀 BUGHUNT-FIX: Alte Layout-Klassen des Containers restlos entfernen!
+  // (Verhindert, dass unser neues Grid in ein altes Grid eingesperrt und zerquetscht wird)
+  container.className = "w-full block";
+
+  container.innerHTML = `<p class="text-gray-500">${getTranslation("achievements.loading") || "Lade..."}</p>`;
 
   const allFlights = await getFlights();
   if (allFlights.length === 0) {
-    container.innerHTML = `<p class="text-gray-500">${getTranslation(
-      "achievements.noFlights"
-    )}</p>`;
+    container.innerHTML = `<p class="text-gray-500">${getTranslation("achievements.noFlights") || "Keine Flüge"}</p>`;
     document.getElementById("records-container").innerHTML =
-      `<p class="text-gray-500 md:col-span-2">${getTranslation(
-        "stats.noData"
-      )}</p>`;
+      `<p class="text-gray-500 md:col-span-2">${getTranslation("stats.noData") || "Keine Daten"}</p>`;
     return;
   }
 
   // 1. Aktuelle Statistiken berechnen
   const totalFlights = allFlights.length;
-  const totalDistance = allFlights.reduce(
-    (sum, flight) => sum + flight.distance,
-    0
-  );
-  const totalMinutes = allFlights.reduce(
-    (sum, flight) => sum + parseFlightTimeToMinutes(flight.time),
-    0
-  );
+  const totalDistance = allFlights.reduce((sum, flight) => sum + (flight.distance || 0), 0);
+  const totalMinutes = allFlights.reduce((sum, flight) => sum + (typeof parseFlightTimeToMinutes === 'function' ? parseFlightTimeToMinutes(flight.time) : 0), 0);
   const totalHours = totalMinutes / 60;
-  const uniqueAirports = new Set(
-    allFlights.flatMap((f) => [f.departure, f.arrival])
-  );
-  const longestFlightDistance = Math.max(...allFlights.map((f) => f.distance));
-  const totalCO2 = allFlights.reduce(
-    (sum, flight) => sum + (flight.co2_kg || 0),
-    0
-  );
+  const uniqueAirports = new Set(allFlights.flatMap((f) => [f.departure, f.arrival]));
+  const longestFlightDistance = allFlights.length > 0 ? Math.max(...allFlights.map((f) => f.distance || 0)) : 0;
+  const totalCO2 = allFlights.reduce((sum, flight) => sum + (flight.co2_kg || 0), 0);
 
-  let html = "";
-
-  // 2. Alle definierten Errungenschaften durchgehen
+  // 2. Das Array DEFINIEREN
   const allAchievementTypes = [
-    {
-      category: "flights",
-      value: totalFlights,
-      unit: getTranslation("achievements.unitFlights"),
-    },
-    {
-      category: "distance",
-      value: totalDistance,
-      unit: getTranslation("achievements.unitKm"),
-    },
-    {
-      category: "time",
-      value: totalHours,
-      unit: getTranslation("achievements.unitHours"),
-    },
-    {
-      category: "uniqueAirports",
-      value: uniqueAirports.size,
-      unit: getTranslation("achievements.unitAirports"),
-    },
-    {
-      category: "longestFlight",
-      value: longestFlightDistance,
-      unit: getTranslation("achievements.unitKm"),
-    },
-    {
-      category: "co2_total",
-      value: totalCO2,
-      unit: getTranslation("achievements.unitCo2"),
-    },
+    { category: "flights", value: totalFlights, unit: getTranslation("achievements.unitFlights") },
+    { category: "distance", value: totalDistance, unit: getTranslation("achievements.unitKm") },
+    { category: "time", value: totalHours, unit: getTranslation("achievements.unitHours") },
+    { category: "uniqueAirports", value: uniqueAirports.size, unit: getTranslation("achievements.unitAirports") },
+    { category: "longestFlight", value: longestFlightDistance, unit: getTranslation("achievements.unitKm") },
+    { category: "co2_total", value: totalCO2, unit: getTranslation("achievements.unitCo2") },
   ];
+
+  // 3. Das HTML Grid für die Kacheln aufbauen (mit w-full, damit es sich ausbreitet)
+  let html = `<div class="w-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">`;
 
   allAchievementTypes.forEach((type) => {
     achievements[type.category].forEach((achievement) => {
       const isUnlocked = type.value >= achievement.milestone;
-      const progressPercent = Math.min(
-        (type.value / achievement.milestone) * 100,
-        100
-      );
-      const progressBarColor =
-        type.category === "co2_total" ? "bg-red-500" : "bg-indigo-500";
+      const progressPercent = Math.min((type.value / achievement.milestone) * 100, 100);
+      const progressBarColor = type.category === "co2_total" ? "bg-red-500" : "bg-indigo-500";
 
-      // Verwende getTranslation mit den Schlüsseln aus dem Objekt
-      const title = getTranslation(
-        `achievements.${type.category}.${achievement.key}.title`
-      );
-      const description = getTranslation(
-        `achievements.${type.category}.${achievement.key}.description`
-      );
+      const title = getTranslation(`achievements.${type.category}.${achievement.key}.title`);
+      const description = getTranslation(`achievements.${type.category}.${achievement.key}.description`);
 
-      // 🚀 NEU: onclick Event hinzufügen und Hover-Effekte für Klickbarkeit einbauen!
+      // Bildpfad
+      const imagePath = `pictures/achievements/${type.category}_${achievement.key}.png`;
+
+      // Styling für die Kacheln
       const clickableClasses = isUnlocked 
-            ? "hover:bg-gray-200 dark:hover:bg-gray-600 cursor-pointer shadow-sm hover:shadow transition-all transform hover:-translate-y-0.5" 
-            : "opacity-40 hover:opacity-60 cursor-pointer transition-all";
+            ? "hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer shadow-sm hover:shadow-lg transition-all transform hover:-translate-y-1" 
+            : "cursor-pointer transition-all hover:bg-gray-50 dark:hover:bg-gray-700 opacity-80 hover:opacity-100";
 
+      // 🚀 BUGHUNT-FIX: Bild-Größen leicht optimiert (w-16/w-20), damit es auf schmalen Handys nicht platzt
+      const imageCss = isUnlocked 
+            ? "w-16 h-16 sm:w-20 sm:h-20 object-contain drop-shadow-md mx-auto mb-2 transition-transform duration-300 group-hover:scale-110" 
+            : "w-16 h-16 sm:w-20 sm:h-20 object-contain grayscale brightness-50 opacity-60 mx-auto mb-2 transition-transform duration-300 group-hover:scale-105";
+
+      // HTML Zusammenbau (Mit intelligentem Fehler-Fallback für fehlende Bilder)
       html += `
-                        <div onclick="viewAchievementDetails('${type.category}', '${achievement.key}')" class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg flex items-center gap-4 ${clickableClasses}">
-                            <span class="text-3xl drop-shadow-sm">${achievement.emoji}</span>
-                            <div>
-                                <h3 class="font-bold text-gray-800 dark:text-white">${title}</h3>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">${description}</p>
-                                <div class="w-full bg-gray-300 dark:bg-gray-600 rounded-full h-2 mt-2">
-                                    <div class="${progressBarColor} h-2 rounded-full" style="width: ${progressPercent}%"></div>
-                                </div>
-                                <p class="text-xs text-right text-gray-500 dark:text-gray-400 mt-1">${Math.round(
-                                  type.value
-                                ).toLocaleString(
-                                  "de-DE"
-                                )} / ${achievement.milestone.toLocaleString(
-                                  "de-DE"
-                                )} ${type.unit}</p>
-                            </div>
-                        </div>
-                    `;
+            <div onclick="viewAchievementDetails('${type.category}', '${achievement.key}')" class="bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-xl border border-gray-200 dark:border-gray-700 flex flex-col justify-between text-center group ${clickableClasses}">
+                
+                <div class="flex-grow flex flex-col items-center justify-start">
+                    <div class="h-16 sm:h-20 mb-2 flex-shrink-0 flex items-center justify-center">
+                        <img src="${imagePath}" class="${imageCss}" alt="${title}" onerror="this.outerHTML='<div class=\\'text-4xl opacity-30 mb-2\\'>🏆</div>'">
+                    </div>
+                    
+                    <h3 class="font-black text-gray-900 dark:text-white text-xs sm:text-sm leading-tight mb-1 break-words">${title}</h3>
+                    <p class="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 line-clamp-2 px-1 break-words">${description}</p>
+                </div>
+                
+                <div class="mt-3 pt-2 border-t border-gray-100 dark:border-gray-700/50">
+                    <div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-1.5 mb-1.5 overflow-hidden">
+                        <div class="${progressBarColor} h-1.5 rounded-full transition-all duration-500" style="width: ${progressPercent}%"></div>
+                    </div>
+                    <p class="text-[9px] sm:text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+                        ${Math.round(type.value).toLocaleString("de-DE")} / ${achievement.milestone.toLocaleString("de-DE")}
+                    </p>
+                </div>
+                
+            </div>
+      `;
     });
   });
 
+  html += `</div>`; // Grid schließen
   container.innerHTML = html;
 
   // Rekorde & Firsts berechnen und anzeigen
