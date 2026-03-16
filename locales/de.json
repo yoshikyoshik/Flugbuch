@@ -48,6 +48,7 @@
   
   "achievements": {
     "progress": "Fortschritt",
+    "tabLeaderboard": "Community",
     "co2_total": {
       "1000": {
         "description": "Du hast deine erste Tonne (1.000 kg) CO₂ erfasst.",
@@ -847,8 +848,22 @@
     "nickTakenTitle": "Name vergeben",
     "nickTakenDesc": "Dieser Nickname ist leider schon vergeben. Bitte wähle einen anderen.",
     "saveSuccess": "Profil erfolgreich gespeichert!",
-    "saveError": "Profil konnte nicht gespeichert werden."
+    "saveError": "Profil konnte nicht gespeichert werden.",
+    "avatarLabel": "Avatar",
+    "demoTabDisabled": "Das Profil ist im Demo-Modus nicht verfügbar."
+  },
 
+  "leaderboard": {
+    "top100": "Top 100 - Diesen Monat",
+    "loading": "Lade Flugdaten aus aller Welt... 🌍",
+    "demoDisabled": "Im Demo-Modus ist das Leaderboard deaktiviert.",
+    "noFlights": "Diesen Monat ist noch niemand geflogen!",
+    "rank1": "Platz 1",
+    "rank2": "Platz 2",
+    "rank3": "Platz 3",
+    "flights": "Flüge",
+    "km": "km",
+    "error": "Fehler beim Laden der Rangliste."
   }
 
 }

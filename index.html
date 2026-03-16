@@ -1357,6 +1357,10 @@
                 <button id="btn-view-records" onclick="toggleAchievementsView('records')" class="flex-1 md:flex-none px-4 py-1.5 text-xs md:text-sm font-semibold rounded-lg hover:bg-white dark:hover:bg-gray-700 hover:shadow-sm transition-all text-indigo-900 dark:text-indigo-200">
                   🏆 <span data-i18n="achievements.tabRecords">Rekorde</span>
                 </button>
+                
+                <button id="btn-view-leaderboard" onclick="toggleAchievementsView('leaderboard')" class="flex-1 md:flex-none px-4 py-1.5 text-xs md:text-sm font-semibold rounded-lg hover:bg-white dark:hover:bg-gray-700 hover:shadow-sm transition-all text-indigo-900 dark:text-indigo-200">
+                  🌍 <span data-i18n="achievements.tabLeaderboard">Community</span>
+                </button>
               </div>
 
               <div id="view-achievements-badges">
@@ -1365,6 +1369,18 @@
 
               <div id="view-achievements-records" class="hidden">
                 <div id="records-container" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4"></div>
+              </div>
+              <div id="view-achievements-leaderboard" class="hidden">
+                  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+                      <div class="p-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 flex justify-between items-center">
+                          <h3 class="font-bold text-gray-800 dark:text-white" data-i18n="leaderboard.top100">Top 100 - Diesen Monat</h3>
+                          <button onclick="loadLeaderboard()" class="text-xs text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 font-medium transition-colors">
+                              🔄 <span data-i18n="flights.refresh">Aktualisieren</span>
+                          </button>
+                      </div>
+                      <div id="leaderboard-container" class="divide-y divide-gray-100 dark:divide-gray-700 max-h-[60vh] overflow-y-auto custom-scrollbar">
+                      </div>
+                  </div>
               </div>
             </div>
 
@@ -1395,11 +1411,30 @@
                   </div>
 
                   <div class="space-y-4">
-                      <div>
-                          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" data-i18n="profile.nicknameLabel">Dein Nickname</label>
-                          <input type="text" id="profile-username" placeholder="z.B. SkyKing99" data-i18n="placeholder.nickname" class="w-full p-3 rounded-xl border border-gray-300 dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 outline-none transition" />
-                          <p class="text-[10px] text-gray-400 mt-1" data-i18n="profile.nicknameHint">Dieser Name wird im globalen Leaderboard angezeigt.</p>
+                      <div class="flex gap-4">
+                          <div class="w-24 shrink-0">
+                              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" data-i18n="profile.avatarLabel">Avatar</label>
+                              <select id="profile-avatar" class="w-full p-3 rounded-xl border border-gray-300 dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 outline-none transition text-2xl appearance-none text-center cursor-pointer bg-white">
+                                  <option value="🧑‍✈️">🧑‍✈️</option>
+                                  <option value="👨‍✈️">👨‍✈️</option>
+                                  <option value="👩‍✈️">👩‍✈️</option>
+                                  <option value="✈️">✈️</option>
+                                  <option value="🚀">🚀</option>
+                                  <option value="🚁">🚁</option>
+                                  <option value="🌍">🌍</option>
+                                  <option value="🦅">🦅</option>
+                                  <option value="🪂">🪂</option>
+                                  <option value="🛸">🛸</option>
+                                  <option value="🎈">🎈</option>
+                                  <option value="😎">😎</option>
+                              </select>
+                          </div>
+                          <div class="flex-grow">
+                              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" data-i18n="profile.nicknameLabel">Dein Nickname</label>
+                              <input type="text" id="profile-username" placeholder="z.B. SkyKing99" data-i18n="placeholder.nickname" class="w-full p-3 rounded-xl border border-gray-300 dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 outline-none transition" />
+                          </div>
                       </div>
+                      <p class="text-[10px] text-gray-400 mt-0.5" data-i18n="profile.nicknameHint">Dieser Name wird im globalen Leaderboard angezeigt.</p>
                       
                       <div class="flex items-center justify-between bg-white dark:bg-gray-900 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
                           <div>

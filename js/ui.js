@@ -505,6 +505,11 @@ function showFlightDisambiguationModal(flights) {
 
 // TABS
 function showTab(tabName) {
+  // 🚀 NEU: Profil im Demo-Modus blockieren!
+  if (tabName === 'profil' && typeof isDemoMode !== 'undefined' && isDemoMode) {
+      showMessage(getTranslation("toast.infoTitle") || "Hinweis", getTranslation("profile.demoTabDisabled") || "Das Profil ist im Demo-Modus nicht verfügbar.", "info");
+      return; // Bricht ab, der Tab wird nicht gewechselt
+  }
   // Alle Inhalte verstecken
   document.getElementById("tab-content-stats").classList.add("hidden");
   document.getElementById("tab-content-charts").classList.add("hidden");

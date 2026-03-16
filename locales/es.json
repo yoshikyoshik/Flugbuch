@@ -48,6 +48,7 @@
   
   "achievements": {
     "progress": "Progreso",
+    "tabLeaderboard": "Comunidad",
     "co2_total": {
       "1000": {
         "description": "Has registrado tu primera tonelada (1.000 kg) de CO₂.",
@@ -842,6 +843,22 @@
     "nickTakenTitle": "Nombre en uso",
     "nickTakenDesc": "Este apodo ya está en uso. Por favor, elige otro.",
     "saveSuccess": "¡Perfil guardado con éxito!",
-    "saveError": "Error al guardar el perfil."
+    "saveError": "Error al guardar el perfil.",
+    "avatarLabel": "Avatar",
+    "demoTabDisabled": "El perfil no está disponible en el modo demo."
+  },
+
+  "leaderboard": {
+    "top100": "Top 100 - Este Mes",
+    "loading": "Cargando vuelos de todo el mundo... 🌍",
+    "demoDisabled": "La clasificación está desactivada en el modo demo.",
+    "noFlights": "¡Nadie ha volado este mes todavía!",
+    "rank1": "1er lugar",
+    "rank2": "2do lugar",
+    "rank3": "3er lugar",
+    "flights": "Vuelos",
+    "km": "km",
+    "error": "Error al cargar la clasificación."
   }
+
 }

@@ -48,6 +48,7 @@
   
   "achievements": {
     "progress": "进度",
+    "tabLeaderboard": "社区",
     "co2_total": {
       "1000": {
         "description": "您记录了第一吨（1,000公斤）CO₂排放。",
@@ -842,6 +843,22 @@
     "nickTakenTitle": "名称已被使用",
     "nickTakenDesc": "此昵称已被使用。请选择另一个。",
     "saveSuccess": "个人资料已成功保存！",
-    "saveError": "无法保存个人资料。"
+    "saveError": "无法保存个人资料。",
+    "avatarLabel": "头像",
+    "demoTabDisabled": "在演示模式下个人资料不可用。"
+  },
+
+  "leaderboard": {
+    "top100": "前 100 名 - 本月",
+    "loading": "正在加载来自世界各地的航班数据... 🌍",
+    "demoDisabled": "在演示模式下排行榜已禁用。",
+    "noFlights": "本月还没有人飞行！",
+    "rank1": "第一名",
+    "rank2": "第二名",
+    "rank3": "第三名",
+    "flights": "航班",
+    "km": "公里",
+    "error": "加载排行榜时出错。"
   }
+
 }

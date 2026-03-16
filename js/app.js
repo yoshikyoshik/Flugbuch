@@ -2699,27 +2699,127 @@ document.getElementById("buy-pro-btn").addEventListener("click", async () => {
 window.toggleAchievementsView = function(view) {
     const btnBadges = document.getElementById('btn-view-badges');
     const btnRecords = document.getElementById('btn-view-records');
+    const btnLeaderboard = document.getElementById('btn-view-leaderboard');
+
     const viewBadges = document.getElementById('view-achievements-badges');
     const viewRecords = document.getElementById('view-achievements-records');
+    const viewLeaderboard = document.getElementById('view-achievements-leaderboard');
 
-    if (!btnBadges || !viewBadges) return; // Sicherheits-Check
+    // 1. Zuerst alles zurücksetzen
+    [viewBadges, viewRecords, viewLeaderboard].forEach(el => { if(el) el.classList.add('hidden'); });
+    [btnBadges, btnRecords, btnLeaderboard].forEach(btn => {
+        if(btn) {
+            btn.classList.remove('bg-white', 'dark:bg-gray-700', 'shadow-sm');
+            btn.classList.add('hover:bg-white', 'dark:hover:bg-gray-700');
+        }
+    });
 
+    // 2. Den aktiven Tab einschalten
     if (view === 'badges') {
-        // Badges zeigen, Rekorde verstecken
-        viewBadges.classList.remove('hidden');
-        viewRecords.classList.add('hidden');
-        
-        // Buttons umfärben
-        btnBadges.classList.add('bg-white', 'dark:bg-gray-700', 'shadow-sm');
-        btnRecords.classList.remove('bg-white', 'dark:bg-gray-700', 'shadow-sm');
-    } else {
-        // Rekorde zeigen, Badges verstecken
-        viewRecords.classList.remove('hidden');
-        viewBadges.classList.add('hidden');
-        
-        // Buttons umfärben
-        btnRecords.classList.add('bg-white', 'dark:bg-gray-700', 'shadow-sm');
-        btnBadges.classList.remove('bg-white', 'dark:bg-gray-700', 'shadow-sm');
+        if(viewBadges) viewBadges.classList.remove('hidden');
+        if(btnBadges) {
+            btnBadges.classList.add('bg-white', 'dark:bg-gray-700', 'shadow-sm');
+            btnBadges.classList.remove('hover:bg-white', 'dark:hover:bg-gray-700');
+        }
+    } else if (view === 'records') {
+        if(viewRecords) viewRecords.classList.remove('hidden');
+        if(btnRecords) {
+            btnRecords.classList.add('bg-white', 'dark:bg-gray-700', 'shadow-sm');
+            btnRecords.classList.remove('hover:bg-white', 'dark:hover:bg-gray-700');
+        }
+    } else if (view === 'leaderboard') {
+        if(viewLeaderboard) viewLeaderboard.classList.remove('hidden');
+        if(btnLeaderboard) {
+            btnLeaderboard.classList.add('bg-white', 'dark:bg-gray-700', 'shadow-sm');
+            btnLeaderboard.classList.remove('hover:bg-white', 'dark:hover:bg-gray-700');
+        }
+        // 🚀 Daten laden, wenn der Tab geöffnet wird!
+        loadLeaderboard();
+    }
+};
+
+// ====== LEADERBOARD LADEN (SUPABASE) ======
+window.loadLeaderboard = async function() {
+    const container = document.getElementById('leaderboard-container');
+    if (!container) return;
+
+    // Lade-Animation
+    container.innerHTML = `<div class="p-8 text-center text-gray-500 animate-pulse">${getTranslation("leaderboard.loading") || "Lade Flugdaten aus aller Welt... 🌍"}</div>`;
+
+    // Demo Modus abfangen
+    if (typeof isDemoMode !== 'undefined' && isDemoMode) {
+        container.innerHTML = `<div class="p-8 text-center text-gray-500">${getTranslation("leaderboard.demoDisabled") || "Im Demo-Modus ist das Leaderboard deaktiviert."}</div>`;
+        return;
+    }
+
+    try {
+        // Eigene ID holen, um sich in der Liste farblich hervorzuheben
+        const { data: userData } = await supabaseClient.auth.getUser();
+        const myUserId = userData?.user?.id;
+
+        // Unsere magische View abfragen!
+        const { data, error } = await supabaseClient
+            .from('global_leaderboard_current_month')
+            .select('*');
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+            container.innerHTML = `<div class="p-8 text-center text-gray-500">${getTranslation("leaderboard.noFlights") || "Diesen Monat ist noch niemand geflogen!"}</div>`;
+            return;
+        }
+
+        let html = '';
+        data.forEach((entry, index) => {
+            const rank = index + 1;
+            const isMe = entry.user_id === myUserId;
+            
+            // 🥇 Medaillen für die Top 3
+            let rankBadge = `<span class="text-gray-500 font-bold w-6 text-center">${rank}</span>`;
+            if (rank === 1) rankBadge = `<span class="text-2xl" title="${getTranslation("leaderboard.rank1") || "Platz 1"}">🥇</span>`;
+            if (rank === 2) rankBadge = `<span class="text-2xl" title="${getTranslation("leaderboard.rank2") || "Platz 2"}">🥈</span>`;
+            if (rank === 3) rankBadge = `<span class="text-2xl" title="${getTranslation("leaderboard.rank3") || "Platz 3"}">🥉</span>`;
+
+            // Styling: Eigene Zeile wird hervorgehoben
+            const rowClass = isMe 
+                ? "bg-indigo-50 dark:bg-indigo-900/30 border-l-4 border-indigo-500" 
+                : "hover:bg-gray-50 dark:hover:bg-gray-700/50";
+            
+            const nameClass = isMe ? "text-indigo-700 dark:text-indigo-300 font-black" : "text-gray-800 dark:text-gray-200 font-bold";
+            const avatar = entry.avatar_url || "🧑‍✈️";
+            const dist = entry.total_distance.toLocaleString('de-DE');
+            
+            // Textbausteine für die Zeile
+            html += `
+            <div class="flex items-center justify-between p-3 sm:p-4 transition-colors ${rowClass}">
+                <div class="flex items-center gap-3 sm:gap-4">
+                    <div class="w-8 flex justify-center items-center shrink-0">
+                        ${rankBadge}
+                    </div>
+                    <div class="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex justify-center items-center text-xl shrink-0 shadow-sm border border-white dark:border-gray-600">
+                        ${avatar}
+                    </div>
+                    <div>
+                        <p class="${nameClass} text-sm sm:text-base">${entry.username || 'Anonym'}</p>
+                        <p class="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold">
+                            ${entry.flight_count} <span data-i18n="leaderboard.flights">${getTranslation("leaderboard.flights") || "Flüge"}</span>
+                        </p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <p class="font-black text-indigo-900 dark:text-white text-base sm:text-lg tracking-tight">
+                        ${dist} <span class="text-xs text-gray-400 font-normal" data-i18n="leaderboard.km">${getTranslation("leaderboard.km") || "km"}</span>
+                    </p>
+                </div>
+            </div>
+            `;
+        });
+
+        container.innerHTML = html;
+
+    } catch (err) {
+        console.error("Leaderboard Fehler:", err);
+        container.innerHTML = `<div class="p-8 text-center text-red-500">${getTranslation("leaderboard.error") || "Fehler beim Laden der Rangliste."}</div>`;
     }
 };
 
@@ -3964,6 +4064,10 @@ window.loadUserProfile = async function(user) {
         if (data) {
             document.getElementById('profile-username').value = data.username || "";
             document.getElementById('profile-is-public').checked = data.is_public || false;
+            // 🚀 NEU: Avatar laden (falls vorhanden)
+            if (data.avatar_url) {
+                document.getElementById('profile-avatar').value = data.avatar_url;
+            }
         }
     } catch (err) {
         console.error("Fehler beim Laden des Profils:", err);
@@ -3988,6 +4092,7 @@ window.saveUserProfile = async function() {
 
         const username = document.getElementById('profile-username').value.trim();
         const isPublic = document.getElementById('profile-is-public').checked;
+        const avatarUrl = document.getElementById('profile-avatar').value; // 🚀 NEU
 
         if (isPublic && username.length < 3) {
             showMessage(getTranslation("toast.infoTitle") || "Hinweis", getTranslation("profile.nickTooShort") || "Dein Nickname muss mindestens 3 Zeichen lang sein, um teilzunehmen.", "info");
@@ -3999,7 +4104,12 @@ window.saveUserProfile = async function() {
         // Upsert (Update falls vorhanden, sonst Insert)
         const { error } = await supabaseClient
             .from('profiles')
-            .upsert({ id: user.id, username: username, is_public: isPublic });
+            .upsert({ 
+                id: user.id, 
+                username: username, 
+                is_public: isPublic,
+                avatar_url: avatarUrl // 🚀 NEU: Avatar mit in die DB schreiben!
+            });
 
         if (error) {
             if (error.code === '23505') {

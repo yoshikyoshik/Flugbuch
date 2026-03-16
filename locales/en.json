@@ -48,6 +48,7 @@
   
   "achievements": {
     "progress": "Progress",
+    "tabLeaderboard": "Community",
     "co2_total": {
       "1000": {
         "description": "You have recorded your first ton (1,000 kg) of CO₂.",
@@ -847,6 +848,22 @@
     "nickTakenTitle": "Name taken",
     "nickTakenDesc": "This nickname is already taken. Please choose another one.",
     "saveSuccess": "Profile saved successfully!",
-    "saveError": "Failed to save "
+    "saveError": "Failed to save ",
+    "avatarLabel": "Avatar",
+    "demoTabDisabled": "The profile is not available in demo mode."
+  },
+
+  "leaderboard": {
+    "top100": "Top 100 - This Month",
+    "loading": "Loading flights from around the world... 🌍",
+    "demoDisabled": "The leaderboard is disabled in demo mode.",
+    "noFlights": "No one has flown this month yet!",
+    "rank1": "1st Place",
+    "rank2": "2nd Place",
+    "rank3": "3rd Place",
+    "flights": "Flights",
+    "km": "km",
+    "error": "Error loading the leaderboard."
   }
+
 }
