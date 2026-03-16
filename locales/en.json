@@ -609,7 +609,8 @@
     "egRegistration": "e.g. D-AINC",
     "email": "Email",
     "newPassword": "New password (min. 6 characters)",
-    "password": "Password"
+    "password": "Password",
+    "nickname": "Nickname"
   },
   "premium": {
     "alreadyPremiumDesc": "You have an active web subscription. Please manage it on the website.",
@@ -768,7 +769,8 @@
     "newFlight": "New Flight",
     "share": "Share",
     "stats": "Statistics",
-    "trips": "My Trips"
+    "trips": "My Trips",
+    "profile": "Profile"
   },
   "toast": {
     "airportNotFound": "Airport code not found.",
@@ -825,5 +827,26 @@
   "units": {
     "hoursShort": "Hrs.",
     "minutesShort": "Min."
+  },
+
+  "profile": {
+    "communityTitle": "Community & Leaderboard",
+    "communityDesc": "Compare your flight stats with others.",
+    "nicknameLabel": "Your Nickname",
+    "placeholder.nickname": "e.g. SkyKing99",
+    "nicknameHint": "This name will be shown on the global leaderboard.",
+    "leaderboardOptIn": "Participate in leaderboard",
+    "leaderboardOptInDesc": "Makes your profile visible to others.",
+    "saveBtn": "Save Profile",
+    "accountDetails": "Account Details",
+    "emailLabel": "Email Address (Login)",
+    "subStatus": "Subscription Status",
+    "demoSaveError": "Profiles cannot be saved in Demo Mode.",
+    "saveLoading": "Saving...",
+    "nickTooShort": "Your nickname must be at least 3 characters long to participate.",
+    "nickTakenTitle": "Name taken",
+    "nickTakenDesc": "This nickname is already taken. Please choose another one.",
+    "saveSuccess": "Profile saved successfully!",
+    "saveError": "Failed to save "
   }
 }

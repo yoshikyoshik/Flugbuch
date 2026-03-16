@@ -604,7 +604,8 @@
     "egRegistration": "例如：D-AINC",
     "email": "电子邮件",
     "newPassword": "新密码 (至少6个字符)",
-    "password": "密码"
+    "password": "密码",
+    "nickname": "昵称"
   },
   "premium": {
     "alreadyPremiumDesc": "您有一个有效的网络订阅。请在网站上进行管理。",
@@ -763,7 +764,8 @@
     "newFlight": "新航班",
     "share": "分享",
     "stats": "统计",
-    "trips": "我的旅行"
+    "trips": "我的旅行",
+    "profile": "个人资料fil"
   },
   "toast": {
     "airportNotFound": "未找到机场代码。",
@@ -820,5 +822,26 @@
   "units": {
     "hoursShort": "小时",
     "minutesShort": "分钟"
+  },
+
+  "profile": {
+    "communityTitle": "社区与排行榜",
+    "communityDesc": "与他人比较您的飞行统计数据。",
+    "nicknameLabel": "您的昵称",
+    "placeholder.nickname": "例如 SkyKing99",
+    "nicknameHint": "此名称将显示在全球排行榜上。",
+    "leaderboardOptIn": "参与排行榜",
+    "leaderboardOptInDesc": "让其他人看到您的个人资料。",
+    "saveBtn": "保存个人资料",
+    "accountDetails": "帐户详细信息",
+    "emailLabel": "电子邮件地址（登录）",
+    "subStatus": "订阅状态",
+    "demoSaveError": "在演示模式下无法保存个人资料。",
+    "saveLoading": "正在保存...",
+    "nickTooShort": "您的昵称长度必须至少为3个字符才能参与。",
+    "nickTakenTitle": "名称已被使用",
+    "nickTakenDesc": "此昵称已被使用。请选择另一个。",
+    "saveSuccess": "个人资料已成功保存！",
+    "saveError": "无法保存个人资料。"
   }
 }

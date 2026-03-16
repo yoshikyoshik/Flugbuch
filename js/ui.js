@@ -513,7 +513,8 @@ function showTab(tabName) {
   document.getElementById("tab-content-neue-fluege").classList.add("hidden");
   document.getElementById("tab-content-achievements").classList.add("hidden");
   document.getElementById("tab-content-hilfe").classList.add("hidden");
-  document.getElementById("tab-content-trips")?.classList.add("hidden"); // <--- Diese Zeile ergänzen
+  document.getElementById("tab-content-trips")?.classList.add("hidden");
+  document.getElementById("tab-content-profil")?.classList.add("hidden");
 
   // 1. Zuerst ALLE Buttons auf "inaktiv" setzen
   document.querySelectorAll(".tab-btn").forEach((btn) => {
@@ -568,6 +569,17 @@ function showTab(tabName) {
         setTimeout(() => { map.invalidateSize(); }, 50);
     }
   }
+
+  // 🚀 NEU: Den aktiven Button in der Nav-Leiste in den sichtbaren Bereich scrollen
+  const targetBtn = document.getElementById(`tab-btn-${tabName}`);
+  if (targetBtn) {
+      targetBtn.scrollIntoView({ 
+          behavior: 'smooth', 
+          inline: 'center',  // Scrollt den Button schön in die Mitte der Leiste
+          block: 'nearest' 
+      });
+  }
+
 }
 
 // RENDERING

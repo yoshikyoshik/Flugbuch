@@ -609,7 +609,8 @@
     "egRegistration": "z.B. D-AINC",
     "email": "E-Mail",
     "newPassword": "Neues Passwort (mind. 6 Zeichen)",
-    "password": "Passwort"
+    "password": "Passwort",
+    "nickname": "Spitzname"
   },
   "premium": {
     "alreadyPremiumDesc": "Du hast ein aktives Web-Abo. Bitte verwalte es auf der Webseite.",
@@ -768,7 +769,8 @@
     "newFlight": "Neuer Flug",
     "share": "Teilen",
     "stats": "Statistiken",
-    "trips": "Meine Reisen"
+    "trips": "Meine Reisen",
+    "profile": "Profil"
   },
   "toast": {
     "airportNotFound": "Flughafencode nicht gefunden.",
@@ -825,5 +827,28 @@
   "units": {
     "hoursShort": "Std.",
     "minutesShort": "Min."
+  },
+
+  "profile": {
+    "communityTitle": "Community & Leaderboard",
+    "communityDesc": "Vergleiche deine Flugstatistiken mit anderen.",
+    "nicknameLabel": "Dein Nickname",
+    "placeholder.nickname": "z.B. SkyKing99",
+    "nicknameHint": "Dieser Name wird im globalen Leaderboard angezeigt.",
+    "leaderboardOptIn": "Am Leaderboard teilnehmen",
+    "leaderboardOptInDesc": "Macht dein Profil für andere sichtbar.",
+    "saveBtn": "Profil speichern",
+    "accountDetails": "Account Details",
+    "emailLabel": "E-Mail Adresse (Login)",
+    "subStatus": "Abo-Status",
+    "demoSaveError": "Im Demo-Modus können keine Profile gespeichert werden.",
+    "saveLoading": "Speichere...",
+    "nickTooShort": "Dein Nickname muss mindestens 3 Zeichen lang sein, um teilzunehmen.",
+    "nickTakenTitle": "Name vergeben",
+    "nickTakenDesc": "Dieser Nickname ist leider schon vergeben. Bitte wähle einen anderen.",
+    "saveSuccess": "Profil erfolgreich gespeichert!",
+    "saveError": "Profil konnte nicht gespeichert werden."
+
   }
+
 }

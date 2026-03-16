@@ -604,7 +604,8 @@
     "egRegistration": "напр. D-AINC",
     "email": "Email",
     "newPassword": "Новый пароль (мин. 6 символов)",
-    "password": "Пароль"
+    "password": "Пароль",
+    "nickname": "Псевдоним"
   },
   "premium": {
     "alreadyPremiumDesc": "У вас есть активная веб-подписка. Пожалуйста, управляйте ей на веб-сайте.",
@@ -763,7 +764,8 @@
     "newFlight": "Новый рейс",
     "share": "Поделиться",
     "stats": "Статистика",
-    "trips": "Мои поездки"
+    "trips": "Мои поездки",
+    "profile": "Профиль"
   },
   "toast": {
     "airportNotFound": "Код аэропорта не найден.",
@@ -820,5 +822,26 @@
   "units": {
     "hoursShort": "ч.",
     "minutesShort": "мин."
+  },
+
+  "profile": {
+    "communityTitle": "Сообщество и Рейтинг",
+    "communityDesc": "Сравнивайте свою статистику полетов с другими.",
+    "nicknameLabel": "Ваш Никнейм",
+    "placeholder.nickname": "например, SkyKing99",
+    "nicknameHint": "Это имя будет отображаться в глобальном рейтинге.",
+    "leaderboardOptIn": "Участвовать в рейтинге",
+    "leaderboardOptInDesc": "Делает ваш профиль видимым для других.",
+    "saveBtn": "Сохранить профиль",
+    "accountDetails": "Данные аккаунта",
+    "emailLabel": "Email-адрес (Логин)",
+    "subStatus": "Статус подписки",
+    "demoSaveError": "Профили нельзя сохранить в демо-режиме.",
+    "saveLoading": "Сохранение...",
+    "nickTooShort": "Ваш никнейм должен содержать не менее 3 символов для участия.",
+    "nickTakenTitle": "Имя занято",
+    "nickTakenDesc": "Этот никнейм уже занят. Пожалуйста, выберите другой.",
+    "saveSuccess": "Профиль успешно сохранен!",
+    "saveError": "Не удалось сохранить профиль."
   }
 }

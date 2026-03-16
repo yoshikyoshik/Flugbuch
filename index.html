@@ -233,68 +233,25 @@
             </button>
             <div
               id="burger-menu"
-              class="hidden absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-md shadow-lg z-50 border dark:border-gray-700"
+              class="hidden absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-md shadow-lg z-50 border dark:border-gray-700 overflow-hidden"
             >
-            <div
-                class="border-b dark:border-gray-700 py-1 flex justify-around"
-              >
-                <button
-                  onclick="setLanguage('de'); toggleBurgerMenu();"
-                  class="p-2 text-sm font-medium rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
-                >
-                  🇩🇪 DE
-                </button>
-
-                <button
-                  onclick="setLanguage('en'); toggleBurgerMenu();"
-                  class="p-2 text-sm font-medium rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
-                >
-                  🇬🇧 EN
-                </button>
-
-                <button
-                  onclick="setLanguage('es'); toggleBurgerMenu();"
-                  class="p-2 text-sm font-medium rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
-                >
-                  🇪🇸 ES
-                </button>
-
-                <button
-                  onclick="setLanguage('ru'); toggleBurgerMenu();"
-                  class="p-2 text-sm font-medium rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
-                >
-                  🇷🇺 RU
-                </button>
-
-                <button
-                  onclick="setLanguage('zh'); toggleBurgerMenu();"
-                  class="p-2 text-sm font-medium rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
-                >
-                  🇨🇳 ZH
-                </button>
+              <div class="border-b dark:border-gray-700 py-1 flex justify-around bg-gray-50 dark:bg-gray-800/50">
+                <button onclick="setLanguage('de'); toggleBurgerMenu();" class="p-2 text-sm font-medium rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition">🇩🇪</button>
+                <button onclick="setLanguage('en'); toggleBurgerMenu();" class="p-2 text-sm font-medium rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition">🇬🇧</button>
+                <button onclick="setLanguage('es'); toggleBurgerMenu();" class="p-2 text-sm font-medium rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition">🇪🇸</button>
+                <button onclick="setLanguage('ru'); toggleBurgerMenu();" class="p-2 text-sm font-medium rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition">🇷🇺</button>
+                <button onclick="setLanguage('zh'); toggleBurgerMenu();" class="p-2 text-sm font-medium rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition">🇨🇳</button>
               </div>
 
               <div class="border-b dark:border-gray-700 py-1">
-                <a
-                  href="#"
-                  onclick="event.preventDefault(); exportData('json'); toggleBurgerMenu();"
-                  data-i18n="burgerMenu.exportJSON"
-                  class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                >
+                <a href="#" onclick="event.preventDefault(); exportData('json'); toggleBurgerMenu();" data-i18n="burgerMenu.exportJSON" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
                   Daten Exportieren (JSON)
                 </a>
-                <a
-                  href="#"
-                  onclick="event.preventDefault(); exportData('csv'); toggleBurgerMenu();"
-                  data-i18n="burgerMenu.exportCSV"
-                  class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                >
+                <a href="#" onclick="event.preventDefault(); exportData('csv'); toggleBurgerMenu();" data-i18n="burgerMenu.exportCSV" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
                   Daten Exportieren (CSV)
                 </a>
-                <label
-                  for="import-file-input"
-                  class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer group"
-                >
+                
+                <label for="import-file-input" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer group">
                   <div class="text-sm font-bold text-red-500 dark:text-red-400 group-hover:text-red-600 dark:group-hover:text-red-300 transition-colors" data-i18n="burgerMenu.import">
                     Daten importieren
                   </div>
@@ -302,78 +259,29 @@
                     JSON, CSV (Flightradar24, App in the Air)
                   </div>
                 </label>
-                <input
-                  type="file"
-                  id="import-file-input"
-                  accept=".json,.csv"  class="hidden"
-                />
+                <input type="file" id="import-file-input" accept=".json,.csv" class="hidden" />
               </div>
 
               <div class="py-1">
-                <a
-                  href="#"
-                  onclick="event.preventDefault(); showPasswordChangeModal()"
-                  data-i18n="burgerMenu.changePassword"
-                  class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                  >Passwort ändern</a
-                >
-                <a
-                  href="#"
-                  id="menu-theme-toggle"
-                  data-i18n="burgerMenu.toggleMode"
-                  class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                  >Modus wechseln</a
-                >
+                <a href="#" id="menu-theme-toggle" data-i18n="burgerMenu.toggleMode" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                  🌓 Modus wechseln
+                </a>
 
-                <a
-                  href="#"
-                  id="menu-exit-demo-btn"
-                  class="hidden block px-4 py-2 text-sm font-bold text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 border-t dark:border-gray-700"
-                >
+                <a href="#" id="menu-exit-demo-btn" class="hidden block px-4 py-2 text-sm font-bold text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 border-t dark:border-gray-700">
                   🚪 Demo Beenden
-                </a
-                >
-
-                <a
-                  href="#"
-                  id="menu-logout-btn"
-                  data-i18n="burgerMenu.logout"
-                  class="block px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700"
-                  >Logout</a
-                >
+                </a>
               </div>
-              <div class="border-t dark:border-gray-700 px-4 py-2">
-                <span
-                  id="user-display"
-                  class="block text-xs text-gray-500"
-                ></span>
-                <span
-                  id="app-version"
-                  class="block text-xs text-gray-400"
-                ></span>
-                <span
-                  id="subscription-status-badge"
-                  class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mt-1 bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300"
-                  data-i18n="premium.loadStat"
-                >
-                  Lade Status...
-                </span>
-                <button
-                  id="menu-upgrade-btn"
-                  onclick="openPremiumModal()"
-                  class="hidden mt-3 w-full text-center text-xs font-semibold text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 py-2 rounded shadow transition-all"
-                  data-i18n="premium.menuBtn"
-                >
-                  🚀 Upgrade auf Pro
-                </button>
-                <button
-                  id="menu-manage-sub-btn"
-                  onclick="manageSubscription()"
-                  class="hidden mt-3 w-full text-center text-xs font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 py-2 rounded border border-gray-200 dark:border-gray-600 transition-all"
-                  data-i18n="burgerMenu.manageSubscription"
-                >
-                  ⚙️ Abo verwalten
-                </button>
+
+              <div class="p-3 border-t border-indigo-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+                  <button onclick="document.getElementById('burger-menu').classList.add('hidden'); showTab('profil');" class="w-full flex items-center justify-between p-2 bg-white dark:bg-gray-700 hover:bg-indigo-50 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600 rounded-xl transition-colors shadow-sm group">
+                      <div class="flex items-center gap-3">
+                          
+                          <div class="text-left">
+                              <p class="text-sm font-bold text-gray-800 dark:text-white" data-i18n="tabs.profile">Mein Profil</p>
+                          </div>
+                      </div>
+                      <svg class="w-4 h-4 text-gray-400 group-hover:text-indigo-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                  </button>
               </div>
             </div>
           </div>
@@ -1469,6 +1377,81 @@
                 </div>
               </div>
             </div>
+
+            <div id="tab-content-profil" class="hidden w-full">
+              <div class="flex items-center justify-between mb-4 border-b pb-2 border-indigo-100 dark:border-gray-700">
+                <h2 data-i18n="tabs.profile" class="text-xl md:text-2xl font-bold text-gray-800 dark:text-white">
+                  Mein Profil
+                </h2>
+              </div>
+
+              <div class="bg-gradient-to-br from-indigo-50 to-white dark:from-gray-800 dark:to-gray-800 p-6 rounded-2xl mb-6 shadow-sm border border-indigo-100 dark:border-gray-700">
+                  <div class="flex items-center gap-3 mb-4">
+                      <div class="text-3xl">🏆</div>
+                      <div>
+                          <h3 class="text-lg font-bold text-indigo-900 dark:text-white" data-i18n="profile.communityTitle">Community & Leaderboard</h3>
+                          <p class="text-xs text-gray-500 dark:text-gray-400" data-i18n="profile.communityDesc">Vergleiche deine Flugstatistiken mit anderen.</p>
+                      </div>
+                  </div>
+
+                  <div class="space-y-4">
+                      <div>
+                          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" data-i18n="profile.nicknameLabel">Dein Nickname</label>
+                          <input type="text" id="profile-username" placeholder="z.B. SkyKing99" data-i18n="placeholder.nickname" class="w-full p-3 rounded-xl border border-gray-300 dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 outline-none transition" />
+                          <p class="text-[10px] text-gray-400 mt-1" data-i18n="profile.nicknameHint">Dieser Name wird im globalen Leaderboard angezeigt.</p>
+                      </div>
+                      
+                      <div class="flex items-center justify-between bg-white dark:bg-gray-900 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
+                          <div>
+                              <p class="font-bold text-sm text-gray-800 dark:text-gray-200" data-i18n="profile.leaderboardOptIn">Am Leaderboard teilnehmen</p>
+                              <p class="text-xs text-gray-500" data-i18n="profile.leaderboardOptInDesc">Macht dein Profil für andere sichtbar.</p>
+                          </div>
+                          <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="profile-is-public" class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
+                          </label>
+                      </div>
+
+                      <button onclick="saveUserProfile()" id="btn-save-profile" data-i18n="profile.saveBtn" class="w-full py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition shadow-md">
+                          Profil speichern
+                      </button>
+                  </div>
+              </div>
+
+              <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl mb-6 shadow-sm border border-gray-200 dark:border-gray-700">
+                  <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4" data-i18n="profile.accountDetails">Account Details</h3>
+                  
+                  <div class="space-y-4">
+                      <div>
+                          <p class="text-xs text-gray-500" data-i18n="profile.emailLabel">E-Mail Adresse (Login)</p>
+                          <p id="profile-email-display" class="font-bold text-gray-800 dark:text-gray-200">-</p>
+                      </div>
+
+                      <div class="pt-2 border-t border-gray-100 dark:border-gray-700">
+                          <p class="text-xs text-gray-500 mb-1" data-i18n="profile.subStatus">Abo-Status</p>
+                          <div class="flex items-center justify-between">
+                              <span id="profile-status-badge" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">Lade...</span>
+                              <span id="app-version" class="text-xs text-gray-400">v--</span>
+                          </div>
+                          <button id="profile-upgrade-btn" onclick="openPremiumModal()" data-i18n="premium.menuBtn" class="hidden mt-3 w-full py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition transform hover:-translate-y-0.5">
+                              🚀 Upgrade auf AvioSphere Pro
+                          </button>
+                          <button id="profile-manage-btn" onclick="manageSubscription()" data-i18n="burgerMenu.manageSubscription" class="hidden mt-3 w-full py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition">
+                              ⚙️ Abo verwalten
+                          </button>
+                      </div>
+                  </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-4">
+                  <button onclick="showPasswordChangeModal()" data-i18n="burgerMenu.changePassword" class="py-3 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-bold rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition shadow-sm">
+                      🔒 Passwort ändern
+                  </button>
+                  <button onclick="logout()" data-i18n="burgerMenu.logout" class="py-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 font-bold rounded-xl border border-red-100 dark:border-red-800/30 hover:bg-red-100 dark:hover:bg-red-900/40 transition shadow-sm">
+                      🚪 Logout
+                  </button>
+              </div>
+            </div>
 			
           </div> </div> </div> 
         <div class="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] md:bottom-8 left-0 w-full flex justify-center z-[100] pointer-events-none px-2">
@@ -1487,6 +1470,7 @@
               <button onclick="showTab('trips')" id="tab-btn-trips" data-i18n="tabs.trips" class="tab-btn whitespace-nowrap py-2 px-4 md:px-5 text-sm rounded-full transition-all duration-300">🏝️ Reisen</button>
               <button onclick="showTab('logbook')" id="tab-btn-logbook" data-i18n="tabs.logbook" class="tab-btn whitespace-nowrap py-2 px-4 md:px-5 text-sm rounded-full transition-all duration-300">📔 Logbuch</button>
               <button onclick="showTab('achievements')" id="tab-btn-achievements" data-i18n="tabs.achievements" class="tab-btn whitespace-nowrap py-2 px-4 md:px-5 text-sm rounded-full transition-all duration-300">🏆 Rekorde</button>
+              <button onclick="showTab('profil')" id="tab-btn-profil" data-i18n="tabs.profile" class="tab-btn whitespace-nowrap py-2 px-4 md:px-5 text-sm rounded-full transition-all duration-300">Profil</button>
               <button onclick="showTab('hilfe')" id="tab-btn-hilfe" data-i18n="tabs.help" class="tab-btn whitespace-nowrap py-2 px-4 md:px-5 text-sm rounded-full transition-all duration-300">💡 Hilfe</button>
 
             </nav>

@@ -604,7 +604,8 @@
     "egRegistration": "ej. D-AINC",
     "email": "Correo electrónico",
     "newPassword": "Nueva contraseña (mín. 6 caracteres)",
-    "password": "Contraseña"
+    "password": "Contraseña",
+    "nickname": "Apodo"
   },
   "premium": {
     "alreadyPremiumDesc": "Tienes una suscripción web activa. Por favor, gestiónala en el sitio web.",
@@ -763,7 +764,8 @@
     "newFlight": "Nuevo Vuelo",
     "share": "Compartir",
     "stats": "Estadísticas",
-    "trips": "Mis Viajes"
+    "trips": "Mis Viajes",
+    "profile": "Perfil"
   },
   "toast": {
     "airportNotFound": "Código de aeropuerto no encontrado.",
@@ -820,5 +822,26 @@
   "units": {
     "hoursShort": "Hrs.",
     "minutesShort": "Min."
+  },
+
+  "profile": {
+    "communityTitle": "Comunidad y Clasificación",
+    "communityDesc": "Compara tus estadísticas de vuelo con las de otros.",
+    "nicknameLabel": "Tu Apodo",
+    "placeholder.nickname": "ej. SkyKing99",
+    "nicknameHint": "Este nombre se mostrará en la clasificación global.",
+    "leaderboardOptIn": "Participar en la clasificación",
+    "leaderboardOptInDesc": "Hace que tu perfil sea visible para los demás.",
+    "saveBtn": "Guardar Perfil",
+    "accountDetails": "Detalles de la Cuenta",
+    "emailLabel": "Correo Electrónico (Login)",
+    "subStatus": "Estado de Suscripción",
+    "demoSaveError": "No se pueden guardar perfiles en el modo Demo.",
+    "saveLoading": "Guardando...",
+    "nickTooShort": "Tu apodo debe tener al menos 3 caracteres para participar.",
+    "nickTakenTitle": "Nombre en uso",
+    "nickTakenDesc": "Este apodo ya está en uso. Por favor, elige otro.",
+    "saveSuccess": "¡Perfil guardado con éxito!",
+    "saveError": "Error al guardar el perfil."
   }
 }

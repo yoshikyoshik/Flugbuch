@@ -55,6 +55,10 @@ async function initializeApp() {
     if (error) throw error;
     user = data.user;
 
+    // --- NEU: Profil-Daten laden ---
+    loadUserProfile(user);
+    // -------------------------------
+
     // --- BILLING INIT ---
     // Wir übergeben die ID, damit RevenueCat den User zuordnen kann
     await initializeBilling(user.id);
@@ -196,7 +200,7 @@ async function initializeApp() {
   ////document
     ////.getElementById("burger-menu-btn")
     ////.addEventListener("click", toggleBurgerMenu);
-  document.getElementById("menu-logout-btn").addEventListener("click", logout);
+  //// document.getElementById("menu-logout-btn").addEventListener("click", logout);
   
 
   // Listener, um das Menü zu schließen, wenn man daneben klickt
@@ -3917,5 +3921,100 @@ window.viewAchievementDetails = async function(category, key, isSwitching = fals
             modal.classList.remove('opacity-0');
             modalContent.classList.remove('scale-95');
         }, 10);
+    }
+};
+
+// =================================================================
+// USER PROFILE LOGIC (Leaderboard & Account)
+// =================================================================
+
+window.loadUserProfile = async function(user) {
+    if (!user) return;
+    
+    // 1. Account Details (Email & Version) ins Profil-Tab eintragen
+    document.getElementById('profile-email-display').textContent = user.email;
+
+    // 2. Pro-Status Buttons im Profil-Tab updaten
+    const badge = document.getElementById('profile-status-badge');
+    const upgBtn = document.getElementById('profile-upgrade-btn');
+    const manBtn = document.getElementById('profile-manage-btn');
+    
+    if (currentUserSubscription === "pro") {
+        badge.textContent = "PRO";
+        badge.className = "inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200 border border-indigo-200 dark:border-indigo-800";
+        if(upgBtn) upgBtn.classList.add('hidden');
+        if(manBtn) manBtn.classList.remove('hidden');
+    } else {
+        badge.textContent = "FREE";
+        badge.className = "inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400 border border-gray-200 dark:border-gray-600";
+        if(upgBtn) upgBtn.classList.remove('hidden');
+        if(manBtn) manBtn.classList.add('hidden');
+    }
+
+    // 3. Leaderboard-Daten aus Supabase laden
+    try {
+        const { data, error } = await supabaseClient
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .maybeSingle(); // maybeSingle verhindert Fehler, falls noch kein Profil existiert
+
+        if (error && error.code !== 'PGRST116') throw error;
+
+        if (data) {
+            document.getElementById('profile-username').value = data.username || "";
+            document.getElementById('profile-is-public').checked = data.is_public || false;
+        }
+    } catch (err) {
+        console.error("Fehler beim Laden des Profils:", err);
+    }
+};
+
+window.saveUserProfile = async function() {
+    // Demo Check
+    if (typeof isDemoMode !== 'undefined' && isDemoMode) {
+        showMessage(getTranslation("demo.demoModus") || "Demo-Modus", getTranslation("profile.demoSaveError") || "Im Demo-Modus können keine Profile gespeichert werden.", "info");
+        return;
+    }
+
+    const btn = document.getElementById('btn-save-profile');
+    const originalText = btn.textContent;
+    btn.textContent = getTranslation("profile.saveLoading") || "Speichere...";
+    btn.disabled = true;
+
+    try {
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        if (!user) throw new Error("Nicht eingeloggt.");
+
+        const username = document.getElementById('profile-username').value.trim();
+        const isPublic = document.getElementById('profile-is-public').checked;
+
+        if (isPublic && username.length < 3) {
+            showMessage(getTranslation("toast.infoTitle") || "Hinweis", getTranslation("profile.nickTooShort") || "Dein Nickname muss mindestens 3 Zeichen lang sein, um teilzunehmen.", "info");
+            btn.textContent = originalText;
+            btn.disabled = false;
+            return;
+        }
+
+        // Upsert (Update falls vorhanden, sonst Insert)
+        const { error } = await supabaseClient
+            .from('profiles')
+            .upsert({ id: user.id, username: username, is_public: isPublic });
+
+        if (error) {
+            if (error.code === '23505') {
+                showMessage(getTranslation("profile.nickTakenTitle") || "Name vergeben", getTranslation("profile.nickTakenDesc") || "Dieser Nickname ist leider schon vergeben. Bitte wähle einen anderen.", "error");
+            } else {
+                throw error;
+            }
+        } else {
+            showMessage(getTranslation("toast.successTitle") || "Erfolg", getTranslation("profile.saveSuccess") || "Profil erfolgreich gespeichert!", "success");
+        }
+    } catch (err) {
+        console.error("Profil speichern Fehler:", err);
+        showMessage(getTranslation("toast.errorTitle") || "Fehler", getTranslation("profile.saveError") || "Profil konnte nicht gespeichert werden.", "error");
+    } finally {
+        btn.textContent = originalText;
+        btn.disabled = false;
     }
 };
