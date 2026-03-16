@@ -4176,21 +4176,34 @@ window.shareInviteLink = async function() {
         const { data: { user } } = await supabaseClient.auth.getUser();
         if (!user) throw new Error("Nicht eingeloggt");
 
-        // Wir bauen die saubere URL zusammen (ohne alte Parameter)
-        const baseUrl = window.location.origin + window.location.pathname;
+        // 🚀 FIX 1: Wir zwingen die App, immer die echte Live-URL zu nutzen!
+        // (Bitte prüfe, ob aviosphere.com deine korrekte Domain ist)
+        const baseUrl = 'https://aviosphere.com/'; 
         const inviteUrl = `${baseUrl}?invite=${user.id}`;
 
-        const shareData = {
-            title: 'AvioSphere',
-            text: getTranslation("leaderboard.shareText") || 'Lass uns unsere Flüge vergleichen! Füge mich auf AvioSphere hinzu:',
-            url: inviteUrl
-        };
+        const shareTitle = 'AvioSphere';
+        const shareText = getTranslation("leaderboard.shareText") || 'Lass uns unsere Flüge vergleichen! Füge mich auf AvioSphere hinzu:';
 
-        // Versuch, das native Teilen-Menü des Handys zu öffnen
-        if (navigator.share) {
-            await navigator.share(shareData);
+        // 🚀 FIX 2: Das native Teilen-Menü für Handys (WhatsApp, Mail etc.)
+        const isNative = typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform();
+
+        if (isNative && Capacitor.Plugins.Share) {
+            // Öffnet das echte, native Teilen-Menü (Slide-Up) am Smartphone
+            await Capacitor.Plugins.Share.share({
+                title: shareTitle,
+                text: shareText,
+                url: inviteUrl,
+                dialogTitle: 'AvioSphere Einladung'
+            });
+        } else if (navigator.share) {
+            // Fallback für moderne PC-Browser (Mac/Windows Teilen-Menü)
+            await navigator.share({
+                title: shareTitle,
+                text: shareText,
+                url: inviteUrl
+            });
         } else {
-            // Fallback für PC: In die Zwischenablage kopieren
+            // Letzter Fallback für alte Browser am PC: Zwischenablage
             await navigator.clipboard.writeText(inviteUrl);
             showMessage("URL Kopiert", getTranslation("leaderboard.linkCopied") || "Einladungslink in die Zwischenablage kopiert!", "success");
         }
