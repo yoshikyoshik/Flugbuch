@@ -858,7 +858,19 @@
     "rank3": "第三名",
     "flights": "航班",
     "km": "公里",
-    "error": "加载排行榜时出错。"
+    "error": "加载排行榜时出错。",
+    "socialTitle": "你比你的朋友飞得更多吗？",
+    "socialDesc": "邀请他们并比较您的统计数据！",
+    "inviteBtn": "邀请朋友",
+    "shareText": "让我们比较一下我们的飞行！在 AvioSphere 上添加我：",
+    "linkCopied": "邀请链接已复制到剪贴板！",
+    "inviteConfirm": "{name} 想在 AvioSphere 上与您连接。接受吗？",
+    "alreadyFriends": "你们已经连接了！",
+    "inviteSuccess": "朋友添加成功！",
+    "noProfileError": "邀请方尚未完成个人资料的设置。",
+    "scopeGlobal": "全球",
+    "scopeFriends": "朋友",
+    "friendsTitle": "朋友 - 本月"
   }
 
 }

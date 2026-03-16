@@ -858,7 +858,19 @@
     "rank3": "3er lugar",
     "flights": "Vuelos",
     "km": "km",
-    "error": "Error al cargar la clasificación."
+    "error": "Error al cargar la clasificación.",
+    "socialTitle": "¿Vuelas más que tus amigos?",
+    "socialDesc": "¡Invítalos y compara tus estadísticas!",
+    "inviteBtn": "Invitar Amigos",
+    "shareText": "¡Comparemos nuestros vuelos! Añádeme en AvioSphere:",
+    "linkCopied": "¡Enlace de invitación copiado al portapapeles!",
+    "inviteConfirm": "{name} quiere conectarse contigo en AvioSphere. ¿Aceptar?",
+    "alreadyFriends": "¡Ya están conectados!",
+    "inviteSuccess": "¡Amigo añadido con éxito!",
+    "noProfileError": "El piloto que envía la invitación aún no ha completado la configuración de su perfil.",
+    "scopeGlobal": "Global",
+    "scopeFriends": "Amigos",
+    "friendsTitle": "Amigos - Este Mes"
   }
 
 }

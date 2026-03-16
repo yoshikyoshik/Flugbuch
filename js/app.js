@@ -55,8 +55,17 @@ async function initializeApp() {
     if (error) throw error;
     user = data.user;
 
+    // 🚀 NEU: Prüfen, ob wir über einen Einladungs-Link gekommen sind
+    const urlParams = new URLSearchParams(window.location.search);
+    const inviteId = urlParams.get('invite');
+    if (inviteId && user && inviteId !== user.id) {
+        handleFriendInvite(inviteId, user.id);
+        // Die URL sofort bereinigen, damit der Dialog beim Neuladen nicht nochmal kommt
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
     // --- NEU: Profil-Daten laden ---
-    loadUserProfile(user);
+    //// loadUserProfile(user);
     // -------------------------------
 
     // --- BILLING INIT ---
@@ -134,41 +143,17 @@ async function initializeApp() {
       }
       // --- ENDE STATUS-PRÜFUNG ---
 
-      // --- ✅ STATUS IM BURGER-MENÜ ANZEIGEN & BUTTONS SCHALTEN ---
-      const statusBadge = document.getElementById("subscription-status-badge");
-      const upgradeBtn = document.getElementById("menu-upgrade-btn");
-      const manageBtn = document.getElementById("menu-manage-sub-btn");
-      const scannerLock = document.getElementById("scanner-lock"); // 🔒 NEU: Das Schloss-Element suchen
+      // --- ✅ PROFIL & UI UPDATES (Nach der Status-Prüfung!) ---
+      
+      // 1. Profil-Tab aktualisieren (JETZT weiß die App, ob du PRO bist!)
+      loadUserProfile(user);
 
-      if (statusBadge) {
-        // 🔥 FIX: Wir entfernen das i18n-Attribut, damit die Übersetzung das "PRO/FREE" nicht mehr überschreibt!
-        statusBadge.removeAttribute("data-i18n");
-
-        if (currentUserSubscription === "pro") {
-          // PRO Design
-          statusBadge.textContent = "PRO";
-          statusBadge.className =
-            "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold mt-1 bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200 border border-indigo-200 dark:border-indigo-800";
-
-          // Buttons umschalten
-          if (upgradeBtn) upgradeBtn.classList.add("hidden");
-          if (manageBtn) manageBtn.classList.remove("hidden"); // "Verwalten" zeigen
-          if (scannerLock) scannerLock.classList.add("hidden"); // 🔒 NEU: Schloss ausblenden!
-        } else {
-          // FREE Design
-          statusBadge.textContent = "FREE";
-          statusBadge.className =
-            "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mt-1 bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400 border border-gray-200 dark:border-gray-600";
-
-          // Buttons umschalten
-          if (upgradeBtn) {
-             // ✅ KORREKTUR: Button IMMER zeigen (da wir jetzt In-App-Käufe haben)
-             upgradeBtn.classList.remove("hidden");
-          }
-          
-          if (manageBtn) manageBtn.classList.add("hidden");
-          if (scannerLock) scannerLock.classList.remove("hidden"); // 🔒 NEU: Schloss anzeigen!
-        }
+      // 2. Schloss am Scanner-Button steuern
+      const scannerLock = document.getElementById("scanner-lock");
+      if (currentUserSubscription === "pro") {
+          if (scannerLock) scannerLock.classList.add("hidden");
+      } else {
+          if (scannerLock) scannerLock.classList.remove("hidden");
       }
     } else {
       currentUserSubscription = "free";
@@ -2739,30 +2724,85 @@ window.toggleAchievementsView = function(view) {
 };
 
 // ====== LEADERBOARD LADEN (SUPABASE) ======
+window.currentLeaderboardScope = 'global'; // Standard-Modus
+
+// Schalter-Logik (Ändert das Design der Buttons und lädt neu)
+window.setLeaderboardScope = function(scope) {
+    window.currentLeaderboardScope = scope;
+    
+    const btnGlobal = document.getElementById('btn-leaderboard-global');
+    const btnFriends = document.getElementById('btn-leaderboard-friends');
+    const title = document.getElementById('leaderboard-title');
+    
+    if (scope === 'global') {
+        btnGlobal.className = "px-4 py-1.5 rounded-lg bg-white dark:bg-gray-600 shadow-sm text-indigo-600 dark:text-indigo-400 transition-all";
+        btnFriends.className = "px-4 py-1.5 rounded-lg text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-all";
+        if(title) {
+            title.textContent = getTranslation("leaderboard.top100") || "Top 100 - Diesen Monat";
+            title.setAttribute("data-i18n", "leaderboard.top100");
+        }
+    } else {
+        btnFriends.className = "px-4 py-1.5 rounded-lg bg-white dark:bg-gray-600 shadow-sm text-indigo-600 dark:text-indigo-400 transition-all";
+        btnGlobal.className = "px-4 py-1.5 rounded-lg text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-all";
+        if(title) {
+            title.textContent = getTranslation("leaderboard.friendsTitle") || "Freunde - Diesen Monat";
+            title.setAttribute("data-i18n", "leaderboard.friendsTitle");
+        }
+    }
+    
+    loadLeaderboard();
+};
+
 window.loadLeaderboard = async function() {
     const container = document.getElementById('leaderboard-container');
     if (!container) return;
 
-    // Lade-Animation
     container.innerHTML = `<div class="p-8 text-center text-gray-500 animate-pulse">${getTranslation("leaderboard.loading") || "Lade Flugdaten aus aller Welt... 🌍"}</div>`;
 
-    // Demo Modus abfangen
     if (typeof isDemoMode !== 'undefined' && isDemoMode) {
         container.innerHTML = `<div class="p-8 text-center text-gray-500">${getTranslation("leaderboard.demoDisabled") || "Im Demo-Modus ist das Leaderboard deaktiviert."}</div>`;
         return;
     }
 
     try {
-        // Eigene ID holen, um sich in der Liste farblich hervorzuheben
         const { data: userData } = await supabaseClient.auth.getUser();
         const myUserId = userData?.user?.id;
 
-        // Unsere magische View abfragen!
-        const { data, error } = await supabaseClient
-            .from('global_leaderboard_current_month')
-            .select('*');
+        // Basis-Query auf unsere magische View
+        let query = supabaseClient.from('global_leaderboard_current_month').select('*');
 
+        // 🚀 NEU: Filter-Logik für "Freunde"
+        if (window.currentLeaderboardScope === 'friends' && myUserId) {
+            // 1. Alle Freundschaften laden, in denen ich vorkomme
+            const { data: friendsData, error: friendsError } = await supabaseClient
+                .from('friendships')
+                .select('user_id_1, user_id_2')
+                .or(`user_id_1.eq.${myUserId},user_id_2.eq.${myUserId}`)
+                .eq('status', 'accepted');
+                
+            if (friendsError) throw friendsError;
+            
+            // 2. IDs in ein Set packen (eigene ID ist immer dabei!)
+            const friendIds = new Set([myUserId]);
+            if (friendsData) {
+                friendsData.forEach(f => {
+                    friendIds.add(f.user_id_1);
+                    friendIds.add(f.user_id_2);
+                });
+            }
+            
+            // 3. View filtern: Nur Freunde und MICH zeigen, Bots rigoros ausschließen!
+            query = query.in('user_id', Array.from(friendIds)).eq('is_bot', false);
+        } else {
+            // "Global" Modus: Standardmäßig die Top 100 anzeigen
+            query = query.limit(100);
+        }
+
+        const { data, error } = await query;
         if (error) throw error;
+
+        // JavaScript-Sortierung zur Sicherheit
+        if (data) data.sort((a, b) => b.total_distance - a.total_distance);
 
         if (!data || data.length === 0) {
             container.innerHTML = `<div class="p-8 text-center text-gray-500">${getTranslation("leaderboard.noFlights") || "Diesen Monat ist noch niemand geflogen!"}</div>`;
@@ -2774,13 +2814,11 @@ window.loadLeaderboard = async function() {
             const rank = index + 1;
             const isMe = entry.user_id === myUserId;
             
-            // 🥇 Medaillen für die Top 3
             let rankBadge = `<span class="text-gray-500 font-bold w-6 text-center">${rank}</span>`;
             if (rank === 1) rankBadge = `<span class="text-2xl" title="${getTranslation("leaderboard.rank1") || "Platz 1"}">🥇</span>`;
             if (rank === 2) rankBadge = `<span class="text-2xl" title="${getTranslation("leaderboard.rank2") || "Platz 2"}">🥈</span>`;
             if (rank === 3) rankBadge = `<span class="text-2xl" title="${getTranslation("leaderboard.rank3") || "Platz 3"}">🥉</span>`;
 
-            // Styling: Eigene Zeile wird hervorgehoben
             const rowClass = isMe 
                 ? "bg-indigo-50 dark:bg-indigo-900/30 border-l-4 border-indigo-500" 
                 : "hover:bg-gray-50 dark:hover:bg-gray-700/50";
@@ -2788,8 +2826,7 @@ window.loadLeaderboard = async function() {
             const nameClass = isMe ? "text-indigo-700 dark:text-indigo-300 font-black" : "text-gray-800 dark:text-gray-200 font-bold";
             const avatar = entry.avatar_url || "🧑‍✈️";
             const dist = entry.total_distance.toLocaleString('de-DE');
-            
-            // Textbausteine für die Zeile
+
             html += `
             <div class="flex items-center justify-between p-3 sm:p-4 transition-colors ${rowClass}">
                 <div class="flex items-center gap-3 sm:gap-4">
@@ -4126,5 +4163,89 @@ window.saveUserProfile = async function() {
     } finally {
         btn.textContent = originalText;
         btn.disabled = false;
+    }
+};
+
+// ====== FREUNDE EINLADEN (LINK GENERIEREN) ======
+window.shareInviteLink = async function() {
+    if (typeof isDemoMode !== 'undefined' && isDemoMode) {
+        showMessage(getTranslation("toast.infoTitle") || "Hinweis", getTranslation("profile.demoTabDisabled") || "Im Demo-Modus nicht verfügbar.", "info");
+        return;
+    }
+
+    try {
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        if (!user) throw new Error("Nicht eingeloggt");
+
+        // Wir bauen die saubere URL zusammen (ohne alte Parameter)
+        const baseUrl = window.location.origin + window.location.pathname;
+        const inviteUrl = `${baseUrl}?invite=${user.id}`;
+
+        const shareData = {
+            title: 'AvioSphere',
+            text: getTranslation("leaderboard.shareText") || 'Lass uns unsere Flüge vergleichen! Füge mich auf AvioSphere hinzu:',
+            url: inviteUrl
+        };
+
+        // Versuch, das native Teilen-Menü des Handys zu öffnen
+        if (navigator.share) {
+            await navigator.share(shareData);
+        } else {
+            // Fallback für PC: In die Zwischenablage kopieren
+            await navigator.clipboard.writeText(inviteUrl);
+            showMessage("URL Kopiert", getTranslation("leaderboard.linkCopied") || "Einladungslink in die Zwischenablage kopiert!", "success");
+        }
+    } catch (err) {
+        console.warn("Teilen abgebrochen oder fehlgeschlagen:", err);
+    }
+};
+
+// ====== FREUNDSCHAFTSANFRAGE VERARBEITEN ======
+window.handleFriendInvite = async function(friendId, myId) {
+    if (typeof isDemoMode !== 'undefined' && isDemoMode) return;
+    
+    try {
+        // 🚀 NEU: 1. Sicherheits-Check! Existiert mein eigenes Profil schon? 
+        // Falls nicht, legen wir lautlos ein leeres "Schatten-Profil" an, damit die Datenbank glücklich ist.
+        const { data: myProfile } = await supabaseClient.from('profiles').select('id').eq('id', myId).maybeSingle();
+        if (!myProfile) {
+            await supabaseClient.from('profiles').insert({ id: myId, is_public: false });
+        }
+
+        // 2. Name des Freundes laden, um ihn im Dialog anzuzeigen
+        const { data: friendProfile } = await supabaseClient
+            .from('profiles')
+            .select('username')
+            .eq('id', friendId)
+            .maybeSingle();
+            
+        const friendName = friendProfile?.username || "Ein Pilot";
+        const confirmMsg = (getTranslation("leaderboard.inviteConfirm") || "{name} möchte sich mit dir auf AvioSphere verbinden. Akzeptieren?").replace('{name}', friendName);
+
+        // 3. Nutzer fragen
+        if (window.confirm(confirmMsg)) {
+            // Wir speichern die Freundschaft bidirektional
+            const { error } = await supabaseClient.from('friendships').insert([
+                { user_id_1: myId, user_id_2: friendId, status: 'accepted' },
+                { user_id_1: friendId, user_id_2: myId, status: 'accepted' }
+            ]);
+
+            if (error) {
+                if (error.code === '23505') { 
+                    // UNIQUE Error: Die beiden sind schon befreundet
+                    showMessage(getTranslation("toast.infoTitle") || "Hinweis", getTranslation("leaderboard.alreadyFriends") || "Ihr seid bereits verbunden!", "info");
+                } else if (error.code === '23503') {
+                    // 🚀 NEU: Foreign Key Error abfangen (Der Freund hat sein Profil gelöscht oder nie eins angelegt)
+                    showMessage(getTranslation("toast.errorTitle") || "Fehler", getTranslation("leaderboard.noProfileError") || "Der einladende Pilot hat sein Profil noch nicht fertig eingerichtet.", "error");
+                } else {
+                    throw error;
+                }
+            } else {
+                showMessage(getTranslation("toast.successTitle") || "Erfolg", getTranslation("leaderboard.inviteSuccess") || "Freund erfolgreich hinzugefügt!", "success");
+            }
+        }
+    } catch (err) {
+        console.error("Fehler bei Freundschaftsanfrage:", err);
+        showMessage(getTranslation("toast.errorTitle") || "Fehler", "Einladung konnte nicht verarbeitet werden.", "error");
     }
 };
