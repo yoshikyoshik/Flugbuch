@@ -81,41 +81,47 @@ async function initializeApp() {
 
       // --- ✅ STATUS-PRÜFUNG & SELBSTHEILUNG ---
       const meta = user.user_metadata || {};
-	  
-	  // Letzte Flug-ID laden
+      
+      // Letzte Flug-ID laden
       if (meta.last_flight_id) {
           globalLastFlightId = meta.last_flight_id;
       }
-	  
+      
       let isPro = false;
-      let performDbCorrection = false; // Merker, ob wir die DB reparieren müssen
+      let performDbCorrection = false;
 
-      // 1. Prüfen, ob "pro" flag gesetzt ist
-      if (meta.subscription_status === "pro") {
-        
-        // 2. Zeit-Check: Gibt es ein Ablaufdatum?
+      // 🚀 1. REVENUECAT (NATIV) HAT VORRANG!
+      // Wenn das native SDK durch initializeBilling() den Nutzer bereits als PRO markiert hat,
+      // vertrauen wir dem zu 100%, egal was in der Supabase steht.
+      const isNative = typeof isNativeApp === 'function' ? isNativeApp() : (typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform());
+      
+      if (isNative && window.currentUserSubscription === "pro") {
+          isPro = true;
+      } 
+      // 🌍 2. SUPABASE (WEB) ALS ZWEITE INSTANZ
+      else if (meta.subscription_status === "pro") {
         if (meta.subscription_end) {
-          currentSubscriptionEnd = Number(meta.subscription_end); // Sicherstellen, dass es eine Zahl ist
+          currentSubscriptionEnd = Number(meta.subscription_end);
           const nowInSeconds = Math.floor(Date.now() / 1000);
 
-          // 30 Sekunden Kulanz
           if (currentSubscriptionEnd > (nowInSeconds - 30)) {
-            // Datum liegt in der Zukunft -> GÜLTIG
             isPro = true;
-            console.log("Status: PRO (Gültig bis " + new Date(currentSubscriptionEnd * 1000).toLocaleDateString() + ")");
           } else {
-            // 🛑 Datum liegt in der Vergangenheit -> ABGELAUFEN
             console.warn("Status: Datum abgelaufen! Markiere für DB-Korrektur...");
             isPro = false;
             performDbCorrection = true;
           }
         } else {
-          // Fall B: "Pro" steht in DB, aber KEIN Datum vorhanden
-          if (meta.subscription_source === 'lifetime') {
+          // Fall B: "Pro" ohne Datum.
+          // Google Play und Apple Abos verlängern sich automatisch. 
+          // RevenueCat schreibt nicht immer zwingend ein Enddatum in die Supabase.
+          // Daher erlauben wir diese Quellen jetzt ausdrücklich!
+          const validSources = ['lifetime', 'google_play', 'apple_app_store', 'stripe'];
+          
+          if (validSources.includes(meta.subscription_source)) {
               isPro = true;
           } else {
-              // 🛑 FEHLERZUSTAND: Pro ohne Datum -> Das muss weg!
-              console.warn("Status Inkonsistenz: PRO ohne Datum. Setze auf FREE.");
+              console.warn("Status Inkonsistenz: PRO ohne Datum und unbekannte Quelle. Setze auf FREE.");
               isPro = false;
               performDbCorrection = true;
           }
@@ -124,21 +130,14 @@ async function initializeApp() {
 
       // Status global setzen
       currentUserSubscription = isPro ? "pro" : "free";
-      
-      // Quelle global speichern (Wichtig für ui.js!)
       window.currentUserSubscriptionSource = meta.subscription_source || null;
 
       // --- 🛠 DB REPARATUR DURCHFÜHREN ---
-      if (performDbCorrection) {
+      // Wir korrigieren nur, wenn wir WIRKLICH sicher sind, dass das Abo abgelaufen ist
+      if (performDbCorrection && !isPro) {
           console.log("Führe DB-Korrektur durch (Setze Status auf FREE)...");
-          // Wir warten nicht auf das Ergebnis (await), damit die UI sofort lädt
           supabaseClient.auth.updateUser({
-              data: { 
-                  subscription_status: 'free', 
-                  subscription_end: null 
-                  // Wir lassen die 'source' stehen, damit wir wissen, woher er kam,
-                  // oder wir könnten sie auf null setzen. Meist ist Status 'free' genug.
-              }
+              data: { subscription_status: 'free', subscription_end: null }
           });
       }
       // --- ENDE STATUS-PRÜFUNG ---
