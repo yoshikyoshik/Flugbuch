@@ -3,7 +3,7 @@
     "relation": ["delegate_permission/common.handle_all_urls"],
     "target": {
       "namespace": "android_app",
-      "package_name": "com.android.application",
+      "package_name": "com.manab.flightbook",
       "sha256_cert_fingerprints": [
         "D3:FE:7A:47:DC:43:D0:74:07:15:89:99:52:BD:60:1E:A9:4E:A7:9B:4B:C3:9E:C4:84:0B:C4:CB:8C:28:8F:97"
       ]
