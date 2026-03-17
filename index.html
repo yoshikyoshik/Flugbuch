@@ -2159,6 +2159,28 @@
         </div>
     </div>
 
+    <div id="invite-install-overlay" class="hidden fixed inset-0 z-[200] bg-gray-900/90 backdrop-blur-sm flex-col items-center justify-center p-6 text-center">
+        <div class="bg-white dark:bg-gray-800 rounded-3xl p-8 max-w-sm w-full shadow-2xl border border-gray-100 dark:border-gray-700">
+            <div class="text-6xl mb-4">✈️</div>
+            <h3 class="text-2xl font-black text-gray-900 dark:text-white mb-2" data-i18n="invite.overlayTitle">Du wurdest eingeladen!</h3>
+            <p class="text-gray-600 dark:text-gray-300 mb-6 text-sm" data-i18n="invite.overlayDesc">Um dich mit deinem Freund zu verbinden, empfehlen wir die AvioSphere App.</p>
+
+            <div class="bg-indigo-50 dark:bg-indigo-900/30 p-4 rounded-xl mb-6 border border-indigo-100 dark:border-indigo-800">
+                <p class="text-xs font-black text-indigo-800 dark:text-indigo-300 uppercase tracking-wide" data-i18n="invite.overlayHint">💡 Wichtig:</p>
+                <p class="text-xs text-indigo-700 dark:text-indigo-400 mt-1" data-i18n="invite.overlayInstruction">Wenn du die App jetzt neu installierst, klicke den Link in WhatsApp nach der Installation bitte ein zweites Mal an!</p>
+            </div>
+
+            <div class="space-y-3">
+                <button onclick="goToStore()" class="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-xl shadow-lg hover:bg-indigo-700 transition-colors flex justify-center items-center gap-2">
+                    📱 <span data-i18n="invite.btnStore">App herunterladen</span>
+                </button>
+                <button onclick="continueInBrowser()" class="w-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-bold py-3 px-4 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                    🌐 <span data-i18n="invite.btnBrowser">Im Browser fortfahren</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
 </div>
 	
   

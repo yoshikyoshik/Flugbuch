@@ -2300,6 +2300,36 @@ function parseCSV(csvText) {
 
 // DOMContentLoaded
 document.addEventListener("DOMContentLoaded", async function () {
+
+// 🚀 NEU: Smartes App-Install-Routing (Nur im Webbrowser)
+    if (typeof Capacitor === 'undefined' || !Capacitor.isNativePlatform()) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const inviteId = urlParams.get('invite');
+        
+        if (inviteId) {
+            const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+            const isAndroid = /android/i.test(userAgent);
+            const isIOS = /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream;
+
+            // Globale Variable für den Store-Link (kann später auch iOS sein)
+            window.currentStoreLink = "https://play.google.com/store/apps/details?id=com.manab.flightbook";
+
+            if (isAndroid || isIOS) {
+                // Handy erkannt -> Zeige das schicke Overlay!
+                const overlay = document.getElementById('invite-install-overlay');
+                if (overlay) {
+                    overlay.classList.remove('hidden');
+                    overlay.classList.add('flex');
+                }
+                // Wir unterbrechen hier absichtlich, damit die App im Hintergrund nicht weiter rödelt
+                // bis der Nutzer sich entschieden hat.
+            } else {
+                // PC erkannt -> Direkt im Web verarbeiten
+                processWebInvite(inviteId);
+            }
+        }
+    }
+
   const preferredLanguage = localStorage.getItem("preferredLanguage") || "de";
   await setLanguage(preferredLanguage);
 
@@ -4574,5 +4604,50 @@ window.shareWrappedImage = async function() {
         if (typeof showMessage === 'function') {
             showMessage(getTranslation("toast.errorTitle") || "Fehler", "Konnte Bild nicht erstellen.", "error");
         }
+    }
+};
+
+// --- LOGIK FÜR DAS APP INSTALL OVERLAY ---
+
+window.goToStore = function() {
+    window.location.href = window.currentStoreLink;
+};
+
+window.continueInBrowser = function() {
+    // Overlay schließen
+    const overlay = document.getElementById('invite-install-overlay');
+    if (overlay) {
+        overlay.classList.add('hidden');
+        overlay.classList.remove('flex');
+    }
+    
+    // Web-Logik ausführen
+    const urlParams = new URLSearchParams(window.location.search);
+    const inviteId = urlParams.get('invite');
+    if (inviteId) {
+        processWebInvite(inviteId);
+    }
+};
+
+window.processWebInvite = async function(inviteId) {
+    try {
+        const { data: userData } = await supabaseClient.auth.getUser();
+        if (userData && userData.user && userData.user.id !== inviteId) {
+            // Wenn eingeloggt, normalen Freundes-Dialog aufrufen!
+            if (typeof handleFriendInvite === 'function') {
+                handleFriendInvite(inviteId, userData.user.id);
+            }
+        } else if (!userData || !userData.user) {
+            // Wenn NICHT eingeloggt im Browser:
+            if (typeof showMessage === 'function') {
+                showMessage(
+                    getTranslation("toast.infoTitle") || "Hinweis", 
+                    getTranslation("invite.loginFirst") || "Bitte logge dich in der Web-Version ein, um die Einladung anzunehmen.", 
+                    "info"
+                );
+            }
+        }
+    } catch (e) {
+        console.error("Web Invite Fehler:", e);
     }
 };

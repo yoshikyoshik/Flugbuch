@@ -899,6 +899,16 @@
     "defaultPilot": "AvioSphere 飞行员",
     "shareBtn": "分享截图",
     "closeBtn": "返回应用"
+  },
+
+  "invite": {
+    "overlayTitle": "你收到邀请了！",
+    "overlayDesc": "为了与你的朋友取得联系，我们建议你使用 AvioSphere 应用。",
+    "overlayHint": "💡 重要提示：",
+    "overlayInstruction": "如果您正在安装应用，请在安装完成后再次点击 WhatsApp 链接！",
+    "btnStore": "下载应用",
+    "btnBrowser": "在浏览器中继续",
+    "loginFirst": "请先登录以接受邀请。"
   }
 
 }

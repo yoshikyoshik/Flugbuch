@@ -904,6 +904,16 @@
     "defaultPilot": "AvioSphere Pilot",
     "shareBtn": "Share Screenshot",
     "closeBtn": "Back to App"
+  },
+
+  "invite": {
+    "overlayTitle": "You've been invited!",
+    "overlayDesc": "To connect with your friend, we recommend using the AvioSphere app.",
+    "overlayHint": "💡 Important:",
+    "overlayInstruction": "If you are installing the app now, please click the link in WhatsApp a second time after the installation!",
+    "btnStore": "Download App",
+    "btnBrowser": "Continue in Browser",
+    "loginFirst": "Please log in first to accept the invitation."
   }
 
 }
