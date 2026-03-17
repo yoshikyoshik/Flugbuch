@@ -2642,19 +2642,39 @@ document.getElementById("buy-pro-btn").addEventListener("click", async () => {
 		yearSpan.textContent = new Date().getFullYear();
 	}
 	
-	// Listener für Deep Links (Rückkehr von Stripe)
+	// Listener für Deep Links (Stripe & Einladungen)
     if (typeof Capacitor !== 'undefined') {
         const { App } = Capacitor.Plugins;
-        App.addListener('appUrlOpen', data => {
-            console.log('App geöffnet via URL:', data.url);
+        App.addListener('appUrlOpen', async data => {
+            console.log('App aus dem Hintergrund geöffnet via URL:', data.url);
+            
+            // Fall 1: Rückkehr von Stripe (Custom Scheme)
             if (data.url.includes('aviosphere://')) {
-                // Wir sind zurück!
-                // Browser Plugin schließen (falls es nicht automatisch zugeht)
-                if (Capacitor.Plugins.Browser) {
-                    Capacitor.Plugins.Browser.close();
-                }
-                // Optional: Nutzerdaten neu laden, um Pro-Status sofort zu prüfen
+                if (Capacitor.Plugins.Browser) Capacitor.Plugins.Browser.close();
                 initializeApp(); 
+            }
+            
+            // Fall 2: Einladungslink (App Links / Universal Links)
+            // z.B. https://aviosphere.com/?invite=12345
+            if (data.url.includes('aviosphere.com') && data.url.includes('invite=')) {
+                try {
+                    // Wir lesen die URL sauber aus
+                    const urlObj = new URL(data.url);
+                    const inviteId = urlObj.searchParams.get('invite');
+                    
+                    if (inviteId) {
+                        // Prüfen, ob der User eingeloggt ist
+                        const { data: userData } = await supabaseClient.auth.getUser();
+                        if (userData && userData.user && userData.user.id !== inviteId) {
+                            // Einladungs-Funktion aufrufen!
+                            handleFriendInvite(inviteId, userData.user.id);
+                        } else if (!userData || !userData.user) {
+                            showMessage("Hinweis", "Bitte logge dich zuerst ein, um den Freund hinzuzufügen.", "info");
+                        }
+                    }
+                } catch (e) {
+                    console.error("Fehler beim Verarbeiten des Deep Links:", e);
+                }
             }
         });
     }
