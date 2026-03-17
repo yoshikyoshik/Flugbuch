@@ -2311,20 +2311,20 @@ document.addEventListener("DOMContentLoaded", async function () {
             const isAndroid = /android/i.test(userAgent);
             const isIOS = /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream;
 
-            // Globale Variable für den Store-Link (kann später auch iOS sein)
             window.currentStoreLink = "https://play.google.com/store/apps/details?id=com.manab.flightbook";
 
-            if (isAndroid || isIOS) {
-                // Handy erkannt -> Zeige das schicke Overlay!
+            // 🚀 NEU: Prüfen, ob der Nutzer das Overlay in dieser Session schon weggedrückt hat
+            const overlayShown = sessionStorage.getItem('inviteOverlayShown');
+
+            if ((isAndroid || isIOS) && !overlayShown) {
+                // Handy erkannt & noch nicht weggeklickt -> Zeige das Overlay GANZ VORNE!
                 const overlay = document.getElementById('invite-install-overlay');
                 if (overlay) {
                     overlay.classList.remove('hidden');
                     overlay.classList.add('flex');
                 }
-                // Wir unterbrechen hier absichtlich, damit die App im Hintergrund nicht weiter rödelt
-                // bis der Nutzer sich entschieden hat.
             } else {
-                // PC erkannt -> Direkt im Web verarbeiten
+                // Entweder PC, oder Nutzer hat bereits "Im Browser fortfahren" geklickt
                 processWebInvite(inviteId);
             }
         }
@@ -4614,6 +4614,9 @@ window.goToStore = function() {
 };
 
 window.continueInBrowser = function() {
+    // 🚀 NEU: Overlay für diese Session deaktivieren, damit es nach dem Login nicht nochmal kommt!
+    sessionStorage.setItem('inviteOverlayShown', 'true');
+    
     // Overlay schließen
     const overlay = document.getElementById('invite-install-overlay');
     if (overlay) {
