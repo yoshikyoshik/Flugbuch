@@ -876,6 +876,34 @@
     "scopeGlobal": "Global",
     "scopeFriends": "Freunde",
     "friendsTitle": "Freunde - Diesen Monat"
+  },
+
+  "wrapped": {
+    "bannerPre": "Dein Jahresrückblick",
+    "noFlightsTitle": "Schade!",
+    "noFlightsGeneral": "Du hast noch keine Flüge eingetragen.",
+    "errorTitle": "Fehler",
+    "noValidDates": "Keine gültigen Flugdaten mit Datum gefunden.",
+    "selectYear": "Wähle ein Jahr",
+    "reviewBtn": "✨ Rückblick {year}",
+    "noFlightsYear": "Du hast {year} noch keine Flüge eingetragen.",
+    "unknown": "Unbekannt",
+    "slide1Subtitle": "Dein Jahr über den Wolken",
+    "slide2Title": "Zurückgelegte Distanz",
+    "slide2Desc": "Das ist <span class=\"font-bold text-white\">{x}x</span> um die Erde!",
+    "slide3Title": "Zeit im Himmel",
+    "slide3Desc": "Wahnsinn! Du bist in diesem Jahr insgesamt <span class=\"font-bold text-white\">{x}</span> mal abgehoben.",
+    "slide4Title": "Deine Favoriten",
+    "slide4TopAirline": "Top Airline",
+    "slide4TopAircraft": "Treuester Begleiter",
+    "shareFlights": "Flüge",
+    "shareDistance": "Distanz",
+    "shareDuration": "Dauer",
+    "shareTopAircraft": "Top Flugzeug",
+    "sharePilot": "Pilot",
+    "defaultPilot": "AvioSphere Pilot",
+    "shareBtn": "Screenshot teilen",
+    "closeBtn": "Zurück zur App"
   }
 
 }

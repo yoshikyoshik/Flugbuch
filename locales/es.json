@@ -871,6 +871,34 @@
     "scopeGlobal": "Global",
     "scopeFriends": "Amigos",
     "friendsTitle": "Amigos - Este Mes"
+  },
+
+  "wrapped": {
+    "bannerPre": "Tu Resumen del Año",
+    "noFlightsTitle": "¡Qué pena!",
+    "noFlightsGeneral": "Aún no has registrado ningún vuelo.",
+    "errorTitle": "Error",
+    "noValidDates": "No se encontraron datos de vuelo con fechas válidas.",
+    "selectYear": "Selecciona un Año",
+    "reviewBtn": "✨ Resumen {year}",
+    "noFlightsYear": "Aún no has registrado vuelos en {year}.",
+    "unknown": "Desconocido",
+    "slide1Subtitle": "Tu año sobre las nubes",
+    "slide2Title": "Distancia Recorrida",
+    "slide2Desc": "¡Eso es <span class=\"font-bold text-white\">{x}x</span> alrededor del mundo!",
+    "slide3Title": "Tiempo en el Cielo",
+    "slide3Desc": "¡Guau! Has despegado un total de <span class=\"font-bold text-white\">{x}</span> veces este año.",
+    "slide4Title": "Tus Favoritos",
+    "slide4TopAirline": "Aerolínea Principal",
+    "slide4TopAircraft": "Compañero más Leal",
+    "shareFlights": "Vuelos",
+    "shareDistance": "Distancia",
+    "shareDuration": "Duración",
+    "shareTopAircraft": "Aeronave Principal",
+    "sharePilot": "Piloto",
+    "defaultPilot": "Piloto de AvioSphere",
+    "shareBtn": "Compartir Captura",
+    "closeBtn": "Volver a la App"
   }
 
 }

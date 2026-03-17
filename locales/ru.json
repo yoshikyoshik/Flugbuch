@@ -871,6 +871,34 @@
     "scopeGlobal": "Глобальный",
     "scopeFriends": "Друзья",
     "friendsTitle": "Друзья - Этот месяц"
+  },
+
+  "wrapped": {
+    "bannerPre": "Ваши итоги года",
+    "noFlightsTitle": "Жаль!",
+    "noFlightsGeneral": "Вы еще не добавили ни одного рейса.",
+    "errorTitle": "Ошибка",
+    "noValidDates": "Не найдено действительных данных о рейсах с датами.",
+    "selectYear": "Выберите год",
+    "reviewBtn": "✨ Итоги {year}",
+    "noFlightsYear": "В {year} году вы еще не совершали перелетов.",
+    "unknown": "Неизвестно",
+    "slide1Subtitle": "Ваш год над облаками",
+    "slide2Title": "Пройденное расстояние",
+    "slide2Desc": "Это <span class=\"font-bold text-white\">{x}x</span> раз вокруг Земли!",
+    "slide3Title": "Время в небе",
+    "slide3Desc": "Ого! В этом году вы взлетали <span class=\"font-bold text-white\">{x}</span> раз.",
+    "slide4Title": "Ваши фавориты",
+    "slide4TopAirline": "Топ авиакомпания",
+    "slide4TopAircraft": "Самый верный спутник",
+    "shareFlights": "Рейсы",
+    "shareDistance": "Дистанция",
+    "shareDuration": "Время",
+    "shareTopAircraft": "Топ самолет",
+    "sharePilot": "Пилот",
+    "defaultPilot": "Пилот AvioSphere",
+    "shareBtn": "Поделиться скриншотом",
+    "closeBtn": "Вернуться в приложение"
   }
 
 }

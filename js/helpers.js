@@ -77,13 +77,58 @@ function calculateCO2(distance, flightClass) {
   return Math.round(co2_kg);
 }
 
-function parseFlightTimeToMinutes(timeString) {
-  if (!timeString || !timeString.includes("Std.")) return 0;
-  const parts = timeString.match(/(\d+)\s*Std\.\s*(\d+)\s*Min\./);
-  if (parts && parts.length === 3) {
-    return parseInt(parts[1]) * 60 + parseInt(parts[2]);
+function parseFlightTimeToMinutes(timeString, distance = 0) {
+  let t = timeString;
+  let flightMinutes = 0;
+
+  if (t) {
+      if (typeof t === 'number') {
+          flightMinutes = t <= 30 ? t * 60 : t; 
+      } else if (typeof t === 'string') {
+          t = t.toLowerCase().trim();
+          
+          // Fall 1: Doppelpunkt (z.B. "11:31", "0:54h")
+          if (t.includes(':')) {
+              const cleanT = t.replace(/[^\d:]/g, ''); 
+              const parts = cleanT.split(':');
+              flightMinutes = (parseInt(parts[0], 10) || 0) * 60 + (parseInt(parts[1], 10) || 0);
+          } 
+          // Fall 2: Textformate ('h', 'Std', 'hour', 'm', 'min')
+          else if (/[a-z]/i.test(t)) {
+              let h = 0, m = 0;
+              const matchH = t.match(/(\d+(?:[.,]\d+)?)\s*(?:h|std|stunde|hour)/i);
+              const matchM = t.match(/(\d+(?:[.,]\d+)?)\s*(?:m|min|minute)/i);
+              
+              if (matchH) h = parseFloat(matchH[1].replace(',', '.'));
+              if (matchM) m = parseFloat(matchM[1].replace(',', '.'));
+              
+              if (matchH || matchM) {
+                  flightMinutes = (h * 60) + m;
+              } else {
+                  // Notfall-Rettung für Formate wie "11 31"
+                  const nums = t.match(/\d+/g);
+                  if (nums && nums.length >= 2) {
+                      flightMinutes = (parseInt(nums[0], 10) * 60) + parseInt(nums[1], 10);
+                  }
+              }
+          } 
+          // Fall 3: Reine Zahlen (z.B. "1.5", "5,2")
+          else {
+              let cleanT = t.replace(/[^\d.,]/g, '').replace(',', '.');
+              let num = parseFloat(cleanT);
+              if (!isNaN(num)) {
+                  flightMinutes = num <= 30 ? num * 60 : num;
+              }
+          }
+      }
   }
-  return 0;
+
+  // Fallback: Falls keine Zeit eingegeben wurde, aber eine Distanz vorhanden ist!
+  if (flightMinutes <= 0 && distance > 0) {
+      flightMinutes = (distance / 800) * 60 + 30;
+  }
+
+  return Math.round(flightMinutes);
 }
 
 function extractIata(text) {

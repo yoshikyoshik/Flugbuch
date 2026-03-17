@@ -871,6 +871,34 @@
     "scopeGlobal": "全球",
     "scopeFriends": "朋友",
     "friendsTitle": "朋友 - 本月"
+  },
+
+  "wrapped": {
+    "bannerPre": "您的年度回顾",
+    "noFlightsTitle": "太遗憾了！",
+    "noFlightsGeneral": "您还没有记录任何航班。",
+    "errorTitle": "错误",
+    "noValidDates": "未找到包含日期的有效航班数据。",
+    "selectYear": "选择一个年份",
+    "reviewBtn": "✨ {year} 年回顾",
+    "noFlightsYear": "您在 {year} 年还没有记录任何航班。",
+    "unknown": "未知",
+    "slide1Subtitle": "你在云端的一年",
+    "slide2Title": "飞行距离",
+    "slide2Desc": "这相当于绕地球 <span class=\"font-bold text-white\">{x}</span> 圈！",
+    "slide3Title": "在天空的时间",
+    "slide3Desc": "哇！今年您总共起飞了 <span class=\"font-bold text-white\">{x}</span> 次。",
+    "slide4Title": "您的最爱",
+    "slide4TopAirline": "顶级航空公司",
+    "slide4TopAircraft": "最忠实的伙伴",
+    "shareFlights": "航班",
+    "shareDistance": "距离",
+    "shareDuration": "持续时间",
+    "shareTopAircraft": "顶级飞机",
+    "sharePilot": "飞行员",
+    "defaultPilot": "AvioSphere 飞行员",
+    "shareBtn": "分享截图",
+    "closeBtn": "返回应用"
   }
 
 }

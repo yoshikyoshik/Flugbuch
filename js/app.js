@@ -4261,3 +4261,298 @@ window.handleFriendInvite = async function(friendId, myId) {
         showMessage(getTranslation("toast.errorTitle") || "Fehler", "Einladung konnte nicht verarbeitet werden.", "error");
     }
 };
+
+// =================================================================
+// AVIOSPHERE WRAPPED (JAHRESRÜCKBLICK)
+// =================================================================
+
+let currentWrappedSlide = 0;
+let wrappedSlides = [];
+let wrappedTimer = null;
+const WRAPPED_SLIDE_DURATION = 5000; // 5 Sekunden pro Folie
+
+// 🚀 Der smarte Türsteher, der die Jahre analysiert (Jetzt mit i18n)
+window.initWrapped = async function() {
+    const allFlights = typeof isDemoMode !== 'undefined' && isDemoMode && typeof flights !== 'undefined' ? flights : await getFlights();
+    
+    if (!allFlights || allFlights.length === 0) {
+        showMessage(getTranslation("wrapped.noFlightsTitle") || "Schade!", getTranslation("wrapped.noFlightsGeneral") || "Du hast noch keine Flüge eingetragen.", "info");
+        return;
+    }
+
+    const years = [...new Set(allFlights.filter(f => f.date).map(f => f.date.substring(0, 4)))].sort((a, b) => b - a);
+
+    if (years.length === 0) {
+        showMessage(getTranslation("wrapped.errorTitle") || "Fehler", getTranslation("wrapped.noValidDates") || "Keine gültigen Flugdaten mit Datum gefunden.", "error");
+        return;
+    }
+
+    if (years.length === 1) {
+        startWrapped(years[0]);
+    } else {
+        document.getElementById("info-modal-title").textContent = getTranslation("wrapped.selectYear") || "Wähle ein Jahr";
+        
+        let html = '<div class="space-y-3 mt-4">';
+        years.forEach(year => {
+            const btnText = (getTranslation("wrapped.reviewBtn") || "✨ Rückblick {year}").replace('{year}', year);
+            html += `
+                <button onclick="closeInfoModal(); startWrapped('${year}')" class="w-full p-4 border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/20 dark:border-indigo-800 rounded-xl text-center font-black text-indigo-700 dark:text-indigo-400 transition transform hover:scale-105 shadow-sm">
+                    ${btnText}
+                </button>
+            `;
+        });
+        html += '</div>';
+        
+        document.getElementById("info-modal-content").innerHTML = html;
+        if (typeof openInfoModal === 'function') openInfoModal();
+    }
+};
+
+// 🚀 startWrapped ist jetzt komplett übersetzbar!
+window.startWrapped = async function(year) {
+    const allFlights = typeof isDemoMode !== 'undefined' && isDemoMode && typeof flights !== 'undefined' ? flights : await getFlights();
+    const flightsToProcess = allFlights.filter(f => f.date && f.date.startsWith(year.toString()));
+
+    if (flightsToProcess.length === 0) {
+        showMessage(getTranslation("wrapped.noFlightsTitle") || "Schade!", (getTranslation("wrapped.noFlightsYear") || "Du hast {year} noch keine Flüge eingetragen.").replace('{year}', year), "info");
+        return;
+    }
+
+    let totalDistance = 0;
+    let totalMinutes = 0;
+    let airlines = {};
+    let aircrafts = {};
+
+    flightsToProcess.forEach(f => {
+        totalDistance += (f.distance || 0);
+        if (typeof parseFlightTimeToMinutes === 'function') {
+            totalMinutes += parseFlightTimeToMinutes(f.time, f.distance);
+        }
+        if (f.airline) airlines[f.airline] = (airlines[f.airline] || 0) + 1;
+        if (f.aircraftType) aircrafts[f.aircraftType] = (aircrafts[f.aircraftType] || 0) + 1;
+    });
+
+    const unknownTxt = getTranslation("wrapped.unknown") || "Unbekannt";
+    const topAirline = Object.keys(airlines).sort((a, b) => airlines[b] - airlines[a])[0] || unknownTxt;
+    const topAircraft = Object.keys(aircrafts).sort((a, b) => aircrafts[b] - aircrafts[a])[0] || unknownTxt;
+    const earthCircumnavigations = (totalDistance / 40075).toFixed(1);
+    const hoursInAir = Math.round(totalMinutes / 60);
+
+    // --- ALLE ÜBERSETZUNGEN LADEN ---
+    const slide1Subtitle = getTranslation("wrapped.slide1Subtitle") || "Dein Jahr über den Wolken";
+    const slide2Title = getTranslation("wrapped.slide2Title") || "Zurückgelegte Distanz";
+    const slide2Desc = (getTranslation("wrapped.slide2Desc") || "Das ist <span class=\"font-bold text-white\">{x}x</span> um die Erde!").replace('{x}', earthCircumnavigations);
+    const slide3Title = getTranslation("wrapped.slide3Title") || "Zeit im Himmel";
+    const slide3Desc = (getTranslation("wrapped.slide3Desc") || "Wahnsinn! Du bist in diesem Jahr insgesamt <span class=\"font-bold text-white\">{x}</span> mal abgehoben.").replace('{x}', flightsToProcess.length);
+    const slide4Title = getTranslation("wrapped.slide4Title") || "Deine Favoriten";
+    const slide4TopAirline = getTranslation("wrapped.slide4TopAirline") || "Top Airline";
+    const slide4TopAircraft = getTranslation("wrapped.slide4TopAircraft") || "Treuester Begleiter";
+    
+    const shareFlights = getTranslation("wrapped.shareFlights") || "Flüge";
+    const shareDistance = getTranslation("wrapped.shareDistance") || "Distanz";
+    const shareDuration = getTranslation("wrapped.shareDuration") || "Dauer";
+    const shareTopAircraft = getTranslation("wrapped.shareTopAircraft") || "Top Flugzeug";
+
+    wrappedSlides = [
+        {
+            bg: "from-indigo-900 to-purple-900",
+            html: `
+                <div class="animate-bounce mb-6 text-6xl">🚀</div>
+                <h2 class="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 mb-2">${year}</h2>
+                <p class="text-2xl font-bold text-indigo-100">${slide1Subtitle}</p>
+            `
+        },
+        {
+            bg: "from-blue-900 to-teal-900",
+            html: `
+                <div class="text-6xl mb-6 transform transition-transform duration-1000 scale-110">🌍</div>
+                <p class="text-lg text-teal-200 uppercase tracking-widest font-bold mb-2">${slide2Title}</p>
+                <h3 class="text-5xl font-black text-white mb-4">${totalDistance.toLocaleString()} km</h3>
+                <p class="text-xl text-teal-100">${slide2Desc}</p>
+            `
+        },
+        {
+            bg: "from-purple-900 to-pink-900",
+            html: `
+                <div class="text-6xl mb-6">⏱️</div>
+                <p class="text-lg text-pink-200 uppercase tracking-widest font-bold mb-2">${slide3Title}</p>
+                <h3 class="text-5xl font-black text-white mb-4">${hoursInAir} h</h3>
+                <p class="text-xl text-pink-100">${slide3Desc}</p>
+            `
+        },
+        {
+            bg: "from-orange-900 to-red-900",
+            html: `
+                <div class="text-6xl mb-6">🏆</div>
+                <p class="text-lg text-orange-200 uppercase tracking-widest font-bold mb-6">${slide4Title}</p>
+                <div class="w-full max-w-sm bg-black/20 rounded-2xl p-6 backdrop-blur-sm text-left border border-white/10 space-y-4">
+                    <div>
+                        <p class="text-xs text-orange-300 uppercase">${slide4TopAirline}</p>
+                        <p class="text-2xl font-bold text-white">${topAirline}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-orange-300 uppercase">${slide4TopAircraft}</p>
+                        <p class="text-2xl font-bold text-white">${topAircraft}</p>
+                    </div>
+                </div>
+            `
+        },
+        {
+            bg: "from-gray-900 to-black",
+            isShareScreen: true,
+            stats: `
+                <div class="flex justify-between items-center border-b border-white/10 pb-2">
+                    <span class="text-gray-400">${shareFlights}</span>
+                    <span class="text-xl font-bold text-white">${flightsToProcess.length}</span>
+                </div>
+                <div class="flex justify-between items-center border-b border-white/10 pb-2 pt-2">
+                    <span class="text-gray-400">${shareDistance}</span>
+                    <span class="text-xl font-bold text-white">${totalDistance.toLocaleString()} km</span>
+                </div>
+                <div class="flex justify-between items-center border-b border-white/10 pb-2 pt-2">
+                    <span class="text-gray-400">${shareDuration}</span>
+                    <span class="text-xl font-bold text-white">${hoursInAir} h</span>
+                </div>
+                <div class="flex justify-between items-center pt-2">
+                    <span class="text-gray-400">${shareTopAircraft}</span>
+                    <span class="text-lg font-bold text-white text-right">${topAircraft}</span>
+                </div>
+            `
+        }
+    ];
+
+    currentWrappedSlide = 0;
+    
+    const usernameEl = document.getElementById('profile-username');
+    document.getElementById('wrapped-share-user').textContent = usernameEl && usernameEl.value ? usernameEl.value : (getTranslation("wrapped.defaultPilot") || "AvioSphere Pilot");
+    document.getElementById('wrapped-share-title').textContent = year;
+
+    const progressContainer = document.getElementById('wrapped-progress-container');
+    progressContainer.innerHTML = '';
+    wrappedSlides.forEach((_, index) => {
+        progressContainer.innerHTML += `
+            <div class="h-1 flex-1 bg-white/30 rounded-full overflow-hidden">
+                <div id="wrapped-bar-${index}" class="h-full bg-white w-0 transition-all ease-linear"></div>
+            </div>
+        `;
+    });
+
+    document.getElementById('wrapped-overlay').classList.remove('hidden');
+    document.getElementById('wrapped-overlay').classList.add('flex');
+    
+    renderWrappedSlide();
+};
+
+window.renderWrappedSlide = function() {
+    clearTimeout(wrappedTimer);
+    const slide = wrappedSlides[currentWrappedSlide];
+    
+    // Hintergrund wechseln
+    const bgEl = document.getElementById('wrapped-bg');
+    bgEl.className = `absolute inset-0 opacity-80 transition-colors duration-1000 bg-gradient-to-br ${slide.bg}`;
+
+    // Balken updaten (vorherige voll, aktuelle wächst, nächste leer)
+    wrappedSlides.forEach((_, index) => {
+        const bar = document.getElementById(`wrapped-bar-${index}`);
+        if(!bar) return;
+        bar.style.transitionDuration = '0ms'; // Reset
+        
+        if (index < currentWrappedSlide) {
+            bar.style.width = '100%';
+        } else if (index > currentWrappedSlide) {
+            bar.style.width = '0%';
+        } else {
+            bar.style.width = '0%';
+            // Kurzer Delay, damit der Browser den CSS-Reset schluckt
+            setTimeout(() => {
+                bar.style.transitionDuration = `${WRAPPED_SLIDE_DURATION}ms`;
+                bar.style.width = '100%';
+            }, 50);
+        }
+    });
+
+    // Content anzeigen
+    const contentEl = document.getElementById('wrapped-content');
+    const shareScreen = document.getElementById('wrapped-share-screen');
+    
+    if (slide.isShareScreen) {
+        contentEl.classList.add('hidden');
+        shareScreen.classList.remove('hidden');
+        shareScreen.classList.add('flex');
+        document.getElementById('wrapped-share-stats').innerHTML = slide.stats;
+        // Keine automatische Weiterleitung auf der letzten Folie!
+    } else {
+        shareScreen.classList.add('hidden');
+        shareScreen.classList.remove('flex');
+        contentEl.classList.remove('hidden');
+        
+        // Kleine Fade-In Animation für den Text
+        contentEl.style.opacity = '0';
+        contentEl.innerHTML = slide.html;
+        setTimeout(() => contentEl.style.opacity = '1', 100);
+
+        // Nächster Slide nach X Sekunden
+        wrappedTimer = setTimeout(() => {
+            nextWrappedSlide();
+        }, WRAPPED_SLIDE_DURATION);
+    }
+};
+
+window.nextWrappedSlide = function() {
+    if (currentWrappedSlide < wrappedSlides.length - 1) {
+        currentWrappedSlide++;
+        renderWrappedSlide();
+    }
+};
+
+window.prevWrappedSlide = function() {
+    if (currentWrappedSlide > 0) {
+        currentWrappedSlide--;
+        renderWrappedSlide();
+    }
+};
+
+window.closeWrapped = function() {
+    clearTimeout(wrappedTimer);
+    document.getElementById('wrapped-overlay').classList.add('hidden');
+    document.getElementById('wrapped-overlay').classList.remove('flex');
+};
+
+window.shareWrappedImage = async function() {
+    const shareCard = document.getElementById('wrapped-share-card');
+    if (!shareCard) return;
+
+    // Optional: Lade-Meldung anzeigen
+    if (typeof showMessage === 'function') {
+        showMessage(getTranslation("share.prepTitle") || "Moment...", getTranslation("share.prepDesc") || "Bild wird aufbereitet 📸", "info");
+    }
+
+    try {
+        // Wir geben html2canvas einen dunklen Hintergrund mit (#111827 = Tailwind gray-900), 
+        // da die Kachel selbst halbtransparent ist und sonst auf weißen Hintergründen 
+        // (z.B. in der WhatsApp-Vorschau) unleserlich wäre!
+        const canvas = await html2canvas(shareCard, {
+            useCORS: true,
+            allowTaint: false,
+            backgroundColor: '#111827', 
+            scale: window.innerWidth < 768 ? 2 : 3 // Extra scharf für Instagram/WhatsApp
+        });
+
+        // Capacitor (Handy) mag JPG lieber (kleinere Datei), PC nutzt PNG
+        const isNative = typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform();
+        const dataURL = isNative 
+            ? canvas.toDataURL("image/jpeg", 0.9) 
+            : canvas.toDataURL("image/png");
+        
+        // Aufruf unserer bewährten zentralen Teilen-Funktion aus der ui.js
+        if (typeof shareImageBase64 === 'function') {
+            await shareImageBase64(dataURL, "aviosphere_wrapped");
+        }
+
+    } catch (e) {
+        console.error("Wrapped Screenshot Fehler:", e);
+        if (typeof showMessage === 'function') {
+            showMessage(getTranslation("toast.errorTitle") || "Fehler", "Konnte Bild nicht erstellen.", "error");
+        }
+    }
+};

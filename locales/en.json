@@ -876,6 +876,34 @@
     "scopeGlobal": "Global",
     "scopeFriends": "Friends",
     "friendsTitle": "Friends - This Month"
+  },
+
+  "wrapped": {
+    "bannerPre": "Your Year in Review",
+    "noFlightsTitle": "Too bad!",
+    "noFlightsGeneral": "You haven't logged any flights yet.",
+    "errorTitle": "Error",
+    "noValidDates": "No valid flight data with dates found.",
+    "selectYear": "Select a Year",
+    "reviewBtn": "✨ {year} Review",
+    "noFlightsYear": "You haven't logged any flights in {year} yet.",
+    "unknown": "Unknown",
+    "slide1Subtitle": "Your year above the clouds",
+    "slide2Title": "Distance Traveled",
+    "slide2Desc": "That's <span class=\"font-bold text-white\">{x}x</span> around the world!",
+    "slide3Title": "Time in the Sky",
+    "slide3Desc": "Wow! You took off a total of <span class=\"font-bold text-white\">{x}</span> times this year.",
+    "slide4Title": "Your Favorites",
+    "slide4TopAirline": "Top Airline",
+    "slide4TopAircraft": "Most Loyal Companion",
+    "shareFlights": "Flights",
+    "shareDistance": "Distance",
+    "shareDuration": "Duration",
+    "shareTopAircraft": "Top Aircraft",
+    "sharePilot": "Pilot",
+    "defaultPilot": "AvioSphere Pilot",
+    "shareBtn": "Share Screenshot",
+    "closeBtn": "Back to App"
   }
 
 }
