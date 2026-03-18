@@ -304,6 +304,8 @@ async function initializeApp() {
   displayAppVersion();
   showFirstStepsTutorial();
   updateLockVisuals();
+  // 🚀 NEU: Live-Widget für heutige Flüge prüfen
+  initLiveWidget();
 
   // --- ✅ UPDATE: LIVE-CHECK (Der Wächter) ---
   // Prüft alle 60 Sekunden
@@ -978,6 +980,7 @@ window.logFlight = async function () {
 	});
 	
     renderFlights(null, newFlightId);
+    initLiveWidget(); // 🚀 NEU: Widget sofort updaten!
 
   // --- NEU: Review Trigger ---
     // Wir holen kurz die aktuelle Anzahl der Flüge um zu prüfen
@@ -1236,6 +1239,7 @@ async function updateFlight() {
     showTab("fluege");
   
   renderFlights(null, flightIdToFocus);
+  initLiveWidget(); // 🚀 NEU: Widget sofort updaten!
 }
 
 // *** Rendern und Löschen ***
@@ -1291,6 +1295,7 @@ window.deleteFlight = async function (id) {
         // Wir rufen renderFlights() ohne Argumente auf -> Das erzwingt ein getFlights() vom Server
         renderFlights(null, null, currentPage);
     }
+    initLiveWidget(); // 🚀 NEU: Falls der heutige Flug gelöscht wurde, Widget verstecken!
   }
 };
 
@@ -4652,5 +4657,160 @@ window.processWebInvite = async function(inviteId) {
         }
     } catch (e) {
         console.error("Web Invite Fehler:", e);
+    }
+};
+
+// =================================================================
+// LIVE FLIGHT WIDGET (TRAVEL MODE)
+// =================================================================
+
+window.dismissLivePromo = function() {
+    document.getElementById('live-flight-promo').style.display = 'none';
+    localStorage.setItem('hideLivePromo', 'true');
+};
+
+window.initLiveWidget = async function() {
+    // 1. Promo Banner Check
+    const promo = document.getElementById('live-flight-promo');
+    if (promo && localStorage.getItem('hideLivePromo') !== 'true') {
+        promo.classList.remove('hidden');
+    }
+
+    // 2. Flüge laden (mit Support für Demo-Modus)
+    const allFlights = typeof isDemoMode !== 'undefined' && isDemoMode && typeof flights !== 'undefined' ? flights : await getFlights();
+    
+    if (!allFlights || allFlights.length === 0) return;
+
+    // 3. Heutiges Datum ermitteln (Lokale Zeit, Format: YYYY-MM-DD)
+    const today = new Date();
+    const todayStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+
+    // 4. Gibt es heute einen Flug?
+    const todaysFlights = allFlights.filter(f => f.date === todayStr);
+    const widget = document.getElementById('live-flight-widget');
+
+    if (todaysFlights.length > 0) {
+        // Wir nehmen den ersten Flug des Tages
+        const flight = todaysFlights[0];
+        window.currentLiveFlight = flight; // Global speichern für den Refresh-Button
+
+        // Basis-Daten ins Widget eintragen
+        document.getElementById('live-dep-iata').textContent = flight.departure || "???";
+        document.getElementById('live-arr-iata').textContent = flight.arrival || "???";
+        document.getElementById('live-flight-number').textContent = flight.flightNumber || flight.flightLogNumber || "Unbekannt";
+        document.getElementById('live-airline-name').textContent = flight.airline || "Unbekannt Airline";
+        document.getElementById('live-flight-duration').textContent = flight.time || "-";
+
+        // Logo laden
+        const logoEl = document.getElementById('live-airline-logo');
+        if (flight.airline_logo) {
+            logoEl.src = flight.airline_logo;
+            logoEl.parentElement.classList.remove('hidden');
+        } else {
+            logoEl.parentElement.classList.add('hidden');
+        }
+
+        // Reset der Live-Felder (falls API noch nicht da ist)
+        document.getElementById('live-dep-sched').textContent = "--:--";
+        document.getElementById('live-dep-est').textContent = "--:--";
+        document.getElementById('live-arr-sched').textContent = "--:--";
+        document.getElementById('live-arr-est').textContent = "--:--";
+        document.getElementById('live-dep-terminal').textContent = "-";
+        document.getElementById('live-dep-gate').textContent = "-";
+        document.getElementById('live-arr-terminal').textContent = "-";
+        document.getElementById('live-arr-gate').textContent = "-";
+        document.getElementById('live-status-badge').innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-gray-500"></span> LADE...`;
+        document.getElementById('live-status-badge').className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-gray-200 text-gray-700 shadow-sm animate-pulse";
+        
+        // Widget einblenden
+        widget.classList.remove('hidden');
+
+        // 🚀 API Daten abrufen (Das bauen wir in Schritt 3)
+        refreshLiveFlightData();
+    } else {
+        // Kein Flug heute -> Widget verstecken
+        widget.classList.add('hidden');
+    }
+};
+
+window.refreshLiveFlightData = async function() {
+    if (!window.currentLiveFlight) return;
+    
+    const icon = document.getElementById('live-refresh-icon');
+    if (icon) icon.classList.add('animate-spin');
+
+    try {
+        const flightNum = window.currentLiveFlight.flightNumber || window.currentLiveFlight.flightLogNumber;
+        const depIata = window.currentLiveFlight.departure;
+        
+        if (!flightNum || !depIata) throw new Error("Flugnummer oder Abflugort fehlt");
+
+        console.log(`✈️ Starte Live-Abruf für Flug ${flightNum} ab ${depIata}...`);
+        
+        // Netlify Funktion aufrufen
+        const response = await fetch(`/.netlify/functions/fetch-live-flight?dep_iata=${depIata}&flight_iata=${flightNum}`);
+        
+        if (!response.ok) {
+            throw new Error("API Limit erreicht oder Flug nicht gefunden");
+        }
+
+        const data = await response.json();
+        
+        // --- 1. ZEITEN UPDATEN ---
+        // Die API schickt oft Formate wie "2024-11-26 10:30:00". Wir filtern die HH:MM raus.
+        const extractTime = (apiStr) => {
+            if (!apiStr) return null;
+            const match = apiStr.match(/\b(\d{2}:\d{2})\b/);
+            return match ? match[1] : null;
+        };
+
+        const depSched = extractTime(data.dep_time);
+        const depEst = extractTime(data.dep_estimated || data.dep_actual);
+        const arrSched = extractTime(data.arr_time);
+        const arrEst = extractTime(data.arr_estimated || data.arr_actual);
+
+        if (depSched) document.getElementById('live-dep-sched').textContent = depSched;
+        if (depEst) document.getElementById('live-dep-est').textContent = depEst;
+        if (arrSched) document.getElementById('live-arr-sched').textContent = arrSched;
+        if (arrEst) document.getElementById('live-arr-est').textContent = arrEst;
+
+        // --- 2. GATES & TERMINALS ---
+        document.getElementById('live-dep-terminal').textContent = data.dep_terminal || "-";
+        document.getElementById('live-dep-gate').textContent = data.dep_gate || "-";
+        document.getElementById('live-arr-terminal').textContent = data.arr_terminal || "-";
+        document.getElementById('live-arr-gate').textContent = data.arr_gate || "-";
+        
+        if(data.arr_baggage) {
+            document.getElementById('live-baggage-info').innerHTML = `Gepäckband: <span class="font-bold text-gray-800 dark:text-gray-300">${data.arr_baggage}</span>`;
+        } else {
+            document.getElementById('live-baggage-info').innerHTML = `Gepäckband: <span class="font-bold text-gray-800 dark:text-gray-300">Wird noch ermittelt...</span>`;
+        }
+
+        // --- 3. STATUS BADGE ---
+        const statusEl = document.getElementById('live-status-badge');
+        const status = data.status || "scheduled";
+        
+        if (status === "active" || status === "en-route") {
+            statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-blue-900"></span> IN DER LUFT`;
+            statusEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-400 text-blue-950 shadow-sm animate-pulse";
+        } else if (status === "landed") {
+            statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-green-900"></span> GELANDET`;
+            statusEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-green-400 text-green-950 shadow-sm";
+        } else if (status === "cancelled") {
+            statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-red-900"></span> STORNIERT`;
+            statusEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-red-400 text-red-950 shadow-sm";
+        } else {
+            // "scheduled" oder verzögert
+            statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-yellow-900"></span> GEPLANT`;
+            statusEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-yellow-400 text-yellow-950 shadow-sm";
+        }
+        
+    } catch(e) {
+        console.error("Live API Fehler:", e);
+        const statusEl = document.getElementById('live-status-badge');
+        statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-gray-600"></span> OFFLINE`;
+        statusEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-gray-200 text-gray-700 shadow-sm";
+    } finally {
+        if (icon) icon.classList.remove('animate-spin');
     }
 };
