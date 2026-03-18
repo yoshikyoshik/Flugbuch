@@ -4804,7 +4804,7 @@ window.refreshLiveFlightData = async function() {
         console.log(`✈️ Starte Live-Abruf für Flug ${flightNum} ab ${depIata}...`);
         
         // Netlify Funktion aufrufen
-        const response = await fetch(`/.netlify/functions/fetch-live-flight?dep_iata=${depIata}&flight_iata=${flightNum}`);
+        const response = await fetch(`${API_BASE_URL}/.netlify/functions/fetch-live-flight?dep_iata=${depIata}&flight_iata=${flightNum}`);
         
         if (!response.ok) {
             throw new Error("API Limit erreicht oder Flug nicht gefunden");
