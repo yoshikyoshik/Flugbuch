@@ -4824,13 +4824,34 @@ window.refreshLiveFlightData = async function() {
         const arrSched = extractTime(data.arr_time);
         const arrEst = extractTime(data.arr_estimated || data.arr_actual);
 
-        // Geplante Zeiten setzen
         if (depSched) document.getElementById('live-dep-sched').textContent = depSched;
         if (arrSched) document.getElementById('live-arr-sched').textContent = arrSched;
 
-        // 🚀 FIX: Erwartet-Zeiten setzen (Fallback auf Geplant, falls keine Verspätung)
-        document.getElementById('live-dep-est').textContent = depEst || depSched || "--:--";
-        document.getElementById('live-arr-est').textContent = arrEst || arrSched || "--:--";
+        const depEstEl = document.getElementById('live-dep-est');
+        const arrEstEl = document.getElementById('live-arr-est');
+
+        depEstEl.textContent = depEst || depSched || "--:--";
+        arrEstEl.textContent = arrEst || arrSched || "--:--";
+
+        // 🚀 UPGRADE 1: Verspätungen rot markieren!
+        // Zuerst Standardfarben (Indigo) setzen, falls es ein Refresh ist
+        depEstEl.className = "font-black text-indigo-600 dark:text-indigo-400";
+        arrEstEl.className = "font-black text-indigo-600 dark:text-indigo-400";
+
+        // Wenn die API ein Delay von > 5 Min meldet ODER die Timestamp-Differenz > 300 Sek (5 Min) ist
+        if ((data.dep_delayed && data.dep_delayed > 5) || (data.dep_estimated_ts > data.dep_time_ts + 300)) {
+            depEstEl.className = "font-black text-red-600 dark:text-red-500 animate-pulse";
+        }
+        if ((data.arr_delayed && data.arr_delayed > 5) || (data.arr_estimated_ts > data.arr_time_ts + 300)) {
+            arrEstEl.className = "font-black text-red-600 dark:text-red-500 animate-pulse";
+        }
+
+        // 🚀 UPGRADE 2: Exakte Flugdauer aus der API nutzen (überschreibt die geschätzte Zeit)
+        if (data.duration && !isNaN(data.duration)) {
+            const h = Math.floor(data.duration / 60);
+            const m = data.duration % 60;
+            document.getElementById('live-flight-duration').textContent = `${h}h ${m}m`;
+        }
 
         // --- 2. GATES & TERMINALS & GEPÄCK ---
         document.getElementById('live-dep-terminal').textContent = data.dep_terminal || "-";
