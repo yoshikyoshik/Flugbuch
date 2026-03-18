@@ -4685,8 +4685,15 @@ window.initLiveWidget = async function() {
     const today = new Date();
     const todayStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
 
-    // 🚀 NEU: Alle Flüge von heute filtern und chronologisch sortieren (falls möglich)
-    window.todaysLiveFlights = allFlights.filter(f => f.date === todayStr);
+    // 🚀 NEU: Alle Flüge von heute filtern und nach Eingabe-Reihenfolge (Chronologisch) sortieren
+    window.todaysLiveFlights = allFlights
+        .filter(f => f.date === todayStr)
+        .sort((a, b) => {
+            // Wir sortieren aufsteigend nach der internen ID (Erstellungszeitpunkt)
+            const idA = a.flightLogNumber || a.flight_id || a.id || 0;
+            const idB = b.flightLogNumber || b.flight_id || b.id || 0;
+            return idA - idB; 
+        });
     const widget = document.getElementById('live-flight-widget');
 
     if (window.todaysLiveFlights.length > 0) {
