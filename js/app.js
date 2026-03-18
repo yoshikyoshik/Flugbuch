@@ -4669,67 +4669,94 @@ window.dismissLivePromo = function() {
     localStorage.setItem('hideLivePromo', 'true');
 };
 
+// Globale Variablen für den Travel Mode
+window.todaysLiveFlights = [];
+window.currentLiveFlightIndex = 0;
+
 window.initLiveWidget = async function() {
-    // 1. Promo Banner Check
     const promo = document.getElementById('live-flight-promo');
     if (promo && localStorage.getItem('hideLivePromo') !== 'true') {
         promo.classList.remove('hidden');
     }
 
-    // 2. Flüge laden (mit Support für Demo-Modus)
     const allFlights = typeof isDemoMode !== 'undefined' && isDemoMode && typeof flights !== 'undefined' ? flights : await getFlights();
-    
     if (!allFlights || allFlights.length === 0) return;
 
-    // 3. Heutiges Datum ermitteln (Lokale Zeit, Format: YYYY-MM-DD)
     const today = new Date();
     const todayStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
 
-    // 4. Gibt es heute einen Flug?
-    const todaysFlights = allFlights.filter(f => f.date === todayStr);
+    // 🚀 NEU: Alle Flüge von heute filtern und chronologisch sortieren (falls möglich)
+    window.todaysLiveFlights = allFlights.filter(f => f.date === todayStr);
     const widget = document.getElementById('live-flight-widget');
 
-    if (todaysFlights.length > 0) {
-        // Wir nehmen den ersten Flug des Tages
-        const flight = todaysFlights[0];
-        window.currentLiveFlight = flight; // Global speichern für den Refresh-Button
-
-        // Basis-Daten ins Widget eintragen
-        document.getElementById('live-dep-iata').textContent = flight.departure || "???";
-        document.getElementById('live-arr-iata').textContent = flight.arrival || "???";
-        document.getElementById('live-flight-number').textContent = flight.flightNumber || flight.flightLogNumber || "Unbekannt";
-        document.getElementById('live-airline-name').textContent = flight.airline || "Unbekannt Airline";
-        document.getElementById('live-flight-duration').textContent = flight.time || "-";
-
-        // Logo laden
-        const logoEl = document.getElementById('live-airline-logo');
-        if (flight.airline_logo) {
-            logoEl.src = flight.airline_logo;
-            logoEl.parentElement.classList.remove('hidden');
-        } else {
-            logoEl.parentElement.classList.add('hidden');
+    if (window.todaysLiveFlights.length > 0) {
+        if (window.currentLiveFlightIndex >= window.todaysLiveFlights.length) {
+            window.currentLiveFlightIndex = 0; // Reset, falls ein Flug gelöscht wurde
         }
-
-        // Reset der Live-Felder (falls API noch nicht da ist)
-        document.getElementById('live-dep-sched').textContent = "--:--";
-        document.getElementById('live-dep-est').textContent = "--:--";
-        document.getElementById('live-arr-sched').textContent = "--:--";
-        document.getElementById('live-arr-est').textContent = "--:--";
-        document.getElementById('live-dep-terminal').textContent = "-";
-        document.getElementById('live-dep-gate').textContent = "-";
-        document.getElementById('live-arr-terminal').textContent = "-";
-        document.getElementById('live-arr-gate').textContent = "-";
-        document.getElementById('live-status-badge').innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-gray-500"></span> LADE...`;
-        document.getElementById('live-status-badge').className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-gray-200 text-gray-700 shadow-sm animate-pulse";
-        
-        // Widget einblenden
+        renderCurrentLiveFlight();
         widget.classList.remove('hidden');
-
-        // 🚀 API Daten abrufen (Das bauen wir in Schritt 3)
-        refreshLiveFlightData();
     } else {
-        // Kein Flug heute -> Widget verstecken
         widget.classList.add('hidden');
+    }
+};
+
+window.renderCurrentLiveFlight = function() {
+    const flight = window.todaysLiveFlights[window.currentLiveFlightIndex];
+    window.currentLiveFlight = flight; 
+
+    // Basis-Daten eintragen
+    document.getElementById('live-dep-iata').textContent = flight.departure || "???";
+    document.getElementById('live-arr-iata').textContent = flight.arrival || "???";
+    document.getElementById('live-flight-number').textContent = flight.flightNumber || flight.flightLogNumber || "Unbekannt";
+    document.getElementById('live-airline-name').textContent = flight.airline || "Unbekannt Airline";
+    document.getElementById('live-flight-duration').textContent = flight.time || "-";
+
+    const logoEl = document.getElementById('live-airline-logo');
+    if (flight.airline_logo) {
+        logoEl.src = flight.airline_logo;
+        logoEl.parentElement.classList.remove('hidden');
+    } else {
+        logoEl.parentElement.classList.add('hidden');
+    }
+
+    // Felder optisch resetten
+    document.getElementById('live-dep-sched').textContent = "--:--";
+    document.getElementById('live-dep-est').textContent = "--:--";
+    document.getElementById('live-arr-sched').textContent = "--:--";
+    document.getElementById('live-arr-est').textContent = "--:--";
+    document.getElementById('live-dep-terminal').textContent = "-";
+    document.getElementById('live-dep-gate').textContent = "-";
+    document.getElementById('live-arr-terminal').textContent = "-";
+    document.getElementById('live-arr-gate').textContent = "-";
+    document.getElementById('live-status-badge').innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-gray-500"></span> LADE...`;
+    document.getElementById('live-status-badge').className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-gray-200 text-gray-700 shadow-sm animate-pulse";
+    
+    // 🚀 NEU: Navigation ein/ausblenden, wenn > 1 Flug
+    const nav = document.getElementById('live-flight-nav');
+    if (window.todaysLiveFlights.length > 1) {
+        nav.classList.remove('hidden');
+        nav.classList.add('flex');
+        document.getElementById('live-flight-counter').textContent = `${window.currentLiveFlightIndex + 1} / ${window.todaysLiveFlights.length}`;
+    } else if (nav) {
+        nav.classList.add('hidden');
+        nav.classList.remove('flex');
+    }
+
+    // API sofort anfeuern
+    refreshLiveFlightData();
+};
+
+window.nextLiveFlight = function() {
+    if (window.currentLiveFlightIndex < window.todaysLiveFlights.length - 1) {
+        window.currentLiveFlightIndex++;
+        renderCurrentLiveFlight();
+    }
+};
+
+window.prevLiveFlight = function() {
+    if (window.currentLiveFlightIndex > 0) {
+        window.currentLiveFlightIndex--;
+        renderCurrentLiveFlight();
     }
 };
 
@@ -4757,7 +4784,6 @@ window.refreshLiveFlightData = async function() {
         const data = await response.json();
         
         // --- 1. ZEITEN UPDATEN ---
-        // Die API schickt oft Formate wie "2024-11-26 10:30:00". Wir filtern die HH:MM raus.
         const extractTime = (apiStr) => {
             if (!apiStr) return null;
             const match = apiStr.match(/\b(\d{2}:\d{2})\b/);
@@ -4769,10 +4795,13 @@ window.refreshLiveFlightData = async function() {
         const arrSched = extractTime(data.arr_time);
         const arrEst = extractTime(data.arr_estimated || data.arr_actual);
 
+        // Geplante Zeiten setzen
         if (depSched) document.getElementById('live-dep-sched').textContent = depSched;
-        if (depEst) document.getElementById('live-dep-est').textContent = depEst;
         if (arrSched) document.getElementById('live-arr-sched').textContent = arrSched;
-        if (arrEst) document.getElementById('live-arr-est').textContent = arrEst;
+
+        // 🚀 FIX: Erwartet-Zeiten setzen (Fallback auf Geplant, falls keine Verspätung)
+        document.getElementById('live-dep-est').textContent = depEst || depSched || "--:--";
+        document.getElementById('live-arr-est').textContent = arrEst || arrSched || "--:--";
 
         // --- 2. GATES & TERMINALS ---
         document.getElementById('live-dep-terminal').textContent = data.dep_terminal || "-";
