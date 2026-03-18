@@ -927,6 +927,12 @@
     "statusScheduled": "已计划",
     "statusOffline": "离线",
     "unknownAirline": "未知航空公司"
+  },
+
+"sync": {
+    "autoSyncTitle": "✨ 自动同步",
+    "autoSyncSuccessSingle": "航班 {flight} 的数据已自动完善（注册号：{reg}）。",
+    "autoSyncSuccessMultiple": "已在后台使用实时数据自动完善了 {count} 个航班！"
   }
 
 }

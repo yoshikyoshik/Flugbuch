@@ -932,6 +932,12 @@
     "statusScheduled": "GEPLANT",
     "statusOffline": "OFFLINE",
     "unknownAirline": "Unbekannte Airline"
+  },
+
+"sync": {
+    "autoSyncTitle": "✨ Auto-Sync",
+    "autoSyncSuccessSingle": "Flugdaten für {flight} wurden automatisch vervollständigt (Reg: {reg}).",
+    "autoSyncSuccessMultiple": "{count} Flüge wurden im Hintergrund mit Live-Daten vervollständigt!"
   }
 
 }

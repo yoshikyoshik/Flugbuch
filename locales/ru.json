@@ -927,6 +927,12 @@
     "statusScheduled": "ПО РАСПИСАНИЮ",
     "statusOffline": "ОФФЛАЙН",
     "unknownAirline": "Неизвестная авиакомпания"
+  },
+
+"sync": {
+    "autoSyncTitle": "✨ Авто-синхронизация",
+    "autoSyncSuccessSingle": "Данные рейса {flight} были автоматически дополнены (Рег: {reg}).",
+    "autoSyncSuccessMultiple": "{count} рейс(ов) были автоматически дополнены актуальными данными в фоновом режиме!"
   }
 
 }

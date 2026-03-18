@@ -927,6 +927,12 @@
     "statusScheduled": "PROGRAMADO",
     "statusOffline": "DESCONECTADO",
     "unknownAirline": "Aerolínea desconocida"
+  },
+
+"sync": {
+    "autoSyncTitle": "✨ Sincronización Automática",
+    "autoSyncSuccessSingle": "Los datos del vuelo {flight} se han completado automáticamente (Matrícula: {reg}).",
+    "autoSyncSuccessMultiple": "¡{count} vuelos se han completado automáticamente con datos en vivo en segundo plano!"
   }
 
 }

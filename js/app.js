@@ -348,8 +348,11 @@ async function initializeApp() {
   // --- OFFLINE SYNC LISTENER ---
   // 1. Beim Start prüfen
   syncOfflineFlights();
+  
+  // 2. Nach fehlenden Registrierungen für vergangene Flüge suchen (Butler)
+  autoSyncMissingFlightData();
 
-  // 2. Wenn Verbindung wiederkommt
+  // 3. Wenn Verbindung wiederkommt
   window.addEventListener('online', () => {
       console.log("🌐 Verbindung wiederhergestellt. Starte Sync...");
       syncOfflineFlights();
@@ -2302,6 +2305,122 @@ function parseCSV(csvText) {
   }
   return result;
 }
+
+// =================================================================
+// AUTO-SYNC (Lazy Sync für vergangene Flüge)
+// =================================================================
+
+window.autoSyncMissingFlightData = async function() {
+    if (typeof isDemoMode !== 'undefined' && isDemoMode) return;
+
+    try {
+        const allFlights = await getFlights();
+        if (!allFlights || allFlights.length === 0) return;
+
+        // Zeitfenster definieren (z.B. letzte 7 Tage bis maximal heute)
+        const now = new Date();
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(now.getDate() - 7);
+
+        // 1. Suche nach Kandidaten: Flugnummer vorhanden, ABER Registrierung fehlt!
+        const candidates = allFlights.filter(f => {
+            if (!f.flightNumber || f.flightNumber.trim() === "") return false;
+            if (f.registration && f.registration.trim() !== "") return false; // Hat schon eine Reg
+
+            const flightDate = new Date(f.date);
+            // Ist der Flug in den letzten 7 Tagen?
+            return flightDate >= sevenDaysAgo && flightDate <= now;
+        });
+
+        if (candidates.length === 0) return; // Nichts zu tun!
+
+        let syncCount = 0;
+        let lastSyncedFlight = "";
+        let lastSyncedReg = "";
+
+        console.log(`🔄 Auto-Sync: ${candidates.length} Flüge ohne Registrierung gefunden. Starte Abfrage...`);
+
+        // 2. Kandidaten abarbeiten (Wir limitieren auf max 3 pro Start, um die API nicht zu überlasten)
+        for (let i = 0; i < Math.min(candidates.length, 3); i++) {
+            const flight = candidates[i];
+            const cleanFlightNum = flight.flightNumber.replace(/\s+/g, '').toUpperCase();
+            
+            // Abfrage an DEINE bestehende Flightradar24 Netlify-Funktion
+            const url = `${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-flight-by-number?flight_number=${cleanFlightNum}&date=${flight.date}`;
+            
+            const response = await fetch(url);
+            if (!response.ok) continue;
+
+            const json = await response.json();
+            const fr24Data = json.data && json.data.length > 0 ? json.data[0] : null;
+
+            // Wenn FR24 eine Registrierung für diesen Tag gefunden hat!
+            if (fr24Data && fr24Data.reg && fr24Data.reg.trim() !== "") {
+                const newReg = fr24Data.reg.toUpperCase();
+                let newAircraftType = flight.aircraftType || fr24Data.type || "";
+
+                let updateData = {
+                    registration: newReg,
+                    aircraftType: newAircraftType
+                };
+
+                // 📸 Magie: Wir holen uns direkt das passende Flugzeug-Foto dazu!
+                const photoData = await fetchAircraftPhoto(newReg);
+                if (photoData) {
+                    updateData.planespotters_url = photoData.url;
+                    updateData.planespotters_photographer = photoData.photographer;
+                }
+
+                // 3. Supabase Update
+                const { error } = await supabaseClient
+                    .from('flights')
+                    .update(updateData)
+                    .eq('flight_id', flight.id || flight.flight_id);
+
+                if (!error) {
+                    syncCount++;
+                    lastSyncedFlight = cleanFlightNum;
+                    lastSyncedReg = newReg;
+                    
+                    // Lokalen Cache aktualisieren, damit es sofort sichtbar ist
+                    flight.registration = newReg;
+                    flight.aircraftType = newAircraftType;
+                    if (photoData) {
+                        flight.planespotters_url = photoData.url;
+                        flight.planespotters_photographer = photoData.photographer;
+                    }
+                }
+            }
+        }
+
+        // 4. Dem Nutzer Bescheid geben (mit i18n Übersetzungen!)
+        if (syncCount > 0) {
+            const title = getTranslation("sync.autoSyncTitle") || "✨ Auto-Sync";
+            let msg = "";
+            
+            if (syncCount === 1) {
+                msg = (getTranslation("sync.autoSyncSuccessSingle") || `Flugdaten für {flight} wurden automatisch vervollständigt (Reg: {reg}).`)
+                      .replace("{flight}", lastSyncedFlight)
+                      .replace("{reg}", lastSyncedReg);
+            } else {
+                msg = (getTranslation("sync.autoSyncSuccessMultiple") || `{count} Flüge wurden im Hintergrund mit Live-Daten vervollständigt!`)
+                      .replace("{count}", syncCount);
+            }
+            
+            if (typeof showMessage === 'function') {
+                showMessage(title, msg, "success");
+            }
+            
+            // UI neu zeichnen, falls der Nutzer gerade im Logbuch oder der Flugliste ist
+            if (typeof renderFlights === 'function') {
+                renderFlights(null, null, currentPage);
+            }
+        }
+
+    } catch (e) {
+        console.warn("Auto-Sync Fehler:", e);
+    }
+};
 
 // DOMContentLoaded
 document.addEventListener("DOMContentLoaded", async function () {

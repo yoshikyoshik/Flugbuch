@@ -932,6 +932,12 @@
     "statusScheduled": "SCHEDULED",
     "statusOffline": "OFFLINE",
     "unknownAirline": "Unknown Airline"
+  },
+
+"sync": {
+    "autoSyncTitle": "✨ Auto-Sync",
+    "autoSyncSuccessSingle": "Flight data for {flight} has been automatically completed (Reg: {reg}).",
+    "autoSyncSuccessMultiple": "{count} flights have been automatically completed with live data in the background!"
   }
 
 }
