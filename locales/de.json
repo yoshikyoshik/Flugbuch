@@ -930,7 +930,8 @@
     "statusLanded": "GELANDET",
     "statusCancelled": "STORNIERT",
     "statusScheduled": "GEPLANT",
-    "statusOffline": "OFFLINE"
+    "statusOffline": "OFFLINE",
+    "unknownAirline": "Unbekannte Airline"
   }
 
 }

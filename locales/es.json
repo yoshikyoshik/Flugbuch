@@ -925,7 +925,8 @@
     "statusLanded": "ATERRIZÓ",
     "statusCancelled": "CANCELADO",
     "statusScheduled": "PROGRAMADO",
-    "statusOffline": "DESCONECTADO"
+    "statusOffline": "DESCONECTADO",
+    "unknownAirline": "Aerolínea desconocida"
   }
 
 }

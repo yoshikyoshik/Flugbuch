@@ -4715,8 +4715,15 @@ window.renderCurrentLiveFlight = function() {
     document.getElementById('live-dep-iata').textContent = flight.departure || "???";
     document.getElementById('live-arr-iata').textContent = flight.arrival || "???";
     document.getElementById('live-flight-number').textContent = flight.flightNumber || flight.flightLogNumber || "Unbekannt";
-    document.getElementById('live-airline-name').textContent = flight.airline || "Unbekannt Airline";
-    document.getElementById('live-flight-duration').textContent = flight.time || "-";
+    
+    // 🚀 FIX 1: Unbekannte Airline übersetzen
+    const unknownAirline = getTranslation("live.unknownAirline") || "Unbekannte Airline";
+    document.getElementById('live-airline-name').textContent = flight.airline || unknownAirline;
+
+    // 🚀 FIX 2: Flugdauer formatieren (Universal 'h' und 'm')
+    let durationStr = flight.time || "-";
+    durationStr = durationStr.replace(/Std\.?/g, 'h').replace(/Min\.?/g, 'm').replace(/\s+/g, ' ');
+    document.getElementById('live-flight-duration').textContent = durationStr;
 
     const logoEl = document.getElementById('live-airline-logo');
     if (flight.airline_logo) {
@@ -4735,11 +4742,19 @@ window.renderCurrentLiveFlight = function() {
     document.getElementById('live-dep-gate').textContent = "-";
     document.getElementById('live-arr-terminal').textContent = "-";
     document.getElementById('live-arr-gate').textContent = "-";
-    const loadingTxt = getTranslation("live.statusLoading") || "LADE...";
-    document.getElementById('live-status-badge').innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-gray-500"></span> ${loadingTxt}`;
+    
+    // 🚀 FIX 3: Gepäckband optisch resetten (mit i18n Unterstützung)
+    const baggageVal = document.getElementById('live-baggage-val');
+    if (baggageVal) {
+        baggageVal.setAttribute('data-i18n', 'live.baggageTBD');
+        baggageVal.textContent = getTranslation("live.baggageTBD") || "Wird noch ermittelt...";
+    }
+
+    // 🚀 FIX 4: Status Badge mit i18n Unterstützung
+    document.getElementById('live-status-badge').innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-gray-500"></span> <span data-i18n="live.statusLoading">${getTranslation("live.statusLoading") || "LADE..."}</span>`;
     document.getElementById('live-status-badge').className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-gray-200 text-gray-700 shadow-sm animate-pulse";
     
-    // 🚀 NEU: Navigation ein/ausblenden, wenn > 1 Flug
+    // Navigation ein/ausblenden, wenn > 1 Flug
     const nav = document.getElementById('live-flight-nav');
     if (window.todaysLiveFlights.length > 1) {
         nav.classList.remove('hidden');
@@ -4817,41 +4832,41 @@ window.refreshLiveFlightData = async function() {
         document.getElementById('live-arr-terminal').textContent = data.arr_terminal || "-";
         document.getElementById('live-arr-gate').textContent = data.arr_gate || "-";
         
-        const baggagePrefix = getTranslation("live.baggage") || "Gepäckband:";
-        if(data.arr_baggage) {
-            document.getElementById('live-baggage-info').innerHTML = `${baggagePrefix} <span class="font-bold text-gray-800 dark:text-gray-300">${data.arr_baggage}</span>`;
-        } else {
-            const tbdTxt = getTranslation("live.baggageTBD") || "Wird noch ermittelt...";
-            document.getElementById('live-baggage-info').innerHTML = `${baggagePrefix} <span class="font-bold text-gray-800 dark:text-gray-300">${tbdTxt}</span>`;
+        // 🚀 FIX 3 (Fortsetzung): Gepäckband mit i18n Unterstützung updaten
+        const baggageVal = document.getElementById('live-baggage-val');
+        if (baggageVal) {
+            if(data.arr_baggage) {
+                baggageVal.removeAttribute('data-i18n'); // Attribut entfernen, damit das echte Gate nicht überschrieben wird
+                baggageVal.textContent = data.arr_baggage;
+            } else {
+                baggageVal.setAttribute('data-i18n', 'live.baggageTBD');
+                baggageVal.textContent = getTranslation("live.baggageTBD") || "Wird noch ermittelt...";
+            }
         }
 
         // --- 3. STATUS BADGE ---
         const statusEl = document.getElementById('live-status-badge');
         const status = data.status || "scheduled";
         
+        // 🚀 FIX 4 (Fortsetzung): Status Badge mit eingefügten <span> für die Live-Übersetzung!
         if (status === "active" || status === "en-route") {
-            const txt = getTranslation("live.statusAir") || "IN DER LUFT";
-            statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-blue-900"></span> ${txt}`;
+            statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-blue-900"></span> <span data-i18n="live.statusAir">${getTranslation("live.statusAir") || "IN DER LUFT"}</span>`;
             statusEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-400 text-blue-950 shadow-sm animate-pulse";
         } else if (status === "landed") {
-            const txt = getTranslation("live.statusLanded") || "GELANDET";
-            statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-green-900"></span> ${txt}`;
+            statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-green-900"></span> <span data-i18n="live.statusLanded">${getTranslation("live.statusLanded") || "GELANDET"}</span>`;
             statusEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-green-400 text-green-950 shadow-sm";
         } else if (status === "cancelled") {
-            const txt = getTranslation("live.statusCancelled") || "STORNIERT";
-            statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-red-900"></span> ${txt}`;
+            statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-red-900"></span> <span data-i18n="live.statusCancelled">${getTranslation("live.statusCancelled") || "STORNIERT"}</span>`;
             statusEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-red-400 text-red-950 shadow-sm";
         } else {
-            const txt = getTranslation("live.statusScheduled") || "GEPLANT";
-            statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-yellow-900"></span> ${txt}`;
+            statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-yellow-900"></span> <span data-i18n="live.statusScheduled">${getTranslation("live.statusScheduled") || "GEPLANT"}</span>`;
             statusEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-yellow-400 text-yellow-950 shadow-sm";
         }
         
     } catch(e) {
         console.error("Live API Fehler:", e);
         const statusEl = document.getElementById('live-status-badge');
-        const txt = getTranslation("live.statusOffline") || "OFFLINE";
-        statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-gray-600"></span> ${txt}`;
+        statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-gray-600"></span> <span data-i18n="live.statusOffline">${getTranslation("live.statusOffline") || "OFFLINE"}</span>`;
         statusEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-gray-200 text-gray-700 shadow-sm";
     } finally {
         if (icon) icon.classList.remove('animate-spin');

@@ -925,7 +925,8 @@
     "statusLanded": "已降落",
     "statusCancelled": "已取消",
     "statusScheduled": "已计划",
-    "statusOffline": "离线"
+    "statusOffline": "离线",
+    "unknownAirline": "未知航空公司"
   }
 
 }

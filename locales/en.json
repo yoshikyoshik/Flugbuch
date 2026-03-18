@@ -930,7 +930,8 @@
     "statusLanded": "LANDED",
     "statusCancelled": "CANCELLED",
     "statusScheduled": "SCHEDULED",
-    "statusOffline": "OFFLINE"
+    "statusOffline": "OFFLINE",
+    "unknownAirline": "Unknown Airline"
   }
 
 }

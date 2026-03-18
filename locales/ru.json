@@ -925,7 +925,8 @@
     "statusLanded": "ПРИЗЕМЛИЛСЯ",
     "statusCancelled": "ОТМЕНЕН",
     "statusScheduled": "ПО РАСПИСАНИЮ",
-    "statusOffline": "ОФФЛАЙН"
+    "statusOffline": "ОФФЛАЙН",
+    "unknownAirline": "Неизвестная авиакомпания"
   }
 
 }
