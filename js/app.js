@@ -4716,9 +4716,15 @@ window.renderCurrentLiveFlight = function() {
     document.getElementById('live-arr-iata').textContent = flight.arrival || "???";
     document.getElementById('live-flight-number').textContent = flight.flightNumber || flight.flightLogNumber || "Unbekannt";
     
-    // 🚀 FIX 1: Unbekannte Airline übersetzen
-    const unknownAirline = getTranslation("live.unknownAirline") || "Unbekannte Airline";
-    document.getElementById('live-airline-name').textContent = flight.airline || unknownAirline;
+    // 🚀 FIX 1: Unbekannte Airline übersetzen (mit Live-Update Support)
+    const airlineEl = document.getElementById('live-airline-name');
+    if (flight.airline && flight.airline.trim() !== "") {
+        airlineEl.removeAttribute('data-i18n'); // Echter Airline-Name -> nicht übersetzen!
+        airlineEl.textContent = flight.airline;
+    } else {
+        airlineEl.setAttribute('data-i18n', 'live.unknownAirline'); // Markierung für den Sprachwechsler setzen!
+        airlineEl.textContent = getTranslation("live.unknownAirline") || "Unbekannte Airline";
+    }
 
     // 🚀 FIX 2: Flugdauer formatieren (Universal 'h' und 'm')
     let durationStr = flight.time || "-";
