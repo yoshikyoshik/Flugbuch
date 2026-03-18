@@ -914,6 +914,23 @@
     "btnStore": "App herunterladen",
     "btnBrowser": "Im Browser fortfahren",
     "loginFirst": "Bitte logge dich ein, um die Einladung anzunehmen."
+  },
+
+  "live": {
+    "promoTitle": "Tipp für deinen Reisetag",
+    "promoDesc": "Trage deinen Flug schon vorab ein und erhalte am Abflugtag Live-Updates zu Gate, Terminal und Verspätungen direkt hier!",
+    "scheduled": "Geplant",
+    "estimated": "Erwartet",
+    "depTermGate": "Abflug (Terminal / Gate)",
+    "arrTermGate": "Ankunft (Terminal / Gate)",
+    "baggage": "Gepäckband:",
+    "baggageTBD": "Wird noch ermittelt...",
+    "statusLoading": "LADE...",
+    "statusAir": "IN DER LUFT",
+    "statusLanded": "GELANDET",
+    "statusCancelled": "STORNIERT",
+    "statusScheduled": "GEPLANT",
+    "statusOffline": "OFFLINE"
   }
 
 }

@@ -914,6 +914,23 @@
     "btnStore": "Download App",
     "btnBrowser": "Continue in Browser",
     "loginFirst": "Please log in first to accept the invitation."
+  },
+
+  "live": {
+    "promoTitle": "Travel Day Tip",
+    "promoDesc": "Log your flight in advance to get live updates on gates, terminals, and delays right here on your departure day!",
+    "scheduled": "Scheduled",
+    "estimated": "Estimated",
+    "depTermGate": "Departure (Terminal / Gate)",
+    "arrTermGate": "Arrival (Terminal / Gate)",
+    "baggage": "Baggage Claim:",
+    "baggageTBD": "To be determined...",
+    "statusLoading": "LOADING...",
+    "statusAir": "IN AIR",
+    "statusLanded": "LANDED",
+    "statusCancelled": "CANCELLED",
+    "statusScheduled": "SCHEDULED",
+    "statusOffline": "OFFLINE"
   }
 
 }

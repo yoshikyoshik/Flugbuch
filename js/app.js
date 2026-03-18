@@ -4735,7 +4735,8 @@ window.renderCurrentLiveFlight = function() {
     document.getElementById('live-dep-gate').textContent = "-";
     document.getElementById('live-arr-terminal').textContent = "-";
     document.getElementById('live-arr-gate').textContent = "-";
-    document.getElementById('live-status-badge').innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-gray-500"></span> LADE...`;
+    const loadingTxt = getTranslation("live.statusLoading") || "LADE...";
+    document.getElementById('live-status-badge').innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-gray-500"></span> ${loadingTxt}`;
     document.getElementById('live-status-badge').className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-gray-200 text-gray-700 shadow-sm animate-pulse";
     
     // 🚀 NEU: Navigation ein/ausblenden, wenn > 1 Flug
@@ -4810,16 +4811,18 @@ window.refreshLiveFlightData = async function() {
         document.getElementById('live-dep-est').textContent = depEst || depSched || "--:--";
         document.getElementById('live-arr-est').textContent = arrEst || arrSched || "--:--";
 
-        // --- 2. GATES & TERMINALS ---
+        // --- 2. GATES & TERMINALS & GEPÄCK ---
         document.getElementById('live-dep-terminal').textContent = data.dep_terminal || "-";
         document.getElementById('live-dep-gate').textContent = data.dep_gate || "-";
         document.getElementById('live-arr-terminal').textContent = data.arr_terminal || "-";
         document.getElementById('live-arr-gate').textContent = data.arr_gate || "-";
         
+        const baggagePrefix = getTranslation("live.baggage") || "Gepäckband:";
         if(data.arr_baggage) {
-            document.getElementById('live-baggage-info').innerHTML = `Gepäckband: <span class="font-bold text-gray-800 dark:text-gray-300">${data.arr_baggage}</span>`;
+            document.getElementById('live-baggage-info').innerHTML = `${baggagePrefix} <span class="font-bold text-gray-800 dark:text-gray-300">${data.arr_baggage}</span>`;
         } else {
-            document.getElementById('live-baggage-info').innerHTML = `Gepäckband: <span class="font-bold text-gray-800 dark:text-gray-300">Wird noch ermittelt...</span>`;
+            const tbdTxt = getTranslation("live.baggageTBD") || "Wird noch ermittelt...";
+            document.getElementById('live-baggage-info').innerHTML = `${baggagePrefix} <span class="font-bold text-gray-800 dark:text-gray-300">${tbdTxt}</span>`;
         }
 
         // --- 3. STATUS BADGE ---
@@ -4827,24 +4830,28 @@ window.refreshLiveFlightData = async function() {
         const status = data.status || "scheduled";
         
         if (status === "active" || status === "en-route") {
-            statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-blue-900"></span> IN DER LUFT`;
+            const txt = getTranslation("live.statusAir") || "IN DER LUFT";
+            statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-blue-900"></span> ${txt}`;
             statusEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-400 text-blue-950 shadow-sm animate-pulse";
         } else if (status === "landed") {
-            statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-green-900"></span> GELANDET`;
+            const txt = getTranslation("live.statusLanded") || "GELANDET";
+            statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-green-900"></span> ${txt}`;
             statusEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-green-400 text-green-950 shadow-sm";
         } else if (status === "cancelled") {
-            statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-red-900"></span> STORNIERT`;
+            const txt = getTranslation("live.statusCancelled") || "STORNIERT";
+            statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-red-900"></span> ${txt}`;
             statusEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-red-400 text-red-950 shadow-sm";
         } else {
-            // "scheduled" oder verzögert
-            statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-yellow-900"></span> GEPLANT`;
+            const txt = getTranslation("live.statusScheduled") || "GEPLANT";
+            statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-yellow-900"></span> ${txt}`;
             statusEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-yellow-400 text-yellow-950 shadow-sm";
         }
         
     } catch(e) {
         console.error("Live API Fehler:", e);
         const statusEl = document.getElementById('live-status-badge');
-        statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-gray-600"></span> OFFLINE`;
+        const txt = getTranslation("live.statusOffline") || "OFFLINE";
+        statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-gray-600"></span> ${txt}`;
         statusEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-gray-200 text-gray-700 shadow-sm";
     } finally {
         if (icon) icon.classList.remove('animate-spin');

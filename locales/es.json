@@ -909,6 +909,23 @@
     "btnStore": "Descargar aplicación",
     "btnBrowser": "Continuar en el navegador",
     "loginFirst": "Inicia sesión primero para aceptar la invitación."
+  },
+
+  "live": {
+    "promoTitle": "Consejo para tu día de viaje",
+    "promoDesc": "Registra tu vuelo con anticipación para obtener actualizaciones en vivo sobre puertas, terminales y retrasos justo aquí en tu día de salida.",
+    "scheduled": "Programado",
+    "estimated": "Estimado",
+    "depTermGate": "Salida (Terminal / Puerta)",
+    "arrTermGate": "Llegada (Terminal / Puerta)",
+    "baggage": "Recogida de equipaje:",
+    "baggageTBD": "Por determinar...",
+    "statusLoading": "CARGANDO...",
+    "statusAir": "EN EL AIRE",
+    "statusLanded": "ATERRIZÓ",
+    "statusCancelled": "CANCELADO",
+    "statusScheduled": "PROGRAMADO",
+    "statusOffline": "DESCONECTADO"
   }
 
 }

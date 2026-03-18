@@ -909,6 +909,23 @@
     "btnStore": "下载应用",
     "btnBrowser": "在浏览器中继续",
     "loginFirst": "请先登录以接受邀请。"
+  },
+
+  "live": {
+    "promoTitle": "旅行日提示",
+    "promoDesc": "提前记录您的航班，以便在出发当天在此处获取有关登机口、航站楼和延误的实时更新！",
+    "scheduled": "计划",
+    "estimated": "预计",
+    "depTermGate": "出发 (航站楼 / 登机口)",
+    "arrTermGate": "到达 (航站楼 / 登机口)",
+    "baggage": "行李提取:",
+    "baggageTBD": "待定...",
+    "statusLoading": "加载中...",
+    "statusAir": "飞行中",
+    "statusLanded": "已降落",
+    "statusCancelled": "已取消",
+    "statusScheduled": "已计划",
+    "statusOffline": "离线"
   }
 
 }
