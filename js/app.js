@@ -899,6 +899,12 @@ window.logFlight = async function () {
 
   const priceInput = document.getElementById("price").value;
 
+  // 🚀 BUGHUNT-FIX: Fehlendes Planespotters-Bild in letzter Sekunde sichern
+  const regValueForPhoto = document.getElementById("registration").value.trim().toUpperCase();
+  if (regValueForPhoto && !currentPlanespottersData) {
+      currentPlanespottersData = await fetchAircraftPhoto(regValueForPhoto);
+  }
+  
   const newFlightForSupabase = {
     flight_id: newFlightId,
     user_id: user.id,
@@ -1177,6 +1183,12 @@ async function updateFlight() {
       }
   }
   // -----------------------------------------------
+
+  // 🚀 BUGHUNT-FIX: Fehlendes Planespotters-Bild in letzter Sekunde sichern
+  const regValueForPhoto = document.getElementById("registration").value.trim().toUpperCase();
+  if (regValueForPhoto && !currentPlanespottersData) {
+      currentPlanespottersData = await fetchAircraftPhoto(regValueForPhoto);
+  }
 
   const updatedFlightForSupabase = {
     date: document.getElementById("flightDate").value,
@@ -2317,22 +2329,28 @@ window.autoSyncMissingFlightData = async function() {
         const allFlights = await getFlights();
         if (!allFlights || allFlights.length === 0) return;
 
-        // Zeitfenster definieren (z.B. letzte 7 Tage bis maximal heute)
+        // Zeitfenster definieren (sichere String-Vergleiche gegen Zeitzonen-Bugs!)
         const now = new Date();
+        const todayStr = now.toISOString().slice(0, 10);
+        
         const sevenDaysAgo = new Date();
         sevenDaysAgo.setDate(now.getDate() - 7);
+        const sevenDaysAgoStr = sevenDaysAgo.toISOString().slice(0, 10);
 
-        // 1. Suche nach Kandidaten: Flugnummer vorhanden, ABER Registrierung fehlt!
-        const candidates = allFlights.filter(f => {
+        // 1. Suche nach Kandidaten
+        let candidates = allFlights.filter(f => {
             if (!f.flightNumber || f.flightNumber.trim() === "") return false;
             if (f.registration && f.registration.trim() !== "") return false; // Hat schon eine Reg
 
-            const flightDate = new Date(f.date);
             // Ist der Flug in den letzten 7 Tagen?
-            return flightDate >= sevenDaysAgo && flightDate <= now;
+            return f.date >= sevenDaysAgoStr && f.date <= todayStr;
         });
 
         if (candidates.length === 0) return; // Nichts zu tun!
+
+        // 🚀 BUGHUNT-FIX: Die neuesten Flüge zuerst abarbeiten!
+        // Das verhindert, dass 3 unlösbare alte Flüge die API-Pipeline für immer verstopfen.
+        candidates.sort((a, b) => new Date(b.date) - new Date(a.date));
 
         let syncCount = 0;
         let lastSyncedFlight = "";

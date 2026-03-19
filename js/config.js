@@ -1191,6 +1191,26 @@ async function autofillFlightData() {
       document.getElementById("flightNumber").value = flight.flight || flight.identification?.number?.default || document.getElementById("auto-flight-number").value.trim().toUpperCase() || "";
       document.getElementById("airline").value = airlineName || "";
       document.getElementById("registration").value = registration || "";
+
+      // 🚀 BUGHUNT-FIX: Foto direkt nach Autofill laden und Vorschau zeigen!
+      if (registration) {
+          const photoData = await fetchAircraftPhoto(registration);
+          if (photoData) {
+              currentPlanespottersData = photoData;
+              const previewImg = document.getElementById('planespotters-img');
+              const previewCredit = document.getElementById('planespotters-credit');
+              const previewContainer = document.getElementById('planespotters-preview');
+              
+              if (previewImg && previewCredit && previewContainer) {
+                  previewImg.src = photoData.url;
+                  previewCredit.textContent = photoData.photographer || "Planespotters";
+                  previewContainer.classList.remove('hidden');
+              }
+          } else {
+              if (typeof clearPlanespottersPreview === 'function') clearPlanespottersPreview();
+          }
+      }
+
       document.getElementById("flightDate").value = flightDate;
 
       // Wir müssen die Flughafendaten noch schnell cachen, falls sie neu sind
