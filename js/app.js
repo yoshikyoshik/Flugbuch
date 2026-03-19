@@ -2322,6 +2322,10 @@ function parseCSV(csvText) {
 // AUTO-SYNC (Lazy Sync für vergangene Flüge)
 // =================================================================
 
+// =================================================================
+// AUTO-SYNC (Lazy Sync für vergangene Flüge)
+// =================================================================
+
 window.autoSyncMissingFlightData = async function() {
     if (typeof isDemoMode !== 'undefined' && isDemoMode) return;
 
@@ -2348,8 +2352,7 @@ window.autoSyncMissingFlightData = async function() {
 
         if (candidates.length === 0) return; // Nichts zu tun!
 
-        // 🚀 BUGHUNT-FIX: Die neuesten Flüge zuerst abarbeiten!
-        // Das verhindert, dass 3 unlösbare alte Flüge die API-Pipeline für immer verstopfen.
+        // Die neuesten Flüge zuerst abarbeiten!
         candidates.sort((a, b) => new Date(b.date) - new Date(a.date));
 
         let syncCount = 0;
@@ -2358,12 +2361,11 @@ window.autoSyncMissingFlightData = async function() {
 
         console.log(`🔄 Auto-Sync: ${candidates.length} Flüge ohne Registrierung gefunden. Starte Abfrage...`);
 
-        // 2. Kandidaten abarbeiten (Wir limitieren auf max 3 pro Start, um die API nicht zu überlasten)
+        // 2. Kandidaten abarbeiten (Wir limitieren auf max 3 pro Start)
         for (let i = 0; i < Math.min(candidates.length, 3); i++) {
             const flight = candidates[i];
             const cleanFlightNum = flight.flightNumber.replace(/\s+/g, '').toUpperCase();
             
-            // Abfrage an DEINE bestehende Flightradar24 Netlify-Funktion
             const url = `${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-flight-by-number?flight_number=${cleanFlightNum}&date=${flight.date}`;
             
             const response = await fetch(url);
@@ -2381,6 +2383,34 @@ window.autoSyncMissingFlightData = async function() {
                     registration: newReg,
                     aircraftType: newAircraftType
                 };
+
+                // Exakte Flugzeit übernehmen
+                if (fr24Data.duration_formatted) {
+                    updateData.time = fr24Data.duration_formatted;
+                }
+
+                // 🚀 NEU: Airline & Logo updaten, falls "Unbekannt" oder Logo fehlt!
+                const isUnknownAirline = !flight.airline_logo || !flight.airline || flight.airline.toLowerCase().includes('unbekannt') || flight.airline.toLowerCase().includes('unknown');
+                
+                if (isUnknownAirline && fr24Data.operating_as) {
+                    try {
+                        const airlineUrl = `${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-airline-details?iata_code=${fr24Data.operating_as}`;
+                        const airlineRes = await fetch(airlineUrl);
+                        if (airlineRes.ok) {
+                            const airlineJson = await airlineRes.json();
+                            if (airlineJson && airlineJson.data && airlineJson.data.length > 0) {
+                                const ad = airlineJson.data[0];
+                                updateData.airline = ad.name || fr24Data.operating_as;
+                                // Nur überschreiben, wenn wir wirklich ein neues Logo gefunden haben
+                                const newLogo = ad.logo_url || ad.brandmark_url || ad.tail_logo_url;
+                                if (newLogo) updateData.airline_logo = newLogo;
+                                console.log(`✈️ Auto-Sync: Airline auf ${updateData.airline} korrigiert.`);
+                            }
+                        }
+                    } catch(e) {
+                        console.warn("Auto-Sync: Konnte Airline nicht nachladen", e);
+                    }
+                }
 
                 // 📸 Magie: Wir holen uns direkt das passende Flugzeug-Foto dazu!
                 const photoData = await fetchAircraftPhoto(newReg);
@@ -2403,6 +2433,11 @@ window.autoSyncMissingFlightData = async function() {
                     // Lokalen Cache aktualisieren, damit es sofort sichtbar ist
                     flight.registration = newReg;
                     flight.aircraftType = newAircraftType;
+                    
+                    if (updateData.time) flight.time = updateData.time;
+                    if (updateData.airline) flight.airline = updateData.airline;
+                    if (updateData.airline_logo) flight.airline_logo = updateData.airline_logo;
+                    
                     if (photoData) {
                         flight.planespotters_url = photoData.url;
                         flight.planespotters_photographer = photoData.photographer;
@@ -2411,7 +2446,7 @@ window.autoSyncMissingFlightData = async function() {
             }
         }
 
-        // 4. Dem Nutzer Bescheid geben (mit i18n Übersetzungen!)
+        // 4. Dem Nutzer Bescheid geben
         if (syncCount > 0) {
             const title = getTranslation("sync.autoSyncTitle") || "✨ Auto-Sync";
             let msg = "";
@@ -2429,7 +2464,6 @@ window.autoSyncMissingFlightData = async function() {
                 showMessage(title, msg, "success");
             }
             
-            // UI neu zeichnen, falls der Nutzer gerade im Logbuch oder der Flugliste ist
             if (typeof renderFlights === 'function') {
                 renderFlights(null, null, currentPage);
             }
@@ -5025,6 +5059,40 @@ window.refreshLiveFlightData = async function() {
         } else {
             statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-yellow-900"></span> <span data-i18n="live.statusScheduled">${getTranslation("live.statusScheduled") || "GEPLANT"}</span>`;
             statusEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-yellow-400 text-yellow-950 shadow-sm";
+        }
+
+        // --- 4. 🚀 NEU: EXAKTE FLUGZEIT NACH LANDUNG SPEICHERN ---
+        // Wenn der Flug gelandet ist UND wir beide echten Timestamps haben
+        if (status === "landed" && data.dep_actual_ts && data.arr_actual_ts) {
+            const diffSeconds = data.arr_actual_ts - data.dep_actual_ts;
+            
+            if (diffSeconds > 0) {
+                const diffMinutes = Math.round(diffSeconds / 60);
+                const h = Math.floor(diffMinutes / 60);
+                const m = diffMinutes % 60;
+                const exactTimeStr = `${h}h ${m}m`;
+
+                // Wir prüfen, ob die exakte Zeit abweicht von dem, was wir aktuell gespeichert haben.
+                // Das verhindert auch, dass wir Supabase bei jedem 60-Sekunden-Refresh neu zuspammen!
+                if (window.currentLiveFlight && window.currentLiveFlight.time !== exactTimeStr) {
+                    console.log(`✈️ Live-Catcher: Aktualisiere exakte Flugzeit auf ${exactTimeStr}`);
+                    
+                    // 1. UI im Ticket sofort updaten
+                    document.getElementById('live-flight-duration').textContent = exactTimeStr;
+                    
+                    // 2. Lokalen Cache updaten
+                    window.currentLiveFlight.time = exactTimeStr;
+                    
+                    // 3. Im Hintergrund (lautlos) an Supabase senden
+                    const flightIdToUpdate = window.currentLiveFlight.id || window.currentLiveFlight.flight_id;
+                    supabaseClient.from('flights')
+                        .update({ time: exactTimeStr })
+                        .eq('flight_id', flightIdToUpdate)
+                        .then(({error}) => {
+                            if (error) console.error("Konnte exakte Flugzeit nicht speichern:", error);
+                        });
+                }
+            }
         }
         
     } catch(e) {
