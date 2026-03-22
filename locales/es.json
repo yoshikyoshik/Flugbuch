@@ -45,6 +45,7 @@
   "saveNewPWD": "Guardar nueva contraseña",
   "tagline": "Tu bitácora de vuelo, visualizada en 3D.",
   "terms": "Términos y condiciones",
+  "swipeToScroll": "Desliza para ver más",
   
   "achievements": {
     "progress": "Progreso",
@@ -240,14 +241,19 @@
     "registerSuccessTitle": "¡Registro exitoso!",
     "resetEmailSentBody": "Si existe una cuenta, se ha enviado un enlace de recuperación.",
     "resetEmailSentTitle": "Correo enviado",
-    "welcomeBack": "¡Bienvenido de nuevo!"
+    "welcomeBack": "¡Bienvenido de nuevo!",
+    "passwordChangedSuccess": "Tu contraseña ha sido cambiada con éxito.",
+    "passwordChangedError": "No se pudo cambiar la contraseña."
   },
   "billing": {
     "noSubFound": "No se encontraron suscripciones activas.",
     "restoreFailed": "Restauración fallida.",
     "restoreInfoTitle": "Info",
     "restoreSuccessDesc": "Compras restauradas exitosamente.",
-    "restoreSuccessTitle": "Exitoso"
+    "restoreSuccessTitle": "Exitoso",
+    "packageNotFound": "Paquete no encontrado.",
+    "welcomePro": "¡Bienvenido a AvioSphere Pro!",
+    "noStoreConnection": "Sin conexión a la tienda."
   },
   "burgerMenu": {
     "achievements": "Logros",
@@ -260,6 +266,7 @@
     "help": "Ayuda",
     "import": "Importar Datos (JSON, CSV)...",
     "importJSON": "Importar Datos (JSON)...",
+    "importSub": "JSON, CSV (también Flightradar24, App in the Air)",
     "logbook": "Bitácora",
     "logout": "Cerrar sesión",
     "manageSubscription": "⚙️ Gestionar Suscripción",
@@ -267,7 +274,8 @@
     "newFlight": "Nuevo Vuelo",
     "stats": "Estadísticas",
     "toggleMode": "Cambiar Modo",
-    "trips": "Mis Viajes"
+    "trips": "Mis Viajes",
+    "exitDemo": "Salir de la demo"
   },
   "charts": {
     "distanceOverTime": "Distancia a lo largo del tiempo (km)",
@@ -399,7 +407,8 @@
     "to": "Destino (IATA/Nombre)",
     "tripLabel": "Viaje (Opcional)",
     "tripNone": "-- Ningún Viaje / Vuelo Único --",
-    "yes": "Sí, eliminar"
+    "yes": "Sí, eliminar",
+    "edit": "Editar"
   },
   "globe": {
     "buttonNormalMode": "🚀 Modo Normal",
@@ -464,7 +473,8 @@
     "successReplace": "Lista reemplazada completamente ({count} vuelos).",
     "successTitle": "Importación exitosa",
     "wait": "Por favor espera.",
-    "writing": "Escribiendo datos."
+    "writing": "Escribiendo datos.",
+    "maxFlightsReached": "Ya has guardado el número máximo de vuelos."
   },
   "landing": {
     "AcceptingRegPrivacy": "Política de privacidad",
@@ -524,13 +534,16 @@
     "routeSeparator": "a",
     "summary": "({count} vuelos / {distance} km)",
     "title": "Vistas de Bitácora",
-    "unknown": "Desconocido"
+    "unknown": "Desconocido",
+    "relatedFlights": "Vuelos relacionados"
   },
   "map": {
     "animationFailed": "La animación falló.",
     "animationProgress": "Vuelo {number} / {total}: {date} de {dep} a {arr}",
     "arrival": "Llegada",
-    "departure": "Salida"
+    "departure": "Salida",
+    "flightsCount": "{count} vuelos",
+    "airport": "Aeropuerto"
   },
   "messages": {
     "confirmDelete": "¿Estás seguro de que quieres eliminar permanentemente este vuelo?",
@@ -727,7 +740,8 @@
     "statImageError": "No se pudo crear la imagen de estadísticas.",
     "successTitle": "Guardado",
     "statsTitle": "Estadísticas de AvioSphere",
-    "statsText": "¡Mis estadísticas de vuelo en AvioSphere! ✈️📊"
+    "statsText": "¡Mis estadísticas de vuelo en AvioSphere! ✈️📊",
+    "prepDescBoardingPass": "La tarjeta de embarque se está exportando..."
   },
   "stats": {
     "aircraftTypeCount": "{type} ({count}x)",
@@ -801,7 +815,10 @@
     "loading": "Cargando viajes...",
     "promptName": "Nombre del nuevo viaje (ej. 'Vacaciones de verano 2024'):",
     "noFlightsLoaded": "No hay vuelos cargados.",
-    "noTripsCreated": "Aún no has creado ningún viaje."
+    "noTripsCreated": "Aún no has creado ningún viaje.",
+    "prev": "Viaje anterior",
+    "next": "Siguiente viaje",
+    "routing": "Ruta"
   },
   "tutorial": {
     "button": "¡Entendido, vamos!",
@@ -908,7 +925,8 @@
     "overlayInstruction": "Si estás instalando la aplicación ahora, ¡haz clic en el enlace de WhatsApp por segunda vez tras la instalación!",
     "btnStore": "Descargar aplicación",
     "btnBrowser": "Continuar en el navegador",
-    "loginFirst": "Inicia sesión primero para aceptar la invitación."
+    "loginFirst": "Inicia sesión primero para aceptar la invitación.",
+    "loginFirstFriend": "Por favor, inicia sesión primero para añadir al amigo."
   },
 
   "live": {
@@ -926,13 +944,19 @@
     "statusCancelled": "CANCELADO",
     "statusScheduled": "PROGRAMADO",
     "statusOffline": "DESCONECTADO",
-    "unknownAirline": "Aerolínea desconocida"
+    "unknownAirline": "Aerolínea desconocida",
+    "refresh": "Actualizar datos en vivo"
   },
 
 "sync": {
     "autoSyncTitle": "✨ Sincronización Automática",
     "autoSyncSuccessSingle": "Los datos del vuelo {flight} se han completado automáticamente (Matrícula: {reg}).",
     "autoSyncSuccessMultiple": "¡{count} vuelos se han completado automáticamente con datos en vivo en segundo plano!"
+  },
+
+"boardingPass": {
+    "myPhotos": "Mis fotos",
+    "coverPhoto": "Foto de portada:"
   }
 
 }

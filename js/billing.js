@@ -180,7 +180,7 @@ async function buyNative(planKey) {
             else packageToBuy = offerings.current.annual;
 
             if (!packageToBuy) {
-                showMessage("Fehler", "Paket nicht gefunden.", "error");
+                showMessage(getTranslation("toast.errorTitle") || "Fehler", getTranslation("billing.packageNotFound") || "Paket nicht gefunden.", "error");
                 return;
             }
 
@@ -189,12 +189,12 @@ async function buyNative(planKey) {
             
             // Check
             if (customerInfo.entitlements.all["pro_access"]?.isActive) {
-                showMessage("Erfolg!", "Willkommen bei AvioSphere Pro!", "success");
+                showMessage(getTranslation("toast.successTitle") || "Erfolg!", getTranslation("billing.welcomePro") || "Willkommen bei AvioSphere Pro!", "success");
                 closePremiumModal();
                 // UI Update wird automatisch durch den Listener (handleCustomerInfo) ausgelöst!
             }
         } else {
-            showMessage("Fehler", "Keine Verbindung zum Store.", "error");
+            showMessage(getTranslation("toast.errorTitle") || "Fehler", getTranslation("billing.noStoreConnection") || "Keine Verbindung zum Store.", "error");
         }
     } catch (error) {
         if (!error.userCancelled) {

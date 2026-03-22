@@ -45,6 +45,7 @@
   "saveNewPWD": "Сохранить новый пароль",
   "tagline": "Ваш журнал полетов в 3D.",
   "terms": "Условия",
+  "swipeToScroll": "Проведите, чтобы прокрутить",
   
   "achievements": {
     "progress": "Прогресс",
@@ -240,14 +241,19 @@
     "registerSuccessTitle": "Регистрация прошла успешно!",
     "resetEmailSentBody": "Если аккаунт существует, была отправлена ссылка для сброса.",
     "resetEmailSentTitle": "Email отправлен",
-    "welcomeBack": "С возвращением!"
+    "welcomeBack": "С возвращением!",
+    "passwordChangedSuccess": "Ваш пароль был успешно изменен.",
+    "passwordChangedError": "Не удалось изменить пароль."
   },
   "billing": {
     "noSubFound": "Активные подписки не найдены.",
     "restoreFailed": "Восстановление не удалось.",
     "restoreInfoTitle": "Информация",
     "restoreSuccessDesc": "Покупки успешно восстановлены.",
-    "restoreSuccessTitle": "Успешно"
+    "restoreSuccessTitle": "Успешно",
+    "packageNotFound": "Пакет не найден.",
+    "welcomePro": "Добро пожаловать в AvioSphere Pro!",
+    "noStoreConnection": "Нет подключения к магазину."
   },
   "burgerMenu": {
     "achievements": "Достижения",
@@ -260,6 +266,7 @@
     "help": "Помощь",
     "import": "Импорт данных (JSON, CSV)...",
     "importJSON": "Импорт данных (JSON)...",
+    "importSub": "JSON, CSV (также Flightradar24, App in the Air)",
     "logbook": "Журнал",
     "logout": "Выйти",
     "manageSubscription": "⚙️ Управление подпиской",
@@ -267,7 +274,8 @@
     "newFlight": "Новый рейс",
     "stats": "Статистика",
     "toggleMode": "Переключить тему",
-    "trips": "Мои поездки"
+    "trips": "Мои поездки",
+    "exitDemo": "Выйти из демо"
   },
   "charts": {
     "distanceOverTime": "Расстояние по времени (км)",
@@ -399,7 +407,8 @@
     "to": "Пункт назначения (IATA/Название)",
     "tripLabel": "Поездка (необязательно)",
     "tripNone": "-- Нет поездки / Одиночный рейс --",
-    "yes": "Да, удалить"
+    "yes": "Да, удалить",
+    "edit": "Редактировать"
   },
   "globe": {
     "buttonNormalMode": "🚀 Обычный режим",
@@ -464,7 +473,8 @@
     "successReplace": "Список полностью заменен ({count} рейсов).",
     "successTitle": "Импорт завершен",
     "wait": "Пожалуйста, подождите.",
-    "writing": "Запись данных."
+    "writing": "Запись данных.",
+    "maxFlightsReached": "Вы уже сохранили максимальное количество рейсов."
   },
   "landing": {
     "AcceptingRegPrivacy": "Политику конфиденциальности",
@@ -524,13 +534,16 @@
     "routeSeparator": "в",
     "summary": "({count} рейсов / {distance} км)",
     "title": "Виды журнала",
-    "unknown": "Неизвестно"
+    "unknown": "Неизвестно",
+    "relatedFlights": "Связанные рейсы"
   },
   "map": {
     "animationFailed": "Ошибка анимации.",
     "animationProgress": "Рейс {number} / {total}: {date} из {dep} в {arr}",
     "arrival": "Прибытие",
-    "departure": "Отправление"
+    "departure": "Отправление",
+    "flightsCount": "{count} рейсов",
+    "airport": "Аэропорт"
   },
   "messages": {
     "confirmDelete": "Вы уверены, что хотите навсегда удалить этот рейс?",
@@ -727,7 +740,8 @@
     "statImageError": "Не удалось создать изображение статистики.",
     "successTitle": "Сохранено",
     "statsTitle": "Статистика AvioSphere",
-    "statsText": "Моя статистика полетов на AvioSphere! ✈️📊"
+    "statsText": "Моя статистика полетов на AvioSphere! ✈️📊",
+    "prepDescBoardingPass": "Посадочный талон экспортируется..."
   },
   "stats": {
     "aircraftTypeCount": "{type} ({count}x)",
@@ -801,7 +815,10 @@
     "loading": "Загрузка поездок...",
     "promptName": "Название новой поездки (напр., 'Летний отпуск 2024'):",
     "noFlightsLoaded": "Полеты не загружены.",
-    "noTripsCreated": "Вы еще не создали ни одной поездки."
+    "noTripsCreated": "Вы еще не создали ни одной поездки.",
+    "prev": "Предыдущая поездка",
+    "next": "Следующая поездка",
+    "routing": "Маршрут"
   },
   "tutorial": {
     "button": "Понятно, поехали!",
@@ -908,7 +925,8 @@
     "overlayInstruction": "Если вы устанавливаете приложение сейчас, нажмите на ссылку в WhatsApp второй раз после установки!",
     "btnStore": "Скачать приложение",
     "btnBrowser": "Продолжить в браузере",
-    "loginFirst": "Сначала войдите в систему, чтобы принять приглашение."
+    "loginFirst": "Сначала войдите в систему, чтобы принять приглашение.",
+    "loginFirstFriend": "Пожалуйста, сначала войдите в систему, чтобы добавить друга."
   },
 
   "live": {
@@ -926,13 +944,19 @@
     "statusCancelled": "ОТМЕНЕН",
     "statusScheduled": "ПО РАСПИСАНИЮ",
     "statusOffline": "ОФФЛАЙН",
-    "unknownAirline": "Неизвестная авиакомпания"
+    "unknownAirline": "Неизвестная авиакомпания",
+    "refresh": "Обновить данные"
   },
 
 "sync": {
     "autoSyncTitle": "✨ Авто-синхронизация",
     "autoSyncSuccessSingle": "Данные рейса {flight} были автоматически дополнены (Рег: {reg}).",
     "autoSyncSuccessMultiple": "{count} рейс(ов) были автоматически дополнены актуальными данными в фоновом режиме!"
+  },
+
+"boardingPass": {
+    "myPhotos": "Мои фото",
+    "coverPhoto": "Фото на обложке:"
   }
 
 }

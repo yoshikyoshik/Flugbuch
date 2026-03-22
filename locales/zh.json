@@ -45,6 +45,7 @@
   "saveNewPWD": "保存新密码",
   "tagline": "您的飞行日志，3D可视化。",
   "terms": "条款",
+  "swipeToScroll": "滑动以滚动",
   
   "achievements": {
     "progress": "进度",
@@ -240,14 +241,19 @@
     "registerSuccessTitle": "注册成功！",
     "resetEmailSentBody": "如果账户存在，我们已发送重置链接。",
     "resetEmailSentTitle": "电子邮件已发送",
-    "welcomeBack": "欢迎回来！"
+    "welcomeBack": "欢迎回来！",
+    "passwordChangedSuccess": "您的密码已成功更改。",
+    "passwordChangedError": "密码无法更改。"
   },
   "billing": {
     "noSubFound": "未找到有效的订阅。",
     "restoreFailed": "恢复失败。",
     "restoreInfoTitle": "信息",
     "restoreSuccessDesc": "购买已成功恢复。",
-    "restoreSuccessTitle": "成功"
+    "restoreSuccessTitle": "成功",
+    "packageNotFound": "未找到套餐。",
+    "welcomePro": "欢迎来到 AvioSphere Pro！",
+    "noStoreConnection": "无法连接到商店。"
   },
   "burgerMenu": {
     "achievements": "成就",
@@ -260,6 +266,7 @@
     "help": "帮助",
     "import": "导入数据 (JSON, CSV)...",
     "importJSON": "导入数据 (JSON)...",
+    "importSub": "JSON, CSV (也 Flightradar24, App in the Air)",
     "logbook": "日志",
     "logout": "注销",
     "manageSubscription": "⚙️ 管理订阅",
@@ -267,7 +274,8 @@
     "newFlight": "新航班",
     "stats": "统计",
     "toggleMode": "切换模式",
-    "trips": "我的旅行"
+    "trips": "我的旅行",
+    "exitDemo": "退出演示"
   },
   "charts": {
     "distanceOverTime": "距离随时间变化 (公里)",
@@ -399,7 +407,8 @@
     "to": "目的地 (IATA/名称)",
     "tripLabel": "行程 (可选)",
     "tripNone": "-- 无行程 / 单次航班 --",
-    "yes": "是的，删除"
+    "yes": "是的，删除",
+    "edit": "编辑"
   },
   "globe": {
     "buttonNormalMode": "🚀 正常模式",
@@ -464,7 +473,8 @@
     "successReplace": "列表已完全替换 ({count} 个航班)。",
     "successTitle": "导入成功",
     "wait": "请稍候。",
-    "writing": "正在写入数据。"
+    "writing": "正在写入数据。",
+    "maxFlightsReached": "您保存的航班数量已达到上限。"
   },
   "landing": {
     "AcceptingRegPrivacy": "隐私政策",
@@ -524,13 +534,16 @@
     "routeSeparator": "至",
     "summary": "({count} 航班 / {distance} 公里)",
     "title": "日志视图",
-    "unknown": "未知"
+    "unknown": "未知",
+    "relatedFlights": "相关航班"
   },
   "map": {
     "animationFailed": "动画失败。",
     "animationProgress": "航班 {number} / {total}：{date} 从 {dep} 到 {arr}",
     "arrival": "到达",
-    "departure": "出发"
+    "departure": "出发",
+    "flightsCount": "{count} 个航班",
+    "airport": "机场"
   },
   "messages": {
     "confirmDelete": "您确定要永久删除此航班吗？",
@@ -727,7 +740,8 @@
     "statImageError": "无法创建统计图像。",
     "successTitle": "已保存",
     "statsTitle": "AvioSphere 飞行数据统计",
-    "statsText": "我在 AvioSphere 的飞行数据统计！✈️📊"
+    "statsText": "我在 AvioSphere 的飞行数据统计！✈️📊",
+    "prepDescBoardingPass": "正在导出登机牌..."
   },
   "stats": {
     "aircraftTypeCount": "{type} ({count}次)",
@@ -801,7 +815,10 @@
     "loading": "正在加载行程...",
     "promptName": "新行程的名称 (例如, “2024年暑假”):",
     "noFlightsLoaded": "未加载任何航班。",
-    "noTripsCreated": "您尚未创建任何行程。"
+    "noTripsCreated": "您尚未创建任何行程。",
+    "prev": "上一个行程",
+    "next": "下一个行程",
+    "routing": "路线"
   },
   "tutorial": {
     "button": "明白了，开始吧！",
@@ -908,7 +925,8 @@
     "overlayInstruction": "如果您正在安装应用，请在安装完成后再次点击 WhatsApp 链接！",
     "btnStore": "下载应用",
     "btnBrowser": "在浏览器中继续",
-    "loginFirst": "请先登录以接受邀请。"
+    "loginFirst": "请先登录以接受邀请。",
+    "loginFirstFriend": "请先登录以添加此好友。"
   },
 
   "live": {
@@ -926,13 +944,18 @@
     "statusCancelled": "已取消",
     "statusScheduled": "已计划",
     "statusOffline": "离线",
-    "unknownAirline": "未知航空公司"
+    "unknownAirline": "未知航空公司",
+    "refresh": "刷新实时数据"
   },
 
 "sync": {
     "autoSyncTitle": "✨ 自动同步",
     "autoSyncSuccessSingle": "航班 {flight} 的数据已自动完善（注册号：{reg}）。",
     "autoSyncSuccessMultiple": "已在后台使用实时数据自动完善了 {count} 个航班！"
-  }
+  },
 
+"boardingPass": {
+    "myPhotos": "我的照片",
+    "coverPhoto": "封面图片:"
+  }
 }

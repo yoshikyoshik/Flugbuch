@@ -262,6 +262,24 @@ function updateLockVisuals() {
       }
     }
   }
+// --- NEU: Profil-Tab immer synchronisieren ---
+    const profileBadge = document.getElementById('profile-status-badge');
+    const profileUpgBtn = document.getElementById('profile-upgrade-btn');
+    const profileManBtn = document.getElementById('profile-manage-btn');
+
+    if (profileBadge) {
+        if (typeof currentUserSubscription !== 'undefined' && currentUserSubscription === "pro") {
+            profileBadge.textContent = "PRO";
+            profileBadge.className = "inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200 border border-indigo-200 dark:border-indigo-800";
+            if (profileUpgBtn) profileUpgBtn.classList.add('hidden');
+            if (profileManBtn) profileManBtn.classList.remove('hidden');
+        } else {
+            profileBadge.textContent = "FREE";
+            profileBadge.className = "inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400 border border-gray-200 dark:border-gray-600";
+            if (profileUpgBtn) profileUpgBtn.classList.remove('hidden');
+            if (profileManBtn) profileManBtn.classList.add('hidden');
+        }
+    }
 }
 
 /*

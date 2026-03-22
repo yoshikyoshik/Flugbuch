@@ -35,7 +35,8 @@ if (!document.getElementById('custom-map-tooltip-style')) {
 
 // --- NEU: Wunderschöner HTML-Tooltip Generator für Strecken ---
 window.buildMapTooltipHtml = function(flight, count) {
-    const countText = count > 1 ? `<div style="background: #4f46e5; color: white; font-size: 10px; padding: 2px 6px; border-radius: 10px; display: inline-block; margin-top: 5px; font-weight: bold;">${count} Flüge</div>` : '';
+    const flightsLabel = (getTranslation("map.flightsCount") || "{count} Flüge").replace("{count}", count);
+    const countText = count > 1 ? `<div style="background: #4f46e5; color: white; font-size: 10px; padding: 2px 6px; border-radius: 10px; display: inline-block; margin-top: 5px; font-weight: bold;">${flightsLabel}</div>` : '';
     
     let imgHtml = "";
     if (flight.planespotters_url) {
@@ -259,7 +260,7 @@ window.drawAllRoutesOnMap = function (flights) {
     const marker = L.marker([airport.lat, airport.lon]);
     
     // NEU: Schicker Hover-Tooltip für alle Flughäfen
-    const popupHtml = window.buildAirportTooltipHtml(airport.name, iataCode, "📍 Flughafen");
+    const popupHtml = window.buildAirportTooltipHtml(airport.name, iataCode, "📍 " + (getTranslation("map.airport") || "Flughafen"));
     marker.bindTooltip(popupHtml, { sticky: true, className: 'custom-map-tooltip' });
     
     markerClusterGroup.addLayer(marker);

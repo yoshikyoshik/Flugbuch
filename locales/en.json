@@ -45,6 +45,7 @@
   "saveNewPWD": "Save new password",
   "tagline": "Your flight log, visualized in 3D.",
   "terms": "Terms",
+  "swipeToScroll": "Swipe to scroll",
   
   "achievements": {
     "progress": "Progress",
@@ -240,14 +241,19 @@
     "registerSuccessTitle": "Registration successful!",
     "resetEmailSentBody": "If an account exists, a reset link has been sent.",
     "resetEmailSentTitle": "Email sent",
-    "welcomeBack": "Welcome back!"
+    "welcomeBack": "Welcome back!",
+    "passwordChangedSuccess": "Your password has been changed successfully.",
+    "passwordChangedError": "The password could not be changed."
   },
   "billing": {
     "noSubFound": "No active subscriptions found.",
     "restoreFailed": "Restore failed.",
     "restoreInfoTitle": "Info",
     "restoreSuccessDesc": "Purchases successfully restored.",
-    "restoreSuccessTitle": "Successful"
+    "restoreSuccessTitle": "Successful",
+    "packageNotFound": "Package not found.",
+    "welcomePro": "Welcome to AvioSphere Pro!",
+    "noStoreConnection": "No connection to the store."
   },
   "burgerMenu": {
     "achievements": "Achievements",
@@ -268,7 +274,8 @@
     "newFlight": "New Flight",
     "stats": "Statistics",
     "toggleMode": "Toggle Mode",
-    "trips": "My Trips"
+    "trips": "My Trips",
+    "exitDemo": "Exit Demo"
   },
   "charts": {
     "distanceOverTime": "Distance over Time (km)",
@@ -400,7 +407,8 @@
     "to": "Destination (IATA/Name)",
     "tripLabel": "Trip (Optional)",
     "tripNone": "-- No Trip / Single Flight --",
-    "yes": "Yes, delete"
+    "yes": "Yes, delete",
+    "edit": "Edit"
   },
   "globe": {
     "buttonNormalMode": "🚀 Normal Mode",
@@ -469,7 +477,8 @@
     "upsellWarning": "You are on the <b>Free plan</b>. Only your 15 most recent flights will be imported.",
     "upsellButton": "🚀 Unlock PRO for all {count} flights!",
     "promoTitle": "Switching from MyFlightradar24 or App in the Air?",
-    "promoSub": "Upload your CSV export here. We will detect the format automatically!"
+    "promoSub": "Upload your CSV export here. We will detect the format automatically!",
+    "maxFlightsReached": "You have already saved the maximum number of flights."
   },
   "landing": {
     "AcceptingRegPrivacy": "Privacy Policy",
@@ -529,13 +538,16 @@
     "routeSeparator": "to",
     "summary": "({count} flights / {distance} km)",
     "title": "Logbook Views",
-    "unknown": "Unknown"
+    "unknown": "Unknown",
+    "relatedFlights": "Related Flights"
   },
   "map": {
     "animationFailed": "Animation failed.",
     "animationProgress": "Flight {number} / {total}: {date} from {dep} to {arr}",
     "arrival": "Arrival",
-    "departure": "Departure"
+    "departure": "Departure",
+    "flightsCount": "{count} flights",
+    "airport": "Airport"
   },
   "messages": {
     "confirmDelete": "Are you sure you want to permanently delete this flight?",
@@ -732,7 +744,8 @@
     "statImageError": "Could not create statistics image.",
     "successTitle": "Saved",
     "statsTitle": "AvioSphere Stats",
-    "statsText": "My flight statistics on AvioSphere! ✈️📊"
+    "statsText": "My flight statistics on AvioSphere! ✈️📊",
+    "prepDescBoardingPass": "Boarding pass is being exported..."
   },
   "stats": {
     "aircraftTypeCount": "{type} ({count}x)",
@@ -806,7 +819,10 @@
     "loading": "Loading trips...",
     "promptName": "Name of the new trip (e.g. 'Summer Vacation 2024'):",
     "noFlightsLoaded": "No flights loaded.",
-    "noTripsCreated": "You haven't created any trips yet."
+    "noTripsCreated": "You haven't created any trips yet.",
+    "prev": "Previous trip",
+    "next": "Next trip",
+    "routing": "Routing"
   },
   "tutorial": {
     "button": "Got it, let's go!",
@@ -913,7 +929,8 @@
     "overlayInstruction": "If you are installing the app now, please click the link in WhatsApp a second time after the installation!",
     "btnStore": "Download App",
     "btnBrowser": "Continue in Browser",
-    "loginFirst": "Please log in first to accept the invitation."
+    "loginFirst": "Please log in first to accept the invitation.",
+    "loginFirstFriend": "Please log in first to add this friend."
   },
 
   "live": {
@@ -931,13 +948,19 @@
     "statusCancelled": "CANCELLED",
     "statusScheduled": "SCHEDULED",
     "statusOffline": "OFFLINE",
-    "unknownAirline": "Unknown Airline"
+    "unknownAirline": "Unknown Airline",
+    "refresh": "Refresh live data"
   },
 
 "sync": {
     "autoSyncTitle": "✨ Auto-Sync",
     "autoSyncSuccessSingle": "Flight data for {flight} has been automatically completed (Reg: {reg}).",
     "autoSyncSuccessMultiple": "{count} flights have been automatically completed with live data in the background!"
+  },
+
+"boardingPass": {
+  "myPhotos": "My Photos",
+  "coverPhoto": "Cover photo:"
   }
 
 }

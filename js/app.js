@@ -2016,7 +2016,11 @@ async function executeImport(flightsData, mode, importedTripsSource = [], allowe
     }
 
     if (finalFlightsToProcess.length === 0 && mode === 'append') {
-        showMessage("Limit erreicht", "Du hast bereits die maximale Anzahl an Flügen gespeichert.", "info");
+        showMessage(
+            getTranslation("messages.limitTitle") || "Limit erreicht", 
+            getTranslation("import.maxFlightsReached") || "Du hast bereits die maximale Anzahl an Flügen gespeichert.", 
+            "info"
+        );
         return;
     }
     // ------------------------------------
@@ -2172,21 +2176,17 @@ async function changePassword(event) {
 
     // Dieser Teil wird jetzt wieder erreicht werden
     showMessage(
-      "Erfolg!",
-      "Dein Passwort wurde erfolgreich geändert.",
+      getTranslation("toast.successTitle") || "Erfolg!",
+      getTranslation("auth.passwordChangedSuccess") || "Dein Passwort wurde erfolgreich geändert.",
       "success"
     );
     closePasswordChangeModal();
   } catch (error) {
     // Fängt JEDEN denkbaren Fehler ab, auch Netzwerkprobleme oder unerwartetes Verhalten
     showMessage(
-      "Fehler",
-      "Das Passwort konnte nicht geändert werden.",
+      getTranslation("toast.errorTitle") || "Fehler",
+      getTranslation("auth.passwordChangedError") || "Das Passwort konnte nicht geändert werden.",
       "error"
-    );
-    console.error(
-      "Ein unerwarteter Fehler ist beim Passwort-Update aufgetreten:",
-      error
     );
   }
 }
@@ -2636,8 +2636,8 @@ document.addEventListener("DOMContentLoaded", async function () {
       ).value;
       if (newPassword.length < 6) {
         showMessage(
-          "Fehler",
-          "Das Passwort muss mindestens 6 Zeichen lang sein.",
+          getTranslation("toast.errorTitle") || "Fehler",
+          getTranslation("auth.passwordTooShort") || "Das Passwort muss mindestens 6 Zeichen lang sein.",
           "error"
         );
         return;
@@ -2875,7 +2875,11 @@ document.getElementById("buy-pro-btn").addEventListener("click", async () => {
                             // Einladungs-Funktion aufrufen!
                             handleFriendInvite(inviteId, userData.user.id);
                         } else if (!userData || !userData.user) {
-                            showMessage("Hinweis", "Bitte logge dich zuerst ein, um den Freund hinzuzufügen.", "info");
+                            showMessage(
+                                getTranslation("toast.infoTitle") || "Hinweis", 
+                                getTranslation("invite.loginFirstFriend") || "Bitte logge dich zuerst ein, um den Freund hinzuzufügen.", 
+                                "info"
+                            );
                         }
                     }
                 } catch (e) {
@@ -4431,7 +4435,7 @@ window.shareInviteLink = async function() {
         } else {
             // Letzter Fallback für alte Browser am PC: Zwischenablage
             await navigator.clipboard.writeText(inviteUrl);
-            showMessage("URL Kopiert", getTranslation("leaderboard.linkCopied") || "Einladungslink in die Zwischenablage kopiert!", "success");
+            showMessage(getTranslation("toast.successTitle") || "Erfolg", getTranslation("leaderboard.linkCopied") || "Einladungslink in die Zwischenablage kopiert!", "success");
         }
     } catch (err) {
         console.warn("Teilen abgebrochen oder fehlgeschlagen:", err);

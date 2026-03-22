@@ -414,7 +414,7 @@ async function showAircraftDetails(modelCode) {
         content += `<hr class="my-4 dark:border-gray-700">`;
         content += `<p class="font-semibold mb-2">${getTranslation("logbook.aircraftVariants")}:</p>`;
         data.slice(1).forEach((variant) => {
-          content += `<p class="text-sm"><strong>${variant.model}:</strong> ${variant.engine_type || "N/A"}</p>`;
+          content += `<p class="text-sm"><strong>${variant.model}:</strong> ${variant.engine_type || notAvailable}</p>`;
         });
       }
 
@@ -2088,7 +2088,7 @@ async function shareFlightDetailsScreenshot() {
     if (prevBtn) prevBtn.style.display = 'none'; // ⬅️ NEU
     if (nextBtn) nextBtn.style.display = 'none'; // ➡️ NEU
 
-    showMessage(getTranslation("share.prepTitle") || "Moment...", getTranslation("share.prepDesc") || "Bordkarte wird exportiert...", "info");
+    showMessage(getTranslation("share.prepTitle") || "Moment...", getTranslation("share.prepDescBoardingPass") || "Bordkarte wird exportiert...", "info");
 
     // 2. PARALLELER BILDER-PROXY (Nur für kleine, fremde Bilder!)
     const images = modalContent.querySelectorAll('img');
@@ -2151,7 +2151,7 @@ async function shareFlightDetailsScreenshot() {
 
     } catch (e) {
         console.error("Screenshot Fehler:", e);
-        showMessage(getTranslation("toast.errorTitle") || "Fehler", "Konnte Bild nicht erstellen.", "error");
+        showMessage(getTranslation("toast.errorTitle") || "Fehler", getTranslation("share.imageError") || "Konnte Bild nicht erstellen.", "error");
     } finally {
         modalContent.style.maxHeight = originalMaxHeight;
         scrollArea.style.overflowY = originalOverflow;

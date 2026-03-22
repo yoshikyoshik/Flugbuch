@@ -267,7 +267,7 @@
                   🌓 Modus wechseln
                 </a>
 
-                <a href="#" id="menu-exit-demo-btn" class="hidden block px-4 py-2 text-sm font-bold text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 border-t dark:border-gray-700">
+                <a href="#" id="menu-exit-demo-btn" class="hidden block px-4 py-2 text-sm font-bold text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 border-t dark:border-gray-700" data-i18n="burgerMenu.exitDemo">
                   🚪 Demo Beenden
                 </a>
               </div>
@@ -794,7 +794,7 @@
 
                       <div class="p-5 sm:p-6 relative">
                           
-                          <button onclick="refreshLiveFlightData()" class="absolute top-4 right-4 text-gray-400 hover:text-indigo-600 transition-colors p-2 rounded-full hover:bg-gray-50 dark:hover:bg-gray-700" title="Live-Daten aktualisieren">
+                          <button onclick="refreshLiveFlightData()" class="absolute top-4 right-4 text-gray-400 hover:text-indigo-600 transition-colors p-2 rounded-full hover:bg-gray-50 dark:hover:bg-gray-700" title="Live-Daten aktualisieren" data-i18n-title="live.refresh">
                               <svg id="live-refresh-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                           </button>
 
@@ -1959,11 +1959,11 @@
 </div>
 
 <div id="flight-details-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity duration-300 opacity-0">
-    <button id="fd-prev-btn" class="hidden sm:flex absolute left-2 top-[310px] -translate-y-1/2 bg-gray-800/80 hover:bg-black text-white rounded-full p-2 backdrop-blur-md transition shadow-xl border border-white/20 z-50" title="Vorheriger Flug">
+    <button id="fd-prev-btn" class="hidden sm:flex absolute left-2 top-[310px] -translate-y-1/2 bg-gray-800/80 hover:bg-black text-white rounded-full p-2 backdrop-blur-md transition shadow-xl border border-white/20 z-50" title="Vorheriger Flug" data-i18n-title="flights.prevButton">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
         </button>
 
-        <button id="fd-next-btn" class="hidden sm:flex absolute right-2 top-[310px] -translate-y-1/2 bg-gray-800/80 hover:bg-black text-white rounded-full p-2 backdrop-blur-md transition shadow-xl border border-white/20 z-50" title="Nächster Flug">
+        <button id="fd-next-btn" class="hidden sm:flex absolute right-2 top-[310px] -translate-y-1/2 bg-gray-800/80 hover:bg-black text-white rounded-full p-2 backdrop-blur-md transition shadow-xl border border-white/20 z-50" title="Nächster Flug" data-i18n-title="flights.nextButton">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
         </button>
       <div class="bg-white dark:bg-gray-800 rounded-3xl overflow-hidden shadow-2xl w-full max-w-lg relative flex flex-col max-h-[90vh] transform transition-transform duration-300 scale-95" id="fd-modal-content">
@@ -1977,10 +1977,10 @@
             </button>
             
             <div class="absolute top-4 right-4 flex gap-2 z-10" id="fd-action-buttons">
-                <button onclick="shareFlightDetailsScreenshot()" class="bg-black/30 hover:bg-black/60 text-white rounded-full p-2 backdrop-blur-md transition shadow-lg border border-white/20" title="Bordkarte teilen">
+                <button onclick="shareFlightDetailsScreenshot()" class="bg-black/30 hover:bg-black/60 text-white rounded-full p-2 backdrop-blur-md transition shadow-lg border border-white/20" title="Bordkarte teilen" data-i18n-title="modal.shareDetails">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path></svg>
                 </button>
-                <button id="fd-edit-btn" class="bg-indigo-600/90 hover:bg-indigo-600 text-white rounded-full p-2 backdrop-blur-md transition shadow-lg border border-indigo-400/30" title="Bearbeiten">
+                <button id="fd-edit-btn" class="bg-indigo-600/90 hover:bg-indigo-600 text-white rounded-full p-2 backdrop-blur-md transition shadow-lg border border-indigo-400/30" title="Bearbeiten" data-i18n-title="form.edit">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                 </button>
             </div>
@@ -2014,11 +2014,11 @@
 
             <div class="grid grid-cols-2 gap-3 mb-6">
                 <div class="bg-gray-50 dark:bg-gray-900/50 p-3 rounded-xl border border-gray-100 dark:border-gray-800">
-                    <div class="text-[10px] text-gray-400 uppercase tracking-wide font-bold">Flugzeug</div>
+                    <div class="text-[10px] text-gray-400 uppercase tracking-wide font-bold" data-i18n="boardingPass.aircraft">Flugzeug</div>
                     <div class="font-bold text-gray-800 dark:text-gray-200 mt-0.5 text-sm" id="fd-aircraft"></div>
                 </div>
                 <div class="bg-gray-50 dark:bg-gray-900/50 p-3 rounded-xl border border-gray-100 dark:border-gray-800">
-                    <div class="text-[10px] text-gray-400 uppercase tracking-wide font-bold">Registrierung</div>
+                    <div class="text-[10px] text-gray-400 uppercase tracking-wide font-bold" data-i18n="boardingPass.registration">Registrierung</div>
                     <div class="font-bold text-gray-800 dark:text-gray-200 mt-0.5 text-sm" id="fd-reg"></div>
                 </div>
             </div>
@@ -2026,11 +2026,11 @@
             <div class="flex justify-between items-center mb-6 px-2">
                 <div class="text-center">
                     <div class="font-extrabold text-gray-800 dark:text-gray-200" id="fd-distance"></div>
-                    <div class="text-[10px] text-gray-400 uppercase tracking-wide font-bold mt-1">Distanz</div>
+                    <div class="text-[10px] text-gray-400 uppercase tracking-wide font-bold mt-1" data-i18n="boardingPass.distance">Distanz</div>
                 </div>
                 <div class="text-center border-l border-r border-gray-200 dark:border-gray-700 px-6">
                     <div class="font-extrabold text-gray-800 dark:text-gray-200" id="fd-duration"></div>
-                    <div class="text-[10px] text-gray-400 uppercase tracking-wide font-bold mt-1">Flugzeit</div>
+                    <div class="text-[10px] text-gray-400 uppercase tracking-wide font-bold mt-1" data-i18n="boardingPass.flightTime">Flugzeit</div>
                 </div>
                 <div class="text-center">
                     <div class="font-extrabold text-orange-500" id="fd-co2"></div>
@@ -2039,12 +2039,12 @@
             </div>
 
             <div id="fd-notes-container" class="mb-6 hidden">
-                <div class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Notizen</div>
+                <div class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2" data-i18n="boardingPass.notes">Notizen</div>
                 <p class="text-sm text-gray-600 dark:text-gray-300 italic bg-yellow-50 dark:bg-yellow-900/10 p-3 rounded-lg border-l-4 border-yellow-400" id="fd-notes"></p>
             </div>
 
             <div id="fd-user-photos-container" class="hidden pb-2">
-                <div class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3 flex items-center gap-2">
+                <div class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3 flex items-center gap-2" data-i18n="boardingPass.myPhotos">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                     Meine Fotos
                 </div>
@@ -2052,14 +2052,14 @@
                     </div>
             </div>
             
-            <div class="md:hidden text-center mt-6 mb-2 opacity-50 flex items-center justify-center gap-2 text-xs font-medium text-gray-500 dark:text-gray-400">
+            <div class="md:hidden text-center mt-6 mb-2 opacity-50 flex items-center justify-center gap-2 text-xs font-medium text-gray-500 dark:text-gray-400" data-i18n="swipeToScroll">
                 <svg class="w-4 h-4 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                 <span>Wischen zum Blättern</span>
                 <svg class="w-4 h-4 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
             </div>
 
             <div class="text-[9px] text-gray-400 text-center mt-2 hidden" id="fd-planespotters-credit">
-                Titelbild: Planespotters.net / <span id="fd-photographer"></span>
+                <span data-i18n="boardingPass.coverPhoto">Titelbild:</span> Planespotters.net / <span id="fd-photographer"></span>
             </div>
         </div> 
     </div> 
@@ -2067,11 +2067,11 @@
 
   <div id="trip-details-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-gray-900/80 backdrop-blur-sm transition-opacity opacity-0">
 
-    <button id="td-prev-btn" class="hidden md:flex absolute left-4 lg:left-12 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white rounded-full p-4 backdrop-blur-md transition shadow-2xl border border-white/20 z-50" title="Vorherige Reise">
+    <button id="td-prev-btn" class="hidden md:flex absolute left-4 lg:left-12 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white rounded-full p-4 backdrop-blur-md transition shadow-2xl border border-white/20 z-50" title="Vorherige Reise" data-i18n-title="trips.prev">
         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
     </button>
 
-    <button id="td-next-btn" class="hidden md:flex absolute right-4 lg:right-12 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white rounded-full p-4 backdrop-blur-md transition shadow-2xl border border-white/20 z-50" title="Nächste Reise">
+    <button id="td-next-btn" class="hidden md:flex absolute right-4 lg:right-12 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white rounded-full p-4 backdrop-blur-md transition shadow-2xl border border-white/20 z-50" title="Nächste Reise" data-i18n-title="trips.next">
         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
     </button>
 
@@ -2097,11 +2097,11 @@
             
             <div class="grid grid-cols-3 gap-3 mb-6">
                 <div class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-xl border border-gray-100 dark:border-gray-700 text-center">
-                    <p class="text-[10px] text-gray-500 dark:text-gray-400 font-bold mb-1 uppercase">Flüge</p>
+                    <p class="text-[10px] text-gray-500 dark:text-gray-400 font-bold mb-1 uppercase" data-i18n="stats.flights">Flüge</p>
                     <p class="text-lg font-black text-indigo-600 dark:text-indigo-400" id="td-flight-count">-</p>
                 </div>
                 <div class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-xl border border-gray-100 dark:border-gray-700 text-center">
-                    <p class="text-[10px] text-gray-500 dark:text-gray-400 font-bold mb-1 uppercase">Distanz</p>
+                    <p class="text-[10px] text-gray-500 dark:text-gray-400 font-bold mb-1 uppercase" data-i18n="stats.distance">Distanz</p>
                     <p class="text-lg font-black text-gray-900 dark:text-white" id="td-distance">-</p>
                 </div>
                 <div class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-xl border border-gray-100 dark:border-gray-700 text-center">
@@ -2110,11 +2110,11 @@
                 </div>
             </div>
 
-            <h3 class="text-xs font-bold text-gray-400 dark:text-gray-500 mb-3 uppercase tracking-wider">Routing</h3>
+            <h3 class="text-xs font-bold text-gray-400 dark:text-gray-500 mb-3 uppercase tracking-wider" data-i18n="trips.routing">Routing</h3>
             <div id="td-flight-list" class="space-y-2 mb-6 border-l-2 border-indigo-100 dark:border-indigo-900/50 pl-4 ml-2">
                 </div>
 
-            <div class="md:hidden text-center mt-6 mb-2 opacity-50 flex items-center justify-center gap-2 text-xs font-medium text-gray-500 dark:text-gray-400">
+            <div class="md:hidden text-center mt-6 mb-2 opacity-50 flex items-center justify-center gap-2 text-xs font-medium text-gray-500 dark:text-gray-400" data-i18n="swipeToScroll">
                 <svg class="w-4 h-4 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                 <span>Wischen zum Blättern</span>
                 <svg class="w-4 h-4 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
@@ -2152,11 +2152,11 @@
             
             <div class="grid grid-cols-3 gap-3 mb-6">
                 <div class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-xl border border-gray-100 dark:border-gray-700 text-center">
-                    <p class="text-[10px] text-gray-500 dark:text-gray-400 font-bold mb-1 uppercase">Flüge</p>
+                    <p class="text-[10px] text-gray-500 dark:text-gray-400 font-bold mb-1 uppercase" data-i18n="stats.flights">Flüge</p>
                     <p class="text-lg font-black text-indigo-600 dark:text-indigo-400" id="ld-flight-count">-</p>
                 </div>
                 <div class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-xl border border-gray-100 dark:border-gray-700 text-center">
-                    <p class="text-[10px] text-gray-500 dark:text-gray-400 font-bold mb-1 uppercase" id="ld-stat2-label">Distanz</p>
+                    <p class="text-[10px] text-gray-500 dark:text-gray-400 font-bold mb-1 uppercase" id="ld-stat2-label" data-i18n="stats.distance">Distanz</p>
                     <p class="text-lg font-black text-gray-900 dark:text-white" id="ld-stat2-value">-</p>
                 </div>
                 <div class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-xl border border-gray-100 dark:border-gray-700 text-center">
@@ -2165,7 +2165,7 @@
                 </div>
             </div>
 
-            <h3 class="text-xs font-bold text-gray-400 dark:text-gray-500 mb-3 uppercase tracking-wider">Zugehörige Flüge</h3>
+            <h3 class="text-xs font-bold text-gray-400 dark:text-gray-500 mb-3 uppercase tracking-wider" data-i18n="logbook.relatedFlights">Zugehörige Flüge</h3>
             <div id="ld-flight-list" class="space-y-2 mb-2 border-l-2 border-indigo-100 dark:border-indigo-900/50 pl-4 ml-2">
                 </div>
         </div>
@@ -2207,7 +2207,7 @@
                 <div id="ad-progress-bar" class="absolute top-0 left-0 h-full bg-indigo-500 transition-all duration-1000 ease-out" style="width: 0%;"></div>
             </div>
 
-            <div class="md:hidden text-center mt-6 mb-1 opacity-50 flex items-center justify-center gap-2 text-xs font-medium text-gray-500 dark:text-gray-400">
+            <div class="md:hidden text-center mt-6 mb-1 opacity-50 flex items-center justify-center gap-2 text-xs font-medium text-gray-500 dark:text-gray-400" data-i18n="swipeToScroll">
                 <svg class="w-4 h-4 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                 <span>Wischen zum Blättern</span>
                 <svg class="w-4 h-4 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>

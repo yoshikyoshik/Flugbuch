@@ -45,6 +45,7 @@
   "saveNewPWD": "Neues Passwort speichern",
   "tagline": "Dein Flugbuch, visualisiert in 3D.",
   "terms": "AGB",
+  "swipeToScroll": "Wischen zum Blättern",
   
   "achievements": {
     "progress": "Fortschritt",
@@ -240,14 +241,19 @@
     "registerSuccessTitle": "Registrierung erfolgreich!",
     "resetEmailSentBody": "Falls ein Konto existiert, wurde ein Reset-Link verschickt.",
     "resetEmailSentTitle": "E-Mail gesendet",
-    "welcomeBack": "Willkommen zurück!"
+    "welcomeBack": "Willkommen zurück!",
+    "passwordChangedSuccess": "Dein Passwort wurde erfolgreich geändert.",
+    "passwordChangedError": "Das Passwort konnte nicht geändert werden."
   },
   "billing": {
     "noSubFound": "Keine aktiven Abonnements gefunden.",
     "restoreFailed": "Wiederherstellung fehlgeschlagen.",
     "restoreInfoTitle": "Info",
     "restoreSuccessDesc": "Käufe erfolgreich wiederhergestellt.",
-    "restoreSuccessTitle": "Erfolgreich"
+    "restoreSuccessTitle": "Erfolgreich",
+    "packageNotFound": "Paket nicht gefunden.",
+    "welcomePro": "Willkommen bei AvioSphere Pro!",
+    "noStoreConnection": "Keine Verbindung zum Store."
   },
   "burgerMenu": {
     "achievements": "Errungenschaften",
@@ -268,7 +274,9 @@
     "newFlight": "Neuer Flug",
     "stats": "Statistiken",
     "toggleMode": "Modus wechseln",
-    "trips": "Meine Reisen"
+    "trips": "Meine Reisen",
+    "exitDemo": "Demo Beenden"
+
   },
   "charts": {
     "distanceOverTime": "Distanz pro Zeitraum (km)",
@@ -400,7 +408,8 @@
     "to": "Zielort (IATA/Name)",
     "tripLabel": "Reise / Trip (Optional)",
     "tripNone": "-- Keine Reise / Einzelflug --",
-    "yes": "Ja, löschen"
+    "yes": "Ja, löschen",
+    "edit": "Bearbeiten"
   },
   "globe": {
     "buttonNormalMode": "🚀 Normaler Modus",
@@ -469,7 +478,8 @@
     "upsellWarning": "Du bist im <b>Free-Tarif</b>. Es werden nur die neuesten 15 Flüge importiert.",
     "upsellButton": "🚀 PRO freischalten für alle {count} Flüge!",
     "promoTitle": "Wechselst du von MyFlightradar24 oder App in the Air?",
-    "promoSub": "Lade deinen CSV-Export hoch. Wir erkennen das Format automatisch!"
+    "promoSub": "Lade deinen CSV-Export hoch. Wir erkennen das Format automatisch!",
+    "maxFlightsReached": "Du hast bereits die maximale Anzahl an Flügen gespeichert."
   },
   "landing": {
     "AcceptingRegPrivacy": "Datenschutz",
@@ -529,13 +539,16 @@
     "routeSeparator": "nach",
     "summary": "({count} Flüge / {distance} km)",
     "title": "Logbuch-Ansichten",
-    "unknown": "Unbekannt"
+    "unknown": "Unbekannt",
+    "relatedFlights": "Zugehörige Flüge"
   },
   "map": {
     "animationFailed": "Animation fehlgeschlagen.",
     "animationProgress": "Flug {number} / {total}: {date} von {dep} nach {arr}",
     "arrival": "Ankunft",
-    "departure": "Abflug"
+    "departure": "Abflug",
+    "flightsCount": "{count} Flüge",
+    "airport": "Flughafen"
   },
   "messages": {
     "confirmDelete": "Möchtest du diesen Flug wirklich unwiderruflich löschen?",
@@ -732,7 +745,8 @@
     "statImageError": "Konnte Statistik-Bild nicht erstellen.",
     "successTitle": "Gespeichert",
     "statsTitle": "AvioSphere-Statistiken",
-    "statsText": "Meine Flugstatistiken auf AvioSphere! ✈️📊"
+    "statsText": "Meine Flugstatistiken auf AvioSphere! ✈️📊",
+    "prepDescBoardingPass": "Bordkarte wird exportiert..."
   },
   "stats": {
     "aircraftTypeCount": "{type} ({count}x)",
@@ -806,7 +820,10 @@
     "loading": "Lade Reisen...",
     "promptName": "Name der neuen Reise (z.B. 'Sommerurlaub 2024'):",
     "noFlightsLoaded": "Keine Flüge geladen.",
-    "noTripsCreated": "Sie haben noch keine Reisen erstellt."
+    "noTripsCreated": "Sie haben noch keine Reisen erstellt.",
+    "prev": "Vorherige Reise",
+    "next": "Nächste Reise",
+    "routing": "Routing"
   },
   "tutorial": {
     "button": "Verstanden, los geht's!",
@@ -913,7 +930,8 @@
     "overlayInstruction": "Wenn du die App jetzt neu installierst, klicke den Link in WhatsApp nach der Installation bitte ein zweites Mal an!",
     "btnStore": "App herunterladen",
     "btnBrowser": "Im Browser fortfahren",
-    "loginFirst": "Bitte logge dich ein, um die Einladung anzunehmen."
+    "loginFirst": "Bitte logge dich ein, um die Einladung anzunehmen.",
+    "loginFirstFriend": "Bitte logge dich zuerst ein, um den Freund hinzuzufügen."
   },
 
   "live": {
@@ -931,13 +949,19 @@
     "statusCancelled": "STORNIERT",
     "statusScheduled": "GEPLANT",
     "statusOffline": "OFFLINE",
-    "unknownAirline": "Unbekannte Airline"
+    "unknownAirline": "Unbekannte Airline",
+    "refresh": "Live-Daten aktualisieren"
   },
 
 "sync": {
     "autoSyncTitle": "✨ Auto-Sync",
     "autoSyncSuccessSingle": "Flugdaten für {flight} wurden automatisch vervollständigt (Reg: {reg}).",
     "autoSyncSuccessMultiple": "{count} Flüge wurden im Hintergrund mit Live-Daten vervollständigt!"
+  },
+
+"boardingPass": {
+  "myPhotos": "Meine Fotos",
+  "coverPhoto": "Titelbild:"
   }
 
 }
