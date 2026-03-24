@@ -32,32 +32,40 @@ async function initializeBilling(userId) {
             const customerInfo = await Purchases.getCustomerInfo();
             await handleCustomerInfo(customerInfo);
 
-            // === 🚀 GOOGLE PLAY PREISE LADEN & UI UPDATEN ===
+            // === 🚀 GOOGLE PLAY PREISE LADEN & UI UPDATEN (MIT FALLBACK) ===
             try {
                 const offerings = await Purchases.getOfferings();
                 
                 if (offerings.current !== null) {
-                    // 1. Die internen Preise mit den exakten Google-Strings (z.B. "$ 19.99") überschreiben
+                    // 1. Preise erfolgreich geladen!
                     if (offerings.current.monthly && offerings.current.monthly.product) {
                         pricingConfig.monthly.amount = offerings.current.monthly.product.priceString;
                     }
                     if (offerings.current.annual && offerings.current.annual.product) {
                         pricingConfig.yearly.amount = offerings.current.annual.product.priceString;
                     }
-                    
-                    // 2. Erlaubnis-Schalter umlegen! Ab jetzt dürfen die Preise angezeigt werden.
-                    window.nativePricesLoaded = true;
                     console.log("Native Google Play Preise erfolgreich geladen!");
-                    
-                    // 3. Wenn das Premium-Fenster gerade offen ist, sofort das UI aktualisieren
-                    if (typeof switchPlan === 'function' && typeof selectedPlan !== 'undefined') {
-                        switchPlan(selectedPlan);
-                    }
+                } else {
+                    // FEHLER 1: RevenueCat liefert null (z.B. Offerings nicht richtig konfiguriert)
+                    console.warn("Offerings sind null. Testumgebung oder RevenueCat nicht konfiguriert?");
+                    pricingConfig.monthly.amount = "Im Store ansehen";
+                    pricingConfig.yearly.amount = "Im Store ansehen";
                 }
             } catch (pricingError) {
+                // FEHLER 2: Netzwerkfehler oder Google Play Dienste nicht erreichbar
                 console.warn("Konnte native Google-Preise nicht laden:", pricingError);
+                pricingConfig.monthly.amount = "Preis im Store prüfen";
+                pricingConfig.yearly.amount = "Preis im Store prüfen";
+            } finally {
+                // 2. EGAL was passiert ist: Wir schalten das UI frei!
+                window.nativePricesLoaded = true;
+                
+                // 3. UI aktualisieren (Das "Lade Preis..." verschwindet garantiert!)
+                if (typeof switchPlan === 'function' && typeof selectedPlan !== 'undefined') {
+                    switchPlan(selectedPlan);
+                }
             }
-            // ==================================================
+            // =================================================================
 
         } catch (error) {
             console.error("RevenueCat Initialisierungsfehler:", error);
