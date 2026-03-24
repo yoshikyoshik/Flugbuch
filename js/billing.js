@@ -17,7 +17,7 @@ async function initializeBilling(userId) {
 
             await Purchases.setLogLevel({ level: "DEBUG" });
             
-            // API Key konfigurieren (Vergiss nicht, deinen Key hier einzusetzen!)
+            // API Key konfigurieren
             await Purchases.configure({ apiKey: "goog_EfxrsdCgCxHiDvkvWYBemInPHxn" });
 
             // Login mit Supabase ID
@@ -25,29 +25,48 @@ async function initializeBilling(userId) {
                 await Purchases.logIn({ appUserID: userId });
             }
 
-            // --- ✅ NEU: CACHE ZWINGEND LÖSCHEN ---
-            // Das sorgt dafür, dass RevenueCat sofort eine Netzwerk-Anfrage an Google sendet,
-            // statt die alten (gespeicherten) Daten zu nutzen.
-            // Das simuliert exakt dein "Manuelles Cache Löschen"!
+            // Cache zwingend löschen (für frische Daten von Google)
             await Purchases.invalidateCustomerInfoCache();
-            // ----------------------------------------
 
-            // Jetzt den Status prüfen (diesmal holt er garantiert frische Daten)
-            await checkNativeSubscriptionStatus();
+            // Status prüfen
+            const customerInfo = await Purchases.getCustomerInfo();
+            await handleCustomerInfo(customerInfo);
 
-            // Listener registrieren
-            Purchases.addCustomerInfoUpdateListener(async (info) => {
-                console.log("Billing: Listener Event empfangen", info);
-                await handleCustomerInfo(info);
-            });
+            // === 🚀 GOOGLE PLAY PREISE LADEN & UI UPDATEN ===
+            try {
+                const offerings = await Purchases.getOfferings();
+                
+                if (offerings.current !== null) {
+                    // 1. Die internen Preise mit den exakten Google-Strings (z.B. "$ 19.99") überschreiben
+                    if (offerings.current.monthly && offerings.current.monthly.product) {
+                        pricingConfig.monthly.amount = offerings.current.monthly.product.priceString;
+                    }
+                    if (offerings.current.annual && offerings.current.annual.product) {
+                        pricingConfig.yearly.amount = offerings.current.annual.product.priceString;
+                    }
+                    
+                    // 2. Erlaubnis-Schalter umlegen! Ab jetzt dürfen die Preise angezeigt werden.
+                    window.nativePricesLoaded = true;
+                    console.log("Native Google Play Preise erfolgreich geladen!");
+                    
+                    // 3. Wenn das Premium-Fenster gerade offen ist, sofort das UI aktualisieren
+                    if (typeof switchPlan === 'function' && typeof selectedPlan !== 'undefined') {
+                        switchPlan(selectedPlan);
+                    }
+                }
+            } catch (pricingError) {
+                console.warn("Konnte native Google-Preise nicht laden:", pricingError);
+            }
+            // ==================================================
 
-            isBillingInitialized = true;
         } catch (error) {
-            console.error("Billing: Init Fehler:", error);
+            console.error("RevenueCat Initialisierungsfehler:", error);
         }
     } else {
-        console.log("Billing: Web Umgebung (Stripe).");
+        console.log("Billing: Web Umgebung erkannt. Verwende Stripe.");
     }
+    
+    isBillingInitialized = true;
 }
 
 /**
