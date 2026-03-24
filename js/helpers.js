@@ -195,7 +195,22 @@ function switchPlan(plan) {
 
   const amountEl = document.getElementById("premium-price-amount");
   const periodEl = document.getElementById("premium-price-period");
-  if (amountEl) amountEl.textContent = config.amount;
+  
+  if (amountEl) {
+    // === 🚀 DIE GOOGLE-SCHUTZ-WEICHE ===
+    const isNativeApp = typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform();
+    
+    if (isNativeApp) {
+        // In der Android/iOS App zeigen wir vorerst nur "Lade..." an.
+        // Dein RevenueCat-Plugin überschreibt das kurz darauf mit dem echten Google-Play-Preis (z.B. $17.99).
+        amountEl.textContent = "Lade Preis...";
+    } else {
+        // Auf der Webseite nutzen wir die festen Stripe-Euro-Preise aus der config.js
+        amountEl.textContent = config.amount;
+    }
+    // ===================================
+  }
+
   if (periodEl) {
     const translatedPeriod = getTranslation(config.periodKey);
     periodEl.textContent = translatedPeriod || config.fallbackPeriod;
