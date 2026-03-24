@@ -196,15 +196,21 @@ function switchPlan(plan) {
   const amountEl = document.getElementById("premium-price-amount");
   const periodEl = document.getElementById("premium-price-period");
   
-  if (amountEl) {
-    // === 🚀 DIE SCHLAUE GOOGLE-SCHUTZ-WEICHE ===
+  // === 🚀 DIE SCHLAUE GOOGLE-SCHUTZ-WEICHE ===
     const isNativeApp = typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform();
     
-    // Wenn Nativ UND die echten Preise wurden noch NICHT geladen -> Platzhalter zeigen
     if (isNativeApp && !window.nativePricesLoaded) {
         amountEl.textContent = "Lade Preis...";
+        
+        // ULTIMATIVER FALLBACK: Wenn nach 3 Sekunden immer noch keine Preise 
+        // von RevenueCat da sind, beenden wir das Laden automatisch!
+        setTimeout(() => {
+            if (!window.nativePricesLoaded && amountEl.textContent === "Lade Preis...") {
+                amountEl.textContent = "Im Store ansehen";
+            }
+        }, 3000);
+        
     } else {
-        // Ansonsten (Web-Modus ODER native Preise sind da) -> Echten Preis zeigen!
         amountEl.textContent = config.amount;
     }
     // ===================================
@@ -215,7 +221,7 @@ function switchPlan(plan) {
     periodEl.textContent = translatedPeriod || config.fallbackPeriod;
     periodEl.setAttribute("data-i18n", config.periodKey);
   }
-}
+
 
 function updateLockVisuals() {
   const globeBtn = document.getElementById("show-globe-btn");
