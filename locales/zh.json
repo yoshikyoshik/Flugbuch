@@ -411,8 +411,10 @@
     "edit": "编辑",
     "flightNumberPlaceholder": "LH123",
     "aircraftTypePlaceholder": "A340",
-    "REGISTRATIONPLACEHOLDER": "TC-RBB",
-    "noPhotoSelected": "未选择照片"
+    "registrationPlaceholder": "TC-RBB",
+    "noPhotoSelected": "未选择照片",
+    "airlinePlaceholder": "汉莎航空",
+    "airportPlaceholder": "FRA"
   },
   "globe": {
     "buttonNormalMode": "🚀 正常模式",
@@ -773,7 +775,8 @@
     "totalFlights": "总航班数",
     "totalSpending": "总花费",
     "yearlySummary": "年度总结",
-    "yearlySummaryContent": "{count} 次航班 | {distance} 公里"
+    "yearlySummaryContent": "{count} 次航班 | {distance} 公里",
+    "distance": "距离"
   },
   "tabs": {
     "achievements": "成就",
@@ -965,7 +968,7 @@
     "aircraft": "机型",
     "registration": "注册号",
     "distance": "距离",
-    "flighttime": "飞行时间",
+    "flightTime": "飞行时间",
     "notes": "备注"
   }
 }

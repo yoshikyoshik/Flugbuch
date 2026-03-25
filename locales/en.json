@@ -411,8 +411,10 @@
     "edit": "Edit",
     "flightNumberPlaceholder": "LH123",
     "aircraftTypePlaceholder": "A340",
-    "REGISTRATIONPLACEHOLDER": "TC-RBB",
-    "noPhotoSelected": "No photo selected"
+    "registrationPlaceholder": "TC-RBB",
+    "noPhotoSelected": "No photo selected",
+    "airlinePlaceholder": "Lufthansa",
+    "airportPlaceholder": "FRA"
   },
   "globe": {
     "buttonNormalMode": "🚀 Normal Mode",
@@ -777,7 +779,8 @@
     "totalFlights": "Total Flights",
     "totalSpending": "Total Spending",
     "yearlySummary": "Yearly Summary",
-    "yearlySummaryContent": "{count} Flights | {distance} km"
+    "yearlySummaryContent": "{count} Flights | {distance} km",
+    "distance": "Distance"
   },
   "tabs": {
     "achievements": "Achievements",
@@ -969,7 +972,7 @@
     "aircraft": "Aircraft Type",
     "registration": "Registration",
     "distance": "Distance",
-    "flighttime": "Flight Time",
+    "flightTime": "Flight Time",
     "notes": "Notes"
   }
 

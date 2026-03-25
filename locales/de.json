@@ -35,7 +35,7 @@
   "mapVisualization": "Visualisierung: {depName} ({depCode}) → {arrName} ({arrCode}).",
   "newMail4Link4PWD": "Gib deine E-Mail-Adresse ein, um einen Link zum Zurücksetzen deines Passworts zu erhalten.",
   "newPWD": "Gib dein neues Passwort ein",
-  "notesNewFlight": "Bemerkungen (Optional",
+  "notesNewFlight": "Bemerkungen (Optional)",
   "priceNewFlight": "Ticketpreis (Optional)",
   "privacy": "Datenschutz",
   "regTermsPrefix": "Mit der Registrierung akzeptierst du unsere",
@@ -412,8 +412,10 @@
     "edit": "Bearbeiten",
     "flightNumberPlaceholder": "LH123",
     "aircraftTypePlaceholder": "A340",
-    "REGISTRATIONPLACEHOLDER": "TC-RBB",
-    "noPhotoSelected": "Kein Foto ausgewählt"
+    "registrationPlaceholder": "TC-RBB",
+    "noPhotoSelected": "Kein Foto ausgewählt",
+    "airlinePlaceholder": "Lufthansa",
+    "airportPlaceholder": "FRA"
   },
   "globe": {
     "buttonNormalMode": "🚀 Normaler Modus",
@@ -778,7 +780,8 @@
     "totalFlights": "Gesamte Flüge",
     "totalSpending": "Gesamtausgaben",
     "yearlySummary": "Jahreszusammenfassung",
-    "yearlySummaryContent": "{count} Flüge | {distance} km"
+    "yearlySummaryContent": "{count} Flüge | {distance} km",
+    "distance": "Distanz"
   },
   "tabs": {
     "achievements": "Errungenschaften",
@@ -970,7 +973,7 @@
   "aircraft": "Flugzeugtyp",
   "registration": "Registrierung",
   "distance": "Distanz",
-  "flighttime": "Flugzeit",
+  "flightTime": "Flugzeit",
   "notes": "Notizen"
   }
 

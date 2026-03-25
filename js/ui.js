@@ -729,21 +729,19 @@ window.renderFlights = async function (
             <div class="relative z-10">
                 ${actionButtonsHtml}
 
-                <div class="flex justify-between items-start mb-6 pr-8">
-                    <div class="flex flex-col gap-2">
-                        <div class="flex items-center gap-2">
-                            <div class="bg-surface-container-low dark:bg-slate-700 px-3 py-1 rounded-full shadow-inner flex items-center gap-1.5" title="${getTranslation("flights.flightNumberTitle") || 'Flugnummer'}">
-                                <span class="w-2 h-2 rounded-full ${dotColor}"></span>
-                                <span class="font-display text-[10px] font-bold text-on-surface/70 dark:text-slate-300 uppercase tracking-wider">
-                                    #${flight.flightLogNumber || "-"} • ${formattedDate}
-                                </span>
-                            </div>
-                            ${tripBadge}
+                <div class="flex flex-wrap justify-between items-start mb-6 gap-3">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <div class="bg-surface-container-low dark:bg-slate-700 px-3 py-1 rounded-full shadow-inner flex items-center gap-1.5" title="${getTranslation("flights.flightNumberTitle") || 'Flugnummer'}">
+                            <span class="w-2 h-2 rounded-full ${dotColor}"></span>
+                            <span class="font-display text-[10px] font-bold text-on-surface/70 dark:text-slate-300 uppercase tracking-wider">
+                                #${flight.flightLogNumber || "-"} • ${formattedDate}
+                            </span>
                         </div>
+                        ${tripBadge}
                     </div>
-                    <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-3 ml-auto">
                         ${logoHtml}
-                        <h3 class="font-display text-xl md:text-2xl font-bold tracking-tight text-on-surface dark:text-white">
+                        <h3 class="font-display text-xl md:text-2xl font-bold tracking-tight text-on-surface dark:text-white truncate">
                             ${flight.flightNumber || '-'}
                         </h3>
                     </div>
@@ -752,10 +750,10 @@ window.renderFlights = async function (
                 <div class="flex items-center justify-between mb-8">
                     <div class="flex flex-col">
                         <p class="font-display text-4xl md:text-5xl font-extrabold text-primary dark:text-indigo-400 tracking-tighter leading-none">${flight.departure || 'N/A'}</p>
-                        <p class="text-[10px] md:text-xs font-medium text-on-surface/60 dark:text-slate-400 mt-1 max-w-[100px] md:max-w-[150px] truncate" title="${depName}">${depName}</p>
+                        <p class="text-[10px] md:text-xs font-medium text-on-surface/60 dark:text-slate-400 mt-1 max-w-[120px] md:max-w-[150px] line-clamp-2 leading-tight" title="${depName}">${depName}</p>
                     </div>
                     
-                    <div class="flex-1 px-4 md:px-8 relative flex items-center justify-center">
+                    <div class="flex-1 px-2 md:px-8 relative flex items-center justify-center">
                         <div class="h-[2px] w-full bg-gradient-to-r from-transparent via-outline-variant/50 dark:via-slate-500 to-transparent relative">
                             <span class="material-symbols-outlined absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-outline-variant dark:text-slate-400 bg-surface-container-lowest dark:bg-slate-800 px-2 text-xl" style="font-variation-settings: 'FILL' 1;">flight</span>
                         </div>
@@ -763,7 +761,7 @@ window.renderFlights = async function (
 
                     <div class="flex flex-col items-end">
                         <p class="font-display text-4xl md:text-5xl font-extrabold text-primary dark:text-indigo-400 tracking-tighter leading-none">${flight.arrival || 'N/A'}</p>
-                        <p class="text-[10px] md:text-xs font-medium text-on-surface/60 dark:text-slate-400 mt-1 max-w-[100px] md:max-w-[150px] truncate text-right" title="${arrName}">${arrName}</p>
+                        <p class="text-[10px] md:text-xs font-medium text-on-surface/60 dark:text-slate-400 mt-1 max-w-[120px] md:max-w-[150px] line-clamp-2 text-right leading-tight" title="${arrName}">${arrName}</p>
                     </div>
                 </div>
 

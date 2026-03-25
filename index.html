@@ -222,7 +222,7 @@
       class="hidden relative z-10 flex flex-col items-center justify-start w-full px-0 sm:px-4 pt-0 sm:pt-10 pb-14 md:pb-8"
     >
       <div
-        class="w-full max-w-4xl bg-transparent sm:bg-surface-container-lowest/90 sm:dark:bg-slate-900/80 sm:backdrop-blur-3xl sm:shadow-2xl rounded-none sm:rounded-[2.5rem] px-3 py-4 sm:p-8 md:p-12 sm:border border-outline-variant/20 dark:border-slate-800"
+        class="w-full max-w-4xl bg-transparent sm:bg-surface-container-lowest/90 sm:dark:bg-slate-900/80 sm:backdrop-blur-3xl sm:shadow-2xl rounded-none sm:rounded-[2.5rem] px-3 pb-4 pt-[max(1.5rem,env(safe-area-inset-top))] sm:p-8 md:p-12 sm:border border-outline-variant/20 dark:border-slate-800"
       >
         <div class="flex justify-between items-center mb-10">
           <div id="app-header-logo" class="flex items-center gap-4 cursor-pointer select-none">
@@ -763,9 +763,9 @@
               </div>
               <div
                 id="flight-log-list"
-                class="space-y-3 max-h-96 overflow-y-auto pr-2"
+                class="space-y-3 max-h-[65vh] overflow-y-auto pr-2"
               ></div>
-              <div id="pagination-controls" class="mt-8 mb-0 flex justify-center items-center gap-4 w-full">
+              <div id="pagination-controls" class="mt-4 mb-0 flex justify-center items-center gap-4 w-full">
                 <button id="prev-page-btn" onclick="prevPage()" class="p-4 bg-surface-container-low dark:bg-slate-800 text-primary dark:text-indigo-400 font-bold rounded-2xl hover:bg-surface-container-highest dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-sm border border-outline-variant/10 dark:border-slate-700 flex items-center justify-center">
                   <span class="material-symbols-outlined text-2xl">chevron_left</span>
                 </button>
