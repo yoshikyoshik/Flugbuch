@@ -408,7 +408,11 @@
     "tripLabel": "行程 (可选)",
     "tripNone": "-- 无行程 / 单次航班 --",
     "yes": "是的，删除",
-    "edit": "编辑"
+    "edit": "编辑",
+    "flightNumberPlaceholder": "LH123",
+    "aircraftTypePlaceholder": "A340",
+    "REGISTRATIONPLACEHOLDER": "TC-RBB",
+    "noPhotoSelected": "未选择照片"
   },
   "globe": {
     "buttonNormalMode": "🚀 正常模式",
@@ -430,6 +434,7 @@
     "visits": "访问次数"
   },
   "help": {
+    "subtitle": "支持与信息",
     "collapse": "折叠",
     "data": {
       "content": "在右上角的汉堡菜单(≡)中，您可以将所有航班数据导出为JSON或CSV文件（备份！）。您也可以导入JSON文件（注意：这将覆盖所有当前数据）。在那里您还可以找到深色模式开关和语言选择。",
@@ -956,6 +961,11 @@
 
 "boardingPass": {
     "myPhotos": "我的照片",
-    "coverPhoto": "封面图片:"
+    "coverPhoto": "封面图片:",
+    "aircraft": "机型",
+    "registration": "注册号",
+    "distance": "距离",
+    "flighttime": "飞行时间",
+    "notes": "备注"
   }
 }

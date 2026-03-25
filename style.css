@@ -447,3 +447,30 @@ input:focus, select:focus, textarea:focus {
     border-color: rgba(67, 56, 202, 0.4) !important;
     background-color: rgba(30, 27, 75, 0.6) !important;
 }
+
+/* === 🚀 BOTTOM NAVIGATION GLOW-UP (BOOSTED) === */
+      /* 1. Inaktive Tabs: Feine Outlines */
+      .tab-btn .material-symbols-outlined {
+          font-variation-settings: 'FILL' 0;
+          transition: font-variation-settings 0.3s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+
+      /* 2. Aktive Tabs: Knackiger Background & strahlende Farbe */
+      .tab-btn.active {
+          background-color: rgba(79, 70, 229, 0.15) !important; /* Kräftiges Indigo (Light Mode) */
+          color: #4f46e5 !important; 
+      }
+
+      /* Dark Mode: Leuchtendes Cyan (passend zu deinen Flug-Routen) */
+      .dark .tab-btn.active {
+          background-color: rgba(34, 211, 238, 0.15) !important; 
+          color: #22d3ee !important; 
+      }
+
+      /* 3. Aktive Tabs: Füllen, anheben & ECHTER GLOW-EFFEKT */
+      .tab-btn.active .material-symbols-outlined {
+          font-variation-settings: 'FILL' 1 !important;
+          transform: translateY(-3px) scale(1.15); /* Etwas stärker angehoben */
+          filter: drop-shadow(0 0 8px currentColor); /* 🚀 DAS erzeugt das Leuchten! */
+      }
+      /* ==================================== */

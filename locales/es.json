@@ -408,7 +408,11 @@
     "tripLabel": "Viaje (Opcional)",
     "tripNone": "-- Ningún Viaje / Vuelo Único --",
     "yes": "Sí, eliminar",
-    "edit": "Editar"
+    "edit": "Editar",
+    "flightNumberPlaceholder": "LH123",
+    "aircraftTypePlaceholder": "A340",
+    "REGISTRATIONPLACEHOLDER": "TC-RBB",
+    "noPhotoSelected": "Ninguna foto seleccionada"
   },
   "globe": {
     "buttonNormalMode": "🚀 Modo Normal",
@@ -430,6 +434,7 @@
     "visits": "Visitas"
   },
   "help": {
+    "subtitle": "Soporte e información",
     "collapse": "Ocultar",
     "data": {
       "content": "En el Menú de Hamburguesa (≡) arriba a la derecha, puedes exportar todos tus datos de vuelo como un archivo JSON o CSV (¡Copia de seguridad!). También puedes importar un archivo JSON (Atención: Esto sobrescribe todos los datos actuales). Allí también encontrarás el interruptor del Modo Oscuro y la selección de idioma.",
@@ -956,7 +961,12 @@
 
 "boardingPass": {
     "myPhotos": "Mis fotos",
-    "coverPhoto": "Foto de portada:"
+    "coverPhoto": "Foto de portada:",
+    "aircraft": "Tipo de avión",
+    "registration": "Matrícula",
+    "distance": "Distancia",
+    "flighttime": "Tiempo de vuelo",
+    "notes": "Notas"
   }
 
 }

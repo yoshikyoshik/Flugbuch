@@ -505,86 +505,67 @@ function showFlightDisambiguationModal(flights) {
 
 // TABS
 function showTab(tabName) {
-  // 🚀 NEU: Profil im Demo-Modus blockieren!
+  // 🚀 Profil im Demo-Modus blockieren!
   if (tabName === 'profil' && typeof isDemoMode !== 'undefined' && isDemoMode) {
       showMessage(getTranslation("toast.infoTitle") || "Hinweis", getTranslation("profile.demoTabDisabled") || "Das Profil ist im Demo-Modus nicht verfügbar.", "info");
-      return; // Bricht ab, der Tab wird nicht gewechselt
+      return; 
   }
+  
   // Alle Inhalte verstecken
-  document.getElementById("tab-content-stats").classList.add("hidden");
-  document.getElementById("tab-content-charts").classList.add("hidden");
-  document.getElementById("tab-content-logbook").classList.add("hidden");
-  document.getElementById("tab-content-fluege").classList.add("hidden");
-  document.getElementById("tab-content-neue-fluege").classList.add("hidden");
-  document.getElementById("tab-content-achievements").classList.add("hidden");
-  document.getElementById("tab-content-hilfe").classList.add("hidden");
+  document.getElementById("tab-content-stats")?.classList.add("hidden");
+  document.getElementById("tab-content-charts")?.classList.add("hidden");
+  document.getElementById("tab-content-logbook")?.classList.add("hidden");
+  document.getElementById("tab-content-fluege")?.classList.add("hidden");
+  document.getElementById("tab-content-neue-fluege")?.classList.add("hidden");
+  document.getElementById("tab-content-achievements")?.classList.add("hidden");
+  document.getElementById("tab-content-hilfe")?.classList.add("hidden");
   document.getElementById("tab-content-trips")?.classList.add("hidden");
   document.getElementById("tab-content-profil")?.classList.add("hidden");
 
-  // 1. Zuerst ALLE Buttons auf "inaktiv" setzen
+  // === 1. Zuerst ALLE Buttons auf "inaktiv" setzen ===
   document.querySelectorAll(".tab-btn").forEach((btn) => {
-    // Entferne das aktive Pillen-Styling
+    // 🧹 Wir putzen ALLE alten, harten Tailwind-Farbklassen rigoros weg
     btn.classList.remove(
       "bg-white", "shadow-md", "text-indigo-900", "font-extrabold",
-      "dark:bg-indigo-500", "dark:text-white"
-    );
-    // Setze das inaktive Styling (angepasst an den kräftigeren Hintergrund)
-    btn.classList.add(
-      "font-medium", 
-      "text-indigo-800/70", "hover:text-indigo-900", "hover:bg-indigo-300/50",
-      "dark:text-indigo-300/70", "dark:hover:text-indigo-100", "dark:hover:bg-indigo-800/50"
+      "dark:bg-indigo-500", "dark:text-white",
+      "font-medium", "text-indigo-800/70", "hover:text-indigo-900", "hover:bg-indigo-300/50",
+      "dark:text-indigo-300/70", "dark:hover:text-indigo-100", "dark:hover:bg-indigo-800/50",
+      "active" // Nimmt unseren neuen Leucht-Effekt weg
     );
   });
 
-  // 2. Den AKTIVEN Button extrem stark hervorheben ("Pillen"-Effekt)
+  // === 2. Den AKTIVEN Button hervorheben ===
   const activeBtn = document.getElementById(`tab-btn-${tabName}`);
   const activeContent = document.getElementById(`tab-content-${tabName}`);
   
   if (activeBtn && activeContent) {
     activeContent.classList.remove("hidden");
     
-    // Entferne das inaktive Styling
-    activeBtn.classList.remove(
-      "font-medium",
-      "text-indigo-800/70", "hover:text-indigo-900", "hover:bg-indigo-300/50",
-      "dark:text-indigo-300/70", "dark:hover:text-indigo-100", "dark:hover:bg-indigo-800/50"
-    );
-    // Füge das stark abhebende "Pillen"-Styling hinzu
-    activeBtn.classList.add(
-      "bg-white", "shadow-md", "text-indigo-900", "font-extrabold",
-      "dark:bg-indigo-500", "dark:text-white"
-    );
+    // 🚀 HIER KOMMT DIE MAGIE: Wir setzen einfach nur "active" und das CSS macht den Rest!
+    activeBtn.classList.add("active");
   }
 
-  if (tabName === "logbook") {
-    renderLogbookView("aircraftType");
-  }
-  if (tabName === "achievements") {
-    updateAchievements();
-  }
-  if (tabName === "hilfe") {
-    renderHelpContent();
-  }
-  if (tabName === "trips") {
-    renderTripManager();
-  }
-  // HIER EINFÜGEN: Sorgt dafür, dass die Karte im versteckten Zustand nicht kaputtgeht
+  // Tab-spezifische Funktionen laden
+  if (tabName === "logbook") renderLogbookView("aircraftType");
+  if (tabName === "achievements") updateAchievements();
+  if (tabName === "hilfe") renderHelpContent();
+  if (tabName === "trips") renderTripManager();
+  
   if (tabName === "fluege") {
     if (typeof map !== 'undefined' && map) {
         setTimeout(() => { map.invalidateSize(); }, 50);
     }
   }
 
-  // 🚀 NEU: Den aktiven Button in der Nav-Leiste in den sichtbaren Bereich scrollen
+  // Den aktiven Button in der Nav-Leiste in den sichtbaren Bereich scrollen
   const targetBtn = document.getElementById(`tab-btn-${tabName}`);
   if (targetBtn) {
       targetBtn.scrollIntoView({ 
           behavior: 'smooth', 
-          inline: 'center',  // Scrollt den Button schön in die Mitte der Leiste
+          inline: 'center',  
           block: 'nearest' 
       });
   }
-
 }
 
 // RENDERING
