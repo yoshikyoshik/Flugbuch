@@ -1315,47 +1315,108 @@ window.deleteFlight = async function (id) {
 };
 
 /**
+window.cancelEditFlight = function() {
+    // 1. Wir merken uns die ID des Flugs, den wir gerade bearbeitet haben
+    const idField = document.getElementById("flight-id");
+    const flightIdToReopen = idField ? idField.value : null;
+    
+    // 2. Wir leeren das Formular ganz normal (ohne Absturz!)
+    if (typeof resetForm === 'function') resetForm();
+    
+    // 3. Wir öffnen die Bordkarte dieses Fluges sofort wieder!
+    if (flightIdToReopen && typeof viewFlightDetails === 'function') {
+        viewFlightDetails(flightIdToReopen);
+    }
+};
+*/
+
+/**
  * Setzt das Formular zurück und beendet den Bearbeitungsmodus.
  */
+// === 1. NUR LEEREN (Für den Reset-Button) ===
 window.resetForm = function () {
-  // Formularfelder leeren
-  document.getElementById("departure").value = "";
-  document.getElementById("arrival").value = "";
-  document.getElementById("flightDate").value = "";
-  document.getElementById("flightNumber").value = "";
-  document.getElementById("airline").value = "";
-  document.getElementById("aircraftType").value = "";
-  document.getElementById("notes").value = "";
-  document.getElementById("price").value = "";
-  document.getElementById("currency").value = "";
-  document.getElementById("registration").value = "";
+    // Bearbeitungsmodus beenden
+    if (typeof currentlyEditingFlightData !== 'undefined') {
+        currentlyEditingFlightData = null; 
+    }
 
-  // Foto-Feld und Vorschau zurücksetzen
-  document.getElementById("flightPhoto").value = null;
+    // Felder leeren
+    const inputsToClear = document.querySelectorAll('input[type="text"], input[type="date"], input[type="number"], input[type="time"], textarea');
+    inputsToClear.forEach(input => {
+        if (!input.id.includes('search') && !input.classList.contains('search-bar')) {
+            input.value = "";
+        }
+    });
 
-  // ✅ KORRIGIERT: Container bleibt sichtbar
-  document.getElementById("photo-preview-container").classList.remove("hidden");
+    const selectsToClear = document.querySelectorAll('select');
+    selectsToClear.forEach(select => {
+        select.selectedIndex = 0; 
+    });
 
-  // ✅ KORRIGIERT: Nur der Text wird zurückgesetzt
-  document.getElementById("photo-preview-text").textContent = getTranslation(
-    "form.noFileSelected"
-  );
+    // Buttons zurücksetzen
+    const logButton = document.getElementById("log-button");
+    if (logButton) {
+        logButton.textContent = (typeof getTranslation === 'function' ? getTranslation("flights.logFlightBtn") : null) || "Flug loggen und speichern";
+    }
 
-  // ✅ NEU: Auch die "existing"-Vorschau löschen
-  document.getElementById("existing-photos-preview").innerHTML = "";
+    const cancelBtn = document.getElementById("cancel-edit-button") || document.getElementById("cancel-edit-btn");
+    if (cancelBtn) {
+        cancelBtn.classList.add("hidden");
+    }
 
-  // Planespotters Vorschau zurücksetzen
-  if (typeof clearPlanespottersPreview === 'function') clearPlanespottersPreview();
+    // Metriken nullen
+    if (typeof updateFlightDetails === 'function') {
+        try { updateFlightDetails(); } catch(e) {}
+    }
+};
 
-  // Zustand zurücksetzen
-  currentlyEditingFlightData = null;
+// === 2. LEEREN UND ZURÜCKSPRINGEN (Für den Abbrechen-Button) ===
+window.cancelEditFlight = function () {
+    let previousFlightId = null;
+    
+    // ID vorher sichern!
+    if (typeof currentlyEditingFlightData !== 'undefined' && currentlyEditingFlightData !== null) {
+        previousFlightId = currentlyEditingFlightData.id || currentlyEditingFlightData.flight_id;
+    }
 
-  // UI zurücksetzen
-  const logButton = document.getElementById("log-button");
-  logButton.textContent = getTranslation("flights.logFlightBtn") || "Flug loggen und speichern";
-  document.getElementById("cancel-edit-button").classList.add("hidden");
+    // Formular leeren (ruft einfach die Funktion von oben auf)
+    resetForm();
 
-  updateFlightDetails(); // Setzt Distanz etc. zurück und deaktiviert den Button
+    // Zurück zur Bordkarte springen
+    if (previousFlightId) {
+        if (typeof showTab === 'function') {
+            showTab("fluege");
+        }
+        setTimeout(() => {
+            if (typeof viewFlightDetails === 'function') {
+                viewFlightDetails(previousFlightId);
+            }
+        }, 150);
+    }
+};
+
+// === NUR FELDER LEEREN (Für den Reset-Button) ===
+window.clearOnlyFields = function (event) {
+    // Falls es ein nativer Reset-Button ist, verhindern wir das Standard-Verhalten
+    if (event) event.preventDefault(); 
+
+    // Nur die Textfelder und Dropdowns leeren
+    const inputsToClear = document.querySelectorAll('input[type="text"], input[type="date"], input[type="number"], input[type="time"], textarea');
+    inputsToClear.forEach(input => {
+        if (!input.id.includes('search') && !input.classList.contains('search-bar')) {
+            input.value = "";
+        }
+    });
+
+    const selectsToClear = document.querySelectorAll('select');
+    selectsToClear.forEach(select => {
+        select.selectedIndex = 0; 
+    });
+
+    // Metriken (Distanz, CO2) wieder auf 0 setzen
+    if (typeof updateFlightDetails === 'function') {
+        try { updateFlightDetails(); } catch(e) {}
+    }
 };
 
 /**
@@ -3175,12 +3236,10 @@ async function createNewTrip() {
   }
 }
 
-// app.js - openTripManager (KORRIGIERT)
-
 window.renderTripManager = async function() {
   const container = document.getElementById("trips-content");
   if (!container) return;
-  container.innerHTML = `<p class="text-gray-500">${getTranslation("trips.loading") || "Lade Reisen..."}</p>`;
+  container.innerHTML = `<div class="col-span-full text-center py-8"><p class="text-on-surface/50 dark:text-slate-400 font-bold animate-pulse">${getTranslation("trips.loading") || "Lade Reisen..."}</p></div>`;
 
   // 1. Trips laden
   const { data: trips } = await supabaseClient
@@ -3192,17 +3251,17 @@ window.renderTripManager = async function() {
   const allFlights = await getFlights();
 
   if (!allFlights || allFlights.length === 0) {
-      container.innerHTML = `<p class="text-gray-500">${getTranslation("trips.noFlightsLoaded") || "Keine Flüge geladen."}</p>`;
+      container.innerHTML = `<div class="col-span-full text-center py-8"><p class="text-on-surface/50 dark:text-slate-400">${getTranslation("trips.noFlightsLoaded") || "Keine Flüge geladen."}</p></div>`;
       return;
   }
 
   if (!trips || trips.length === 0) {
-      container.innerHTML = `<p class="text-gray-500">${getTranslation("trips.noTripsCreated") || "Du hast noch keine Reisen angelegt."}</p>`;
+      container.innerHTML = `<div class="col-span-full text-center py-8"><p class="text-on-surface/50 dark:text-slate-400">${getTranslation("trips.noTripsCreated") || "Du hast noch keine Reisen angelegt."}</p></div>`;
       return;
   }
 
-  // 3. HTML bauen
-  let htmlContent = `<div class="space-y-6">`;
+  // 3. HTML bauen (Ohne den Wrapper-Div, damit das CSS-Grid aus der index.html greift!)
+  let htmlContent = ``;
 
   trips.forEach(trip => {
       const tripFlights = allFlights.filter(f => f.trip_id == trip.id);
@@ -3213,37 +3272,45 @@ window.renderTripManager = async function() {
       const totalPrice = tripFlights.reduce((sum, f) => sum + (f.price || 0), 0).toFixed(2);
       const currency = tripFlights.find(f => f.currency)?.currency || "";
 
-      // HTML für die Karte (jetzt klickbar mit Hover-Effekt!)
+      // HTML für die High-End Deep Space Karte
       htmlContent += `
-        <div onclick="viewTripDetails('${trip.id}')" class="bg-gray-50 dark:bg-gray-900/50 p-5 rounded-xl border border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 hover:shadow-md transition-all group">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-bold text-indigo-700 dark:text-indigo-400 group-hover:text-indigo-500 transition-colors">🏝️ ${trip.name}</h3>
-                <div class="flex items-center gap-2">
-                    <span class="text-sm font-semibold text-gray-500 px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded-full">${tripFlights.length} ${getTranslation("stats.flights") || "Flüge"}</span>
-                    <svg class="w-5 h-5 text-gray-400 group-hover:text-indigo-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+        <div onclick="viewTripDetails('${trip.id}')" class="bg-surface-container-lowest dark:bg-slate-800 p-6 md:p-8 rounded-[2.5rem] shadow-sm border border-outline-variant/20 dark:border-slate-700 cursor-pointer hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group flex flex-col h-full relative overflow-hidden">
+            
+            <div class="absolute -right-16 -top-16 w-32 h-32 bg-cyan-accent/5 rounded-full blur-2xl pointer-events-none group-hover:bg-cyan-accent/10 transition-colors"></div>
+
+            <div class="flex justify-between items-start mb-6 relative z-10">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-full bg-cyan-accent/10 flex items-center justify-center text-cyan-accent shrink-0">
+                        <span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">luggage</span>
+                    </div>
+                    <h3 class="text-xl font-display font-bold text-on-surface dark:text-white group-hover:text-primary dark:group-hover:text-indigo-400 transition-colors leading-tight pr-2">${trip.name}</h3>
+                </div>
+                <div class="flex items-center gap-1.5 bg-surface-container-low dark:bg-slate-900 px-3 py-1.5 rounded-xl border border-outline-variant/10 dark:border-slate-700/50 shrink-0">
+                    <span class="text-[10px] uppercase tracking-widest font-bold text-on-surface/60 dark:text-slate-400">${tripFlights.length} <span data-i18n="stats.flights">${getTranslation("stats.flights") || "Flüge"}</span></span>
+                    <span class="material-symbols-outlined text-[16px] text-on-surface/40 group-hover:text-primary transition-colors">chevron_right</span>
                 </div>
             </div>
             
-            <div class="grid grid-cols-3 gap-3 text-sm text-center mb-4">
-                <div class="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
-                    <div class="font-extrabold text-gray-800 dark:text-gray-200 text-lg">${totalDist.toLocaleString("de-DE")} km</div>
-                    <div class="text-xs text-gray-400 uppercase tracking-wide mt-1">${getTranslation("flights.sortDistance") || "Distanz"}</div>
+            <div class="grid grid-cols-3 gap-3 text-center mb-6 relative z-10">
+                <div class="bg-surface-container-low dark:bg-slate-900/50 p-4 rounded-2xl border border-outline-variant/10 dark:border-slate-700/50 flex flex-col justify-center">
+                    <div class="font-display font-black text-on-surface dark:text-white text-lg sm:text-xl">${totalDist.toLocaleString("de-DE")} km</div>
+                    <div class="text-[9px] text-on-surface/50 dark:text-slate-500 uppercase tracking-widest font-bold mt-1" data-i18n="flights.sortDistance">${getTranslation("flights.sortDistance") || "Distanz"}</div>
                 </div>
-                <div class="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
-                     <div class="font-extrabold text-green-600 dark:text-green-400 text-lg">${totalPrice} ${currency}</div>
-                     <div class="text-xs text-gray-400 uppercase tracking-wide mt-1">${getTranslation("stats.totalSpending") || "Kosten"}</div>
+                <div class="bg-surface-container-low dark:bg-slate-900/50 p-4 rounded-2xl border border-outline-variant/10 dark:border-slate-700/50 flex flex-col justify-center">
+                     <div class="font-display font-black text-green-600 dark:text-green-400 text-lg sm:text-xl">${totalPrice} <span class="text-sm">${currency}</span></div>
+                     <div class="text-[9px] text-on-surface/50 dark:text-slate-500 uppercase tracking-widest font-bold mt-1" data-i18n="stats.totalSpending">${getTranslation("stats.totalSpending") || "Kosten"}</div>
                 </div>
-                <div class="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
-                     <div class="font-extrabold text-orange-600 dark:text-orange-400 text-lg">${totalCO2.toLocaleString("de-DE")} kg</div>
-                     <div class="text-xs text-gray-400 uppercase tracking-wide mt-1">CO₂</div>
+                <div class="bg-surface-container-low dark:bg-slate-900/50 p-4 rounded-2xl border border-outline-variant/10 dark:border-slate-700/50 flex flex-col justify-center">
+                     <div class="font-display font-black text-orange-600 dark:text-orange-400 text-lg sm:text-xl">${totalCO2.toLocaleString("de-DE")} kg</div>
+                     <div class="text-[9px] text-on-surface/50 dark:text-slate-500 uppercase tracking-widest font-bold mt-1">CO₂</div>
                 </div>
             </div>
             
-            <div class="text-sm text-gray-600 dark:text-gray-400 space-y-2">
+            <div class="text-sm space-y-2 mt-auto relative z-10">
                 ${tripFlights.map(f => `
-                    <div class="flex justify-between items-center border-b border-gray-200 dark:border-gray-700 last:border-0 pb-2 last:pb-0">
-                        <span class="font-medium">✈️ ${f.departure} ➔ ${f.arrival}</span>
-                        <span class="text-xs bg-white dark:bg-gray-800 px-2 py-1 rounded">${f.date}</span>
+                    <div class="flex justify-between items-center bg-surface-container-low dark:bg-slate-900/30 px-4 py-3 rounded-xl border border-outline-variant/5 dark:border-slate-700/30">
+                        <span class="font-bold text-on-surface/80 dark:text-slate-300 flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-primary/50">flight_takeoff</span> ${f.departure} ➔ ${f.arrival}</span>
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-on-surface/50 dark:text-slate-500">${f.date}</span>
                     </div>
                 `).join('')}
             </div>
@@ -3251,7 +3318,6 @@ window.renderTripManager = async function() {
       `;
   });
 
-  htmlContent += `</div>`;
   container.innerHTML = htmlContent;
 };
 
@@ -3622,19 +3688,29 @@ window.viewFlightDetails = async function(id, isSwitching = false, customScope =
         userPhotosContainer.classList.add('hidden');
     }
 
-    // 7. Button Logik (Bearbeiten)
+    // 7. Button Logik (Bearbeiten & Löschen)
     const editBtn = document.getElementById('fd-edit-btn');
+    const deleteBtn = document.getElementById('fd-delete-btn'); // 🚀 NEU
+
     if (typeof isDemoMode !== 'undefined' && isDemoMode) {
-        // Im Demo-Modus wird der Stift komplett ausgeblendet
+        // Im Demo-Modus werden Edit & Delete komplett ausgeblendet
         if (editBtn) editBtn.style.display = 'none';
+        if (deleteBtn) deleteBtn.style.display = 'none';
     } else {
-        // Im normalen Modus ist der Stift sichtbar und klickbar
+        // Im normalen Modus sind Edit & Delete sichtbar und klickbar
         if (editBtn) {
             editBtn.style.display = ''; 
             editBtn.onclick = () => {
                 closeFlightDetails();
-                // 🚀 BUGHUNT-FIX: Wir nutzen die Original-ID aus dem Flug-Objekt (behält den Typ Zahl/String bei!)
                 if (typeof editFlight === 'function') editFlight(flight.id || flight.flight_id);
+            };
+        }
+        // 🚀 NEU: Lösch-Button Logik
+        if (deleteBtn) {
+            deleteBtn.style.display = ''; 
+            deleteBtn.onclick = () => {
+                closeFlightDetails(); // Karte schließen
+                if (typeof deleteFlight === 'function') deleteFlight(flight.id || flight.flight_id); // Löschen auslösen
             };
         }
     }

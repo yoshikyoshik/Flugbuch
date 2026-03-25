@@ -704,71 +704,116 @@ window.renderFlights = async function (
       const depName = (airportData && airportData[flight.departure]) ? airportData[flight.departure].name : flight.departure;
       const arrName = (airportData && airportData[flight.arrival]) ? airportData[flight.arrival].name : flight.arrival;
 
-      // Farbe für den Meilenstein-Kreis bestimmen
-      const milestoneColor = getMilestoneColor(flight.flightLogNumber);
+      // Farbe für den Meilenstein-Kreis bestimmen (wir filtern "bg-" und "text-white" raus für den kleinen Punkt)
+      const rawMilestoneColor = getMilestoneColor(flight.flightLogNumber) || "";
+      const dotColor = rawMilestoneColor.replace('bg-', 'bg-').replace('text-white', '').trim() || 'bg-indigo-500';
 
       const flightElement = document.createElement("div");
-      flightElement.className =
-        "bg-white dark:bg-gray-800 p-3 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 hover:shadow-lg transition flex justify-between items-start";
+      flightElement.className = "w-full max-w-3xl mx-auto relative group cursor-pointer mb-6";
+      
+      // Das Klick-Event wandert direkt auf den Wrapper
+      flightElement.setAttribute("onclick", `viewFlightDetails('${flight.id || flight.flight_id || flight.flightLogNumber}')`);
 
       // --- 1. NEUER TEIL: Buttons vorab definieren ---
-      // KORREKTUR: Wir prüfen die Variable direkt, ohne "window."
       const isDemo = (typeof isDemoMode !== 'undefined' && isDemoMode);
-      
       let actionButtonsHtml = "";
 
-      // Nur wenn NICHT Demo-Modus: Buttons generieren
-      if (!isDemo) {
-          actionButtonsHtml = `
-            <div class="flex flex-col md:flex-row items-center ml-2">
-                <button 
-                  onclick="event.stopPropagation(); deleteFlight(${flight.id})" 
-                  class="p-2 text-red-500 hover:text-red-700 transition" 
-                  title="${getTranslation("flights.deleteTitle") || "Löschen"}"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
-                </button>
-            </div>
-          `;
-      }
-      // --- ENDE NEUER TEIL ---
+      
 
+      // --- 2. HINTERGRUND & BILDER ---
+      const planeBg = flight.planespotters_url ? `style="background-image: url('${flight.planespotters_url}');"` : '';
+      const planeOpacity = flight.planespotters_url ? 'opacity-[0.04] group-hover:opacity-15' : 'opacity-0';
+      
+      const logoHtml = flight.airline_logo 
+          ? `<img src="${flight.airline_logo}" class="h-5 md:h-6 max-w-[80px] object-contain opacity-90 drop-shadow-sm" alt="Logo">` 
+          : '';
+
+      const formattedDate = flight.date ? new Date(flight.date).toLocaleDateString() : '--';
+      const formattedTime = (flight.time || "").replace("Std.", getTranslation("units.hoursShort") || "Std.").replace("Min.", getTranslation("units.minutesShort") || "Min.");
+
+      // Trip-Badge
+      const tripBadge = flight.trips && flight.trips.name 
+          ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-tertiary-fixed text-on-tertiary-container dark:bg-purple-900/30 dark:text-purple-300 uppercase tracking-wide">
+               🏝️ ${flight.trips.name}
+             </span>` 
+          : '';
+
+      // --- 3. HTML ZUSAMMENBAUEN ---
       flightElement.innerHTML = `
-            <div class="flex items-start gap-4 flex-grow">
-                <div class="flex-shrink-0 ${milestoneColor} text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm" title="${getTranslation("flights.flightNumberTitle")}">
-                    #${flight.flightLogNumber || "-"}
+        <div class="bg-surface-container-lowest dark:bg-slate-800 rounded-[2rem] p-5 md:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none relative overflow-hidden border border-outline-variant/20 dark:border-slate-700 transition-all duration-300 group-hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] group-hover:-translate-y-1">
+            
+            <div class="absolute right-0 top-0 w-3/4 h-full ${planeOpacity} transition-opacity duration-500 bg-cover bg-center pointer-events-none" ${planeBg}></div>
+            <div class="absolute inset-0 bg-gradient-to-r from-surface-container-lowest via-surface-container-lowest/90 to-transparent dark:from-slate-800 dark:via-slate-800/90 z-0 pointer-events-none"></div>
+
+            <div class="relative z-10">
+                ${actionButtonsHtml}
+
+                <div class="flex justify-between items-start mb-6 pr-8">
+                    <div class="flex flex-col gap-2">
+                        <div class="flex items-center gap-2">
+                            <div class="bg-surface-container-low dark:bg-slate-700 px-3 py-1 rounded-full shadow-inner flex items-center gap-1.5" title="${getTranslation("flights.flightNumberTitle") || 'Flugnummer'}">
+                                <span class="w-2 h-2 rounded-full ${dotColor}"></span>
+                                <span class="font-display text-[10px] font-bold text-on-surface/70 dark:text-slate-300 uppercase tracking-wider">
+                                    #${flight.flightLogNumber || "-"} • ${formattedDate}
+                                </span>
+                            </div>
+                            ${tripBadge}
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        ${logoHtml}
+                        <h3 class="font-display text-xl md:text-2xl font-bold tracking-tight text-on-surface dark:text-white">
+                            ${flight.flightNumber || '-'}
+                        </h3>
+                    </div>
                 </div>
 
-                <div class="flex-grow cursor-pointer group" onclick="viewFlightDetails('${flight.id || flight.flight_id || flight.flightLogNumber}')">
-                    
-                    ${flight.trips && flight.trips.name 
-                        ? `<div class="mb-1">
-                             <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200 border border-indigo-200 dark:border-indigo-700">
-                               🏝️ ${flight.trips.name}
-                             </span>
-                           </div>` 
-                        : ''
-                    }
-                    <p class="text-base md:text-lg font-bold text-indigo-700 dark:text-indigo-400 group-hover:text-indigo-500 transition-colors">
-                        ${depName} (${flight.departure}) ➔ ${arrName} (${flight.arrival})
-                    </p>
-                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                        📅 ${flight.date} | ⏱️ ${(flight.time || "").replace("Std.", getTranslation("units.hoursShort") || "Std.").replace("Min.", getTranslation("units.minutesShort") || "Min.")} | 📏 ${flight.distance.toLocaleString("de-DE")} ${getTranslation("achievements.unitKm") || "km"}
-                    </p>
-                    <div class="mt-2 text-sm text-gray-500 dark:text-gray-400 truncate flex items-center gap-2">
-                        ${flight.airline_logo ? `<img src="${flight.airline_logo}" alt="Logo" class="h-5 w-auto object-contain" />` : ''}
-                        <span class="font-medium">${flight.airline || '-'}</span>
+                <div class="flex items-center justify-between mb-8">
+                    <div class="flex flex-col">
+                        <p class="font-display text-4xl md:text-5xl font-extrabold text-primary dark:text-indigo-400 tracking-tighter leading-none">${flight.departure || 'N/A'}</p>
+                        <p class="text-[10px] md:text-xs font-medium text-on-surface/60 dark:text-slate-400 mt-1 max-w-[100px] md:max-w-[150px] truncate" title="${depName}">${depName}</p>
                     </div>
                     
-                    <p class="text-xs text-indigo-500 dark:text-indigo-400 mt-3 font-semibold flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                        Bordkarte anzeigen...
-                    </p>
+                    <div class="flex-1 px-4 md:px-8 relative flex items-center justify-center">
+                        <div class="h-[2px] w-full bg-gradient-to-r from-transparent via-outline-variant/50 dark:via-slate-500 to-transparent relative">
+                            <span class="material-symbols-outlined absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-outline-variant dark:text-slate-400 bg-surface-container-lowest dark:bg-slate-800 px-2 text-xl" style="font-variation-settings: 'FILL' 1;">flight</span>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col items-end">
+                        <p class="font-display text-4xl md:text-5xl font-extrabold text-primary dark:text-indigo-400 tracking-tighter leading-none">${flight.arrival || 'N/A'}</p>
+                        <p class="text-[10px] md:text-xs font-medium text-on-surface/60 dark:text-slate-400 mt-1 max-w-[100px] md:max-w-[150px] truncate text-right" title="${arrName}">${arrName}</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-5 border-t border-outline-variant/20 dark:border-slate-700">
+                    
+                    <div class="flex flex-col">
+                        <span class="text-[9px] font-bold uppercase tracking-widest text-on-surface/50 dark:text-slate-500 mb-1 flex items-center gap-1"><span class="material-symbols-outlined text-[12px]">schedule</span> ${getTranslation('boardingPass.flightTime') || 'Flugzeit'}</span>
+                        <span class="text-xs font-bold text-on-surface/90 dark:text-slate-200">${formattedTime}</span>
+                    </div>
+                    
+                    <div class="flex flex-col">
+                        <span class="text-[9px] font-bold uppercase tracking-widest text-on-surface/50 dark:text-slate-500 mb-1 flex items-center gap-1"><span class="material-symbols-outlined text-[12px]">straighten</span> ${getTranslation('boardingPass.distance') || 'Distanz'}</span>
+                        <span class="text-xs font-bold text-on-surface/90 dark:text-slate-200">${flight.distance ? flight.distance.toLocaleString("de-DE") : '--'} ${getTranslation("achievements.unitKm") || "km"}</span>
+                    </div>
+
+                    ${flight.aircraftType ? `
+                    <div class="flex flex-col">
+                        <span class="text-[9px] font-bold uppercase tracking-widest text-on-surface/50 dark:text-slate-500 mb-1 flex items-center gap-1"><span class="material-symbols-outlined text-[12px]">airlines</span> ${getTranslation('boardingPass.aircraft') || 'Flugzeug'}</span>
+                        <span class="text-xs font-bold text-on-surface/90 dark:text-slate-200 truncate" title="${flight.aircraftType}">${flight.aircraftType}</span>
+                    </div>` : ''}
+                    
+                    ${flight.seatNumber ? `
+                    <div class="flex flex-col">
+                        <span class="text-[9px] font-bold uppercase tracking-widest text-on-surface/50 dark:text-slate-500 mb-1 flex items-center gap-1"><span class="material-symbols-outlined text-[12px]">event_seat</span> ${getTranslation('boardingPass.seat') || 'Sitzplatz'}</span>
+                        <span class="text-xs font-bold text-on-surface/90 dark:text-slate-200">${flight.seatNumber}</span>
+                    </div>` : ''}
+
                 </div>
             </div>
-            
-            ${actionButtonsHtml}
-            `;
+        </div>
+      `;
       
       flightList.appendChild(flightElement);
     });
@@ -851,123 +896,106 @@ async function renderLogbookView(groupBy) {
   sortedKeys.forEach((key) => {
     const group = grouped[key];
     const detailsElement = document.createElement("details");
-    detailsElement.className = "bg-gray-50 dark:bg-gray-700 p-4 rounded-lg";
+    detailsElement.className = "bg-surface-container-lowest dark:bg-slate-800 p-6 md:p-8 rounded-[2rem] shadow-sm border border-outline-variant/20 dark:border-slate-700 mb-6 transition-all duration-300 group";
 
     const summaryElement = document.createElement("summary");
-    summaryElement.className =
-      "font-semibold text-lg cursor-pointer text-indigo-700 dark:text-indigo-400 flex items-center";
+    summaryElement.className = "font-display font-bold text-lg cursor-pointer text-on-surface dark:text-white flex items-center outline-none list-none relative";
 
     let titleHtml = key;
     let titleKey = "";
 
-    // ... (Vorheriger Code in renderLogbookView)
+    // ... (Logik für isAirportView etc.)
+    const iconBtnClass = "ml-4 p-2 rounded-xl bg-surface-container-low dark:bg-slate-900 text-primary dark:text-indigo-400 hover:bg-primary/10 transition-colors duration-150 shadow-inner flex items-center justify-center";
 
     if (isAirportView && key !== unknownKey) {
       titleKey = getTranslation("logbook.detailsTitleAirport").replace("{key}", key);
       if (currentUserSubscription === "pro") {
-        // 🚀 NEU: Ruft viewLogbookDetails auf
         titleHtml = `
-            ${key}
-            <button onclick="event.stopPropagation(); viewLogbookDetails('airport', '${key}')" class="ml-2 p-1 rounded-full text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors duration-150" title="${titleKey}">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z" /></svg>
+            <span class="flex-1">${key}</span>
+            <button onclick="event.stopPropagation(); viewLogbookDetails('airport', '${key}')" class="${iconBtnClass}" title="${titleKey}">
+                <span class="material-symbols-outlined text-[18px]">info</span>
             </button>
         `;
       } else {
-        titleHtml = `${key} <button onclick="event.stopPropagation(); openPremiumModal('default')" class="ml-2 p-1 rounded-full text-gray-400 hover:bg-gray-100 transition"><span class="text-xs">🔒</span></button>`;
+        titleHtml = `<span class="flex-1">${key}</span> <button onclick="event.stopPropagation(); openPremiumModal('default')" class="ml-4 p-2 rounded-xl bg-surface-container-low text-on-surface/40"><span class="text-xs">🔒</span></button>`;
       }
     } else if (isAirlineView && key !== unknownKey) {
       const firstFlightWithName = group.flights.find((f) => f.airline && f.airline.trim() !== "");
       let displayLabel = key;
       if (firstFlightWithName && firstFlightWithName.airline !== key) {
-          displayLabel = `${firstFlightWithName.airline} (${key})`;
+          displayLabel = `${firstFlightWithName.airline} <span class="text-sm text-on-surface/50 font-medium ml-2">(${key})</span>`;
       }
       titleKey = getTranslation("logbook.detailsTitleAirline").replace("{key}", key);
       
       if (currentUserSubscription === "pro") {
-        // 🚀 NEU: Ruft viewLogbookDetails auf
         titleHtml = `
-            ${displayLabel}
-            <button onclick="event.stopPropagation(); viewLogbookDetails('airline', '${key}')" class="ml-2 p-1 rounded-full text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors duration-150" title="${titleKey}">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z" /></svg>
+            <span class="flex-1">${displayLabel}</span>
+            <button onclick="event.stopPropagation(); viewLogbookDetails('airline', '${key}')" class="${iconBtnClass}" title="${titleKey}">
+                <span class="material-symbols-outlined text-[18px]">info</span>
             </button>
         `;
       } else {
-        titleHtml = `${key} <button onclick="event.stopPropagation(); openPremiumModal('default')" class="ml-2 p-1 rounded-full text-gray-400 hover:bg-gray-100 transition"><span class="text-xs">🔒</span></button>`;
+        titleHtml = `<span class="flex-1">${key}</span> <button onclick="event.stopPropagation(); openPremiumModal('default')" class="ml-4 p-2 rounded-xl bg-surface-container-low text-on-surface/40"><span class="text-xs">🔒</span></button>`;
       }
     } else if (isAircraftTypeView && key !== unknownKey) {
       titleKey = getTranslation("logbook.detailsTitleAircraft").replace("{key}", key);
       
       if (currentUserSubscription === "pro") {
-        // 🚀 NEU: Ruft viewLogbookDetails auf
         titleHtml = `
-            ${key}
-            <button onclick="event.stopPropagation(); viewLogbookDetails('aircraft', '${key}')" class="ml-2 p-1 rounded-full text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors duration-150" title="${titleKey}">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z" /></svg>
+            <span class="flex-1">${key}</span>
+            <button onclick="event.stopPropagation(); viewLogbookDetails('aircraft', '${key}')" class="${iconBtnClass}" title="${titleKey}">
+                <span class="material-symbols-outlined text-[18px]">info</span>
             </button>
         `;
       } else {
-        titleHtml = `${key} <button onclick="event.stopPropagation(); openPremiumModal('default')" class="ml-2 p-1 rounded-full text-gray-400 hover:bg-gray-100 transition"><span class="text-xs">🔒</span></button>`;
+        titleHtml = `<span class="flex-1">${key}</span> <button onclick="event.stopPropagation(); openPremiumModal('default')" class="ml-4 p-2 rounded-xl bg-surface-container-low text-on-surface/40"><span class="text-xs">🔒</span></button>`;
       }
     } else if (isRegistrationView && key !== unknownKey) {
-      // 🚀 NEU: Vorher gab es hier keinen Button. Jetzt haben wir eine Karte für Registrierungen!
       if (currentUserSubscription === "pro") {
         titleHtml = `
-            ${key}
-            <button onclick="event.stopPropagation(); viewLogbookDetails('registration', '${key}')" class="ml-2 p-1 rounded-full text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors duration-150" title="Flugzeug Details">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z" /></svg>
+            <span class="flex-1">${key}</span>
+            <button onclick="event.stopPropagation(); viewLogbookDetails('registration', '${key}')" class="${iconBtnClass}" title="Flugzeug Details">
+                <span class="material-symbols-outlined text-[18px]">info</span>
             </button>
         `;
       } else {
-        titleHtml = `${key} <button onclick="event.stopPropagation(); openPremiumModal('default')" class="ml-2 p-1 rounded-full text-gray-400 hover:bg-gray-100 transition"><span class="text-xs">🔒</span></button>`;
+        titleHtml = `<span class="flex-1">${key}</span> <button onclick="event.stopPropagation(); openPremiumModal('default')" class="ml-4 p-2 rounded-xl bg-surface-container-low text-on-surface/40"><span class="text-xs">🔒</span></button>`;
       }
     }
 
-    summaryElement.innerHTML = `${titleHtml}`;
+    // Pfeil-Icon hinzufügen für den Accordion-Effekt
+    summaryElement.innerHTML = `
+      <div class="flex items-center w-full">
+        <span class="material-symbols-outlined mr-3 text-primary/60 transition-transform duration-300 group-open:rotate-90">chevron_right</span>
+        <div class="flex items-center flex-1">${titleHtml}</div>
+      </div>
+    `;
 
     const flightListDiv = document.createElement("div");
-    flightListDiv.className =
-      "mt-4 space-y-2 border-t border-gray-200 dark:border-gray-600 pt-4";
+    flightListDiv.className = "mt-6 space-y-3 border-t border-outline-variant/10 dark:border-slate-700/50 pt-6";
 
-    // --- ✅ NEU: Feature Gating für PDF-Druck im Logbuch ---
-    // Wir prüfen hier, ob der User PRO ist. Nur dann erstellen wir den Button.
     if (currentUserSubscription === "pro") {
-      // 1. Druck-Button erstellen und konfigurieren
       const printButton = document.createElement("button");
-      printButton.className =
-        "text-xs font-medium text-blue-600 hover:text-blue-800 p-2 rounded-lg bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-600 transition";
+      printButton.className = "text-xs font-bold text-primary hover:text-white p-3 rounded-xl bg-surface-container-low dark:bg-slate-900 hover:bg-primary dark:hover:bg-primary/90 transition shadow-sm w-full sm:w-auto flex items-center justify-center gap-2 mb-6 border border-outline-variant/10 dark:border-white/5";
 
-      const buttonTitle = (
-        getTranslation("print.logbookTitle") || "Logbuch: {groupName}"
-      ).replace("{groupName}", key);
-      printButton.innerHTML = (
-        getTranslation("print.createBookForGroup") ||
-        "Buch für {groupName} erstellen"
-      ).replace("{groupName}", key);
+      const buttonTitle = (getTranslation("print.logbookTitle") || "Logbuch: {groupName}").replace("{groupName}", key);
+      printButton.innerHTML = `<span class="material-symbols-outlined text-[18px]">menu_book</span> ` + (getTranslation("print.createBookForGroup") || "Buch für {groupName} erstellen").replace("{groupName}", key);
 
       printButton.onclick = async (event) => {
         event.stopPropagation();
-        const sortedGroupFlights = [...group.flights].sort(
-          (a, b) => new Date(a.date) - new Date(b.date)
-        );
+        const sortedGroupFlights = [...group.flights].sort((a, b) => new Date(a.date) - new Date(b.date));
         await buildAndPrintHtml(sortedGroupFlights, buttonTitle);
       };
-
-      // Button dem Container hinzufügen
       flightListDiv.appendChild(printButton);
     }
-    // --- ENDE NEU ---
 
-    // 2. Titel (Summary) erstellen und hinzufügen
     const listTitle = document.createElement("p");
-    // (Ich habe eine Trennlinie hinzugefügt, um den Button von der Liste zu trennen)
-    listTitle.className =
-      "text-sm font-semibold text-gray-700 dark:text-gray-300 pt-4 border-t dark:border-gray-700 mt-4";
+    listTitle.className = "text-[10px] font-bold uppercase tracking-widest text-on-surface/50 dark:text-slate-400 mb-4";
     listTitle.textContent = getTranslation("logbook.summary")
       .replace("{count}", group.count)
       .replace("{distance}", group.totalDistance.toLocaleString("de-DE"));
     flightListDiv.appendChild(listTitle);
 
-    // 3. Flugliste als DOM-Elemente erstellen und hinzufügen
     group.flights
       .sort((a, b) => new Date(a.date) - new Date(b.date))
       .forEach((flight) => {
@@ -977,15 +1005,12 @@ async function renderLogbookView(groupBy) {
           .replace("{arrival}", flight.arrival)
           .replace("{distance}", flight.distance.toLocaleString("de-DE"));
 
-        // Erstelle ein 'div' statt 'innerHTML +=' zu verwenden
         const flightEntryDiv = document.createElement("div");
-        flightEntryDiv.className = "text-sm text-gray-700 dark:text-gray-300";
-        flightEntryDiv.textContent = flightText; // Sicherer und erhält den Button-Listener
+        flightEntryDiv.className = "text-sm font-medium text-on-surface/80 dark:text-slate-300 bg-surface-container-low dark:bg-slate-900/50 p-4 rounded-xl border border-outline-variant/10 dark:border-slate-700/50 flex items-center gap-3";
+        flightEntryDiv.innerHTML = `<span class="material-symbols-outlined text-primary/50 text-[18px]">flight</span> <span>${flightText}</span>`;
 
-        flightListDiv.appendChild(flightEntryDiv); // Hängt den Flug hinzu
+        flightListDiv.appendChild(flightEntryDiv); 
       });
-
-    // --- ✅ ENDE KORREKTUR ---
 
     detailsElement.appendChild(summaryElement);
     detailsElement.appendChild(flightListDiv);

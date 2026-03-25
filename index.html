@@ -32,6 +32,9 @@
       rel="stylesheet"
       href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"
     />
+
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
 	
 	<link rel="stylesheet" href="style.css" />
 	
@@ -45,7 +48,30 @@
     <script src="https://cdn.tailwindcss.com"></script>
 	<script>
 	  tailwind.config = {
-		darkMode: 'class', // Zwingt Tailwind, auf class="dark" zu achten
+		darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Manrope', 'sans-serif'], // Setzt Manrope als Standard-Schrift
+              display: ['Plus Jakarta Sans', 'sans-serif'],
+            },
+            colors: {
+              // Das neue Design System
+              "background": "#f8f9fa",
+              "on-secondary-fixed": "#3c3e51",
+              "on-primary-container": "#273371",
+              "tertiary-fixed": "#f1cefc",
+              "tertiary-fixed-dim": "#e2c0ee",
+              "on-tertiary-container": "#5d4368",
+              "primary": "#4f5b9b",
+              "surface-container-low": "#f1f4f5",
+              "surface-container-lowest": "#ffffff",
+              "surface-container-highest": "#dee3e6",
+              "on-surface": "#2d3335",
+              "outline-variant": "#c2c7ce"
+            }
+          }
+        }
 	  }
 	</script>
 	
@@ -65,7 +91,7 @@
 	
   </head>
 
-  <body class="bg-gradient-to-br from-indigo-50 via-white to-indigo-100 dark:from-gray-900 dark:via-indigo-950/30 dark:to-gray-900 min-h-screen bg-fixed transition-colors duration-500">
+  <body class="bg-background dark:bg-gray-900 text-on-surface dark:text-gray-200 min-h-screen font-sans transition-colors duration-500 antialiased">
     <div id="auth-container" class="relative min-h-screen w-full bg-gradient-to-br from-indigo-900 via-indigo-700 to-indigo-900 overflow-hidden flex flex-col justify-between items-center transition-all duration-500">
       
       <div class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-indigo-500 rounded-full mix-blend-overlay filter blur-3xl opacity-50"></div>
@@ -193,20 +219,20 @@
 
     <div
       id="app-container"
-      class="hidden relative z-10 flex flex-col items-center justify-start min-h-screen px-4 pt-10 pb-8"
+      class="hidden relative z-10 flex flex-col items-center justify-start w-full px-0 sm:px-4 pt-0 sm:pt-10 pb-14 md:pb-8"
     >
       <div
-        class="w-full max-w-4xl bg-indigo-50/80 dark:bg-gray-800/90 backdrop-blur-2xl shadow-[0_20px_60px_-15px_rgba(79,70,229,0.1)] dark:shadow-2xl rounded-3xl p-6 md:p-10 border border-indigo-100 dark:border-gray-700"
+        class="w-full max-w-4xl bg-transparent sm:bg-surface-container-lowest/90 sm:dark:bg-slate-900/80 sm:backdrop-blur-3xl sm:shadow-2xl rounded-none sm:rounded-[2.5rem] px-3 py-4 sm:p-8 md:p-12 sm:border border-outline-variant/20 dark:border-slate-800"
       >
-        <div class="flex justify-between items-center mb-2">
-          <div id="app-header-logo" class="flex items-center gap-3 cursor-pointer select-none">
+        <div class="flex justify-between items-center mb-10">
+          <div id="app-header-logo" class="flex items-center gap-4 cursor-pointer select-none">
             <img
               src="pictures/logo.png"
               alt="Logo"
-              class="w-10 h-10 rounded-lg shadow-md"
+              class="w-12 h-12 rounded-2xl shadow-sm ring-1 ring-black/5 dark:ring-white/10"
             />
             <h1
-              class="text-2xl md:text-3xl font-extrabold text-gray-800 dark:text-white tracking-tight"
+              class="text-2xl md:text-3xl font-display font-extrabold text-on-surface dark:text-white tracking-tight"
             >
               AvioSphere
             </h1>
@@ -214,22 +240,9 @@
           <div class="relative">
             <button
               id="burger-menu-btn"
-              class="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
+              class="p-2 rounded-xl text-on-surface/70 hover:text-primary hover:bg-primary/10 dark:text-slate-300 dark:hover:bg-slate-800 transition-colors"
             >
-              <svg
-                class="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M4 6h16M4 12h16m-7 6h7"
-                ></path>
-              </svg>
+              <span class="material-symbols-outlined text-3xl">menu</span>
             </button>
             <div
               id="burger-menu"
@@ -292,465 +305,240 @@
           
           <div class="py-6 pb-28">
             <div id="tab-content-neue-fluege">
-              <p
-                data-i18n="form.logNewFlight"
-                class="text-gray-500 dark:text-gray-400 mb-8"
-              >
-                Neuen Flug loggen
-              </p>
+              <div class="flex items-center justify-between mb-8 pr-2">
+                <h2 data-i18n="logNewFlight" class="text-2xl font-display font-extrabold text-on-surface dark:text-white tracking-tight">
+                  Neuen Flug loggen
+                </h2>
+              </div>
 
-              <div id="import-promo-container" class="relative mt-6 mb-8">
-    
-                  <button onclick="dismissImportPromo(event)" class="absolute -top-3 -right-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 rounded-full w-8 h-8 flex items-center justify-center shadow-md z-10 transition-colors" title="Ausblenden">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+              <div id="import-promo-container" class="relative mb-8 group">
+                  <button onclick="dismissImportPromo(event)" class="absolute -top-3 -right-3 bg-surface-container-lowest dark:bg-slate-800 border border-outline-variant/20 dark:border-slate-700 hover:bg-surface-container-low dark:hover:bg-slate-700 text-on-surface/50 dark:text-slate-400 rounded-full w-8 h-8 flex items-center justify-center shadow-md z-10 transition-colors" title="Ausblenden">
+                      <span class="material-symbols-outlined text-[18px]">close</span>
                   </button>
 
-                  <button onclick="document.getElementById('import-file-input').click()" class="w-full p-5 border-2 border-dashed border-indigo-300 bg-indigo-50 dark:bg-indigo-900/30 dark:border-indigo-700 rounded-xl hover:bg-indigo-100 dark:hover:bg-indigo-800/50 transition flex flex-col items-center justify-center gap-2 group">
-                      <span class="text-3xl group-hover:scale-110 transition-transform duration-300">📦</span>
-                      <span class="font-bold text-indigo-700 dark:text-indigo-400 text-center text-sm md:text-base" data-i18n="import.promoTitle">Wechselst du von MyFlightradar24 oder App in the Air?</span>
-                      <span class="text-xs text-indigo-500 dark:text-indigo-300 text-center px-4" data-i18n="import.promoSub">Lade deinen CSV-Export hoch. Wir erkennen das Format automatisch!</span>
+                  <button onclick="document.getElementById('import-file-input').click()" class="w-full p-6 border-2 border-dashed border-primary/30 bg-primary/5 dark:bg-primary/10 rounded-[2rem] hover:bg-primary/10 dark:hover:bg-primary/20 transition-all flex flex-col items-center justify-center gap-3">
+                      <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-300">
+                          <span class="material-symbols-outlined text-2xl">upload_file</span>
+                      </div>
+                      <div class="text-center">
+                          <span class="block font-bold text-primary dark:text-indigo-400 text-sm md:text-base mb-1 font-display" data-i18n="import.promoTitle">Wechselst du von Flightradar24 oder App in the Air?</span>
+                          <span class="block text-xs text-primary/70 dark:text-indigo-300 px-4" data-i18n="import.promoSub">Lade deinen CSV-Export hoch. Wir erkennen das Format automatisch!</span>
+                      </div>
                   </button>
               </div>
 
-              <details
-                class="bg-slate-50/50 dark:bg-slate-800/50 p-6 rounded-2xl mb-8 shadow-sm border border-slate-200 dark:border-slate-700 group transition-all duration-300"
-                open
-              >
-                <summary class="list-none cursor-pointer">
-                  <span
-                    class="float-right text-indigo-400 group-open:rotate-90 transition-transform duration-200 pt-1"
-                  >
-                    >
-                  </span>
-
-                  <h3
-                    class="text-lg font-semibold text-indigo-600 dark:text-indigo-400 flex items-center gap-2"
-                  >
-                    <span data-i18n="autoPilot"
-                      >Autopilot: Flugdaten per Flugnummer laden</span
-                    >
-                  </h3>
+              <details class="bg-surface-container-lowest dark:bg-slate-800 p-6 md:p-8 rounded-[2rem] mb-6 shadow-sm border border-outline-variant/20 dark:border-slate-700 group transition-all duration-300" open>
+                <summary class="list-none cursor-pointer flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-cyan-accent/10 flex items-center justify-center text-cyan-accent">
+                        <span class="material-symbols-outlined">smart_toy</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-on-surface dark:text-white font-display flex items-center gap-2">
+                        <span data-i18n="autoPilot">Autopilot: Flugdaten laden</span>
+                    </h3>
+                  </div>
+                  <span class="material-symbols-outlined text-on-surface/40 group-open:rotate-180 transition-transform duration-300">keyboard_arrow_down</span>
                 </summary>
 
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end mt-6 border-t border-outline-variant/10 dark:border-slate-700 pt-6">
                   <div>
-                    <label
-                      for="auto-flight-number"
-                      data-i18n="autoFlightNumber"
-                      class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                      >Flugnummer</label
-                    >
-                    <input
-                      type="text"
-                      id="auto-flight-number"
-                      placeholder="z.B. LH202"
-                      data-i18n="placeholder.egFlightNumber"
-                      class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3"
-                    />
+                    <label for="auto-flight-number" data-i18n="autoFlightNumber" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1">Flugnummer</label>
+                    <input type="text" id="auto-flight-number" placeholder="z.B. LH202" data-i18n="placeholder.egFlightNumber" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium placeholder-on-surface/30" />
                   </div>
                   <div>
-                    <label
-                      for="auto-flight-date"
-                      data-i18n="autoFlightDate"
-                      class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                      >Flugdatum</label
-                    >
-                    <input
-                      type="date"
-                      id="auto-flight-date"
-                      class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3"
-                    />
+                    <label for="auto-flight-date" data-i18n="autoFlightDate" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1">Flugdatum</label>
+                    <input type="date" id="auto-flight-date" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium text-on-surface/70" />
                   </div>
-                  <button
-                    id="autofill-btn"
-                    data-i18n="autofillBtn"
-                    class="w-full py-3 px-4 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition"
-                  >
-                    Daten abrufen
+                  <button id="autofill-btn" data-i18n="autofillBtn" class="w-full h-[48px] bg-primary hover:bg-primary/90 text-white rounded-xl transition-all shadow-sm font-bold text-sm flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined text-[18px]">cloud_download</span> Daten abrufen
                   </button>
                 </div>
               </details>
 
-              <div class="bg-indigo-600 dark:bg-indigo-900 p-6 rounded-2xl mb-8 shadow-lg text-white group cursor-pointer hover:bg-indigo-700 dark:hover:bg-indigo-800 transition-colors" onclick="startBoardingPassScanner()">
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-4">
-                    <div class="bg-white/20 p-3 rounded-xl">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
+              <div class="bg-gradient-to-br from-primary to-indigo-900 p-6 md:p-8 rounded-[2rem] mb-8 shadow-xl text-white group cursor-pointer hover:shadow-primary/20 hover:-translate-y-1 transition-all duration-300 relative overflow-hidden" onclick="startBoardingPassScanner()">
+                <div class="absolute -right-8 -top-8 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+                <div class="flex items-center justify-between relative z-10">
+                  <div class="flex items-center gap-5">
+                    <div class="bg-white/20 p-4 rounded-2xl backdrop-blur-md border border-white/10">
+                      <span class="material-symbols-outlined text-3xl">qr_code_scanner</span>
                     </div>
                     <div>
-                      <h3 class="text-lg font-extrabold flex items-center gap-2">
+                      <h3 class="text-xl font-display font-extrabold flex items-center gap-2">
                           <span data-i18n="scanner.title">Bordkarte scannen</span>
                           <span id="scanner-lock" class="text-sm opacity-80" title="Pro Feature">🔒</span>
-        </h3>
-                      <p class="text-indigo-200 text-sm font-medium mt-0.5" data-i18n="scanner.subtitle">QR- oder Barcode mit der Kamera erfassen</p>
+                      </h3>
+                      <p class="text-white/70 text-sm font-medium mt-1" data-i18n="scanner.subtitle">QR- oder Barcode mit der Kamera erfassen</p>
                     </div>
                   </div>
-                  <span class="text-indigo-200 group-hover:translate-x-1 transition-transform">›</span>
+                  <span class="material-symbols-outlined text-white/50 group-hover:translate-x-1 group-hover:text-white transition-all text-3xl">chevron_right</span>
                 </div>
               </div>
 
-              <details
-                class="bg-indigo-50/40 dark:bg-indigo-900/10 p-6 rounded-2xl mb-6 shadow-sm border border-indigo-100 dark:border-indigo-800/30 group transition-all duration-300"
-                open
-              >
-                <summary class="list-none cursor-pointer">
-                  <h2
-                    data-i18n="logNewFlight"
-                    class="text-xl font-semibold text-indigo-600 dark:text-indigo-400 inline-block"
-                  >
-                    Neuen Flug loggen
-                  </h2>
-                  <span
-                    class="float-right text-indigo-400 group-open:rotate-90 transition-transform duration-200 pt-1"
-                  >
-                    >
-                  </span>
+              <details class="bg-surface-container-lowest dark:bg-slate-800 p-6 md:p-8 rounded-[2rem] mb-6 shadow-sm border border-outline-variant/20 dark:border-slate-700 group transition-all duration-300" open>
+                <summary class="list-none cursor-pointer flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                        <span class="material-symbols-outlined">edit_document</span>
+                    </div>
+                    <h2 data-i18n="logNewFlight" class="text-lg font-bold text-on-surface dark:text-white font-display">
+                        Manuelle Eingabe
+                    </h2>
+                  </div>
+                  <span class="material-symbols-outlined text-on-surface/40 group-open:rotate-180 transition-transform duration-300">keyboard_arrow_down</span>
                 </summary>
 
-                <div
-                  class="mt-4 pt-4 border-t border-indigo-200 dark:border-gray-700 
-                            grid grid-cols-1 lg:grid-cols-6 gap-x-6 gap-y-4"
-                >
-                  <div class="autocomplete-container lg:col-span-3">
-                    <label
-                      for="departure"
-                      data-i18n="departureNewFlight"
-                      class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                      >Abflugort (IATA/Name)</label
-                    >
-                    <input
-                      type="text"
-                      id="departure"
-                      placeholder="z.B. FRA"
-                      data-i18n="placeholder.egDeparture"
-                      class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150"
-                    />
-                    <div
-                      id="departure-list"
-                      class="autocomplete-list hidden rounded-lg"
-                    ></div>
-                  </div>
-                  <div class="autocomplete-container lg:col-span-3">
-                    <label
-                      for="arrival"
-                      data-i18n="arrivalNewFlight"
-                      class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                      >Zielort (IATA/Name)</label
-                    >
-                    <input
-                      type="text"
-                      id="arrival"
-                      placeholder="z.B. JFK"
-                      data-i18n="placeholder.egArrival"
-                      class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150"
-                    />
-                    <div
-                      id="arrival-list"
-                      class="autocomplete-list hidden rounded-lg"
-                    ></div>
-                  </div>
-
-                  <div class="lg:col-span-3">
-                    <label
-                      for="flightDate"
-                      data-i18n="flightDateNewFlight"
-                      class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                      >Flugdatum (Optional)</label
-                    ><input
-                      type="date"
-                      id="flightDate"
-                      class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3"
-                    />
-                  </div>
-                  <div class="lg:col-span-3">
-                    <label
-                      for="flightClass"
-                      data-i18n="flightClassNewFlight"
-                      class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                      >Klasse/Zweck (Optional)</label
-                    ><select
-                      id="flightClass"
-                      class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 bg-white"
-                    >
-                      <option value="Economy" data-i18n="flightClassEconomy">
-                        Economy
-                      </option>
-                      <option value="Business" data-i18n="flightClassBusiness">
-                        Business
-                      </option>
-                      <option value="First" data-i18n="flightClassFirst">
-                        First
-                      </option>
-                      <option value="Privat" data-i18n="flightClassPrivat">
-                        Privat
-                      </option>
-                      <option value="Cargo" data-i18n="flightClassCargo">
-                        Cargo
-                      </option>
-                    </select>
-                  </div>
-
-                  <div class="lg:col-span-2">
-                    <label
-                      for="flightNumber"
-                      data-i18n="form.flightNumberOptional"
-                      class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                      >Flugnummer (Optional)</label
-                    >
-                    <input
-                      type="text"
-                      id="flightNumber"
-                      placeholder="z.B. LH400"
-                      data-i18n="placeholder.egFlightNumber"
-                      class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3"
-                    />
-                  </div>
-                  <div class="lg:col-span-2">
-                    <label
-                      for="airline"
-                      data-i18n="form.airline"
-                      class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                      >Airline (Optional)</label
-                    >
-                    <input
-                      type="text"
-                      id="airline"
-                      placeholder="z.B. Lufthansa"
-                      data-i18n="placeholder.egAirline"
-                      class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3"
-                    />
-                  </div>
-                  <div class="lg:col-span-2">
-                    <label
-                      for="aircraftType"
-                      data-i18n="form.aircraft"
-                      class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                      >Flugzeugtyp (Optional)</label
-                    >
-                    <input
-                      type="text"
-                      id="aircraftType"
-                      placeholder="z.B. A320"
-                      data-i18n="placeholder.egAircraft"
-                      class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3"
-                    />
-                  </div>
-
-                  <div class="lg:col-span-2">
-                    <label
-                      for="registration"
-                      data-i18n="form.registration"
-                      class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                      >Registrierung (Optional)</label
-                    >
-                    <input
-                      type="text"
-                      id="registration"
-                      placeholder="z.B. D-AINC"
-                      data-i18n="placeholder.egRegistration"
-                      class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3"
-                    />
-                    <div id="planespotters-preview" class="hidden mt-3 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 shadow-sm relative group transition-all duration-300">
-                      <img id="planespotters-img" src="" alt="Aircraft Preview" class="w-full h-40 object-cover">
-                      
-                      <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 pt-6 text-white text-[10px] text-right opacity-80 group-hover:opacity-100 transition-opacity">
-                          Foto: <span id="planespotters-credit" class="font-semibold"></span> | via <a id="planespotters-link" href="#" target="_blank" class="underline hover:text-indigo-300">Planespotters.net</a>
-                      </div>
-                      
-                      <button type="button" onclick="clearPlanespottersPreview()" class="absolute top-2 right-2 bg-black/50 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold transition-colors">
-                          &times;
-                      </button>
-                  </div>
-                  </div>
-                  <div class="lg:col-span-2">
-                    <label
-                      for="price"
-                      data-i18n="priceNewFlight"
-                      class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                      >Ticketpreis (Optional)</label
-                    >
-                    <input
-                      type="number"
-                      id="price"
-                      placeholder="z.B. 199.99"
-                      data-i18n="placeholder.egPrice"
-                      step="0.01"
-                      class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3"
-                    />
-                  </div>
-                  <div class="lg:col-span-2">
-                    <label
-                      for="currency"
-                      data-i18n="currencyNewFlight"
-                      class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                      >Währung (Optional)</label
-                    >
-                    <input
-                      type="text"
-                      id="currency"
-                      placeholder="z.B. EUR"
-                      data-i18n="placeholder.egCurrency"
-                      maxlength="3"
-                      class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3"
-                    />
-                  </div>
-
+                <div class="mt-6 pt-6 border-t border-outline-variant/10 dark:border-slate-700 grid grid-cols-1 lg:grid-cols-6 gap-x-6 gap-y-5">
                   
+                  <div class="autocomplete-container lg:col-span-3">
+                    <label for="departure" data-i18n="departureNewFlight" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1">Abflugort (IATA/Name)</label>
+                    <input type="text" id="departure" placeholder="z.B. FRA" data-i18n="form.airportPlaceholder" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium" />
+                    <div id="departure-list" class="autocomplete-list hidden rounded-xl shadow-lg border border-outline-variant/20 mt-1 z-50"></div>
+                  </div>
+                  
+                  <div class="autocomplete-container lg:col-span-3">
+                    <label for="arrival" data-i18n="arrivalNewFlight" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1">Zielort (IATA/Name)</label>
+                    <input type="text" id="arrival" placeholder="z.B. JFK" data-i18n="form.airportPlaceholder" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium" />
+                    <div id="arrival-list" class="autocomplete-list hidden rounded-xl shadow-lg border border-outline-variant/20 mt-1 z-50"></div>
+                  </div>
 
                   <div class="lg:col-span-3">
-                    <label
-                      data-i18n="form.photo"
-                      class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                      >Foto (Optional)</label
-                    >
-                    <div
-                      id="existing-photos-preview"
-                      class="mt-2 flex flex-wrap gap-2"
-                    ></div>
-                    <input
-                      type="file"
-                      id="flightPhoto"
-                      accept="image/*"
-                      class="hidden"
-                      multiple
-                    />
-                    <label
-                      for="flightPhoto"
-                      data-i18n="form.chooseFile"
-                      class="mt-1 inline-block bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 cursor-pointer"
-                    >
-                      Datei auswählen...
-                    </label>
-                    <div id="photo-preview-container" class="inline-block ml-4">
-                      <p
-                        id="photo-preview-text"
-                        class="text-sm text-gray-600 dark:text-gray-400"
-                        data-i18n="form.noFileSelected"
-                      >
-                        Keine Datei ausgewählt
-                      </p>
-                    </div>
+                    <label for="flightDate" data-i18n="flightDateNewFlight" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1">Flugdatum (Optional)</label>
+                    <input type="date" id="flightDate" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium text-on-surface/70" />
                   </div>
                   
                   <div class="lg:col-span-3">
-                    <label
-                      for="notes"
-                      data-i18n="notesNewFlight"
-                      class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                      >Bemerkungen (Optional)</label
-                    >
-                    <textarea
-                      id="notes"
-                      rows="3"
-                      placeholder="Besondere Vorkommnisse oder persönliche Notizen..."
-                      data-i18n="form.notesPlaceholder"
-                      class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 text-sm"
-                    ></textarea>
-                  </div>
-
-                  <div class="lg:col-span-6">
-                    <label for="tripSelect" data-i18n="form.tripLabel" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Reise / Trip (Optional)
-                    </label>
-                    
-                    <div class="flex gap-2 items-center">
-                      <select
-                        id="tripSelect"
-                        class="flex-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                      >
-                        <option value="" data-i18n="form.tripNone">-- Keine Reise (Einzelflug) --</option>
+                    <label for="flightClass" data-i18n="flightClassNewFlight" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1">Klasse/Zweck (Optional)</label>
+                    <div class="relative">
+                        <select id="flightClass" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium appearance-none cursor-pointer">
+                        <option value="Economy" data-i18n="flightClassEconomy">Economy</option>
+                        <option value="Business" data-i18n="flightClassBusiness">Business</option>
+                        <option value="First" data-i18n="flightClassFirst">First</option>
+                        <option value="Privat" data-i18n="flightClassPrivat">Privat</option>
+                        <option value="Cargo" data-i18n="flightClassCargo">Cargo</option>
                         </select>
+                        <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface/40 pointer-events-none">expand_more</span>
+                    </div>
+                  </div>
+
+                  <div class="lg:col-span-2">
+                    <label for="flightNumber" data-i18n="form.flightNumberOptional" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1">Flugnummer (Optional)</label>
+                    <input type="text" id="flightNumber" placeholder="z.B. LH400" data-i18n="form.flightNumberPlaceholder" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium" />
+                  </div>
+                  
+                  <div class="lg:col-span-2">
+                    <label for="airline" data-i18n="form.airline" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1">Airline (Optional)</label>
+                    <input type="text" id="airline" placeholder="z.B. Lufthansa" data-i18n="form.airlinePlaceholder" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium" />
+                  </div>
+                  
+                  <div class="lg:col-span-2">
+                    <label for="aircraftType" data-i18n="form.aircraft" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1">Flugzeugtyp (Optional)</label>
+                    <input type="text" id="aircraftType" placeholder="z.B. A320" data-i18n="form.aircraftTypePlaceholder" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium" />
+                  </div>
+
+                  <div class="lg:col-span-2">
+                    <label for="registration" data-i18n="form.registration" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1">Registrierung (Optional)</label>
+                    <input type="text" id="registration" placeholder="z.B. D-AINC" data-i18n="form.registrationPlaceholder" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium uppercase" />
+                    
+                    <div id="planespotters-preview" class="hidden mt-3 rounded-2xl overflow-hidden border border-outline-variant/20 dark:border-slate-700 shadow-sm relative group transition-all duration-300">
+                      <img id="planespotters-img" src="" alt="Aircraft Preview" class="w-full h-40 object-cover">
+                      <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent p-3 flex flex-col justify-end text-white text-[10px] text-right opacity-80 group-hover:opacity-100 transition-opacity">
+                          <span>Foto: <span id="planespotters-credit" class="font-bold"></span></span>
+                          <span>via <a id="planespotters-link" href="#" target="_blank" class="underline hover:text-cyan-accent">Planespotters.net</a></span>
+                      </div>
+                      <button type="button" onclick="clearPlanespottersPreview()" class="absolute top-2 right-2 bg-black/40 hover:bg-red-500 backdrop-blur-md text-white rounded-full w-7 h-7 flex items-center justify-center transition-colors">
+                          <span class="material-symbols-outlined text-[16px]">close</span>
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div class="lg:col-span-2">
+                    <label for="price" data-i18n="priceNewFlight" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1">Ticketpreis (Optional)</label>
+                    <input type="number" id="price" placeholder="z.B. 199.99" step="0.01" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium" />
+                  </div>
+                  
+                  <div class="lg:col-span-2">
+                    <label for="currency" data-i18n="currencyNewFlight" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1">Währung (Optional)</label>
+                    <input type="text" id="currency" placeholder="z.B. EUR" maxlength="3" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium uppercase" />
+                  </div>
+
+                  <div class="lg:col-span-3">
+                    <label data-i18n="form.photo" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-2">Eigene Fotos (Optional)</label>
+                    <div id="existing-photos-preview" class="mb-3 flex flex-wrap gap-2"></div>
+                    <input type="file" id="flightPhoto" accept="image/*" class="hidden" multiple />
+                    <div class="flex items-center gap-4">
+                        <label for="flightPhoto" class="inline-flex items-center gap-2 bg-surface-container-highest dark:bg-slate-700 text-on-surface dark:text-white rounded-xl px-5 py-3 text-sm font-bold cursor-pointer hover:bg-outline-variant/50 transition-colors shadow-sm">
+                        <span class="material-symbols-outlined text-[18px]">add_photo_alternate</span>
+                        <span data-i18n="form.chooseFile">Datei auswählen...</span>
+                        </label>
+                        <span id="photo-preview-text" class="text-xs text-on-surface/50 dark:text-slate-400 truncate max-w-[150px]" data-i18n="form.noPhotoSelected">Kein Foto ausgewählt</span>
+                    </div>
+                  </div>
+                  
+                  <div class="lg:col-span-3">
+                    <label for="notes" data-i18n="notesNewFlight" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1">Bemerkungen (Optional)</label>
+                    <textarea id="notes" rows="3" placeholder="Wie war der Flug?" data-i18n="form.notesPlaceholder" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium resize-none"></textarea>
+                  </div>
+
+                  <div class="lg:col-span-6 border-t border-outline-variant/10 dark:border-slate-700 pt-5 mt-2">
+                    <label for="tripSelect" data-i18n="form.tripLabel" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-2">Reise / Trip (Optional)</label>
+                    <div class="flex gap-3 items-center">
+                        <div class="relative flex-1">
+                            <select id="tripSelect" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-4 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-bold appearance-none cursor-pointer">
+                                <option value="" data-i18n="form.tripNone">-- Keine Reise (Einzelflug) --</option>
+                            </select>
+                            <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface/40 pointer-events-none">expand_more</span>
+                        </div>
                       
-                      <button
-                        type="button"
-                        onclick="createNewTrip()"
-                        class="flex-shrink-0 inline-flex items-center justify-center h-10 w-10 border border-transparent text-lg font-bold rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 dark:bg-indigo-900 dark:text-indigo-200 focus:outline-none transition-colors"
-                        data-i18n-title="trips.createNew"
-                        title="Neue Reise anlegen"
-                      >
-                        +
+                      <button type="button" onclick="createNewTrip()" class="flex-shrink-0 flex items-center justify-center w-[52px] h-[52px] rounded-xl bg-primary/10 text-primary hover:bg-primary/20 dark:bg-primary/20 dark:text-indigo-300 transition-colors" data-i18n-title="trips.createNew" title="Neue Reise anlegen">
+                        <span class="material-symbols-outlined text-2xl">add</span>
                       </button>
                     </div>
                   </div>
 
-                  <div class="lg:col-span-6">
-                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4 bg-indigo-100 dark:bg-slate-800 p-4 rounded-lg border border-indigo-200 dark:border-slate-700">
-                      
-                      <div>
-                        <p data-i18n="estimatedDistanceNewFlight" class="text-xs font-medium text-indigo-700 dark:text-gray-400">
-                          Geschätzte Entfernung
-                        </p>
-                        <p id="distance-display" class="text-xl font-bold text-indigo-800 dark:text-gray-200">
-                          -
-                        </p>
+                  <div class="lg:col-span-6 mt-2">
+                    <div class="grid grid-cols-3 gap-3 bg-surface-container-low dark:bg-slate-900 p-4 rounded-2xl border border-outline-variant/10 dark:border-slate-700/50">
+                      <div class="text-center">
+                        <p data-i18n="estimatedDistanceNewFlight" class="text-[10px] font-bold uppercase tracking-wider text-primary/70 dark:text-indigo-400/80 mb-1">Distanz</p>
+                        <p id="distance-display" class="text-lg font-display font-black text-primary dark:text-indigo-300">-</p>
                       </div>
-
-                      <div>
-                        <p data-i18n="estimatedFlightTimeNewFlight" class="text-xs font-medium text-indigo-700 dark:text-gray-400">
-                          Geschätzte Flugzeit
-                        </p>
-                        <p id="time-display" class="text-xl font-bold text-indigo-800 dark:text-gray-200">
-                          -
-                        </p>
+                      <div class="text-center border-l border-r border-outline-variant/10 dark:border-slate-700/50">
+                        <p data-i18n="estimatedFlightTimeNewFlight" class="text-[10px] font-bold uppercase tracking-wider text-primary/70 dark:text-indigo-400/80 mb-1">Dauer</p>
+                        <p id="time-display" class="text-lg font-display font-black text-primary dark:text-indigo-300">-</p>
                       </div>
-
-                      <div class="col-span-2 md:col-span-1">
-                        <p data-i18n="estimatedCO2Emissions" class="text-xs font-medium text-red-700 dark:text-red-400">
-                          Geschätzter CO₂-Ausstoß
-                        </p>
-                        <p id="co2-display" class="text-xl font-bold text-red-800 dark:text-red-300">
-                          -
-                        </p>
+                      <div class="text-center">
+                        <p data-i18n="estimatedCO2Emissions" class="text-[10px] font-bold uppercase tracking-wider text-orange-600/70 dark:text-orange-400/80 mb-1">CO₂</p>
+                        <p id="co2-display" class="text-lg font-display font-black text-orange-600 dark:text-orange-400">-</p>
                       </div>
-
                     </div> 
                   </div> 
-                  </div> </details> 
+                </div> 
+              </details> 
 
-              <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mt-6">
-                
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mt-8">
                 <button
                   onclick="logFlight()"
                   id="log-button"
                   disabled
                   data-i18n="logFlightNewFlight"
-                  class="w-full py-3 px-4 rounded-lg transition-all duration-200 font-bold shadow-md
-                         
-                         /* LIGHT MODE (Aktiv) */
-                         bg-blue-600 text-white hover:bg-blue-700 hover:shadow-lg hover:-translate-y-0.5
-                         
-                         /* LIGHT MODE (Deaktiviert) */
-                         disabled:bg-blue-200 disabled:text-blue-50 disabled:shadow-none disabled:translate-y-0 disabled:cursor-not-allowed
-                         
-                         /* DARK MODE (Deaktiviert - Dein Wunsch: Bläulich hinterlegt) */
-                         dark:disabled:bg-blue-900/40 dark:disabled:text-blue-400/50 dark:disabled:border dark:disabled:border-blue-900/50
-                         
-                         /* DARK MODE (Aktiv) */
-                         dark:bg-blue-600 dark:text-white dark:hover:bg-blue-500"
+                  class="flex-1 py-4 px-6 rounded-2xl font-bold shadow-md transition-all duration-300 flex items-center justify-center gap-2
+                         bg-primary text-white hover:bg-primary/90 hover:shadow-lg hover:-translate-y-0.5
+                         disabled:bg-surface-container-highest disabled:text-on-surface/40 disabled:shadow-none disabled:translate-y-0 disabled:cursor-not-allowed
+                         dark:disabled:bg-slate-800 dark:disabled:text-slate-500"
                 >
-                  Flug loggen und speichern
+                  <span class="material-symbols-outlined text-[20px]">save</span> Flug loggen und speichern
                 </button>
 				
-				<button
-                  onclick="resetForm()"
+                <button
+                  onclick="clearOnlyFields(event)"
                   id="reset-button"
                   data-i18n="form.reset"
-                  class="w-full sm:w-auto py-3 px-6 rounded-lg transition-colors font-medium border
-                         bg-white border-gray-300 text-gray-700 hover:bg-gray-50
-                         dark:bg-transparent dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
+                  class="w-full sm:w-auto py-4 px-8 rounded-2xl font-bold transition-colors bg-surface-container-lowest dark:bg-slate-800 border border-outline-variant/30 dark:border-slate-700 text-on-surface dark:text-white hover:bg-surface-container-low dark:hover:bg-slate-700 shadow-sm"
                 >
                   Zurücksetzen
                 </button>
                 
-                <button
-                  onclick="resetForm()"
-                  id="cancel-edit-button"
-                  data-i18n="flights.cancelEdit"
-                  class="hidden w-full sm:w-1/3 py-3 px-4 rounded-lg transition-colors font-semibold
-                         bg-gray-200 text-gray-700 hover:bg-gray-300 
-                         dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-                >
-                  Abbrechen
+                <button type="button" id="cancel-edit-button" onclick="cancelEditFlight()" class="hidden w-full py-4 bg-surface-container-low hover:bg-surface-container-highest dark:bg-slate-800 dark:hover:bg-slate-700 text-on-surface dark:text-white font-bold rounded-2xl transition-all shadow-sm border border-outline-variant/10 dark:border-slate-700 mt-4">
+                    Abbrechen
                 </button>
               </div>
             </div>
@@ -767,98 +555,97 @@
                   </div>
               </div>
               
-              <div id="live-flight-widget" class="hidden mb-8 relative group transition-all duration-500">
-                  <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-xl overflow-hidden border border-gray-200 dark:border-gray-700">
-                      
-                      <div class="bg-gradient-to-r from-indigo-600 to-blue-700 p-4 sm:p-5 flex justify-between items-center relative overflow-hidden">
-                          <div class="absolute -right-10 -top-10 opacity-10">
-                              <svg class="w-32 h-32" fill="currentColor" viewBox="0 0 24 24"><path d="M22 16.08L12 2 2 16.08V18l10-4 10 4v-1.92z"/></svg>
-                          </div>
-                          
-                          <div class="flex items-center gap-3 relative z-10">
-                              <div class="bg-white p-1.5 rounded-lg shadow-sm w-10 h-10 flex items-center justify-center">
-                                  <img id="live-airline-logo" src="pictures/logo.png" class="max-w-full max-h-full object-contain" alt="Logo">
-                              </div>
-                              <div>
-                                  <h3 id="live-flight-number" class="text-white font-black text-xl tracking-wider leading-tight">LH400</h3>
-                                  <p id="live-airline-name" class="text-indigo-100 text-xs font-medium uppercase tracking-widest">Lufthansa</p>
-                              </div>
-                          </div>
+              <div id="live-flight-widget" class="hidden mb-12 relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-on-primary-container to-slate-900 shadow-2xl border border-white/10 group transition-transform duration-300 hover:-translate-y-1 hover:shadow-primary/20">
+                
+                <div class="absolute -top-32 -right-32 w-64 h-64 bg-cyan-accent/20 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="absolute -bottom-24 -left-24 w-48 h-48 bg-primary/40 rounded-full blur-3xl pointer-events-none"></div>
 
-                          <div class="relative z-10 text-right">
-                              <span id="live-status-badge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-green-400 text-green-950 shadow-sm animate-pulse">
-                                  <span class="w-1.5 h-1.5 rounded-full bg-green-900"></span> PÜNKTLICH
-                              </span>
-                          </div>
-                      </div>
+                <div class="relative z-10 p-6 md:p-8">
+                    <div class="flex justify-between items-start mb-8">
+                        <div class="flex items-center gap-3">
+                            <div class="bg-white/10 backdrop-blur-md p-1.5 rounded-xl shadow-sm w-12 h-12 flex items-center justify-center border border-white/10">
+                                <img id="live-airline-logo" src="pictures/logo.png" class="max-w-full max-h-full object-contain" alt="Logo">
+                            </div>
+                            <div class="flex flex-col">
+                                <h3 id="live-flight-number" class="text-white font-display font-black text-xl tracking-wider leading-tight">LH400</h3>
+                                <p id="live-airline-name" class="text-indigo-200 text-xs font-medium uppercase tracking-widest">Lufthansa</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center gap-3">
+                            <div id="live-status-badge">
+                                </div>
+                            <button onclick="event.stopPropagation(); refreshLiveFlightData()" class="p-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white backdrop-blur-md transition-all active:scale-90 border border-white/5 shadow-sm" data-i18n-title="live.refresh">
+                                <span id="live-refresh-icon" class="material-symbols-outlined text-[20px]">refresh</span>
+                            </button>
+                        </div>
+                    </div>
 
-                      <div class="p-5 sm:p-6 relative">
-                          
-                          <button onclick="refreshLiveFlightData()" class="absolute top-4 right-4 text-gray-400 hover:text-indigo-600 transition-colors p-2 rounded-full hover:bg-gray-50 dark:hover:bg-gray-700" title="Live-Daten aktualisieren" data-i18n-title="live.refresh">
-                              <svg id="live-refresh-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                          </button>
+                    <div class="flex items-center justify-between mb-8">
+                        <div class="flex flex-col text-white w-1/3">
+                            <p id="live-dep-iata" class="font-display text-5xl md:text-6xl font-extrabold tracking-tighter leading-none drop-shadow-md">FRA</p>
+                            <div class="mt-2 space-y-1">
+                                <p class="text-[10px] text-white/60 uppercase font-bold tracking-wider"><span data-i18n="live.scheduled">Geplant</span>: <span id="live-dep-sched" class="text-white/90">10:30</span></p>
+                                <p class="text-[10px] text-cyan-accent uppercase font-bold tracking-wider"><span data-i18n="live.estimated">Erwartet</span>: <span id="live-dep-est" class="font-black">10:30</span></p>
+                            </div>
+                        </div>
+                        
+                        <div class="w-1/3 flex flex-col items-center px-2 relative z-10">
+                            <p id="live-flight-duration" class="text-xs font-bold text-cyan-accent mb-2 tracking-widest bg-white/5 px-3 py-1 rounded-full backdrop-blur-sm border border-white/10">8h 30m</p>
+                            <div class="w-full flex items-center">
+                                <div class="h-[2px] w-full bg-gradient-to-r from-transparent via-white/30 to-white/50 rounded-full"></div>
+                                <span class="material-symbols-outlined text-cyan-accent px-2 text-2xl drop-shadow-[0_0_8px_rgba(0,229,255,0.5)] transform rotate-90" style="font-variation-settings: 'FILL' 1;">flight</span>
+                                <div class="h-[2px] w-full bg-gradient-to-r from-white/50 via-white/30 to-transparent rounded-full"></div>
+                            </div>
+                        </div>
 
-                          <div class="flex justify-between items-center mb-6 pr-10">
-                              <div class="text-left w-1/3">
-                                  <p id="live-dep-iata" class="text-4xl font-black text-gray-900 dark:text-white tracking-tighter">FRA</p>
-                                  <div class="mt-2 space-y-1">
-                                      <p class="text-xs text-gray-500 uppercase font-bold tracking-wider"><span data-i18n="live.scheduled">Geplant</span>: <span id="live-dep-sched" class="text-gray-800 dark:text-gray-300">10:30</span></p>
-                                      <p class="text-xs text-indigo-600 dark:text-indigo-400 uppercase font-bold tracking-wider"><span data-i18n="live.estimated">Erwartet</span>: <span id="live-dep-est" class="font-black">10:30</span></p>
-                                  </div>
-                              </div>
+                        <div class="flex flex-col items-end text-white w-1/3">
+                            <p id="live-arr-iata" class="font-display text-5xl md:text-6xl font-extrabold tracking-tighter leading-none drop-shadow-md">JFK</p>
+                            <div class="mt-2 space-y-1 text-right">
+                                <p class="text-[10px] text-white/60 uppercase font-bold tracking-wider"><span data-i18n="live.scheduled">Geplant</span>: <span id="live-arr-sched" class="text-white/90">13:00</span></p>
+                                <p class="text-[10px] text-cyan-accent uppercase font-bold tracking-wider"><span data-i18n="live.estimated">Erwartet</span>: <span id="live-arr-est" class="font-black">13:00</span></p>
+                            </div>
+                        </div>
+                    </div>
 
-                              <div class="w-1/3 flex flex-col items-center px-2">
-                                  <p id="live-flight-duration" class="text-xs font-bold text-gray-400 mb-1">8h 30m</p>
-                                  <div class="w-full flex items-center">
-                                      <div class="h-0.5 w-full bg-gray-200 dark:bg-gray-700 rounded-full"></div>
-                                      <svg class="w-8 h-8 text-indigo-500 mx-2 flex-shrink-0 transform rotate-45" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
-                                      <div class="h-0.5 w-full bg-gray-200 dark:bg-gray-700 rounded-full"></div>
-                                  </div>
-                              </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 bg-white/5 rounded-2xl p-4 md:p-5 backdrop-blur-sm border border-white/10 mb-4">
+                        
+                        <div class="flex flex-col">
+                            <span class="text-[9px] md:text-[10px] text-white/50 uppercase tracking-widest font-bold" data-i18n="live.depTermGate">Abflug (Terminal / Gate)</span>
+                            <div class="flex items-center gap-1.5 mt-1.5 text-white">
+                                <span class="material-symbols-outlined text-[16px] text-white/60">flight_takeoff</span>
+                                <span class="text-sm font-bold"><span id="live-dep-terminal" class="text-cyan-accent">T1</span> / <span id="live-dep-gate">A14</span></span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex flex-col md:pl-4 border-l-0 md:border-l border-white/10">
+                            <span class="text-[9px] md:text-[10px] text-white/50 uppercase tracking-widest font-bold" data-i18n="live.arrTermGate">Ankunft (Terminal / Gate)</span>
+                            <div class="flex items-center gap-1.5 mt-1.5 text-white">
+                                <span class="material-symbols-outlined text-[16px] text-white/60">flight_land</span>
+                                <span class="text-sm font-bold"><span id="live-arr-terminal" class="text-cyan-accent">T4</span> / <span id="live-arr-gate">B22</span></span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex flex-col col-span-2 md:col-span-2 md:pl-4 border-t md:border-t-0 md:border-l border-white/10 pt-3 md:pt-0">
+                            <span class="text-[9px] md:text-[10px] text-white/50 uppercase tracking-widest font-bold" data-i18n="live.baggage">Gepäckband</span>
+                            <div class="flex items-center gap-1.5 mt-1.5 text-white">
+                                <span class="material-symbols-outlined text-[16px] text-white/60">luggage</span>
+                                <span id="live-baggage-val" class="text-sm font-bold">Wird noch ermittelt...</span>
+                            </div>
+                        </div>
 
-                              <div class="text-right w-1/3">
-                                  <p id="live-arr-iata" class="text-4xl font-black text-gray-900 dark:text-white tracking-tighter">JFK</p>
-                                  <div class="mt-2 space-y-1">
-                                      <p class="text-xs text-gray-500 uppercase font-bold tracking-wider"><span data-i18n="live.scheduled">Geplant</span>: <span id="live-arr-sched" class="text-gray-800 dark:text-gray-300">13:00</span></p>
-                                      <p class="text-xs text-indigo-600 dark:text-indigo-400 uppercase font-bold tracking-wider"><span data-i18n="live.estimated">Erwartet</span>: <span id="live-arr-est" class="font-black">13:00</span></p>
-                                  </div>
-                              </div>
-                          </div>
+                    </div>
 
-                          <div class="bg-gray-50 dark:bg-gray-900 rounded-2xl p-4 flex justify-between divide-x divide-gray-200 dark:divide-gray-700 border border-gray-100 dark:border-gray-800">
-                              <div class="px-2 w-1/2 text-center">
-                                  <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1" data-i18n="live.depTermGate">Abflug (Terminal / Gate)</p>
-                                  <p class="text-lg font-black text-gray-800 dark:text-gray-200">
-                                      <span id="live-dep-terminal" class="text-indigo-600">T1</span> / <span id="live-dep-gate">A14</span>
-                                  </p>
-                              </div>
-                              <div class="px-2 w-1/2 text-center">
-                                  <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1" data-i18n="live.arrTermGate">Ankunft (Terminal / Gate)</p>
-                                  <p class="text-lg font-black text-gray-800 dark:text-gray-200">
-                                      <span id="live-arr-terminal" class="text-indigo-600">T4</span> / <span id="live-arr-gate">B22</span>
-                                  </p>
-                              </div>
-                          </div>
-                          
-                          <div class="mt-3 text-center">
-                              <p class="text-xs text-gray-500 font-medium">
-                                  <span data-i18n="live.baggage">Gepäckband:</span> 
-                                  <span id="live-baggage-val" class="font-bold text-gray-800 dark:text-gray-300" data-i18n="live.baggageTBD">Wird noch ermittelt...</span>
-                              </p>
-                          </div>
-
-                          <div id="live-flight-nav" class="hidden mt-4 pt-3 border-t border-gray-100 dark:border-gray-700 justify-between items-center">
-                              <button onclick="prevLiveFlight()" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 p-2 flex items-center gap-1 transition-transform hover:-translate-x-1">
-                                  &larr; <span data-i18n="flights.prevButton">Vorheriger</span>
-                              </button>
-                              <span id="live-flight-counter" class="text-xs text-gray-500 font-black tracking-widest bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full shadow-inner">1 / 2</span>
-                              <button onclick="nextLiveFlight()" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 p-2 flex items-center gap-1 transition-transform hover:translate-x-1">
-                                  <span data-i18n="flights.nextButton">Nächster</span> &rarr;
-                              </button>
-                          </div>
-
-                      </div>
-                  </div>
+                    <div id="live-flight-nav" class="hidden mt-4 pt-4 border-t border-white/10 flex justify-between items-center">
+                        <button onclick="prevLiveFlight(); event.stopPropagation();" class="text-xs font-bold text-cyan-accent hover:text-white p-2 flex items-center gap-1 transition-transform hover:-translate-x-1">
+                            &larr; <span data-i18n="flights.prevButton">Vorheriger</span>
+                        </button>
+                        <span id="live-flight-counter" class="text-xs text-white/80 font-black tracking-widest bg-black/20 px-3 py-1 rounded-full shadow-inner border border-white/5">1 / 2</span>
+                        <button onclick="nextLiveFlight(); event.stopPropagation();" class="text-xs font-bold text-cyan-accent hover:text-white p-2 flex items-center gap-1 transition-transform hover:translate-x-1">
+                            <span data-i18n="flights.nextButton">Nächster</span> &rarr;
+                        </button>
+                    </div>
+                </div>
               </div>
 
               <details class="bg-slate-50/50 dark:bg-slate-800/50 p-4 md:p-6 rounded-2xl mb-8 shadow-sm border border-slate-200 dark:border-slate-700 group transition-all duration-300" open>
@@ -885,860 +672,551 @@
                   <div id="flight-map-container" class="h-[300px] rounded-xl shadow-inner z-0 border border-slate-200 dark:border-slate-700"></div>
                 </div>
               </details>
-              <div
-                class="flex items-center justify-between mb-4 border-b pb-2 border-gray-200 dark:border-gray-700"
-              >
-                <h2
-                  class="text-xl md:text-2xl font-bold text-gray-800 dark:text-white"
-                  data-i18n="flights.title"
-                >
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pr-2 mt-4">
+                <h2 class="text-2xl font-display font-extrabold text-on-surface dark:text-white tracking-tight" data-i18n="flights.title">
                   Gespeicherte Flüge
                 </h2>
-                <div
-                  class="grid grid-cols-2 gap-2 lg:flex lg:flex-wrap lg:items-center lg:space-x-4"
-                >
-                  <button
-                    id="play-chronicle-btn"
-                    class="w-full text-sm font-medium text-green-600 hover:text-green-800 p-2 rounded-lg bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 transition lg:w-auto"
-                    data-i18n="flights.playChronicle"
-                  >
-                    ▶️ Chronik abspielen
+                <div class="flex flex-wrap items-center gap-2">
+                  <button id="play-chronicle-btn" class="flex items-center justify-center gap-1.5 px-4 py-2 bg-surface-container-low hover:bg-surface-container-highest dark:bg-slate-800 dark:hover:bg-slate-700 text-green-600 dark:text-green-400 rounded-xl transition-all shadow-sm border border-outline-variant/10 dark:border-slate-700 font-bold text-xs" data-i18n-title="flights.playChronicle">
+                    <span class="material-symbols-outlined text-[16px]">play_circle</span> <span data-i18n="flights.playChronicle">Chronik abspielen</span>
                   </button>
-                  <button
-                    id="toggle-map-view-btn"
-                    onclick="toggleAllRoutesView()"
-                    class="w-full text-sm font-medium text-indigo-600 hover:text-indigo-800 p-2 rounded-lg bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 transition lg:w-auto"
-                    data-i18n="flights.showAllRoutes"
-                  >
-                    Alle Routen zeigen
+                  <button id="toggle-map-view-btn" onclick="toggleAllRoutesView()" class="flex items-center justify-center gap-1.5 px-4 py-2 bg-surface-container-low hover:bg-surface-container-highest dark:bg-slate-800 dark:hover:bg-slate-700 text-primary dark:text-indigo-300 rounded-xl transition-all shadow-sm border border-outline-variant/10 dark:border-slate-700 font-bold text-xs" data-i18n-title="flights.showAllRoutes">
+                    <span class="material-symbols-outlined text-[16px]">map</span> <span data-i18n="flights.showAllRoutes">Alle Routen zeigen</span>
                   </button>
-                  <button
-                    id="show-globe-btn"
-                    class="w-full text-sm font-medium text-purple-600 hover:text-purple-800 p-2 rounded-lg bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 transition lg:w-auto"
-                    data-i18n="flights.show3DGlobe"
-                  >
-                    🌍 3D Globus
+                  <button id="show-globe-btn" class="flex items-center justify-center gap-1.5 px-4 py-2 bg-surface-container-low hover:bg-surface-container-highest dark:bg-slate-800 dark:hover:bg-slate-700 text-cyan-accent/80 dark:text-cyan-400 rounded-xl transition-all shadow-sm border border-outline-variant/10 dark:border-slate-700 font-bold text-xs" data-i18n-title="flights.show3DGlobe">
+                    <span class="material-symbols-outlined text-[16px]">public</span> <span data-i18n="flights.show3DGlobe">3D Globus</span>
                   </button>
-                  <button
-                    id="print-book-btn"
-                    class="w-full text-sm font-medium text-blue-600 hover:text-blue-800 p-2 rounded-lg bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 transition lg:w-auto"
-                    data-i18n="flights.createBook"
-                  >
-                    Buch erstellen
+                  <button id="print-book-btn" class="flex items-center justify-center gap-1.5 px-4 py-2 bg-surface-container-low hover:bg-surface-container-highest dark:bg-slate-800 dark:hover:bg-slate-700 text-on-surface dark:text-slate-300 rounded-xl transition-all shadow-sm border border-outline-variant/10 dark:border-slate-700 font-bold text-xs" data-i18n-title="flights.createBook">
+                    <span class="material-symbols-outlined text-[16px]">menu_book</span> <span data-i18n="flights.createBook">Buch erstellen</span>
                   </button>
-                  <button
-                    onclick="renderFlights()"
-                    class="w-full text-sm font-medium text-indigo-600 hover:text-indigo-800 flex items-center justify-center p-2 rounded-lg bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 transition lg:w-auto"
-                    data-i18n="flights.refresh"
-                  >
-                    Aktualisieren
+                  <button onclick="renderFlights()" class="flex items-center justify-center gap-1.5 px-4 py-2 bg-surface-container-low hover:bg-surface-container-highest dark:bg-slate-800 dark:hover:bg-slate-700 text-on-surface dark:text-slate-300 rounded-xl transition-all shadow-sm border border-outline-variant/10 dark:border-slate-700 font-bold text-xs" data-i18n-title="flights.refresh">
+                    <span class="material-symbols-outlined text-[16px]">refresh</span> <span class="hidden sm:inline" data-i18n="flights.refresh">Aktualisieren</span>
                   </button>
                 </div>
               </div>
 
-              <div class="mb-4">
-  <div class="relative rounded-md shadow-sm">
-    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-      <span class="text-gray-500 sm:text-sm">🔍</span>
-    </div>
-    <input
-      type="text"
-      id="search-input"
-      onkeyup="applyFilters()"
-      class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 pr-3 py-3 sm:text-sm border-gray-300 rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white shadow-sm"
-      data-i18n="flights.filterPlaceholder"
-      placeholder="Suche (Ort, Airline, Reise, Datum...)"
-    />
-  </div>
-</div>
+              <div class="mb-6 relative group">
+                <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface/40 group-focus-within:text-primary transition-colors">search</span>
+                <input
+                  type="text"
+                  id="search-input"
+                  onkeyup="applyFilters()"
+                  class="w-full bg-surface-container-low dark:bg-slate-800 text-on-surface dark:text-white border-none rounded-full py-3.5 pl-12 pr-4 focus:ring-2 focus:ring-primary/50 dark:focus:ring-indigo-500 shadow-inner transition-all font-medium text-sm placeholder-on-surface/40"
+                  data-i18n="flights.filterPlaceholder"
+                  placeholder="Suche (Ort, Airline, Reise, Datum...)"
+                />
+              </div>
 
-              <details
-                class="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg mb-4 border border-gray-200 dark:border-gray-700 group"
-              >
-                <summary class="list-none cursor-pointer">
-                  <span
-                    class="text-indigo-400 group-open:rotate-90 transition-transform duration-200 mr-2 inline-block"
-                  >
-                    >
-                  </span>
-
-                  <h3
-                    class="text-lg font-semibold text-gray-800 dark:text-white inline-block"
-                    data-i18n="flights.filterTitle"
-                  >
+              <details class="bg-surface-container-lowest dark:bg-slate-800 p-6 rounded-[2rem] mb-6 shadow-sm border border-outline-variant/20 dark:border-slate-700 group transition-all duration-300">
+                <summary class="list-none cursor-pointer flex items-center">
+                  <span class="material-symbols-outlined text-primary/70 dark:text-indigo-400 group-open:rotate-180 transition-transform duration-300 mr-2">keyboard_arrow_down</span>
+                  <h3 class="text-lg font-bold text-on-surface dark:text-white font-display" data-i18n="flights.filterTitle">
                     Flüge filtern
                   </h3>
                 </summary>
 
-                <div
-                  class="grid grid-cols-2 lg:grid-cols-3 gap-4 items-end mt-4 border-t border-gray-200 dark:border-gray-700 pt-4"
-                >
+                <div class="grid grid-cols-2 lg:grid-cols-3 gap-4 items-end mt-4 border-t border-outline-variant/20 dark:border-slate-700 pt-6">
                   <div>
-                    <label
-                      for="filter-departure"
-                      class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                      data-i18n="flights.filterDeparture"
-                      >Abflugort (IATA)</label
-                    ><input
-                      type="text"
-                      id="filter-departure"
-                      placeholder="z.B. FRA"
-                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2"
-                    />
+                    <label for="filter-departure" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1" data-i18n="flights.filterDeparture">Abflugort (IATA)</label>
+                    <input type="text" id="filter-departure" placeholder="z.B. FRA" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white" />
                   </div>
                   <div>
-                    <label
-                      for="filter-arrival"
-                      class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                      data-i18n="flights.filterArrival"
-                      >Zielort (IATA)</label
-                    ><input
-                      type="text"
-                      id="filter-arrival"
-                      placeholder="z.B. JFK"
-                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2"
-                    />
+                    <label for="filter-arrival" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1" data-i18n="flights.filterArrival">Zielort (IATA)</label>
+                    <input type="text" id="filter-arrival" placeholder="z.B. JFK" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white" />
                   </div>
 
                   <div>
-                    <label for="filter-trip" class="block text-sm font-medium text-gray-700 dark:text-gray-300" data-i18n="flights.sortTrip">Reise / Trip</label>
+                    <label for="filter-trip" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1" data-i18n="flights.sortTrip">Reise / Trip</label>
                     <div class="relative">
-                        <select id="filter-trip" onchange="applyFilters()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 dark:bg-gray-800 dark:border-gray-600 dark:text-white appearance-none">
+                        <select id="filter-trip" onchange="applyFilters()" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3 text-sm focus:ring-2 focus:ring-primary/50 appearance-none dark:text-white cursor-pointer">
                           <option value="" data-i18n="flights.filterTripPlaceholder">Alle Reisen</option>
-                          </select>
-                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 dark:text-gray-300 mt-1">
-                          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-on-surface/40">
+                          <span class="material-symbols-outlined text-[18px]">expand_more</span>
                         </div>
                     </div>
                   </div>
 
                   <div>
-                    <label
-                      for="filter-date-from"
-                      class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                      data-i18n="flights.filterDateFrom"
-                      >Datum (von)</label
-                    ><input
-                      type="date"
-                      id="filter-date-from"
-                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2"
-                    />
+                    <label for="filter-date-from" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1" data-i18n="flights.filterDateFrom">Datum (von)</label>
+                    <input type="date" id="filter-date-from" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white" />
                   </div>
                   <div>
-                    <label
-                      for="filter-date-to"
-                      class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                      data-i18n="flights.filterDateTo"
-                      >Datum (bis)</label
-                    ><input
-                      type="date"
-                      id="filter-date-to"
-                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2"
-                    />
+                    <label for="filter-date-to" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1" data-i18n="flights.filterDateTo">Datum (bis)</label>
+                    <input type="date" id="filter-date-to" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white" />
                   </div>
-                  <div class="flex space-x-2 col-span-2 lg:col-span-1">
-                    <button
-                      onclick="applyFilters()"
-                      class="w-full py-2 px-4 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition"
-                      data-i18n="flights.filterButton"
-                    >
-                      Filtern</button
-                    ><button
-                      onclick="resetFilters()"
-                      class="w-full py-2 px-4 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition"
-                      data-i18n="flights.resetButton"
-                    >
-                      Reset
-                    </button>
+                  <div class="flex space-x-2 col-span-2 lg:col-span-1 h-[44px]">
+                    <button onclick="applyFilters()" class="w-full h-full bg-primary hover:bg-primary/90 text-white rounded-xl transition shadow-sm font-bold text-sm" data-i18n="flights.filterButton">Filtern</button>
+                    <button onclick="resetFilters()" class="w-full h-full bg-surface-container-highest dark:bg-slate-700 text-on-surface dark:text-white rounded-xl hover:bg-outline-variant/50 transition font-bold text-sm" data-i18n="flights.resetButton">Reset</button>
                   </div>
                 </div>
               </details>
-              <div
-                id="sort-bar"
-                class="grid grid-cols-2 gap-2 mb-2 p-2 bg-gray-100 dark:bg-gray-700 rounded-md text-sm font-semibold lg:flex lg:flex-wrap lg:items-center"
-              >
-                <span
-                  class="col-span-2 text-gray-600 dark:text-gray-300 lg:mr-2 lg:col-auto"
-                  data-i18n="flights.sortBy"
-                  >Sortieren nach:</span
-                >
 
-                <button
-                  id="sort-btn-flightLogNumber"
-                  onclick="setSortOrder('flightLogNumber')"
-                  class="sort-btn flex-shrink-0 px-3 py-1 rounded-md transition hover:bg-gray-300 dark:hover:bg-gray-500 w-full lg:w-auto"
-                >
-                  #
-                </button>
-                <button
-                  id="sort-btn-date"
-                  onclick="setSortOrder('date')"
-                  class="sort-btn flex-shrink-0 px-3 py-1 rounded-md transition hover:bg-gray-300 dark:hover:bg-gray-500 w-full lg:w-auto"
-                  data-i18n="flights.sortDate"
-                >
-                  Datum
-                </button>
+              <div id="sort-bar" class="flex flex-wrap items-center gap-2 mb-8 p-2 bg-surface-container-low dark:bg-slate-800/50 rounded-2xl text-sm font-semibold shadow-inner border border-outline-variant/10 dark:border-slate-700/50">
+                <span class="text-on-surface/60 dark:text-slate-400 mr-2 ml-2 text-xs uppercase tracking-wider font-bold" data-i18n="flights.sortBy">Sortieren nach:</span>
 
-                <button
-                  id="sort-btn-trip"
-                  onclick="setSortOrder('trip')"
-                  class="sort-btn flex-shrink-0 px-3 py-1 rounded-md transition hover:bg-gray-300 dark:hover:bg-gray-500 w-full lg:w-auto"
-                  data-i18n="flights.sortTrip"
-                >
-                  Reise
-                </button>
-
-                <button
-                  id="sort-btn-departure"
-                  onclick="setSortOrder('departure')"
-                  class="sort-btn flex-shrink-0 px-3 py-1 rounded-md transition hover:bg-gray-300 dark:hover:bg-gray-500 w-full lg:w-auto"
-                  data-i18n="flights.sortRoute"
-                >
-                  Route
-                </button>
-
-                <button
-                  id="sort-btn-distance"
-                  onclick="setSortOrder('distance')"
-                  class="sort-btn flex-shrink-0 px-3 py-1 rounded-md transition hover:bg-gray-300 dark:hover:bg-gray-500 w-full lg:w-auto"
-                  data-i18n="flights.sortDistance"
-                >
-                  Distanz
-                </button>
+                <button id="sort-btn-flightLogNumber" onclick="setSortOrder('flightLogNumber')" class="sort-btn flex-shrink-0 px-4 py-1.5 rounded-xl transition hover:bg-surface-container-highest dark:hover:bg-slate-700 text-on-surface dark:text-slate-300">#</button>
+                <button id="sort-btn-date" onclick="setSortOrder('date')" class="sort-btn flex-shrink-0 px-4 py-1.5 rounded-xl transition hover:bg-surface-container-highest dark:hover:bg-slate-700 text-on-surface dark:text-slate-300" data-i18n="flights.sortDate">Datum</button>
+                <button id="sort-btn-trip" onclick="setSortOrder('trip')" class="sort-btn flex-shrink-0 px-4 py-1.5 rounded-xl transition hover:bg-surface-container-highest dark:hover:bg-slate-700 text-on-surface dark:text-slate-300" data-i18n="flights.sortTrip">Reise</button>
+                <button id="sort-btn-departure" onclick="setSortOrder('departure')" class="sort-btn flex-shrink-0 px-4 py-1.5 rounded-xl transition hover:bg-surface-container-highest dark:hover:bg-slate-700 text-on-surface dark:text-slate-300" data-i18n="flights.sortRoute">Route</button>
+                <button id="sort-btn-distance" onclick="setSortOrder('distance')" class="sort-btn flex-shrink-0 px-4 py-1.5 rounded-xl transition hover:bg-surface-container-highest dark:hover:bg-slate-700 text-on-surface dark:text-slate-300" data-i18n="flights.sortDistance">Distanz</button>
               </div>
               <div
                 id="flight-log-list"
                 class="space-y-3 max-h-96 overflow-y-auto pr-2"
               ></div>
-              <div
-                id="pagination-controls"
-                class="flex justify-between items-center mt-4 text-sm text-gray-600 dark:text-gray-400"
-              >
-                <button
-                  id="prev-page-btn"
-                  onclick="prevPage()"
-                  class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  data-i18n="flights.prevButton"
-                >
-                  > ‹ Zurück
+              <div id="pagination-controls" class="mt-8 mb-0 flex justify-center items-center gap-4 w-full">
+                <button id="prev-page-btn" onclick="prevPage()" class="p-4 bg-surface-container-low dark:bg-slate-800 text-primary dark:text-indigo-400 font-bold rounded-2xl hover:bg-surface-container-highest dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-sm border border-outline-variant/10 dark:border-slate-700 flex items-center justify-center">
+                  <span class="material-symbols-outlined text-2xl">chevron_left</span>
                 </button>
-
-                <span
-                  id="page-info"
-                  class="font-semibold text-gray-700 dark:text-gray-300"
-                ></span>
-
-                <button
-                  id="next-page-btn"
-                  onclick="nextPage()"
-                  class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  data-i18n="flights.nextButton"
-                >
-                  Weiter ›
+                
+                <span id="page-info" class="text-[11px] font-black text-on-surface/60 dark:text-slate-400 tracking-widest uppercase bg-surface-container-lowest dark:bg-slate-900/50 px-6 py-2.5 rounded-xl shadow-inner border border-outline-variant/10 dark:border-slate-700/50 whitespace-nowrap min-w-[100px] text-center">
+                  Seite 1
+                </span>
+                
+                <button id="next-page-btn" onclick="nextPage()" class="p-4 bg-surface-container-low dark:bg-slate-800 text-primary dark:text-indigo-400 font-bold rounded-2xl hover:bg-surface-container-highest dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-sm border border-outline-variant/10 dark:border-slate-700 flex items-center justify-center">
+                  <span class="material-symbols-outlined text-2xl">chevron_right</span>
                 </button>
               </div>
             </div>
 
             <div id="tab-content-stats">
-              <div class="flex justify-between items-center mb-4 px-1">
-                  <h2 class="text-xl font-bold text-gray-800 dark:text-white" data-i18n="tabs.stats">Statistiken</h2>
+              <div class="flex justify-between items-center mb-8 pr-2">
+                  <h2 class="text-2xl font-display font-extrabold text-on-surface dark:text-white tracking-tight" data-i18n="tabs.stats">Statistiken</h2>
                   <button 
                       onclick="shareStatsScreenshot()"
-                      class="flex items-center gap-2 px-3 py-2 bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 rounded-lg hover:bg-indigo-200 dark:hover:bg-indigo-800 transition shadow-sm"
+                      class="flex items-center justify-center gap-2 p-3 bg-surface-container-low dark:bg-slate-800 hover:bg-surface-container-highest dark:hover:bg-slate-700 text-primary dark:text-indigo-300 rounded-xl transition-all shadow-sm border border-outline-variant/20 dark:border-slate-700"
+                      title="Teilen"
                   >
-                      <span>📸</span> 
-                      <span class="text-sm font-semibold" data-i18n="tabs.share">Teilen</span>
+                      <span class="material-symbols-outlined text-[20px]">ios_share</span> 
                   </button>
               </div>
-              <div
-                id="statistics-panel"
-                class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center"
-              >
-                <div class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm">
-                  <p
-                    class="text-xs font-medium text-gray-700 dark:text-gray-400"
-                    data-i18n="stats.totalFlights"
-                  >
-                    Gesamte Flüge
-                  </p>
-                  <p
-                    id="stat-count"
-                    class="text-xl font-bold text-indigo-800 dark:text-indigo-400"
-                  >
-                    0
-                  </p>
+
+              <div id="statistics-panel" class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                <div class="bg-surface-container-low dark:bg-slate-800/50 p-5 rounded-2xl border border-outline-variant/10 dark:border-white/5 flex flex-col justify-center">
+                  <p class="text-[10px] text-on-surface/50 dark:text-slate-400 font-bold mb-2 uppercase tracking-widest" data-i18n="stats.totalFlights">Gesamte Flüge</p>
+                  <p id="stat-count" class="text-2xl md:text-3xl font-display font-black text-primary dark:text-indigo-400">0</p>
                 </div>
-                <div class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm">
-                  <p
-                    class="text-xs font-medium text-gray-700 dark:text-gray-400"
-                    data-i18n="stats.totalDistance"
-                  >
-                    Gesamtdistanz
-                  </p>
-                  <p
-                    id="stat-distance"
-                    class="text-xl font-bold text-indigo-800 dark:text-indigo-400"
-                  >
-                    0 km
-                  </p>
+                <div class="bg-surface-container-low dark:bg-slate-800/50 p-5 rounded-2xl border border-outline-variant/10 dark:border-white/5 flex flex-col justify-center">
+                  <p class="text-[10px] text-on-surface/50 dark:text-slate-400 font-bold mb-2 uppercase tracking-widest" data-i18n="stats.totalDistance">Gesamtdistanz</p>
+                  <p id="stat-distance" class="text-xl md:text-2xl font-display font-black text-on-surface dark:text-white">0 km</p>
                 </div>
-                <div class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm">
-                  <p
-                    class="text-xs font-medium text-gray-700 dark:text-gray-400"
-                    data-i18n="stats.frequentAirport"
-                  >
-                    Häufigster Flughafen
-                  </p>
-                  <p
-                    id="stat-frequent"
-                    class="text-sm font-bold text-indigo-800 dark:text-indigo-400"
-                  >
-                    -
-                  </p>
-                </div>
-                <div
-                  class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm col-span-2"
-                >
-                  <p
-                    class="text-xs font-medium text-gray-700 dark:text-gray-400"
-                    data-i18n="stats.totalSpending"
-                  >
-                    Gesamtausgaben
-                  </p>
-                  <p
-                    id="stat-total-spending"
-                    class="text-xl font-bold text-indigo-800 dark:text-indigo-400"
-                  >
-                    -
-                  </p>
-                </div>
-                <div class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm">
-                  <p
-                    class="text-xs font-medium text-gray-700 dark:text-gray-400"
-                    data-i18n="stats.mostExpensive"
-                  >
-                    Teuerster Flug
-                  </p>
-                  <p
-                    id="stat-most-expensive"
-                    class="text-sm font-bold text-indigo-800 dark:text-indigo-400"
-                  >
-                    -
-                  </p>
-                </div>
-                <div class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm">
-                  <p
-                    class="text-xs font-medium text-gray-700 dark:text-gray-400"
-                    data-i18n="stats.leastExpensive"
-                  >
-                    Günstigster Flug
-                  </p>
-                  <p
-                    id="stat-least-expensive"
-                    class="text-sm font-bold text-indigo-800 dark:text-indigo-400"
-                  >
-                    -
-                  </p>
+                <div class="col-span-2 bg-surface-container-low dark:bg-slate-800/50 p-5 rounded-2xl border border-outline-variant/10 dark:border-white/5 flex flex-col justify-center">
+                  <p class="text-[10px] text-on-surface/50 dark:text-slate-400 font-bold mb-2 uppercase tracking-widest" data-i18n="stats.totalSpending">Gesamtausgaben</p>
+                  <p id="stat-total-spending" class="text-2xl font-display font-black text-green-600 dark:text-green-400">-</p>
                 </div>
 
-                <div class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm">
-                  <p
-                    class="text-xs font-medium text-gray-700 dark:text-gray-400"
-                    data-i18n="stats.longestFlight"
-                  >
-                    Längster Flug
-                  </p>
-                  <p
-                    id="stat-longest-flight"
-                    class="text-sm font-bold text-indigo-800 dark:text-indigo-400"
-                  >
-                    -
-                  </p>
+                <div class="col-span-2 bg-surface-container-low dark:bg-slate-800/50 p-5 rounded-2xl border border-outline-variant/10 dark:border-white/5 flex flex-col justify-center">
+                  <p class="text-[10px] text-on-surface/50 dark:text-slate-400 font-bold mb-2 uppercase tracking-widest" data-i18n="stats.frequentAirport">Häufigster Flughafen</p>
+                  <p id="stat-frequent" class="text-lg font-display font-bold text-on-surface dark:text-white">-</p>
                 </div>
-                <div class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm">
-                  <p
-                    class="text-xs font-medium text-gray-700 dark:text-gray-400"
-                    data-i18n="stats.shortestFlight"
-                  >
-                    Kürzester Flug
-                  </p>
-                  <p
-                    id="stat-shortest-flight"
-                    class="text-sm font-bold text-indigo-800 dark:text-indigo-400"
-                  >
-                    -
-                  </p>
-                </div>
-                <div class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm">
-                  <p
-                    class="text-xs font-medium text-gray-700 dark:text-gray-400"
-                    data-i18n="stats.avgDistance"
-                  >
-                    Ø Flugdistanz
-                  </p>
-                  <p
-                    id="stat-avg-distance"
-                    class="text-xl font-bold text-indigo-800 dark:text-indigo-400"
-                  >
-                    0 km
-                  </p>
-                </div>
-                <div class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm">
-                  <p
-                    class="text-xs font-medium text-gray-700 dark:text-gray-400"
-                    data-i18n="stats.frequentAircraft"
-                  >
-                    Häufigster Flugzeugtyp
-                  </p>
-                  <p
-                    id="stat-frequent-aircraft"
-                    class="text-sm font-bold text-indigo-800 dark:text-indigo-400"
-                  >
-                    -
-                  </p>
+                <div class="col-span-2 bg-surface-container-low dark:bg-slate-800/50 p-5 rounded-2xl border border-outline-variant/10 dark:border-white/5 flex flex-col justify-center">
+                  <p class="text-[10px] text-on-surface/50 dark:text-slate-400 font-bold mb-2 uppercase tracking-widest" data-i18n="stats.frequentAircraft">Häufigster Flugzeugtyp</p>
+                  <p id="stat-frequent-aircraft" class="text-lg font-display font-bold text-on-surface dark:text-white">-</p>
                 </div>
 
-                <div class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm">
-                  <p
-                    class="text-xs font-medium text-gray-700 dark:text-gray-400"
-                    data-i18n="stats.avgCo2"
-                  >
-                    Ø CO₂ pro Flug
-                  </p>
-                  <p
-                    id="stat-avg-co2"
-                    class="text-xl font-bold text-red-800 dark:text-red-400"
-                  >
-                    0 kg
-                  </p>
+                <div class="bg-surface-container-low dark:bg-slate-800/50 p-4 rounded-2xl border border-outline-variant/10 dark:border-white/5 flex flex-col justify-center">
+                  <p class="text-[10px] text-on-surface/50 dark:text-slate-400 font-bold mb-1 uppercase tracking-widest" data-i18n="stats.longestFlight">Längster</p>
+                  <p id="stat-longest-flight" class="text-sm font-bold text-primary dark:text-indigo-400">-</p>
                 </div>
-                <div
-                  class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm col-span-2 md:col-span-1"
-                >
-                  <p
-                    class="text-xs font-medium text-gray-700 dark:text-gray-400"
-                    data-i18n="stats.totalCo2"
-                  >
-                    Gesamter CO₂-Fußabdruck
-                  </p>
-                  <p
-                    id="stat-total-co2"
-                    class="text-xl font-bold text-red-800 dark:text-red-400"
-                  >
-                    0 kg
-                  </p>
+                <div class="bg-surface-container-low dark:bg-slate-800/50 p-4 rounded-2xl border border-outline-variant/10 dark:border-white/5 flex flex-col justify-center">
+                  <p class="text-[10px] text-on-surface/50 dark:text-slate-400 font-bold mb-1 uppercase tracking-widest" data-i18n="stats.shortestFlight">Kürzester</p>
+                  <p id="stat-shortest-flight" class="text-sm font-bold text-primary dark:text-indigo-400">-</p>
+                </div>
+                <div class="bg-surface-container-low dark:bg-slate-800/50 p-4 rounded-2xl border border-outline-variant/10 dark:border-white/5 flex flex-col justify-center">
+                  <p class="text-[10px] text-on-surface/50 dark:text-slate-400 font-bold mb-1 uppercase tracking-widest" data-i18n="stats.mostExpensive">Teuerster</p>
+                  <p id="stat-most-expensive" class="text-sm font-bold text-green-600 dark:text-green-400">-</p>
+                </div>
+                <div class="bg-surface-container-low dark:bg-slate-800/50 p-4 rounded-2xl border border-outline-variant/10 dark:border-white/5 flex flex-col justify-center">
+                  <p class="text-[10px] text-on-surface/50 dark:text-slate-400 font-bold mb-1 uppercase tracking-widest" data-i18n="stats.leastExpensive">Günstigster</p>
+                  <p id="stat-least-expensive" class="text-sm font-bold text-green-600 dark:text-green-400">-</p>
                 </div>
 
-                <div
-                  class="col-span-2 md:col-span-4 p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm"
-                >
-                  <div class="flex items-center justify-between">
-                    <p
-                      class="text-xs font-medium text-gray-700 dark:text-gray-400"
-                      data-i18n="stats.yearlySummary"
-                    >
-                      Jahreszusammenfassung
-                    </p>
-                    <select
-                      id="stat-year-select"
-                      class="text-xs p-1 rounded border-gray-300 dark:bg-gray-700 dark:border-gray-600"
-                    ></select>
+                <div class="col-span-2 md:col-span-1 bg-surface-container-low dark:bg-slate-800/50 p-5 rounded-2xl border border-outline-variant/10 dark:border-white/5 flex flex-col justify-center">
+                  <p class="text-[10px] text-on-surface/50 dark:text-slate-400 font-bold mb-2 uppercase tracking-widest" data-i18n="stats.avgDistance">Ø Distanz</p>
+                  <p id="stat-avg-distance" class="text-xl font-display font-black text-on-surface dark:text-white">0 km</p>
+                </div>
+                <div class="bg-surface-container-low dark:bg-slate-800/50 p-5 rounded-2xl border border-outline-variant/10 dark:border-white/5 flex flex-col justify-center">
+                  <p class="text-[10px] text-on-surface/50 dark:text-slate-400 font-bold mb-2 uppercase tracking-widest" data-i18n="stats.avgCo2">Ø CO₂</p>
+                  <p id="stat-avg-co2" class="text-xl font-display font-black text-orange-600 dark:text-orange-400">0 kg</p>
+                </div>
+                <div class="col-span-2 md:col-span-2 bg-surface-container-low dark:bg-slate-800/50 p-5 rounded-2xl border border-outline-variant/10 dark:border-white/5 flex flex-col justify-center">
+                  <p class="text-[10px] text-on-surface/50 dark:text-slate-400 font-bold mb-2 uppercase tracking-widest" data-i18n="stats.totalCo2">Gesamter CO₂-Fußabdruck</p>
+                  <p id="stat-total-co2" class="text-2xl font-display font-black text-orange-600 dark:text-orange-500">0 kg</p>
+                </div>
+
+                <div class="col-span-2 md:col-span-4 bg-gradient-to-br from-primary/10 to-indigo-900/10 dark:from-indigo-900/20 dark:to-slate-800 p-6 rounded-3xl border border-primary/20 dark:border-indigo-500/20 shadow-sm mt-2 text-left">
+                  <div class="flex items-center justify-between mb-4">
+                    <p class="text-xs font-bold uppercase tracking-widest text-primary dark:text-indigo-400" data-i18n="stats.yearlySummary">Jahreszusammenfassung</p>
+                    <select id="stat-year-select" class="text-sm font-bold p-2 bg-surface-container-lowest dark:bg-slate-900 border-none rounded-xl shadow-inner cursor-pointer outline-none focus:ring-2 focus:ring-primary/50 text-on-surface dark:text-white appearance-none pr-8 relative"></select>
                   </div>
-                  <p
-                    id="stat-yearly-summary"
-                    class="text-lg font-bold text-indigo-800 dark:text-indigo-400 mt-2"
-                  >
-                    -
-                  </p>
+                  <p id="stat-yearly-summary" class="text-lg md:text-xl font-medium text-on-surface/80 dark:text-slate-300 leading-relaxed">-</p>
                 </div>
               </div>
             </div>
             <div id="tab-content-charts" class="hidden">
-              <div
-                class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700"
-              >
-                <div
-                  class="flex justify-between items-center mb-4 border-b border-gray-200 dark:border-gray-600 pb-2"
-                >
-                  <h2
-                    class="text-xl md:text-2xl font-bold text-gray-800 dark:text-gray-100"
-                    data-i18n="charts.title"
-                  >
-                    Visuelle Auswertungen
-                  </h2>
-                  <div class="flex items-center gap-2 text-sm">
-                    <button
-                      id="chart-view-year"
-                      class="chart-view-btn active px-3 py-1 rounded-md transition"
-                      data-i18n="charts.perYear"
-                    >
-                      Pro Jahr
-                    </button>
-                    <button
-                      id="chart-view-month"
-                      class="chart-view-btn px-3 py-1 rounded-md transition"
-                      data-i18n="charts.perMonth"
-                    >
-                      Pro Monat
-                    </button>
-                  </div>
+              <div class="flex items-center justify-between mb-8 pr-2">
+                <h2 data-i18n="charts.title" class="text-2xl font-display font-extrabold text-on-surface dark:text-white tracking-tight">
+                  Visuelle Auswertungen
+                </h2>
+                <div class="flex items-center bg-surface-container-low dark:bg-slate-800/50 p-1.5 rounded-xl shadow-inner border border-outline-variant/10 dark:border-slate-700/50">
+                  <button id="chart-view-year" class="chart-view-btn active px-4 py-1.5 rounded-lg transition-all text-xs font-bold text-on-surface/60 dark:text-slate-400 hover:text-on-surface dark:hover:text-white" data-i18n="charts.perYear">Pro Jahr</button>
+                  <button id="chart-view-month" class="chart-view-btn px-4 py-1.5 rounded-lg transition-all text-xs font-bold text-on-surface/60 dark:text-slate-400 hover:text-on-surface dark:hover:text-white" data-i18n="charts.perMonth">Pro Monat</button>
                 </div>
-                <div class="grid grid-cols-1 gap-8 mt-4">
+              </div>
+              
+              <div class="bg-surface-container-lowest dark:bg-slate-800 p-6 md:p-8 rounded-[2.5rem] shadow-sm border border-outline-variant/20 dark:border-slate-700 transition-all duration-300">
+                <div class="grid grid-cols-1 gap-12 mt-2">
                   <div>
-                    <h3
-                      class="font-semibold text-center text-gray-700 dark:text-gray-300 mb-2"
-                      data-i18n="charts.flightsOverTime"
-                    >
-                      Flüge pro Zeitraum
-                    </h3>
-                    <canvas id="flightsChart"></canvas>
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-4 flex items-center justify-center gap-2" data-i18n="charts.flightsOverTime"><span class="material-symbols-outlined text-[16px]">bar_chart</span> Flüge pro Zeitraum</h3>
+                    <canvas id="flightsChart" class="w-full"></canvas>
                   </div>
-                  <div>
-                    <h3
-                      class="font-semibold text-center text-gray-700 dark:text-gray-300 mb-2"
-                      data-i18n="charts.distanceOverTime"
-                    >
-                      Distanz pro Zeitraum (km)
-                    </h3>
-                    <canvas id="distanceChart"></canvas>
+                  <div class="border-t border-outline-variant/10 dark:border-slate-700/50 pt-8">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-4 flex items-center justify-center gap-2" data-i18n="charts.distanceOverTime"><span class="material-symbols-outlined text-[16px]">straighten</span> Distanz pro Zeitraum (km)</h3>
+                    <canvas id="distanceChart" class="w-full"></canvas>
                   </div>
-                  <div>
-                    <h3
-                      class="font-semibold text-center text-gray-700 dark:text-gray-300 mb-2"
-                      data-i18n="charts.durationOverTime"
-                    >
-                      Flugzeit pro Zeitraum
-                    </h3>
-                    <canvas id="timeChart"></canvas>
+                  <div class="border-t border-outline-variant/10 dark:border-slate-700/50 pt-8">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-4 flex items-center justify-center gap-2" data-i18n="charts.durationOverTime"><span class="material-symbols-outlined text-[16px]">schedule</span> Flugzeit pro Zeitraum</h3>
+                    <canvas id="timeChart" class="w-full"></canvas>
                   </div>
                 </div>
               </div>
             </div>
             <div id="tab-content-trips" class="hidden">
-              <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
-                <div class="flex justify-between items-center mb-4 border-b border-gray-200 dark:border-gray-600 pb-2">
-                  <h2 class="text-xl md:text-2xl font-bold text-gray-800 dark:text-gray-100" data-i18n="tabs.trips">
-                    Meine Reisen & Events
-                  </h2>
-                </div>
-                <div id="trips-content" class="mt-4"></div>
+              <div class="flex items-center justify-between mb-8 pr-2">
+                <h2 data-i18n="tabs.trips" class="text-2xl font-display font-extrabold text-on-surface dark:text-white tracking-tight">
+                  Meine Reisen & Events
+                </h2>
               </div>
+              
+              <div id="trips-content" class="grid grid-cols-1 md:grid-cols-2 gap-5"></div>
             </div>
-<div id="tab-content-logbook" class="hidden">
-              <div class="flex items-center justify-between mb-4 border-b pb-2 border-gray-200 dark:border-gray-700">
-                <h2 data-i18n="tabs.logbook" class="text-xl md:text-2xl font-bold text-gray-800 dark:text-white">
+            <div id="tab-content-logbook" class="hidden">
+              <div class="flex items-center justify-between mb-8 pr-2">
+                <h2 data-i18n="tabs.logbook" class="text-2xl font-display font-extrabold text-on-surface dark:text-white tracking-tight">
                   Logbuch
                 </h2>
               </div>
-              <div class="mb-6 flex flex-wrap bg-white/40 dark:bg-gray-800/50 p-1 rounded-xl border border-indigo-100 dark:border-gray-700 shadow-sm gap-1 w-full md:w-max">
-                <button id="logbook-view-aircraft" class="flex-1 md:flex-none px-3 py-1.5 text-xs md:text-sm font-semibold rounded-lg hover:bg-white dark:hover:bg-gray-700 hover:shadow-sm transition-all text-indigo-900 dark:text-indigo-200">
-                  ✈️ <span data-i18n="logbook.tabAircraft">Flugzeuge</span>
+              
+              <div class="mb-8 flex flex-wrap bg-surface-container-low dark:bg-slate-800/50 p-1.5 rounded-2xl border border-outline-variant/10 dark:border-slate-700/50 shadow-inner gap-1 w-full lg:w-max">
+                <button id="logbook-view-aircraft" class="flex-1 md:flex-none px-4 py-2 text-xs md:text-sm font-bold rounded-xl transition-all text-on-surface/60 hover:text-on-surface dark:text-slate-400 dark:hover:text-white hover:bg-surface-container-lowest dark:hover:bg-slate-700 flex items-center justify-center gap-1.5">
+                  <span class="material-symbols-outlined text-[18px]">airlines</span> <span data-i18n="logbook.tabAircraft">Flugzeuge</span>
                 </button>
-                <button id="logbook-view-airline" class="flex-1 md:flex-none px-3 py-1.5 text-xs md:text-sm font-semibold rounded-lg hover:bg-white dark:hover:bg-gray-700 hover:shadow-sm transition-all text-indigo-900 dark:text-indigo-200">
-                  🏢 <span data-i18n="logbook.tabAirline">Airlines</span>
+                <button id="logbook-view-airline" class="flex-1 md:flex-none px-4 py-2 text-xs md:text-sm font-bold rounded-xl transition-all text-on-surface/60 hover:text-on-surface dark:text-slate-400 dark:hover:text-white hover:bg-surface-container-lowest dark:hover:bg-slate-700 flex items-center justify-center gap-1.5">
+                  <span class="material-symbols-outlined text-[18px]">domain</span> <span data-i18n="logbook.tabAirline">Airlines</span>
                 </button>
-                <button id="logbook-view-airport" class="flex-1 md:flex-none px-3 py-1.5 text-xs md:text-sm font-semibold rounded-lg hover:bg-white dark:hover:bg-gray-700 hover:shadow-sm transition-all text-indigo-900 dark:text-indigo-200">
-                  🛫 <span data-i18n="logbook.tabAirport">Airports</span>
+                <button id="logbook-view-airport" class="flex-1 md:flex-none px-4 py-2 text-xs md:text-sm font-bold rounded-xl transition-all text-on-surface/60 hover:text-on-surface dark:text-slate-400 dark:hover:text-white hover:bg-surface-container-lowest dark:hover:bg-slate-700 flex items-center justify-center gap-1.5">
+                  <span class="material-symbols-outlined text-[18px]">flight_takeoff</span> <span data-i18n="logbook.tabAirport">Airports</span>
                 </button>
-                <button id="logbook-view-registration" class="flex-1 md:flex-none px-3 py-1.5 text-xs md:text-sm font-semibold rounded-lg hover:bg-white dark:hover:bg-gray-700 hover:shadow-sm transition-all text-indigo-900 dark:text-indigo-200">
-                  🏷️ <span data-i18n="logbook.tabRegistration">Regs</span>
+                <button id="logbook-view-registration" class="flex-1 md:flex-none px-4 py-2 text-xs md:text-sm font-bold rounded-xl transition-all text-on-surface/60 hover:text-on-surface dark:text-slate-400 dark:hover:text-white hover:bg-surface-container-lowest dark:hover:bg-slate-700 flex items-center justify-center gap-1.5">
+                  <span class="material-symbols-outlined text-[18px]">tag</span> <span data-i18n="logbook.tabRegistration">Regs</span>
                 </button>
               </div>
-              <div id="logbook-content" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+
+              <div id="logbook-content" class="grid grid-cols-1 md:grid-cols-2 gap-5"></div>
             </div>
 
             <div id="tab-content-achievements" class="hidden w-full">
-              <div class="flex items-center justify-between mb-4 border-b pb-2 border-indigo-100 dark:border-gray-700">
-                <h2 data-i18n="tabs.achievements" class="text-xl md:text-2xl font-bold text-gray-800 dark:text-white">
+              <div class="flex items-center justify-between mb-8 pr-2">
+                <h2 data-i18n="tabs.achievements" class="text-2xl font-display font-extrabold text-on-surface dark:text-white tracking-tight">
                   Rekorde & Errungenschaften
                 </h2>
               </div>
-                           
-              <div class="mb-6 flex flex-wrap bg-white/40 dark:bg-gray-800/50 p-1 rounded-xl border border-indigo-100 dark:border-gray-700 shadow-sm gap-1 w-full md:w-max">
-                <button id="btn-view-badges" onclick="toggleAchievementsView('badges')" class="flex-1 md:flex-none whitespace-nowrap px-2 sm:px-4 py-1.5 text-xs md:text-sm font-semibold rounded-lg transition-all text-indigo-900 dark:text-indigo-200 bg-white dark:bg-gray-700 shadow-sm">
-                  🎖️ <span data-i18n="achievements.tabBadges">Badges</span>
+
+              <div class="mb-8 flex flex-wrap bg-surface-container-low dark:bg-slate-800/50 p-1.5 rounded-2xl border border-outline-variant/10 dark:border-slate-700/50 shadow-inner gap-1 w-full lg:w-max">
+                <button id="btn-view-badges" onclick="toggleAchievementsView('badges')" class="flex-1 md:flex-none px-4 py-2 text-xs md:text-sm font-bold rounded-xl transition-all text-on-surface/60 hover:text-on-surface dark:text-slate-400 dark:hover:text-white hover:bg-surface-container-lowest dark:hover:bg-slate-700 flex items-center justify-center gap-1.5">
+                  <span class="material-symbols-outlined text-[18px]">military_tech</span> <span data-i18n="achievements.tabBadges">Badges</span>
                 </button>
 
-                <button id="btn-view-records" onclick="toggleAchievementsView('records')" class="flex-1 md:flex-none whitespace-nowrap px-2 sm:px-4 py-1.5 text-xs md:text-sm font-semibold rounded-lg hover:bg-white dark:hover:bg-gray-700 hover:shadow-sm transition-all text-indigo-900 dark:text-indigo-200">
-                  🏆 <span data-i18n="achievements.tabRecords">Rekorde</span>
+                <button id="btn-view-records" onclick="toggleAchievementsView('records')" class="flex-1 md:flex-none px-4 py-2 text-xs md:text-sm font-bold rounded-xl transition-all text-on-surface/60 hover:text-on-surface dark:text-slate-400 dark:hover:text-white hover:bg-surface-container-lowest dark:hover:bg-slate-700 flex items-center justify-center gap-1.5">
+                  <span class="material-symbols-outlined text-[18px]">emoji_events</span> <span data-i18n="achievements.tabRecords">Rekorde</span>
                 </button>
                 
-                <button id="btn-view-leaderboard" onclick="toggleAchievementsView('leaderboard')" class="flex-1 md:flex-none whitespace-nowrap px-2 sm:px-4 py-1.5 text-xs md:text-sm font-semibold rounded-lg hover:bg-white dark:hover:bg-gray-700 hover:shadow-sm transition-all text-indigo-900 dark:text-indigo-200">
-                  🌍 <span data-i18n="achievements.tabLeaderboard">Community</span>
+                <button id="btn-view-leaderboard" onclick="toggleAchievementsView('leaderboard')" class="flex-1 md:flex-none px-4 py-2 text-xs md:text-sm font-bold rounded-xl transition-all text-on-surface/60 hover:text-on-surface dark:text-slate-400 dark:hover:text-white hover:bg-surface-container-lowest dark:hover:bg-slate-700 flex items-center justify-center gap-1.5">
+                  <span class="material-symbols-outlined text-[18px]">public</span> <span data-i18n="achievements.tabLeaderboard">Community</span>
                 </button>
               </div>
 
-              <div onclick="initWrapped()" class="mb-6 group cursor-pointer bg-white dark:bg-gray-800 border border-indigo-100 dark:border-gray-700 rounded-xl p-3 flex items-center justify-between hover:bg-indigo-50 dark:hover:bg-gray-700/80 transition-all shadow-sm">
-                  <div class="flex items-center gap-3">
-                      <div class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/40 dark:to-purple-900/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-lg shadow-inner">
-                          ✨
+              <div onclick="initWrapped()" class="mb-8 group cursor-pointer bg-gradient-to-br from-primary to-purple-900 rounded-[2rem] p-6 flex items-center justify-between shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 relative overflow-hidden border border-white/10">
+                  <div class="absolute -right-8 -top-8 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+                  <div class="flex items-center gap-4 relative z-10">
+                      <div class="w-12 h-12 rounded-full bg-white/20 text-white flex items-center justify-center text-xl shadow-inner backdrop-blur-md border border-white/20">
+                          <span class="material-symbols-outlined">auto_awesome</span>
                       </div>
                       <div>
-                          <h4 class="font-bold text-sm text-gray-800 dark:text-gray-200 leading-tight">AvioSphere Wrapped</h4>
-                          <p class="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-widest" data-i18n="wrapped.bannerPre">Dein Jahresrückblick</p>
+                          <h4 class="font-display font-black text-lg text-white leading-tight">AvioSphere Wrapped</h4>
+                          <p class="text-[10px] text-white/70 uppercase tracking-widest font-bold mt-0.5" data-i18n="wrapped.bannerPre">Dein Jahresrückblick</p>
                       </div>
                   </div>
-                  <div class="text-indigo-400 dark:text-indigo-500 group-hover:translate-x-1 transition-transform">
-                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                  <div class="text-white/50 group-hover:translate-x-1 group-hover:text-white transition-all relative z-10">
+                      <span class="material-symbols-outlined text-3xl">chevron_right</span>
                   </div>
               </div>
 
               <div id="view-achievements-badges">
-                <div id="achievements-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+                <div id="achievements-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
               </div>
 
               <div id="view-achievements-records" class="hidden">
-                <div id="records-container" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4"></div>
+                <div id="records-container" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5"></div>
               </div>
+              
               <div id="view-achievements-leaderboard" class="hidden">
 
-                  <div class="mb-4 flex flex-col sm:flex-row justify-between items-center gap-4 bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
+                  <div class="mb-6 flex flex-col sm:flex-row justify-between items-center gap-6 bg-surface-container-lowest dark:bg-slate-800 p-6 md:p-8 rounded-[2rem] shadow-sm border border-outline-variant/20 dark:border-slate-700">
                       <div class="text-center sm:text-left w-full sm:w-auto">
-                          <h4 class="font-bold text-gray-800 dark:text-white" data-i18n="leaderboard.socialTitle">Fliegst du besser als deine Freunde?</h4>
-                          <p class="text-xs text-gray-500 dark:text-gray-400" data-i18n="leaderboard.socialDesc">Lade sie ein und vergleicht eure Statistiken!</p>
+                          <h4 class="font-display font-bold text-lg text-on-surface dark:text-white" data-i18n="leaderboard.socialTitle">Fliegst du besser als deine Freunde?</h4>
+                          <p class="text-xs text-on-surface/60 dark:text-slate-400 mt-1" data-i18n="leaderboard.socialDesc">Lade sie ein und vergleicht eure Statistiken!</p>
                       </div>
-                      <button onclick="shareInviteLink()" class="w-full sm:w-auto flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold py-2.5 px-6 rounded-xl shadow-md transition transform hover:-translate-y-0.5">
-                          <span>🤝</span> <span data-i18n="leaderboard.inviteBtn">Freunde einladen</span>
+                      <button onclick="shareInviteLink()" class="w-full sm:w-auto flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white font-bold py-3.5 px-6 rounded-xl shadow-md transition transform hover:-translate-y-0.5">
+                          <span class="material-symbols-outlined text-[18px]">group_add</span> <span data-i18n="leaderboard.inviteBtn">Freunde einladen</span>
                       </button>
                   </div>
 
-                  <div class="flex justify-center mb-4">
-                  <div class="bg-gray-100 dark:bg-gray-700 p-1 rounded-xl inline-flex text-sm font-semibold shadow-inner">
-                      <button id="btn-leaderboard-global" onclick="setLeaderboardScope('global')" class="px-4 py-1.5 rounded-lg bg-white dark:bg-gray-600 shadow-sm text-indigo-600 dark:text-indigo-400 transition-all" data-i18n="leaderboard.scopeGlobal">Global</button>
-                      <button id="btn-leaderboard-friends" onclick="setLeaderboardScope('friends')" class="px-4 py-1.5 rounded-lg text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-all" data-i18n="leaderboard.scopeFriends">Freunde</button>
+                  <div class="flex justify-center mb-6">
+                    <div class="bg-surface-container-low dark:bg-slate-800/50 p-1.5 rounded-xl inline-flex text-sm font-bold shadow-inner border border-outline-variant/10 dark:border-slate-700/50">
+                        <button id="btn-leaderboard-global" onclick="setLeaderboardScope('global')" class="px-6 py-2 rounded-lg bg-surface-container-lowest dark:bg-slate-600 shadow-sm text-primary dark:text-indigo-300 transition-all" data-i18n="leaderboard.scopeGlobal">Global</button>
+                        <button id="btn-leaderboard-friends" onclick="setLeaderboardScope('friends')" class="px-6 py-2 rounded-lg text-on-surface/60 hover:text-on-surface dark:text-slate-400 dark:hover:text-white transition-all" data-i18n="leaderboard.scopeFriends">Freunde</button>
+                    </div>
                   </div>
-              </div>
 
-              <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-                  <div class="p-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 flex justify-between items-center">
-                      <h3 id="leaderboard-title" class="font-bold text-gray-800 dark:text-white" data-i18n="leaderboard.top100">Top 100 - Diesen Monat</h3>
-                      <button onclick="loadLeaderboard()" class="text-xs text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 font-medium transition-colors">
-                          🔄 <span data-i18n="flights.refresh">Aktualisieren</span>
-                      </button>
+                  <div class="bg-surface-container-lowest dark:bg-slate-800 rounded-[2rem] shadow-sm border border-outline-variant/20 dark:border-slate-700 overflow-hidden">
+                      <div class="p-6 border-b border-outline-variant/10 dark:border-slate-700/50 bg-surface-container-low dark:bg-slate-900/50 flex justify-between items-center">
+                          <h3 id="leaderboard-title" class="font-display font-bold text-on-surface dark:text-white" data-i18n="leaderboard.top100">Top 100 - Diesen Monat</h3>
+                          <button onclick="loadLeaderboard()" class="text-xs text-primary hover:text-primary/80 dark:text-indigo-400 font-bold transition-colors flex items-center gap-1 bg-primary/10 dark:bg-indigo-900/30 px-3 py-1.5 rounded-full">
+                              <span class="material-symbols-outlined text-[14px]">refresh</span> <span data-i18n="flights.refresh">Aktualisieren</span>
+                          </button>
+                      </div>
+                      <div id="leaderboard-container" class="divide-y divide-outline-variant/10 dark:divide-slate-700/50 max-h-[60vh] overflow-y-auto custom-scrollbar">
+                      </div>
                   </div>
-                  <div id="leaderboard-container" class="divide-y divide-gray-100 dark:divide-gray-700 max-h-[60vh] overflow-y-auto custom-scrollbar">
-                  </div>
-              </div>
               </div>
             </div>
 
 			      <div id="tab-content-hilfe" class="hidden">
-              <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
-                <h2 class="text-xl md:text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4" data-i18n="help.title">
+              <div class="flex items-center justify-between mb-8 pr-2">
+                <h2 data-i18n="help.title" class="text-2xl font-display font-extrabold text-on-surface dark:text-white tracking-tight">
                   Hilfe & FAQ
                 </h2>
-                <div id="help-content-container" class="prose dark:prose-invert max-w-none space-y-4 text-gray-700 dark:text-gray-300">
-                </div>
+              </div>
+
+              <div class="bg-surface-container-lowest dark:bg-slate-800 p-6 md:p-8 rounded-[2rem] shadow-sm border border-outline-variant/20 dark:border-slate-700 mb-8 transition-all">
+                  <div class="flex items-center gap-4 mb-6 pb-6 border-b border-outline-variant/10 dark:border-slate-700/50">
+                      <div class="w-12 h-12 rounded-full bg-cyan-accent/10 flex items-center justify-center text-cyan-accent shrink-0">
+                          <span class="material-symbols-outlined text-2xl">support_agent</span>
+                      </div>
+                      <div>
+                          <h3 class="text-lg font-display font-bold text-on-surface dark:text-white" data-i18n="help.subtitle">Support & Informationen</h3>
+                          <p class="text-xs text-on-surface/60 dark:text-slate-400 mt-0.5">Fragen, Antworten und Kontakt</p>
+                      </div>
+                  </div>
+
+                  <div id="help-content-container" class="prose dark:prose-invert max-w-none space-y-4 text-on-surface/80 dark:text-slate-300 text-sm">
+                      </div>
               </div>
             </div>
 
             <div id="tab-content-profil" class="hidden w-full">
-              <div class="flex items-center justify-between mb-4 border-b pb-2 border-indigo-100 dark:border-gray-700">
-                <h2 data-i18n="tabs.profile" class="text-xl md:text-2xl font-bold text-gray-800 dark:text-white">
+              <div class="flex items-center justify-between mb-8 pr-2">
+                <h2 data-i18n="tabs.profile" class="text-2xl font-display font-extrabold text-on-surface dark:text-white tracking-tight">
                   Mein Profil
                 </h2>
               </div>
 
-              <div class="bg-gradient-to-br from-indigo-50 to-white dark:from-gray-800 dark:to-gray-800 p-6 rounded-2xl mb-6 shadow-sm border border-indigo-100 dark:border-gray-700">
-                  <div class="flex items-center gap-3 mb-4">
-                      <div class="text-3xl">🏆</div>
+              <div class="bg-surface-container-lowest dark:bg-slate-800 p-6 md:p-8 rounded-[2rem] mb-6 shadow-sm border border-outline-variant/20 dark:border-slate-700 transition-all duration-300">
+                  <div class="flex items-center gap-4 mb-6 pb-6 border-b border-outline-variant/10 dark:border-slate-700/50">
+                      <div class="w-12 h-12 rounded-full bg-cyan-accent/10 flex items-center justify-center text-cyan-accent shrink-0">
+                          <span class="material-symbols-outlined text-2xl">trophy</span>
+                      </div>
                       <div>
-                          <h3 class="text-lg font-bold text-indigo-900 dark:text-white" data-i18n="profile.communityTitle">Community & Leaderboard</h3>
-                          <p class="text-xs text-gray-500 dark:text-gray-400" data-i18n="profile.communityDesc">Vergleiche deine Flugstatistiken mit anderen.</p>
+                          <h3 class="text-lg font-display font-bold text-on-surface dark:text-white" data-i18n="profile.communityTitle">Community & Leaderboard</h3>
+                          <p class="text-xs text-on-surface/60 dark:text-slate-400 mt-0.5" data-i18n="profile.communityDesc">Vergleiche deine Flugstatistiken mit anderen.</p>
                       </div>
                   </div>
 
-                  <div class="space-y-4">
+                  <div class="space-y-6">
                       <div class="flex gap-4">
                           <div class="w-24 shrink-0">
-                              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" data-i18n="profile.avatarLabel">Avatar</label>
-                              <select id="profile-avatar" class="w-full p-3 rounded-xl border border-gray-300 dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 outline-none transition text-2xl appearance-none text-center cursor-pointer bg-white">
-                                  <option value="🧑‍✈️">🧑‍✈️</option>
-                                  <option value="👨‍✈️">👨‍✈️</option>
-                                  <option value="👩‍✈️">👩‍✈️</option>
-                                  <option value="✈️">✈️</option>
-                                  <option value="🚀">🚀</option>
-                                  <option value="🚁">🚁</option>
-                                  <option value="🌍">🌍</option>
-                                  <option value="🦅">🦅</option>
-                                  <option value="🪂">🪂</option>
-                                  <option value="🛸">🛸</option>
-                                  <option value="🎈">🎈</option>
-                                  <option value="😎">😎</option>
-                              </select>
+                              <label class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1" data-i18n="profile.avatarLabel">Avatar</label>
+                              <div class="relative">
+                                  <select id="profile-avatar" class="w-full p-4 rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner focus:ring-2 focus:ring-primary/50 outline-none transition text-2xl appearance-none text-center cursor-pointer">
+                                      <option value="🧑‍✈️">🧑‍✈️</option>
+                                      <option value="👨‍✈️">👨‍✈️</option>
+                                      <option value="👩‍✈️">👩‍✈️</option>
+                                      <option value="✈️">✈️</option>
+                                      <option value="🚀">🚀</option>
+                                      <option value="🚁">🚁</option>
+                                      <option value="🌍">🌍</option>
+                                      <option value="🦅">🦅</option>
+                                      <option value="🪂">🪂</option>
+                                      <option value="🛸">🛸</option>
+                                      <option value="🎈">🎈</option>
+                                      <option value="😎">😎</option>
+                                  </select>
+                                  <span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-on-surface/40 pointer-events-none text-sm">expand_more</span>
+                              </div>
                           </div>
                           <div class="flex-grow">
-                              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" data-i18n="profile.nicknameLabel">Dein Nickname</label>
-                              <input type="text" id="profile-username" placeholder="z.B. SkyKing99" data-i18n="placeholder.nickname" class="w-full p-3 rounded-xl border border-gray-300 dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 outline-none transition" />
+                              <label class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1" data-i18n="profile.nicknameLabel">Dein Nickname</label>
+                              <input type="text" id="profile-username" placeholder="z.B. SkyKing99" data-i18n="placeholder.nickname" class="w-full p-4 rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner focus:ring-2 focus:ring-primary/50 outline-none transition font-bold text-on-surface dark:text-white" />
+                              <p class="text-[10px] text-on-surface/40 dark:text-slate-500 mt-1" data-i18n="profile.nicknameHint">Dieser Name wird im globalen Leaderboard angezeigt.</p>
                           </div>
                       </div>
-                      <p class="text-[10px] text-gray-400 mt-0.5" data-i18n="profile.nicknameHint">Dieser Name wird im globalen Leaderboard angezeigt.</p>
                       
-                      <div class="flex items-center justify-between bg-white dark:bg-gray-900 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
+                      <div class="flex items-center justify-between bg-surface-container-low dark:bg-slate-900 p-5 rounded-2xl border border-outline-variant/10 dark:border-slate-700/50">
                           <div>
-                              <p class="font-bold text-sm text-gray-800 dark:text-gray-200" data-i18n="profile.leaderboardOptIn">Am Leaderboard teilnehmen</p>
-                              <p class="text-xs text-gray-500" data-i18n="profile.leaderboardOptInDesc">Macht dein Profil für andere sichtbar.</p>
+                              <p class="font-bold text-sm text-on-surface dark:text-white" data-i18n="profile.leaderboardOptIn">Am Leaderboard teilnehmen</p>
+                              <p class="text-xs text-on-surface/60 dark:text-slate-400 mt-0.5" data-i18n="profile.leaderboardOptInDesc">Macht dein Profil für andere sichtbar.</p>
                           </div>
                           <label class="relative inline-flex items-center cursor-pointer">
                             <input type="checkbox" id="profile-is-public" class="sr-only peer">
-                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
+                            <div class="w-11 h-6 bg-outline-variant/50 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-outline-variant after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-primary shadow-inner"></div>
                           </label>
                       </div>
 
-                      <button onclick="saveUserProfile()" id="btn-save-profile" data-i18n="profile.saveBtn" class="w-full py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition shadow-md">
-                          Profil speichern
+                      <button onclick="saveUserProfile()" id="btn-save-profile" data-i18n="profile.saveBtn" class="w-full py-4 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition shadow-sm flex justify-center items-center gap-2">
+                          <span class="material-symbols-outlined">save</span> Profil speichern
                       </button>
                   </div>
               </div>
 
-              <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl mb-6 shadow-sm border border-gray-200 dark:border-gray-700">
-                  <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4" data-i18n="profile.accountDetails">Account Details</h3>
+              <div class="bg-surface-container-lowest dark:bg-slate-800 p-6 md:p-8 rounded-[2rem] mb-6 shadow-sm border border-outline-variant/20 dark:border-slate-700">
+                  <div class="flex items-center gap-2 mb-6">
+                      <span class="material-symbols-outlined text-primary/70 dark:text-indigo-400">account_circle</span>
+                      <h3 class="text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400" data-i18n="profile.accountDetails">Account Details</h3>
+                  </div>
                   
-                  <div class="space-y-4">
-                      <div>
-                          <p class="text-xs text-gray-500" data-i18n="profile.emailLabel">E-Mail Adresse (Login)</p>
-                          <p id="profile-email-display" class="font-bold text-gray-800 dark:text-gray-200">-</p>
+                  <div class="space-y-6">
+                      <div class="bg-surface-container-low dark:bg-slate-900 p-4 rounded-2xl border border-outline-variant/10 dark:border-slate-700/50">
+                          <p class="text-[10px] font-bold uppercase tracking-widest text-on-surface/50 dark:text-slate-500 mb-1" data-i18n="profile.emailLabel">E-Mail Adresse (Login)</p>
+                          <p id="profile-email-display" class="font-bold text-on-surface dark:text-white">-</p>
                       </div>
 
-                      <div class="pt-2 border-t border-gray-100 dark:border-gray-700">
-                          <p class="text-xs text-gray-500 mb-1" data-i18n="profile.subStatus">Abo-Status</p>
+                      <div class="bg-surface-container-low dark:bg-slate-900 p-4 rounded-2xl border border-outline-variant/10 dark:border-slate-700/50">
+                          <p class="text-[10px] font-bold uppercase tracking-widest text-on-surface/50 dark:text-slate-500 mb-2" data-i18n="profile.subStatus">Abo-Status</p>
                           <div class="flex items-center justify-between">
-                              <span id="profile-status-badge" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">Lade...</span>
-                              <span id="app-version" class="text-xs text-gray-400">v--</span>
+                              <span id="profile-status-badge" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-surface-container-highest text-on-surface dark:bg-slate-700 dark:text-slate-300 shadow-inner">Lade...</span>
+                              <span id="app-version" class="text-xs font-medium text-on-surface/40 dark:text-slate-500">v--</span>
                           </div>
-                          <button id="profile-upgrade-btn" onclick="openPremiumModal()" data-i18n="premium.menuBtn" class="hidden mt-3 w-full py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition transform hover:-translate-y-0.5">
-                              🚀 Upgrade auf AvioSphere Pro
+                          
+                          <button id="profile-upgrade-btn" onclick="openPremiumModal()" data-i18n="premium.menuBtn" class="hidden mt-4 w-full py-3 bg-gradient-to-r from-primary to-indigo-900 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition transform hover:-translate-y-0.5 flex justify-center items-center gap-2">
+                              <span class="material-symbols-outlined text-[18px]">workspace_premium</span> Upgrade auf AvioSphere Pro
                           </button>
-                          <button id="profile-manage-btn" onclick="manageSubscription()" data-i18n="burgerMenu.manageSubscription" class="hidden mt-3 w-full py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition">
-                              ⚙️ Abo verwalten
+                          <button id="profile-manage-btn" onclick="manageSubscription()" data-i18n="burgerMenu.manageSubscription" class="hidden mt-4 w-full py-3 bg-surface-container-highest dark:bg-slate-700 text-on-surface dark:text-white font-bold rounded-xl hover:bg-outline-variant/50 transition flex justify-center items-center gap-2">
+                              <span class="material-symbols-outlined text-[18px]">settings</span> Abo verwalten
                           </button>
                       </div>
                   </div>
               </div>
 
-              <div class="grid grid-cols-2 gap-4">
-                  <button onclick="showPasswordChangeModal()" data-i18n="burgerMenu.changePassword" class="py-3 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-bold rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition shadow-sm">
-                      🔒 Passwort ändern
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <button onclick="showPasswordChangeModal()" data-i18n="burgerMenu.changePassword" class="py-4 bg-surface-container-lowest dark:bg-slate-800 text-on-surface dark:text-white font-bold rounded-2xl border border-outline-variant/20 dark:border-slate-700 hover:bg-surface-container-low dark:hover:bg-slate-700 transition shadow-sm flex justify-center items-center gap-2">
+                      <span class="material-symbols-outlined text-[20px] text-primary dark:text-indigo-400">lock_reset</span> Passwort ändern
                   </button>
-                  <button onclick="logout()" data-i18n="burgerMenu.logout" class="py-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 font-bold rounded-xl border border-red-100 dark:border-red-800/30 hover:bg-red-100 dark:hover:bg-red-900/40 transition shadow-sm">
-                      🚪 Logout
+                  <button onclick="logout()" data-i18n="burgerMenu.logout" class="py-4 bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 font-bold rounded-2xl border border-red-200 dark:border-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/20 transition shadow-sm flex justify-center items-center gap-2">
+                      <span class="material-symbols-outlined text-[20px]">logout</span> Logout
                   </button>
               </div>
             </div>
 			
           </div> </div> </div> 
-        <div class="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] md:bottom-8 left-0 w-full flex justify-center z-[100] pointer-events-none px-2">
-          <div class="relative max-w-full pointer-events-auto">
+        <div class="fixed bottom-0 left-0 right-0 z-[100] bg-surface-container-highest/90 dark:bg-slate-900/90 backdrop-blur-xl border-t border-outline-variant/30 dark:border-slate-800 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+          <nav class="flex items-center overflow-x-auto hide-scrollbar px-2 py-2 gap-1 max-w-4xl mx-auto" aria-label="Tabs">
             
-            <div class="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-indigo-200/95 dark:from-indigo-900/95 to-transparent rounded-l-full z-10 pointer-events-none flex items-center justify-start pl-2">
-                <span class="text-indigo-600 dark:text-indigo-300 font-bold text-lg animate-pulse opacity-80">‹</span>
-            </div>
+            <button onclick="showTab('neue-fluege')" id="tab-btn-neue-fluege" class="tab-btn flex-shrink-0 flex flex-col items-center justify-center text-on-surface/70 dark:text-slate-400 px-4 py-2 hover:bg-surface-container-low dark:hover:bg-slate-800 rounded-2xl transition-all duration-300 ease-out">
+              <span class="material-symbols-outlined mb-1 text-2xl">add_circle</span>
+              <span class="font-display text-[10px] font-bold tracking-wide uppercase" data-i18n="tabs.newFlight">Neuer Flug</span>
+            </button>
+            
+            <button onclick="showTab('fluege')" id="tab-btn-fluege" class="tab-btn flex-shrink-0 flex flex-col items-center justify-center text-on-surface/70 dark:text-slate-400 px-4 py-2 hover:bg-surface-container-low dark:hover:bg-slate-800 rounded-2xl transition-all duration-300 ease-out">
+              <span class="material-symbols-outlined mb-1 text-2xl">flight_takeoff</span>
+              <span class="font-display text-[10px] font-bold tracking-wide uppercase" data-i18n="tabs.flights">Flüge</span>
+            </button>
+            
+            <button onclick="showTab('stats')" id="tab-btn-stats" class="tab-btn flex-shrink-0 flex flex-col items-center justify-center text-on-surface/70 dark:text-slate-400 px-4 py-2 hover:bg-surface-container-low dark:hover:bg-slate-800 rounded-2xl transition-all duration-300 ease-out">
+              <span class="material-symbols-outlined mb-1 text-2xl">bar_chart</span>
+              <span class="font-display text-[10px] font-bold tracking-wide uppercase" data-i18n="tabs.stats">Statistiken</span>
+            </button>
+            
+            <button onclick="showTab('charts')" id="tab-btn-charts" class="tab-btn flex-shrink-0 flex flex-col items-center justify-center text-on-surface/70 dark:text-slate-400 px-4 py-2 hover:bg-surface-container-low dark:hover:bg-slate-800 rounded-2xl transition-all duration-300 ease-out">
+              <span class="material-symbols-outlined mb-1 text-2xl">pie_chart</span>
+              <span class="font-display text-[10px] font-bold tracking-wide uppercase" data-i18n="tabs.charts">Charts</span>
+            </button>
+            
+            <button onclick="showTab('trips')" id="tab-btn-trips" class="tab-btn flex-shrink-0 flex flex-col items-center justify-center text-on-surface/70 dark:text-slate-400 px-4 py-2 hover:bg-surface-container-low dark:hover:bg-slate-800 rounded-2xl transition-all duration-300 ease-out">
+              <span class="material-symbols-outlined mb-1 text-2xl">luggage</span>
+              <span class="font-display text-[10px] font-bold tracking-wide uppercase" data-i18n="tabs.trips">Reisen</span>
+            </button>
+            
+            <button onclick="showTab('logbook')" id="tab-btn-logbook" class="tab-btn flex-shrink-0 flex flex-col items-center justify-center text-on-surface/70 dark:text-slate-400 px-4 py-2 hover:bg-surface-container-low dark:hover:bg-slate-800 rounded-2xl transition-all duration-300 ease-out">
+              <span class="material-symbols-outlined mb-1 text-2xl">menu_book</span>
+              <span class="font-display text-[10px] font-bold tracking-wide uppercase" data-i18n="tabs.logbook">Logbuch</span>
+            </button>
+            
+            <button onclick="showTab('achievements')" id="tab-btn-achievements" class="tab-btn flex-shrink-0 flex flex-col items-center justify-center text-on-surface/70 dark:text-slate-400 px-4 py-2 hover:bg-surface-container-low dark:hover:bg-slate-800 rounded-2xl transition-all duration-300 ease-out">
+              <span class="material-symbols-outlined mb-1 text-2xl">military_tech</span>
+              <span class="font-display text-[10px] font-bold tracking-wide uppercase" data-i18n="tabs.achievements">Rekorde</span>
+            </button>
+            
+            <button onclick="showTab('profil')" id="tab-btn-profil" class="tab-btn flex-shrink-0 flex flex-col items-center justify-center text-on-surface/70 dark:text-slate-400 px-4 py-2 hover:bg-surface-container-low dark:hover:bg-slate-800 rounded-2xl transition-all duration-300 ease-out">
+              <span class="material-symbols-outlined mb-1 text-2xl">person</span>
+              <span class="font-display text-[10px] font-bold tracking-wide uppercase" data-i18n="tabs.profile">Profil</span>
+            </button>
+            
+            <button onclick="showTab('hilfe')" id="tab-btn-hilfe" class="tab-btn flex-shrink-0 flex flex-col items-center justify-center text-on-surface/70 dark:text-slate-400 px-4 py-2 hover:bg-surface-container-low dark:hover:bg-slate-800 rounded-2xl transition-all duration-300 ease-out">
+              <span class="material-symbols-outlined mb-1 text-2xl">support_agent</span>
+              <span class="font-display text-[10px] font-bold tracking-wide uppercase" data-i18n="tabs.help">Hilfe</span>
+            </button>
 
-            <nav class="flex items-center overflow-x-auto hide-scrollbar bg-indigo-200/90 dark:bg-indigo-900/95 backdrop-blur-xl shadow-[0_8px_30px_rgba(79,70,229,0.3)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.8)] rounded-full border border-indigo-300/80 dark:border-indigo-700/80 p-1.5 gap-1 md:gap-2 max-w-full" aria-label="Tabs">
-              
-              <button onclick="showTab('neue-fluege')" id="tab-btn-neue-fluege" data-i18n="tabs.newFlight" class="tab-btn whitespace-nowrap py-2 px-4 md:px-5 text-sm rounded-full transition-all duration-300">✈️ Neuer Flug</button>
-              <button onclick="showTab('fluege')" id="tab-btn-fluege" data-i18n="tabs.flights" class="tab-btn whitespace-nowrap py-2 px-4 md:px-5 text-sm rounded-full transition-all duration-300">📋 Flüge</button>
-              <button onclick="showTab('stats')" id="tab-btn-stats" data-i18n="tabs.stats" class="tab-btn whitespace-nowrap py-2 px-4 md:px-5 text-sm rounded-full transition-all duration-300">📊 Statistiken</button>
-              <button onclick="showTab('charts')" id="tab-btn-charts" data-i18n="tabs.charts" class="tab-btn whitespace-nowrap py-2 px-4 md:px-5 text-sm rounded-full transition-all duration-300">📈 Charts</button>
-              <button onclick="showTab('trips')" id="tab-btn-trips" data-i18n="tabs.trips" class="tab-btn whitespace-nowrap py-2 px-4 md:px-5 text-sm rounded-full transition-all duration-300">🏝️ Reisen</button>
-              <button onclick="showTab('logbook')" id="tab-btn-logbook" data-i18n="tabs.logbook" class="tab-btn whitespace-nowrap py-2 px-4 md:px-5 text-sm rounded-full transition-all duration-300">📔 Logbuch</button>
-              <button onclick="showTab('achievements')" id="tab-btn-achievements" data-i18n="tabs.achievements" class="tab-btn whitespace-nowrap py-2 px-4 md:px-5 text-sm rounded-full transition-all duration-300">🏆 Rekorde</button>
-              <button onclick="showTab('profil')" id="tab-btn-profil" data-i18n="tabs.profile" class="tab-btn whitespace-nowrap py-2 px-4 md:px-5 text-sm rounded-full transition-all duration-300">Profil</button>
-              <button onclick="showTab('hilfe')" id="tab-btn-hilfe" data-i18n="tabs.help" class="tab-btn whitespace-nowrap py-2 px-4 md:px-5 text-sm rounded-full transition-all duration-300">💡 Hilfe</button>
-
-            </nav>
-
-            <div class="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-indigo-200/95 dark:from-indigo-900/95 to-transparent rounded-r-full z-10 pointer-events-none flex items-center justify-end pr-2">
-                <span class="text-indigo-600 dark:text-indigo-300 font-bold text-lg animate-pulse opacity-80">›</span>
-            </div>
-
-          </div>
+          </nav>
         </div>
-    <div
-      id="password-change-modal"
-      class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center p-4 z-50"
-    >
-      <div
-        class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-full max-w-md"
-      >
-        <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-4" data-i18n="newPWD">
-          Neues Passwort festlegen
-        </h3>
-        <form id="password-change-form" class="space-y-4">
-          <div>
-            <label
-              for="new-password"
-              class="block text-sm font-medium text-gray-700 dark:text-gray-300" data-i18n="placeholder.password"
-              >Neues Passwort</label
-            >
-            <input
-              type="password"
-              id="new-password"
-              placeholder="Mindestens 6 Zeichen"
-              class="mt-1 w-full p-3 rounded-lg border-gray-300 dark:bg-gray-700 dark:border-gray-600" data-i18n="placeholder.newPassword"
-            />
-          </div>
-          <div class="flex justify-end gap-4">
-            <button
-              type="button"
-              onclick="closePasswordChangeModal(event)"
-              class="px-4 py-2 bg-gray-200 dark:bg-gray-600 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500 transition" data-i18n="form.cancel"
-            >
-              Abbrechen
-            </button>
-            <button
-              type="submit"
-              class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition" data-i18n="form.save"
-            >
-              Speichern
-            </button>
-          </div>
+    <div id="password-change-modal" class="fixed inset-0 z-[110] hidden items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md transition-opacity duration-300">
+      <div class="bg-surface-container-lowest dark:bg-slate-900 rounded-[2.5rem] overflow-hidden shadow-2xl w-full max-w-sm relative flex flex-col border border-outline-variant/20 dark:border-white/10 p-6 md:p-8">
+        
+        <div class="flex items-center gap-4 mb-8">
+            <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                <span class="material-symbols-outlined text-2xl">lock_reset</span>
+            </div>
+            <h3 class="text-xl font-display font-bold text-on-surface dark:text-white leading-tight" data-i18n="newPWD">Neues Passwort festlegen</h3>
+        </div>
+        
+        <form id="password-change-form" class="space-y-6">
+            <div>
+                <label for="new-password" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-2" data-i18n="placeholder.password">Neues Passwort</label>
+                <div class="relative group">
+                    <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface/40 group-focus-within:text-primary transition-colors">lock</span>
+                    <input type="password" id="new-password" placeholder="Mindestens 6 Zeichen" data-i18n="placeholder.newPassword" class="w-full bg-surface-container-low dark:bg-slate-800 text-on-surface dark:text-white border-none rounded-xl py-4 pl-12 pr-4 focus:ring-2 focus:ring-primary/50 shadow-inner font-medium placeholder-on-surface/40">
+                </div>
+            </div>
+            <div class="flex gap-3 pt-2">
+                <button type="button" onclick="closePasswordChangeModal(event)" class="flex-1 py-3.5 bg-surface-container-highest dark:bg-slate-700 text-on-surface dark:text-white font-bold rounded-xl hover:bg-outline-variant/50 transition shadow-sm" data-i18n="form.cancel">Abbrechen</button>
+                <button type="submit" class="flex-1 py-3.5 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition shadow-md" data-i18n="form.save">Speichern</button>
+            </div>
         </form>
       </div>
     </div>
 
-    <div
-      id="info-modal"
-      class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center p-4 z-50 backdrop-blur-sm"
-    >
-      <div
-        class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col border border-gray-200 dark:border-gray-700"
-      >
+    <div id="info-modal" class="fixed inset-0 z-[120] hidden items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md transition-opacity duration-300">
+      <div class="bg-surface-container-lowest dark:bg-slate-900 rounded-[2.5rem] overflow-hidden shadow-2xl w-full max-w-lg relative flex flex-col border border-outline-variant/20 dark:border-white/10 max-h-[90vh]">
         
-        <div
-          class="flex justify-between items-center border-b p-4 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-t-xl shrink-0"
-        >
-          <h3 id="info-modal-title" class="text-xl font-bold text-gray-800 dark:text-white truncate pr-4 py-1">
+        <div class="flex justify-between items-center border-b border-outline-variant/10 dark:border-slate-700/50 p-6 shrink-0">
+          <h3 id="info-modal-title" class="text-xl font-display font-bold text-on-surface dark:text-white truncate pr-4">
             Modal-Titel
           </h3>
 
           <div class="flex items-center gap-2">
-              <button
-                onclick="shareInfoModalScreenshot()"
-                class="text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition"
-                data-i18n-title="modal.shareDetails"
-                title="Details teilen"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
+              <button onclick="shareInfoModalScreenshot()" class="text-on-surface/40 hover:text-primary dark:text-slate-500 dark:hover:text-indigo-400 p-2 bg-surface-container-low dark:bg-slate-800 rounded-full border border-outline-variant/10 dark:border-slate-700 transition-colors" data-i18n-title="modal.shareDetails" title="Details teilen">
+                <span class="material-symbols-outlined text-[20px]">ios_share</span>
               </button>
-              <button onclick="closeInfoModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-white p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
+              <button onclick="closeInfoModal()" class="text-on-surface/40 hover:text-on-surface dark:text-slate-500 dark:hover:text-white p-2 bg-surface-container-low dark:bg-slate-800 rounded-full border border-outline-variant/10 dark:border-slate-700 transition-colors">
+                <span class="material-symbols-outlined text-[20px]">close</span>
               </button>
           </div>
         </div>
 
-        <div
-          id="info-modal-content"
-          class="p-6 overflow-y-auto text-sm text-gray-700 dark:text-gray-300"
-        >
+        <div id="info-modal-content" class="p-6 md:p-8 overflow-y-auto custom-scrollbar text-sm text-on-surface/80 dark:text-slate-300 leading-relaxed space-y-4">
           <p>Lade Details...</p>
         </div>
-        
       </div>
     </div>
 
@@ -1958,170 +1436,182 @@
   </div>
 </div>
 
-<div id="flight-details-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity duration-300 opacity-0">
-    <button id="fd-prev-btn" class="hidden sm:flex absolute left-2 top-[310px] -translate-y-1/2 bg-gray-800/80 hover:bg-black text-white rounded-full p-2 backdrop-blur-md transition shadow-xl border border-white/20 z-50" title="Vorheriger Flug" data-i18n-title="flights.prevButton">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
-        </button>
+<div id="flight-details-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md transition-opacity duration-300 opacity-0">
+    
+    <button id="fd-prev-btn" class="hidden sm:flex absolute left-4 lg:left-12 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white rounded-full p-4 backdrop-blur-md transition shadow-2xl border border-white/10 z-50" title="Vorheriger Flug" data-i18n-title="flights.prevButton">
+        <span class="material-symbols-outlined text-2xl">arrow_back_ios_new</span>
+    </button>
+    <button id="fd-next-btn" class="hidden sm:flex absolute right-4 lg:right-12 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white rounded-full p-4 backdrop-blur-md transition shadow-2xl border border-white/10 z-50" title="Nächster Flug" data-i18n-title="flights.nextButton">
+        <span class="material-symbols-outlined text-2xl">arrow_forward_ios</span>
+    </button>
 
-        <button id="fd-next-btn" class="hidden sm:flex absolute right-2 top-[310px] -translate-y-1/2 bg-gray-800/80 hover:bg-black text-white rounded-full p-2 backdrop-blur-md transition shadow-xl border border-white/20 z-50" title="Nächster Flug" data-i18n-title="flights.nextButton">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-        </button>
-      <div class="bg-white dark:bg-gray-800 rounded-3xl overflow-hidden shadow-2xl w-full max-w-lg relative flex flex-col max-h-[90vh] transform transition-transform duration-300 scale-95" id="fd-modal-content">
+    <div class="bg-surface-container-lowest dark:bg-slate-900 rounded-[2.5rem] overflow-hidden shadow-2xl w-full max-w-lg relative flex flex-col max-h-[90vh] transform transition-transform duration-300 scale-95 border border-outline-variant/20 dark:border-white/10" id="fd-modal-content">
         
-        <div class="relative h-48 sm:h-56 bg-gray-200 dark:bg-gray-700 shrink-0">
+        <div class="relative h-56 sm:h-64 bg-surface-container-low dark:bg-slate-800 shrink-0">
             <img id="fd-hero-img" src="" class="w-full h-full object-cover" alt="Aircraft">
-            <div class="absolute inset-0 bg-gradient-to-t from-gray-900/90 via-gray-900/40 to-transparent"></div>
+            <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent"></div>
             
-            <button id="fd-close-btn" onclick="closeFlightDetails()" class="absolute top-4 left-4 bg-black/30 hover:bg-black/60 text-white rounded-full p-2 backdrop-blur-md transition-colors z-10">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            <button onclick="closeFlightDetails()" class="absolute top-4 left-4 z-10 w-10 h-10 flex items-center justify-center bg-black/40 hover:bg-black/60 text-white rounded-full backdrop-blur-md transition-all border border-white/20 shadow-sm" title="Schließen">
+                <span class="material-symbols-outlined text-[20px]">close</span>
             </button>
-            
-            <div class="absolute top-4 right-4 flex gap-2 z-10" id="fd-action-buttons">
-                <button onclick="shareFlightDetailsScreenshot()" class="bg-black/30 hover:bg-black/60 text-white rounded-full p-2 backdrop-blur-md transition shadow-lg border border-white/20" title="Bordkarte teilen" data-i18n-title="modal.shareDetails">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path></svg>
+
+            <div id="fd-action-buttons" class="absolute top-4 right-4 z-10 flex gap-2">
+                <button id="fd-share-btn" onclick="shareFlightDetailsScreenshot()" class="w-10 h-10 shrink-0 flex items-center justify-center bg-black/40 hover:bg-black/60 text-white rounded-full backdrop-blur-md transition-all border border-white/20 shadow-sm" data-i18n-title="flights.share">
+                    <span class="material-symbols-outlined text-[18px]">share</span>
                 </button>
-                <button id="fd-edit-btn" class="bg-indigo-600/90 hover:bg-indigo-600 text-white rounded-full p-2 backdrop-blur-md transition shadow-lg border border-indigo-400/30" title="Bearbeiten" data-i18n-title="form.edit">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                <button id="fd-edit-btn" class="w-10 h-10 shrink-0 flex items-center justify-center bg-black/40 hover:bg-black/60 text-white rounded-full backdrop-blur-md transition-all border border-white/20 shadow-sm" data-i18n-title="flights.edit">
+                    <span class="material-symbols-outlined text-[18px]">edit</span>
+                </button>
+                <button id="fd-delete-btn" class="w-10 h-10 shrink-0 flex items-center justify-center bg-red-500/80 hover:bg-red-600/90 text-white rounded-full backdrop-blur-md transition-all border border-white/20 shadow-sm" data-i18n-title="flights.delete">
+                    <span class="material-symbols-outlined text-[18px]">delete</span>
                 </button>
             </div>
 
-              <div class="absolute bottom-4 left-6 right-6 text-white">
-                <div class="flex items-center gap-2 mb-1">
-                    <span class="text-xs font-medium uppercase tracking-wider text-gray-300" id="fd-date"></span>
-                    <span id="fd-log-number" class="bg-indigo-600 text-white px-2 py-0.5 rounded text-[10px] font-bold shadow-sm"></span>
+            <div class="absolute bottom-6 left-8 right-8 text-white">
+                <div class="flex items-center gap-3 mb-2">
+                    <span class="text-[10px] font-bold uppercase tracking-widest text-white/70" id="fd-date"></span>
+                    <span id="fd-log-number" class="bg-white/20 backdrop-blur-sm border border-white/10 text-white px-2.5 py-0.5 rounded-full text-[10px] font-bold shadow-sm"></span>
                 </div>
-                <div class="text-3xl font-black tracking-tight flex items-center gap-3">
-                    <span id="fd-dep"></span>
-                    <svg class="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-                    <span id="fd-arr"></span>
+                <div class="text-4xl md:text-5xl font-display font-black tracking-tighter flex items-center justify-between w-full">
+                    <span id="fd-dep" class="drop-shadow-md"></span>
+                    <div class="flex-1 px-4 relative flex items-center justify-center">
+                        <div class="h-[2px] w-full bg-gradient-to-r from-transparent via-white/40 to-transparent relative">
+                            <span class="material-symbols-outlined absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-cyan-accent bg-transparent px-2 text-2xl drop-shadow-[0_0_8px_rgba(0,229,255,0.5)]" style="font-variation-settings: 'FILL' 1;">flight</span>
+                        </div>
+                    </div>
+                    <span id="fd-arr" class="drop-shadow-md text-right"></span>
                 </div>
             </div>
         </div>
 
-        <div class="p-6 overflow-y-auto custom-scrollbar">
-            <div class="flex items-center justify-between border-b border-gray-100 dark:border-gray-700 pb-4 mb-4">
-                <div class="flex items-center gap-3">
-                    <img id="fd-airline-logo" src="" class="w-10 h-10 object-contain rounded-md hidden bg-white p-1">
+        <div class="p-6 md:p-8 overflow-y-auto custom-scrollbar">
+            
+            <div class="flex items-center justify-between pb-6 mb-6 border-b border-outline-variant/10 dark:border-white/10">
+                <div class="flex items-center gap-4">
+                    <img id="fd-airline-logo" src="" class="h-12 w-12 object-contain rounded-xl hidden bg-white p-2 shadow-sm border border-outline-variant/20">
                     <div>
-                        <div class="font-bold text-gray-800 dark:text-gray-100 text-lg leading-tight" id="fd-airline"></div>
-                        <div class="text-sm text-gray-500 dark:text-gray-400" id="fd-flight-number"></div>
+                        <div class="font-display font-bold text-on-surface dark:text-white text-xl leading-tight" id="fd-airline"></div>
+                        <div class="text-sm font-semibold text-primary/80 dark:text-indigo-300" id="fd-flight-number"></div>
                     </div>
                 </div>
                 <div class="text-right">
-                    <div class="font-bold text-indigo-600 dark:text-indigo-400" id="fd-class"></div>
+                    <div class="inline-block bg-surface-container-low dark:bg-slate-800 px-3 py-1.5 rounded-lg text-xs font-bold text-on-surface/80 dark:text-slate-300 uppercase tracking-wider border border-outline-variant/20 dark:border-slate-700" id="fd-class"></div>
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-3 mb-6">
-                <div class="bg-gray-50 dark:bg-gray-900/50 p-3 rounded-xl border border-gray-100 dark:border-gray-800">
-                    <div class="text-[10px] text-gray-400 uppercase tracking-wide font-bold" data-i18n="boardingPass.aircraft">Flugzeug</div>
-                    <div class="font-bold text-gray-800 dark:text-gray-200 mt-0.5 text-sm" id="fd-aircraft"></div>
+            <div class="grid grid-cols-2 gap-4 mb-8">
+                <div class="bg-surface-container-low dark:bg-slate-800/50 p-4 rounded-2xl border border-outline-variant/10 dark:border-white/5">
+                    <div class="text-[10px] text-on-surface/50 dark:text-slate-400 uppercase tracking-widest font-bold flex items-center gap-1.5 mb-1" data-i18n="boardingPass.aircraft"><span class="material-symbols-outlined text-[14px]">airlines</span> Flugzeug</div>
+                    <div class="font-bold text-on-surface dark:text-white text-sm" id="fd-aircraft"></div>
                 </div>
-                <div class="bg-gray-50 dark:bg-gray-900/50 p-3 rounded-xl border border-gray-100 dark:border-gray-800">
-                    <div class="text-[10px] text-gray-400 uppercase tracking-wide font-bold" data-i18n="boardingPass.registration">Registrierung</div>
-                    <div class="font-bold text-gray-800 dark:text-gray-200 mt-0.5 text-sm" id="fd-reg"></div>
-                </div>
-            </div>
-
-            <div class="flex justify-between items-center mb-6 px-2">
-                <div class="text-center">
-                    <div class="font-extrabold text-gray-800 dark:text-gray-200" id="fd-distance"></div>
-                    <div class="text-[10px] text-gray-400 uppercase tracking-wide font-bold mt-1" data-i18n="boardingPass.distance">Distanz</div>
-                </div>
-                <div class="text-center border-l border-r border-gray-200 dark:border-gray-700 px-6">
-                    <div class="font-extrabold text-gray-800 dark:text-gray-200" id="fd-duration"></div>
-                    <div class="text-[10px] text-gray-400 uppercase tracking-wide font-bold mt-1" data-i18n="boardingPass.flightTime">Flugzeit</div>
-                </div>
-                <div class="text-center">
-                    <div class="font-extrabold text-orange-500" id="fd-co2"></div>
-                    <div class="text-[10px] text-gray-400 uppercase tracking-wide font-bold mt-1">CO₂</div>
+                <div class="bg-surface-container-low dark:bg-slate-800/50 p-4 rounded-2xl border border-outline-variant/10 dark:border-white/5">
+                    <div class="text-[10px] text-on-surface/50 dark:text-slate-400 uppercase tracking-widest font-bold flex items-center gap-1.5 mb-1" data-i18n="boardingPass.registration"><span class="material-symbols-outlined text-[14px]">tag</span> Registrierung</div>
+                    <div class="font-bold text-on-surface dark:text-white text-sm uppercase" id="fd-reg"></div>
                 </div>
             </div>
 
-            <div id="fd-notes-container" class="mb-6 hidden">
-                <div class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2" data-i18n="boardingPass.notes">Notizen</div>
-                <p class="text-sm text-gray-600 dark:text-gray-300 italic bg-yellow-50 dark:bg-yellow-900/10 p-3 rounded-lg border-l-4 border-yellow-400" id="fd-notes"></p>
+            <div class="flex justify-between items-center mb-8 px-2 bg-surface-container-low dark:bg-slate-800/30 p-4 rounded-2xl border border-outline-variant/10 dark:border-white/5">
+                <div class="text-center w-1/3">
+                    <div class="font-display font-black text-xl text-on-surface dark:text-white" id="fd-distance"></div>
+                    <div class="text-[9px] text-on-surface/50 dark:text-slate-400 uppercase tracking-widest font-bold mt-1" data-i18n="boardingPass.distance">Distanz</div>
+                </div>
+                <div class="text-center w-1/3 border-l border-r border-outline-variant/20 dark:border-white/10 px-2">
+                    <div class="font-display font-black text-xl text-primary dark:text-indigo-400" id="fd-duration"></div>
+                    <div class="text-[9px] text-on-surface/50 dark:text-slate-400 uppercase tracking-widest font-bold mt-1" data-i18n="boardingPass.flightTime">Flugzeit</div>
+                </div>
+                <div class="text-center w-1/3">
+                    <div class="font-display font-black text-xl text-orange-500" id="fd-co2"></div>
+                    <div class="text-[9px] text-on-surface/50 dark:text-slate-400 uppercase tracking-widest font-bold mt-1">CO₂</div>
+                </div>
             </div>
 
-            <div id="fd-user-photos-container" class="hidden pb-2">
-                <div class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3 flex items-center gap-2" data-i18n="boardingPass.myPhotos">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                    Meine Fotos
+            <div id="fd-notes-container" class="mb-8 hidden">
+                <div class="text-[10px] font-bold text-on-surface/50 dark:text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1.5" data-i18n="boardingPass.notes"><span class="material-symbols-outlined text-[14px]">edit_note</span> Notizen</div>
+                <p class="text-sm font-medium text-on-surface/80 dark:text-slate-300 italic bg-tertiary-fixed/30 dark:bg-purple-900/10 p-4 rounded-2xl border border-tertiary-fixed-dim/50 dark:border-purple-800/30" id="fd-notes"></p>
+            </div>
+
+            <div id="fd-user-photos-container" class="hidden mb-4">
+                <div class="text-[10px] font-bold text-on-surface/50 dark:text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-1.5" data-i18n="boardingPass.myPhotos">
+                    <span class="material-symbols-outlined text-[14px]">photo_library</span> Meine Fotos
                 </div>
-                <div class="flex gap-3 overflow-x-auto pb-4 custom-scrollbar" id="fd-user-photos">
-                    </div>
+                <div class="flex gap-3 overflow-x-auto pb-4 custom-scrollbar" id="fd-user-photos"></div>
             </div>
             
-            <div class="md:hidden text-center mt-6 mb-2 opacity-50 flex items-center justify-center gap-2 text-xs font-medium text-gray-500 dark:text-gray-400" data-i18n="swipeToScroll">
-                <svg class="w-4 h-4 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            <div class="md:hidden text-center mt-6 mb-2 opacity-50 flex items-center justify-center gap-2 text-[10px] font-bold tracking-widest uppercase text-on-surface/50 dark:text-slate-400" data-i18n="swipeToScroll">
+                <span class="material-symbols-outlined text-[14px] animate-pulse">swipe_left</span>
                 <span>Wischen zum Blättern</span>
-                <svg class="w-4 h-4 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                <span class="material-symbols-outlined text-[14px] animate-pulse">swipe_right</span>
             </div>
 
-            <div class="text-[9px] text-gray-400 text-center mt-2 hidden" id="fd-planespotters-credit">
-                <span data-i18n="boardingPass.coverPhoto">Titelbild:</span> Planespotters.net / <span id="fd-photographer"></span>
+            <div class="text-[9px] text-on-surface/40 dark:text-slate-500 text-center mt-4 hidden uppercase tracking-wider font-bold" id="fd-planespotters-credit">
+                <span data-i18n="boardingPass.coverPhoto">Titelbild:</span> Planespotters.net / <span id="fd-photographer" class="text-primary/70 dark:text-indigo-400"></span>
             </div>
+
         </div> 
     </div> 
-  </div>
+</div>
 
-  <div id="trip-details-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-gray-900/80 backdrop-blur-sm transition-opacity opacity-0">
+  <div id="trip-details-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md transition-opacity duration-300 opacity-0">
 
-    <button id="td-prev-btn" class="hidden md:flex absolute left-4 lg:left-12 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white rounded-full p-4 backdrop-blur-md transition shadow-2xl border border-white/20 z-50" title="Vorherige Reise" data-i18n-title="trips.prev">
-        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+    <button id="td-prev-btn" class="hidden md:flex absolute left-4 lg:left-12 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white rounded-full p-4 backdrop-blur-md transition shadow-2xl border border-white/10 z-50" title="Vorherige Reise" data-i18n-title="trips.prev">
+        <span class="material-symbols-outlined text-2xl">arrow_back_ios_new</span>
+    </button>
+    <button id="td-next-btn" class="hidden md:flex absolute right-4 lg:right-12 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white rounded-full p-4 backdrop-blur-md transition shadow-2xl border border-white/10 z-50" title="Nächste Reise" data-i18n-title="trips.next">
+        <span class="material-symbols-outlined text-2xl">arrow_forward_ios</span>
     </button>
 
-    <button id="td-next-btn" class="hidden md:flex absolute right-4 lg:right-12 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white rounded-full p-4 backdrop-blur-md transition shadow-2xl border border-white/20 z-50" title="Nächste Reise" data-i18n-title="trips.next">
-        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-    </button>
-
-    <div id="td-modal-content" class="bg-white dark:bg-gray-800 w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] transition-transform transform scale-95 relative mx-4">
+    <div id="td-modal-content" class="bg-surface-container-lowest dark:bg-slate-900 rounded-[2.5rem] overflow-hidden shadow-2xl w-full max-w-2xl relative flex flex-col max-h-[90vh] transition-transform transform scale-95 border border-outline-variant/20 dark:border-white/10">
         
-        <div class="relative h-48 sm:h-56 bg-indigo-900 shrink-0">
+        <div class="relative h-56 sm:h-64 bg-surface-container-low dark:bg-slate-800 shrink-0">
             <img id="td-hero-img" src="https://images.unsplash.com/photo-1436491865332-7a61a109cc05?q=80&w=1000&auto=format&fit=crop" class="w-full h-full object-cover opacity-60" alt="Trip Cover">
-            <div class="absolute inset-0 bg-gradient-to-t from-gray-900/90 via-gray-900/40 to-transparent"></div>
+            <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent"></div>
             
-            <button onclick="closeTripDetails()" class="absolute top-4 left-4 bg-black/30 hover:bg-black/60 text-white rounded-full p-2 backdrop-blur-md transition-colors z-10">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            <button onclick="closeTripDetails()" class="absolute top-5 left-5 bg-black/40 hover:bg-black/60 text-white rounded-full p-2.5 backdrop-blur-md transition-colors z-10 border border-white/10">
+                <span class="material-symbols-outlined text-[20px]">close</span>
             </button>
             
-            <div class="absolute bottom-4 left-6 right-6 text-white">
-                <div class="text-xs font-medium uppercase tracking-wider text-gray-300 mb-1" id="td-date-range"></div>
-                <div class="text-3xl font-black tracking-tight flex items-center gap-2">
-                    🏝️ <span id="td-name"></span>
+            <div class="absolute bottom-6 left-8 right-8 text-white">
+                <div class="text-[10px] font-bold uppercase tracking-widest text-white/70 mb-2" id="td-date-range"></div>
+                <div class="text-3xl sm:text-4xl font-display font-black tracking-tight flex items-center gap-3 drop-shadow-md">
+                    <span class="material-symbols-outlined text-cyan-accent text-3xl sm:text-4xl" style="font-variation-settings: 'FILL' 1;">luggage</span> 
+                    <span id="td-name"></span>
                 </div>
             </div>
         </div>
 
-        <div class="p-6 overflow-y-auto custom-scrollbar">
+        <div class="p-6 md:p-8 overflow-y-auto custom-scrollbar">
             
-            <div class="grid grid-cols-3 gap-3 mb-6">
-                <div class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-xl border border-gray-100 dark:border-gray-700 text-center">
-                    <p class="text-[10px] text-gray-500 dark:text-gray-400 font-bold mb-1 uppercase" data-i18n="stats.flights">Flüge</p>
-                    <p class="text-lg font-black text-indigo-600 dark:text-indigo-400" id="td-flight-count">-</p>
+            <div class="grid grid-cols-3 gap-4 mb-8">
+                <div class="bg-surface-container-low dark:bg-slate-800/50 p-4 rounded-2xl border border-outline-variant/10 dark:border-white/5 text-center">
+                    <p class="text-[10px] text-on-surface/50 dark:text-slate-400 font-bold mb-1 uppercase tracking-widest" data-i18n="stats.flights">Flüge</p>
+                    <p class="text-xl font-display font-black text-primary dark:text-indigo-400" id="td-flight-count">-</p>
                 </div>
-                <div class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-xl border border-gray-100 dark:border-gray-700 text-center">
-                    <p class="text-[10px] text-gray-500 dark:text-gray-400 font-bold mb-1 uppercase" data-i18n="stats.distance">Distanz</p>
-                    <p class="text-lg font-black text-gray-900 dark:text-white" id="td-distance">-</p>
+                <div class="bg-surface-container-low dark:bg-slate-800/50 p-4 rounded-2xl border border-outline-variant/10 dark:border-white/5 text-center">
+                    <p class="text-[10px] text-on-surface/50 dark:text-slate-400 font-bold mb-1 uppercase tracking-widest" data-i18n="stats.distance">Distanz</p>
+                    <p class="text-xl font-display font-black text-on-surface dark:text-white" id="td-distance">-</p>
                 </div>
-                <div class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-xl border border-gray-100 dark:border-gray-700 text-center">
-                    <p class="text-[10px] text-gray-500 dark:text-gray-400 font-bold mb-1 uppercase">CO₂</p>
-                    <p class="text-lg font-black text-orange-600 dark:text-orange-500" id="td-co2">-</p>
+                <div class="bg-surface-container-low dark:bg-slate-800/50 p-4 rounded-2xl border border-outline-variant/10 dark:border-white/5 text-center">
+                    <p class="text-[10px] text-on-surface/50 dark:text-slate-400 font-bold mb-1 uppercase tracking-widest">CO₂</p>
+                    <p class="text-xl font-display font-black text-orange-600 dark:text-orange-500" id="td-co2">-</p>
                 </div>
             </div>
 
-            <h3 class="text-xs font-bold text-gray-400 dark:text-gray-500 mb-3 uppercase tracking-wider" data-i18n="trips.routing">Routing</h3>
-            <div id="td-flight-list" class="space-y-2 mb-6 border-l-2 border-indigo-100 dark:border-indigo-900/50 pl-4 ml-2">
-                </div>
+            <div class="flex items-center gap-2 mb-4">
+                <span class="material-symbols-outlined text-primary/70 dark:text-indigo-400">route</span>
+                <h3 class="text-xs font-bold text-on-surface/60 dark:text-slate-400 uppercase tracking-wider" data-i18n="trips.routing">Routing</h3>
+            </div>
+            
+            <div id="td-flight-list" class="space-y-3 mb-6 border-l-2 border-outline-variant/30 dark:border-white/10 pl-5 ml-2">
+            </div>
 
-            <div class="md:hidden text-center mt-6 mb-2 opacity-50 flex items-center justify-center gap-2 text-xs font-medium text-gray-500 dark:text-gray-400" data-i18n="swipeToScroll">
-                <svg class="w-4 h-4 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            <div class="md:hidden text-center mt-6 mb-2 opacity-50 flex items-center justify-center gap-2 text-[10px] font-bold tracking-widest uppercase text-on-surface/50 dark:text-slate-400" data-i18n="swipeToScroll">
+                <span class="material-symbols-outlined text-[14px] animate-pulse">swipe_left</span>
                 <span>Wischen zum Blättern</span>
-                <svg class="w-4 h-4 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                <span class="material-symbols-outlined text-[14px] animate-pulse">swipe_right</span>
             </div>
         </div>
     </div>
-  </div>
+</div>
 
   <div id="logbook-details-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-gray-900/80 backdrop-blur-sm transition-opacity opacity-0">
     <div id="ld-modal-content" class="bg-white dark:bg-gray-800 w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] transition-transform transform scale-95 relative mx-4">

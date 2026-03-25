@@ -165,6 +165,7 @@ function switchPlan(plan) {
   const config = pricingConfig[plan];
   const monthlyBtn = document.getElementById("plan-monthly-btn");
   const yearlyBtn = document.getElementById("plan-yearly-btn");
+  
   const activeClasses = [
     "bg-white",
     "dark:bg-gray-600",
@@ -196,7 +197,8 @@ function switchPlan(plan) {
   const amountEl = document.getElementById("premium-price-amount");
   const periodEl = document.getElementById("premium-price-period");
   
-  // === 🚀 DIE SCHLAUE GOOGLE-SCHUTZ-WEICHE ===
+  if (amountEl) {
+    // === 🚀 DIE SCHLAUE GOOGLE-SCHUTZ-WEICHE ===
     const isNativeApp = typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform();
     
     if (isNativeApp && !window.nativePricesLoaded) {
@@ -221,7 +223,7 @@ function switchPlan(plan) {
     periodEl.textContent = translatedPeriod || config.fallbackPeriod;
     periodEl.setAttribute("data-i18n", config.periodKey);
   }
-
+}
 
 function updateLockVisuals() {
   const globeBtn = document.getElementById("show-globe-btn");

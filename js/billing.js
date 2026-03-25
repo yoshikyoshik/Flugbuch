@@ -216,9 +216,15 @@ async function buyNative(planKey) {
             
             // Check
             if (customerInfo.entitlements.all["pro_access"]?.isActive) {
+                
+                // === 🚀 DER NEUE WECKRUF ===
+                // Wir übergeben die frischen Google-Daten SOFORT an unsere Update-Logik!
+                await handleCustomerInfo(customerInfo);
+                // ===========================
+
                 showMessage(getTranslation("toast.successTitle") || "Erfolg!", getTranslation("billing.welcomePro") || "Willkommen bei AvioSphere Pro!", "success");
-                closePremiumModal();
-                // UI Update wird automatisch durch den Listener (handleCustomerInfo) ausgelöst!
+                
+                if (typeof closePremiumModal === 'function') closePremiumModal();
             }
         } else {
             showMessage(getTranslation("toast.errorTitle") || "Fehler", getTranslation("billing.noStoreConnection") || "Keine Verbindung zum Store.", "error");
