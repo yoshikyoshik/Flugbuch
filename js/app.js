@@ -165,7 +165,10 @@ async function initializeApp() {
   await migrateAndLoadAirports();
 
   if (!map) {
-    map = L.map("flight-map-container").setView([20, 0], 2);
+    // Neu: gestureHandling: true hinzugefügt
+    map = L.map("flight-map-container", {
+      gestureHandling: true
+    }).setView([20, 0], 2);
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution:
         '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
@@ -627,9 +630,13 @@ async function startDemoMode() {
     showTab('fluege'); 
 
     // --- KARTE INITIALISIEREN (Wichtig, sonst Crash!) ---
+    // --- KARTE INITIALISIEREN (Wichtig, sonst Crash!) ---
     if (!map) {
         try {
-            map = L.map("flight-map-container").setView([20, 0], 2);
+            // Neu: gestureHandling: true hinzugefügt
+            map = L.map("flight-map-container", {
+                gestureHandling: true
+            }).setView([20, 0], 2);
             L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
               attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
             }).addTo(map);

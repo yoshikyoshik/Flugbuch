@@ -41,8 +41,10 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-	<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+	  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
     <script src="https://unpkg.com/leaflet-polylinedecorator@1.6.0/dist/leaflet.polylineDecorator.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-gesture-handling/dist/leaflet-gesture-handling.min.css" type="text/css">
+    <script src="https://unpkg.com/leaflet-gesture-handling"></script>
     <script src="//unpkg.com/globe.gl@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -92,7 +94,7 @@
   </head>
 
   <body class="bg-background dark:bg-gray-900 text-on-surface dark:text-gray-200 min-h-screen font-sans transition-colors duration-500 antialiased">
-    <div id="auth-container" class="relative min-h-screen w-full bg-gradient-to-br from-indigo-900 via-indigo-700 to-indigo-900 overflow-hidden flex flex-col justify-between items-center transition-all duration-500">
+    <div id="auth-container" class="relative min-h-screen w-full bg-gradient-to-br from-indigo-900 via-indigo-700 to-indigo-900 overflow-hidden flex flex-col justify-between items-center transition-all duration-500 font-display">
       
       <div class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-indigo-500 rounded-full mix-blend-overlay filter blur-3xl opacity-50"></div>
       <div class="absolute bottom-[20%] right-[-10%] w-72 h-72 bg-purple-500 rounded-full mix-blend-overlay filter blur-3xl opacity-50"></div>
@@ -107,18 +109,18 @@
 
       <div class="relative z-10 flex flex-col items-center text-center px-6 -mt-10">
         <img src="pictures/logo.png" alt="AvioSphere Logo" class="w-28 h-28 md:w-32 md:h-32 rounded-3xl shadow-2xl mb-8 transform hover:scale-105 transition duration-300 ring-4 ring-white/20">
-        <h1 class="text-5xl md:text-7xl font-extrabold text-white tracking-tight drop-shadow-lg mb-4">AvioSphere</h1>
+        <h1 class="text-5xl md:text-7xl font-display font-black text-white tracking-tight drop-shadow-lg mb-4">AvioSphere</h1>
         <p class="text-indigo-100 text-lg md:text-xl font-medium max-w-sm drop-shadow-md" data-i18n="landing.subheadline">
           Das ultimative digitale Flugbuch für Vielflieger und Enthusiasten.
         </p>
       </div>
 
       <div class="relative z-20 w-full max-w-sm px-6 pb-12 space-y-4">
-        <button data-i18n="landing.loginBtn" onclick="toggleAuthSheet(true)" data-i18n="landing.loginBtn" class="w-full py-4 bg-white text-indigo-700 font-extrabold text-lg rounded-2xl shadow-xl hover:bg-gray-50 transform hover:-translate-y-1 transition-all duration-200">
+        <button data-i18n="landing.loginBtn" onclick="toggleAuthSheet(true)" class="w-full py-4 bg-white text-primary font-display font-black text-lg rounded-2xl shadow-xl hover:bg-gray-50 transform hover:-translate-y-1 transition-all duration-200">
           Login / Registrieren
         </button>
         
-        <button id="demo-btn" class="w-full py-4 bg-indigo-800/40 border border-indigo-300/50 text-white font-bold text-lg rounded-2xl backdrop-blur-md hover:bg-indigo-800/60 transition-all duration-200">
+        <button id="demo-btn" class="w-full py-4 bg-indigo-800/40 border border-indigo-300/50 text-white font-display font-bold text-lg rounded-2xl backdrop-blur-md hover:bg-indigo-800/60 transition-all duration-200">
           <span class="mr-2">🚀</span> <span data-i18n="demo.btn">App testen (Demo)</span>
         </button>
 
@@ -142,9 +144,9 @@
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
 
-            <div id="auth-tabs" class="flex justify-center border-b border-gray-200 dark:border-gray-700 mb-6">
-              <button onclick="switchAuthTab('login')" id="login-tab" data-i18n="login" class="auth-tab active-tab px-6 py-2 font-semibold text-lg transition-colors">Login</button>
-              <button onclick="switchAuthTab('register')" id="register-tab" data-i18n="register" class="auth-tab px-6 py-2 font-semibold text-lg transition-colors">Registrieren</button>
+            <div id="auth-tabs" class="flex justify-center border-b border-gray-200 dark:border-gray-700 mb-6 font-display">
+              <button onclick="switchAuthTab('login')" id="login-tab" data-i18n="login" class="auth-tab active-tab px-6 py-2 font-bold text-lg transition-colors">Login</button>
+              <button onclick="switchAuthTab('register')" id="register-tab" data-i18n="register" class="auth-tab px-6 py-2 font-bold text-lg transition-colors">Registrieren</button>
             </div>
 
             <form id="login-form" class="space-y-5">
@@ -165,7 +167,7 @@
               <div class="text-right">
                 <a href="#" onclick="event.preventDefault(); showPasswordResetForm();" data-i18n="forgotPWD" class="text-sm font-medium text-indigo-600 hover:underline dark:text-indigo-400">Passwort vergessen?</a>
               </div>
-              <button type="submit" data-i18n="login" class="w-full py-3.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+              <button type="submit" data-i18n="login" class="w-full py-3.5 bg-primary text-white font-display font-bold rounded-xl hover:bg-primary/90 transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
                 Einloggen
               </button>
             </form>
@@ -185,7 +187,7 @@
                   </button>
                 </div>
               </div>
-              <button type="submit" data-i18n="registerFree" class="w-full py-3.5 bg-green-600 text-white font-bold rounded-xl hover:bg-green-700 transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+              <button type="submit" data-i18n="registerFree" class="w-full py-3.5 bg-green-600 text-white font-display font-bold rounded-xl hover:bg-green-700 transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
                 Kostenlos Registrieren
               </button>
               <p class="text-xs text-center text-gray-500 dark:text-gray-400 mt-4">
@@ -391,13 +393,13 @@
                   
                   <div class="autocomplete-container lg:col-span-3">
                     <label for="departure" data-i18n="departureNewFlight" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1">Abflugort (IATA/Name)</label>
-                    <input type="text" id="departure" placeholder="z.B. FRA" data-i18n="form.airportPlaceholder" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium" />
+                    <input type="text" id="departure" placeholder="z.B. FRA" data-i18n="placeholder.egDeparture" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium" />
                     <div id="departure-list" class="autocomplete-list hidden rounded-xl shadow-lg border border-outline-variant/20 mt-1 z-50"></div>
                   </div>
                   
                   <div class="autocomplete-container lg:col-span-3">
                     <label for="arrival" data-i18n="arrivalNewFlight" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1">Zielort (IATA/Name)</label>
-                    <input type="text" id="arrival" placeholder="z.B. JFK" data-i18n="form.airportPlaceholder" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium" />
+                    <input type="text" id="arrival" placeholder="z.B. JFK" data-i18n="placeholder.egArrival" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium" />
                     <div id="arrival-list" class="autocomplete-list hidden rounded-xl shadow-lg border border-outline-variant/20 mt-1 z-50"></div>
                   </div>
 
@@ -422,22 +424,22 @@
 
                   <div class="lg:col-span-2">
                     <label for="flightNumber" data-i18n="form.flightNumberOptional" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1">Flugnummer (Optional)</label>
-                    <input type="text" id="flightNumber" placeholder="z.B. LH400" data-i18n="form.flightNumberPlaceholder" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium" />
+                    <input type="text" id="flightNumber" placeholder="z.B. LH400" data-i18n="placeholder.egFlightNumber" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium" />
                   </div>
                   
                   <div class="lg:col-span-2">
                     <label for="airline" data-i18n="form.airline" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1">Airline (Optional)</label>
-                    <input type="text" id="airline" placeholder="z.B. Lufthansa" data-i18n="form.airlinePlaceholder" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium" />
+                    <input type="text" id="airline" placeholder="z.B. Lufthansa" data-i18n="placeholder.egAirline" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium" />
                   </div>
                   
                   <div class="lg:col-span-2">
                     <label for="aircraftType" data-i18n="form.aircraft" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1">Flugzeugtyp (Optional)</label>
-                    <input type="text" id="aircraftType" placeholder="z.B. A320" data-i18n="form.aircraftTypePlaceholder" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium" />
+                    <input type="text" id="aircraftType" placeholder="z.B. A320" data-i18n="placeholder.egAircraft" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium" />
                   </div>
 
                   <div class="lg:col-span-2">
                     <label for="registration" data-i18n="form.registration" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1">Registrierung (Optional)</label>
-                    <input type="text" id="registration" placeholder="z.B. D-AINC" data-i18n="form.registrationPlaceholder" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium uppercase" />
+                    <input type="text" id="registration" placeholder="z.B. D-AINC" data-i18n="placeholder.egRegistration" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium" />
                     
                     <div id="planespotters-preview" class="hidden mt-3 rounded-2xl overflow-hidden border border-outline-variant/20 dark:border-slate-700 shadow-sm relative group transition-all duration-300">
                       <img id="planespotters-img" src="" alt="Aircraft Preview" class="w-full h-40 object-cover">
@@ -453,12 +455,12 @@
                   
                   <div class="lg:col-span-2">
                     <label for="price" data-i18n="priceNewFlight" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1">Ticketpreis (Optional)</label>
-                    <input type="number" id="price" placeholder="z.B. 199.99" step="0.01" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium" />
+                    <input type="number" id="price" placeholder="z.B. 199.99" data-i18n="placeholder.egPrice" step="0.01" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium" />
                   </div>
                   
                   <div class="lg:col-span-2">
                     <label for="currency" data-i18n="currencyNewFlight" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1">Währung (Optional)</label>
-                    <input type="text" id="currency" placeholder="z.B. EUR" maxlength="3" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium uppercase" />
+                    <input type="text" id="currency" placeholder="z.B. EUR" data-i18n="placeholder.egCurrency" maxlength="3" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium" />
                   </div>
 
                   <div class="lg:col-span-3">
@@ -545,15 +547,21 @@
 
             <div id="tab-content-fluege">
 
-              <div id="live-flight-promo" class="hidden mb-6 relative bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-indigo-900/20 dark:to-blue-900/20 border border-blue-200 dark:border-indigo-800 rounded-2xl p-4 shadow-sm">
-                  <div class="flex gap-4 items-center">
-                      <div class="text-3xl animate-bounce">🛫</div>
-                      <div>
-                          <h4 class="font-bold text-indigo-800 dark:text-indigo-300 text-sm" data-i18n="live.promoTitle">Tipp für deinen Reisetag</h4>
-                          <p class="text-xs text-gray-600 dark:text-gray-400 mt-0.5" data-i18n="live.promoDesc">Trage deinen Flug schon vorab ein und erhalte am Abflugtag Live-Updates zu Gate, Terminal und Verspätungen direkt hier!</p>
-                      </div>
+              <details id="live-flight-promo" class="hidden mb-6 relative bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-indigo-900/20 dark:to-blue-900/20 border border-blue-200 dark:border-indigo-800 rounded-2xl py-3 px-4 shadow-sm group transition-all duration-300">
+                <summary class="list-none cursor-pointer flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <div class="text-2xl animate-bounce">🛫</div>
+                    <h4 class="font-bold text-indigo-800 dark:text-indigo-300 text-sm" data-i18n="live.promoTitle">Tipp für deinen Reisetag</h4>
                   </div>
-              </div>
+                  <span class="material-symbols-outlined text-indigo-800/50 dark:text-indigo-300/50 group-open:rotate-180 transition-transform duration-300">keyboard_arrow_down</span>
+                </summary>
+                
+                <div class="mt-2 pl-11 pr-2 pb-1 border-t border-indigo-200/50 dark:border-indigo-800/50 pt-2">
+                  <p class="text-xs text-indigo-900/70 dark:text-indigo-200/80 leading-relaxed" data-i18n="live.promoDesc">
+                    Trage deinen Flug schon vorab ein und erhalte am Abflugtag Live-Updates zu Gate, Terminal und Verspätungen direkt hier!
+                  </p>
+                </div>
+              </details>
               
               <div id="live-flight-widget" class="hidden mb-12 relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-on-primary-container to-slate-900 shadow-2xl border border-white/10 group transition-transform duration-300 hover:-translate-y-1 hover:shadow-primary/20">
                 
@@ -672,95 +680,119 @@
                   <div id="flight-map-container" class="h-[300px] rounded-xl shadow-inner z-0 border border-slate-200 dark:border-slate-700"></div>
                 </div>
               </details>
-              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pr-2 mt-4">
+              <div class="flex items-center justify-between mb-4 pr-2 mt-4">
                 <h2 class="text-2xl font-display font-extrabold text-on-surface dark:text-white tracking-tight" data-i18n="flights.title">
                   Gespeicherte Flüge
                 </h2>
-                <div class="flex flex-wrap items-center gap-2">
-                  <button id="play-chronicle-btn" class="flex items-center justify-center gap-1.5 px-4 py-2 bg-surface-container-low hover:bg-surface-container-highest dark:bg-slate-800 dark:hover:bg-slate-700 text-green-600 dark:text-green-400 rounded-xl transition-all shadow-sm border border-outline-variant/10 dark:border-slate-700 font-bold text-xs" data-i18n-title="flights.playChronicle">
-                    <span class="material-symbols-outlined text-[16px]">play_circle</span> <span data-i18n="flights.playChronicle">Chronik abspielen</span>
-                  </button>
-                  <button id="toggle-map-view-btn" onclick="toggleAllRoutesView()" class="flex items-center justify-center gap-1.5 px-4 py-2 bg-surface-container-low hover:bg-surface-container-highest dark:bg-slate-800 dark:hover:bg-slate-700 text-primary dark:text-indigo-300 rounded-xl transition-all shadow-sm border border-outline-variant/10 dark:border-slate-700 font-bold text-xs" data-i18n-title="flights.showAllRoutes">
-                    <span class="material-symbols-outlined text-[16px]">map</span> <span data-i18n="flights.showAllRoutes">Alle Routen zeigen</span>
-                  </button>
-                  <button id="show-globe-btn" class="flex items-center justify-center gap-1.5 px-4 py-2 bg-surface-container-low hover:bg-surface-container-highest dark:bg-slate-800 dark:hover:bg-slate-700 text-cyan-accent/80 dark:text-cyan-400 rounded-xl transition-all shadow-sm border border-outline-variant/10 dark:border-slate-700 font-bold text-xs" data-i18n-title="flights.show3DGlobe">
-                    <span class="material-symbols-outlined text-[16px]">public</span> <span data-i18n="flights.show3DGlobe">3D Globus</span>
-                  </button>
-                  <button id="print-book-btn" class="flex items-center justify-center gap-1.5 px-4 py-2 bg-surface-container-low hover:bg-surface-container-highest dark:bg-slate-800 dark:hover:bg-slate-700 text-on-surface dark:text-slate-300 rounded-xl transition-all shadow-sm border border-outline-variant/10 dark:border-slate-700 font-bold text-xs" data-i18n-title="flights.createBook">
-                    <span class="material-symbols-outlined text-[16px]">menu_book</span> <span data-i18n="flights.createBook">Buch erstellen</span>
-                  </button>
-                  <button onclick="renderFlights()" class="flex items-center justify-center gap-1.5 px-4 py-2 bg-surface-container-low hover:bg-surface-container-highest dark:bg-slate-800 dark:hover:bg-slate-700 text-on-surface dark:text-slate-300 rounded-xl transition-all shadow-sm border border-outline-variant/10 dark:border-slate-700 font-bold text-xs" data-i18n-title="flights.refresh">
-                    <span class="material-symbols-outlined text-[16px]">refresh</span> <span class="hidden sm:inline" data-i18n="flights.refresh">Aktualisieren</span>
-                  </button>
-                </div>
               </div>
 
-              <div class="mb-6 relative group">
-                <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface/40 group-focus-within:text-primary transition-colors">search</span>
-                <input
-                  type="text"
-                  id="search-input"
-                  onkeyup="applyFilters()"
-                  class="w-full bg-surface-container-low dark:bg-slate-800 text-on-surface dark:text-white border-none rounded-full py-3.5 pl-12 pr-4 focus:ring-2 focus:ring-primary/50 dark:focus:ring-indigo-500 shadow-inner transition-all font-medium text-sm placeholder-on-surface/40"
-                  data-i18n="flights.filterPlaceholder"
-                  placeholder="Suche (Ort, Airline, Reise, Datum...)"
-                />
-              </div>
-
-              <details class="bg-surface-container-lowest dark:bg-slate-800 p-6 rounded-[2rem] mb-6 shadow-sm border border-outline-variant/20 dark:border-slate-700 group transition-all duration-300">
+              <details class="bg-surface-container-low/40 dark:bg-slate-800/40 py-3 px-5 rounded-2xl mb-3 border border-outline-variant/30 dark:border-slate-700 group transition-all duration-300">
                 <summary class="list-none cursor-pointer flex items-center">
-                  <span class="material-symbols-outlined text-primary/70 dark:text-indigo-400 group-open:rotate-180 transition-transform duration-300 mr-2">keyboard_arrow_down</span>
-                  <h3 class="text-lg font-bold text-on-surface dark:text-white font-display" data-i18n="flights.filterTitle">
-                    Flüge filtern
+                  <span class="material-symbols-outlined text-primary/70 dark:text-indigo-400 transition-transform duration-300 mr-2.5 text-[20px] group-open:rotate-180">build_circle</span>
+                  <h3 class="text-base font-bold text-on-surface/90 dark:text-white font-display" data-i18n="flights.actionsTitle">
+                    Aktionen & Tools
                   </h3>
                 </summary>
 
-                <div class="grid grid-cols-2 lg:grid-cols-3 gap-4 items-end mt-4 border-t border-outline-variant/20 dark:border-slate-700 pt-6">
-                  <div>
-                    <label for="filter-departure" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1" data-i18n="flights.filterDeparture">Abflugort (IATA)</label>
-                    <input type="text" id="filter-departure" placeholder="z.B. FRA" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white" />
-                  </div>
-                  <div>
-                    <label for="filter-arrival" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1" data-i18n="flights.filterArrival">Zielort (IATA)</label>
-                    <input type="text" id="filter-arrival" placeholder="z.B. JFK" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white" />
-                  </div>
-
-                  <div>
-                    <label for="filter-trip" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1" data-i18n="flights.sortTrip">Reise / Trip</label>
-                    <div class="relative">
-                        <select id="filter-trip" onchange="applyFilters()" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3 text-sm focus:ring-2 focus:ring-primary/50 appearance-none dark:text-white cursor-pointer">
-                          <option value="" data-i18n="flights.filterTripPlaceholder">Alle Reisen</option>
-                        </select>
-                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-on-surface/40">
-                          <span class="material-symbols-outlined text-[18px]">expand_more</span>
-                        </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label for="filter-date-from" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1" data-i18n="flights.filterDateFrom">Datum (von)</label>
-                    <input type="date" id="filter-date-from" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white" />
-                  </div>
-                  <div>
-                    <label for="filter-date-to" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1" data-i18n="flights.filterDateTo">Datum (bis)</label>
-                    <input type="date" id="filter-date-to" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white" />
-                  </div>
-                  <div class="flex space-x-2 col-span-2 lg:col-span-1 h-[44px]">
-                    <button onclick="applyFilters()" class="w-full h-full bg-primary hover:bg-primary/90 text-white rounded-xl transition shadow-sm font-bold text-sm" data-i18n="flights.filterButton">Filtern</button>
-                    <button onclick="resetFilters()" class="w-full h-full bg-surface-container-highest dark:bg-slate-700 text-on-surface dark:text-white rounded-xl hover:bg-outline-variant/50 transition font-bold text-sm" data-i18n="flights.resetButton">Reset</button>
-                  </div>
+                <div class="mt-4 border-t border-outline-variant/10 dark:border-slate-700 pt-4 flex flex-wrap items-center gap-2">
+                  <button id="play-chronicle-btn" class="flex items-center justify-center gap-1.5 px-4 py-2 bg-surface-container-lowest hover:bg-surface-container-low dark:bg-slate-900 dark:hover:bg-slate-700 text-green-600 dark:text-green-400 rounded-xl transition-all shadow-sm border border-outline-variant/20 dark:border-slate-700 font-bold text-xs" data-i18n-title="flights.playChronicle">
+                    <span class="material-symbols-outlined text-[16px]">play_circle</span> <span data-i18n="flights.playChronicle">Chronik abspielen</span>
+                  </button>
+                  <button id="toggle-map-view-btn" onclick="toggleAllRoutesView()" class="flex items-center justify-center gap-1.5 px-4 py-2 bg-surface-container-lowest hover:bg-surface-container-low dark:bg-slate-900 dark:hover:bg-slate-700 text-primary dark:text-indigo-300 rounded-xl transition-all shadow-sm border border-outline-variant/20 dark:border-slate-700 font-bold text-xs" data-i18n-title="flights.showAllRoutes">
+                    <span class="material-symbols-outlined text-[16px]">map</span> <span data-i18n="flights.showAllRoutes">Alle Routen zeigen</span>
+                  </button>
+                  <button id="show-globe-btn" class="flex items-center justify-center gap-1.5 px-4 py-2 bg-surface-container-lowest hover:bg-surface-container-low dark:bg-slate-900 dark:hover:bg-slate-700 text-cyan-600 dark:text-cyan-400 rounded-xl transition-all shadow-sm border border-outline-variant/20 dark:border-slate-700 font-bold text-xs" data-i18n-title="flights.show3DGlobe">
+                    <span class="material-symbols-outlined text-[16px]">public</span> <span data-i18n="flights.show3DGlobe">3D Globus</span>
+                  </button>
+                  <button id="print-book-btn" class="flex items-center justify-center gap-1.5 px-4 py-2 bg-surface-container-lowest hover:bg-surface-container-low dark:bg-slate-900 dark:hover:bg-slate-700 text-on-surface dark:text-slate-300 rounded-xl transition-all shadow-sm border border-outline-variant/20 dark:border-slate-700 font-bold text-xs" data-i18n-title="flights.createBook">
+                    <span class="material-symbols-outlined text-[16px]">menu_book</span> <span data-i18n="flights.createBook">Buch erstellen</span>
+                  </button>
+                  <button onclick="renderFlights()" class="flex items-center justify-center gap-1.5 px-4 py-2 bg-surface-container-lowest hover:bg-surface-container-low dark:bg-slate-900 dark:hover:bg-slate-700 text-on-surface dark:text-slate-300 rounded-xl transition-all shadow-sm border border-outline-variant/20 dark:border-slate-700 font-bold text-xs" data-i18n-title="flights.refresh">
+                    <span class="material-symbols-outlined text-[16px]">refresh</span> <span data-i18n="flights.refresh">Aktualisieren</span>
+                  </button>
                 </div>
               </details>
 
-              <div id="sort-bar" class="flex flex-wrap items-center gap-2 mb-8 p-2 bg-surface-container-low dark:bg-slate-800/50 rounded-2xl text-sm font-semibold shadow-inner border border-outline-variant/10 dark:border-slate-700/50">
-                <span class="text-on-surface/60 dark:text-slate-400 mr-2 ml-2 text-xs uppercase tracking-wider font-bold" data-i18n="flights.sortBy">Sortieren nach:</span>
-
-                <button id="sort-btn-flightLogNumber" onclick="setSortOrder('flightLogNumber')" class="sort-btn flex-shrink-0 px-4 py-1.5 rounded-xl transition hover:bg-surface-container-highest dark:hover:bg-slate-700 text-on-surface dark:text-slate-300">#</button>
-                <button id="sort-btn-date" onclick="setSortOrder('date')" class="sort-btn flex-shrink-0 px-4 py-1.5 rounded-xl transition hover:bg-surface-container-highest dark:hover:bg-slate-700 text-on-surface dark:text-slate-300" data-i18n="flights.sortDate">Datum</button>
-                <button id="sort-btn-trip" onclick="setSortOrder('trip')" class="sort-btn flex-shrink-0 px-4 py-1.5 rounded-xl transition hover:bg-surface-container-highest dark:hover:bg-slate-700 text-on-surface dark:text-slate-300" data-i18n="flights.sortTrip">Reise</button>
-                <button id="sort-btn-departure" onclick="setSortOrder('departure')" class="sort-btn flex-shrink-0 px-4 py-1.5 rounded-xl transition hover:bg-surface-container-highest dark:hover:bg-slate-700 text-on-surface dark:text-slate-300" data-i18n="flights.sortRoute">Route</button>
-                <button id="sort-btn-distance" onclick="setSortOrder('distance')" class="sort-btn flex-shrink-0 px-4 py-1.5 rounded-xl transition hover:bg-surface-container-highest dark:hover:bg-slate-700 text-on-surface dark:text-slate-300" data-i18n="flights.sortDistance">Distanz</button>
+              <div class="py-2 mb-2 px-4">
+                <div class="h-px w-full bg-gradient-to-r from-transparent via-outline-variant/40 dark:via-slate-600 to-transparent"></div>
               </div>
+
+              <details class="bg-surface-container-low/40 dark:bg-slate-800/40 py-3 px-5 rounded-2xl mb-3 border border-outline-variant/30 dark:border-slate-700 group transition-all duration-300">
+                <summary class="list-none cursor-pointer flex items-center">
+                  <span class="material-symbols-outlined text-primary/70 dark:text-indigo-400 group-open:rotate-180 transition-transform duration-300 mr-2.5 text-[20px]">keyboard_arrow_down</span>
+                  <h3 class="text-base font-bold text-on-surface/90 dark:text-white font-display" data-i18n="flights.filterTitle">
+                    Suchen & Filtern
+                  </h3>
+                </summary>
+
+                <div class="mt-4 border-t border-outline-variant/10 dark:border-slate-700 pt-4">
+                  
+                  <div class="mb-6 relative group">
+                    <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface/40 dark:text-slate-400 group-focus-within:text-primary dark:group-focus-within:text-indigo-400 transition-colors">search</span>
+                    <input
+                      type="text"
+                      id="search-input"
+                      onkeyup="applyFilters()"
+                      class="w-full bg-surface-container-low dark:bg-slate-900 text-on-surface dark:text-white border-none rounded-full py-3.5 pl-12 pr-4 focus:ring-2 focus:ring-primary/50 dark:focus:ring-indigo-500 shadow-inner transition-all font-medium text-sm placeholder-on-surface/40 dark:placeholder-slate-500"
+                      data-i18n="flights.filterPlaceholder"
+                      placeholder="Suche (Ort, Airline, Reise, Datum...)"
+                    />
+                  </div>
+
+                  <div class="grid grid-cols-2 lg:grid-cols-3 gap-4 items-end">
+                    <div>
+                      <label for="filter-departure" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1" data-i18n="flights.filterDeparture">Abflugort (IATA)</label>
+                      <input type="text" id="filter-departure" placeholder="z.B. FRA" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white" />
+                    </div>
+                    <div>
+                      <label for="filter-arrival" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1" data-i18n="flights.filterArrival">Zielort (IATA)</label>
+                      <input type="text" id="filter-arrival" placeholder="z.B. JFK" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white" />
+                    </div>
+
+                    <div>
+                      <label for="filter-trip" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1" data-i18n="flights.sortTrip">Reise / Trip</label>
+                      <div class="relative">
+                          <select id="filter-trip" onchange="applyFilters()" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3 text-sm focus:ring-2 focus:ring-primary/50 appearance-none dark:text-white cursor-pointer">
+                            <option value="" data-i18n="flights.filterTripPlaceholder">Alle Reisen</option>
+                          </select>
+                          <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-on-surface/40">
+                            <span class="material-symbols-outlined text-[18px]">expand_more</span>
+                          </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label for="filter-date-from" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1" data-i18n="flights.filterDateFrom">Datum (von)</label>
+                      <input type="date" id="filter-date-from" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white" />
+                    </div>
+                    <div>
+                      <label for="filter-date-to" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1" data-i18n="flights.filterDateTo">Datum (bis)</label>
+                      <input type="date" id="filter-date-to" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white" />
+                    </div>
+                    <div class="flex space-x-2 col-span-2 lg:col-span-1 h-[44px]">
+                      <button onclick="applyFilters()" class="w-full h-full bg-primary hover:bg-primary/90 text-white rounded-xl transition shadow-sm font-bold text-sm" data-i18n="flights.filterButton">Filtern</button>
+                      <button onclick="resetFilters()" class="w-full h-full bg-surface-container-highest dark:bg-slate-700 text-on-surface dark:text-white rounded-xl hover:bg-outline-variant/50 transition font-bold text-sm" data-i18n="flights.resetButton">Reset</button>
+                    </div>
+                  </div>
+                </div>
+              </details>
+              
+              <details class="bg-surface-container-low/40 dark:bg-slate-800/40 py-3 px-5 rounded-2xl mb-6 border border-outline-variant/30 dark:border-slate-700 group transition-all duration-300">
+                <summary class="list-none cursor-pointer flex items-center">
+                  <span class="material-symbols-outlined text-primary/70 dark:text-indigo-400 transition-transform duration-300 mr-2.5 text-[20px] group-open:rotate-180">sort</span>
+                  <h3 class="text-base font-bold text-on-surface/90 dark:text-white font-display" data-i18n="flights.sortBy">
+                    Sortieren nach
+                  </h3>
+                </summary>
+
+                <div id="sort-bar" class="mt-4 border-t border-outline-variant/10 dark:border-slate-700 pt-4 flex flex-wrap items-center gap-2 text-sm font-semibold">                  <button id="sort-btn-flightLogNumber" onclick="setSortOrder('flightLogNumber')" class="sort-btn flex-shrink-0 px-4 py-1.5 rounded-xl transition bg-surface-container-low dark:bg-slate-900 hover:bg-surface-container-highest dark:hover:bg-slate-700 text-on-surface dark:text-slate-300 shadow-inner">#</button>
+                  <button id="sort-btn-date" onclick="setSortOrder('date')" class="sort-btn flex-shrink-0 px-4 py-1.5 rounded-xl transition bg-surface-container-low dark:bg-slate-900 hover:bg-surface-container-highest dark:hover:bg-slate-700 text-on-surface dark:text-slate-300 shadow-inner" data-i18n="flights.sortDate">Datum</button>
+                  <button id="sort-btn-trip" onclick="setSortOrder('trip')" class="sort-btn flex-shrink-0 px-4 py-1.5 rounded-xl transition bg-surface-container-low dark:bg-slate-900 hover:bg-surface-container-highest dark:hover:bg-slate-700 text-on-surface dark:text-slate-300 shadow-inner" data-i18n="flights.sortTrip">Reise</button>
+                  <button id="sort-btn-departure" onclick="setSortOrder('departure')" class="sort-btn flex-shrink-0 px-4 py-1.5 rounded-xl transition bg-surface-container-low dark:bg-slate-900 hover:bg-surface-container-highest dark:hover:bg-slate-700 text-on-surface dark:text-slate-300 shadow-inner" data-i18n="flights.sortRoute">Route</button>
+                  <button id="sort-btn-distance" onclick="setSortOrder('distance')" class="sort-btn flex-shrink-0 px-4 py-1.5 rounded-xl transition bg-surface-container-low dark:bg-slate-900 hover:bg-surface-container-highest dark:hover:bg-slate-700 text-on-surface dark:text-slate-300 shadow-inner" data-i18n="flights.sortDistance">Distanz</button>
+                </div>
+              </details>
+
               <div
                 id="flight-log-list"
                 class="space-y-3 max-h-[65vh] overflow-y-auto pr-2"
@@ -1007,7 +1039,7 @@
                       </div>
                       <div>
                           <h3 class="text-lg font-display font-bold text-on-surface dark:text-white" data-i18n="help.subtitle">Support & Informationen</h3>
-                          <p class="text-xs text-on-surface/60 dark:text-slate-400 mt-0.5">Fragen, Antworten und Kontakt</p>
+                          <p class="text-xs text-on-surface/60 dark:text-slate-400 mt-0.5" data-i18n="help.subtitle2">Fragen, Antworten und Kontakt</p>
                       </div>
                   </div>
 
@@ -1436,7 +1468,7 @@
   </div>
 </div>
 
-<div id="flight-details-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md transition-opacity duration-300 opacity-0">
+<div id="flight-details-modal" class="fixed inset-0 z-[200] hidden flex items-center justify-center transition-opacity duration-300 ease-out bg-black/60 p-6 sm:p-4 backdrop-blur-sm opacity-0">
     
     <button id="fd-prev-btn" class="hidden sm:flex absolute left-4 lg:left-12 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white rounded-full p-4 backdrop-blur-md transition shadow-2xl border border-white/10 z-50" title="Vorheriger Flug" data-i18n-title="flights.prevButton">
         <span class="material-symbols-outlined text-2xl">arrow_back_ios_new</span>
@@ -1445,7 +1477,9 @@
         <span class="material-symbols-outlined text-2xl">arrow_forward_ios</span>
     </button>
 
-    <div class="bg-surface-container-lowest dark:bg-slate-900 rounded-[2.5rem] overflow-hidden shadow-2xl w-full max-w-lg relative flex flex-col max-h-[90vh] transform transition-transform duration-300 scale-95 border border-outline-variant/20 dark:border-white/10" id="fd-modal-content">
+    <div
+          class="bg-surface-container-lowest dark:bg-slate-800 w-full max-w-lg flex flex-col h-[75vh] transform scale-100 opacity-100 transition-all duration-300 ease-out shadow-3xl rounded-[2rem] overflow-hidden relative"
+          id="fd-modal-content">
         
         <div class="relative h-56 sm:h-64 bg-surface-container-low dark:bg-slate-800 shrink-0">
             <img id="fd-hero-img" src="" class="w-full h-full object-cover" alt="Aircraft">
@@ -1484,7 +1518,7 @@
             </div>
         </div>
 
-        <div class="p-6 md:p-8 overflow-y-auto custom-scrollbar">
+        <div class="p-6 md:p-8 overflow-y-auto custom-scrollbar flex-1">
             
             <div class="flex items-center justify-between pb-6 mb-6 border-b border-outline-variant/10 dark:border-white/10">
                 <div class="flex items-center gap-4">
@@ -1551,7 +1585,7 @@
     </div> 
 </div>
 
-  <div id="trip-details-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md transition-opacity duration-300 opacity-0">
+  <div id="trip-details-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-6 sm:p-4 bg-slate-900/80 backdrop-blur-md transition-opacity duration-300 opacity-0">
 
     <button id="td-prev-btn" class="hidden md:flex absolute left-4 lg:left-12 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white rounded-full p-4 backdrop-blur-md transition shadow-2xl border border-white/10 z-50" title="Vorherige Reise" data-i18n-title="trips.prev">
         <span class="material-symbols-outlined text-2xl">arrow_back_ios_new</span>
@@ -1560,13 +1594,13 @@
         <span class="material-symbols-outlined text-2xl">arrow_forward_ios</span>
     </button>
 
-    <div id="td-modal-content" class="bg-surface-container-lowest dark:bg-slate-900 rounded-[2.5rem] overflow-hidden shadow-2xl w-full max-w-2xl relative flex flex-col max-h-[90vh] transition-transform transform scale-95 border border-outline-variant/20 dark:border-white/10">
+    <div id="td-modal-content" class="bg-surface-container-lowest dark:bg-slate-900 rounded-[2rem] overflow-hidden shadow-3xl w-full max-w-2xl relative flex flex-col h-[75vh] transition-transform transform scale-95 border border-outline-variant/20 dark:border-white/10">
         
         <div class="relative h-56 sm:h-64 bg-surface-container-low dark:bg-slate-800 shrink-0">
             <img id="td-hero-img" src="https://images.unsplash.com/photo-1436491865332-7a61a109cc05?q=80&w=1000&auto=format&fit=crop" class="w-full h-full object-cover opacity-60" alt="Trip Cover">
             <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent"></div>
             
-            <button onclick="closeTripDetails()" class="absolute top-5 left-5 bg-black/40 hover:bg-black/60 text-white rounded-full p-2.5 backdrop-blur-md transition-colors z-10 border border-white/10">
+            <button onclick="closeTripDetails()" class="absolute top-4 left-4 z-50 w-10 h-10 flex items-center justify-center bg-slate-900/50 rounded-full text-white/80 hover:bg-slate-900/80 hover:text-white transition-all duration-200">
                 <span class="material-symbols-outlined text-[20px]">close</span>
             </button>
             
@@ -1579,7 +1613,7 @@
             </div>
         </div>
 
-        <div class="p-6 md:p-8 overflow-y-auto custom-scrollbar">
+        <div class="p-6 md:p-8 overflow-y-auto custom-scrollbar flex-1">
             
             <div class="grid grid-cols-3 gap-4 mb-8">
                 <div class="bg-surface-container-low dark:bg-slate-800/50 p-4 rounded-2xl border border-outline-variant/10 dark:border-white/5 text-center">
