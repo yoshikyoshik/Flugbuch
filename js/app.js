@@ -81,6 +81,8 @@ async function initializeApp() {
 
       // --- ✅ STATUS-PRÜFUNG & SELBSTHEILUNG ---
       const meta = user.user_metadata || {};
+      
+      // Letzte Flug-ID laden
       if (meta.last_flight_id) {
           globalLastFlightId = meta.last_flight_id;
       }
@@ -93,21 +95,15 @@ async function initializeApp() {
 
       if (isNative) {
           // 🚀 NATIVE APP: RevenueCat ist der alleinige Boss!
-          // Egal was in der Datenbank steht, RevenueCat weiß es am besten.
           if (window.currentUserSubscription === "pro") {
               isPro = true;
-          } else {
-              isPro = false;
           }
       } else {
           // 🌍 WEB APP: Verlässt sich auf die Supabase-Datenbank
           if (meta.subscription_status === "pro") {
-              // Handys und Lifetime-Abos im Web einfach vertrauen
               if (['google_play', 'apple_app_store', 'lifetime'].includes(window.currentUserSubscriptionSource)) {
                   isPro = true;
-              } 
-              // Nur Stripe-Abos über Zeit prüfen und bei Bedarf korrigieren
-              else if (window.currentSubscriptionEnd) {
+              } else if (window.currentSubscriptionEnd) {
                   const nowInSeconds = Math.floor(Date.now() / 1000);
                   if (window.currentSubscriptionEnd > (nowInSeconds - 30)) {
                       isPro = true;
@@ -126,21 +122,9 @@ async function initializeApp() {
 
       // Status global setzen
       currentUserSubscription = isPro ? "pro" : "free";
-      window.currentUserSubscriptionSource = meta.subscription_source || null;
-
-      // --- 🛠 DB REPARATUR DURCHFÜHREN ---
-      // Wir korrigieren nur, wenn wir WIRKLICH sicher sind, dass das Abo abgelaufen ist
-      if (performDbCorrection && !isPro) {
-          console.log("Führe DB-Korrektur durch (Setze Status auf FREE)...");
-          supabaseClient.auth.updateUser({
-              data: { subscription_status: 'free', subscription_end: null }
-          });
-      }
       // --- ENDE STATUS-PRÜFUNG ---
 
-      // --- ✅ PROFIL & UI UPDATES (Nach der Status-Prüfung!) ---
-      
-      // 1. Profil-Tab aktualisieren (JETZT weiß die App, ob du PRO bist!)
+      // --- ✅ PROFIL & UI UPDATES (Diese Zeile fehlte dir!) ---
       loadUserProfile(user);
 
       // 2. Schloss am Scanner-Button steuern
