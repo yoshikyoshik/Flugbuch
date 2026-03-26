@@ -88,43 +88,63 @@ async function initializeApp() {
       }
       
       let isPro = false;
-      window.currentUserSubscriptionSource = meta.subscription_source || null;
-      window.currentSubscriptionEnd = meta.subscription_end ? Number(meta.subscription_end) : null;
+      let performDbCorrection = false;
 
+      // 🚀 1. REVENUECAT (NATIV) HAT VORRANG!
+      // Wenn das native SDK durch initializeBilling() den Nutzer bereits als PRO markiert hat,
+      // vertrauen wir dem zu 100%, egal was in der Supabase steht.
       const isNative = typeof isNativeApp === 'function' ? isNativeApp() : (typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform());
+      
+      if (isNative && window.currentUserSubscription === "pro") {
+          isPro = true;
+      } 
+      // 🌍 2. SUPABASE (WEB) ALS ZWEITE INSTANZ
+      else if (meta.subscription_status === "pro") {
+        if (meta.subscription_end) {
+          currentSubscriptionEnd = Number(meta.subscription_end);
+          const nowInSeconds = Math.floor(Date.now() / 1000);
 
-      if (isNative) {
-          // 🚀 NATIVE APP: RevenueCat ist der alleinige Boss!
-          if (window.currentUserSubscription === "pro") {
+          if (currentSubscriptionEnd > (nowInSeconds - 30)) {
+            isPro = true;
+          } else {
+            console.warn("Status: Datum abgelaufen! Markiere für DB-Korrektur...");
+            isPro = false;
+            performDbCorrection = true;
+          }
+        } else {
+          // Fall B: "Pro" ohne Datum.
+          // Google Play und Apple Abos verlängern sich automatisch. 
+          // RevenueCat schreibt nicht immer zwingend ein Enddatum in die Supabase.
+          // Daher erlauben wir diese Quellen jetzt ausdrücklich!
+          const validSources = ['lifetime', 'google_play', 'apple_app_store', 'stripe'];
+          
+          if (validSources.includes(meta.subscription_source)) {
               isPro = true;
+          } else {
+              console.warn("Status Inkonsistenz: PRO ohne Datum und unbekannte Quelle. Setze auf FREE.");
+              isPro = false;
+              performDbCorrection = true;
           }
-      } else {
-          // 🌍 WEB APP: Verlässt sich auf die Supabase-Datenbank
-          if (meta.subscription_status === "pro") {
-              if (['google_play', 'apple_app_store', 'lifetime'].includes(window.currentUserSubscriptionSource)) {
-                  isPro = true;
-              } else if (window.currentSubscriptionEnd) {
-                  const nowInSeconds = Math.floor(Date.now() / 1000);
-                  if (window.currentSubscriptionEnd > (nowInSeconds - 30)) {
-                      isPro = true;
-                  } else {
-                      console.warn("Status: Stripe-Abo abgelaufen! Setze auf FREE.");
-                      isPro = false;
-                      supabaseClient.auth.updateUser({
-                          data: { subscription_status: 'free', subscription_end: null }
-                      });
-                  }
-              } else {
-                  isPro = true; // Fallback
-              }
-          }
+        }
       }
 
       // Status global setzen
       currentUserSubscription = isPro ? "pro" : "free";
+      window.currentUserSubscriptionSource = meta.subscription_source || null;
+
+      // --- 🛠 DB REPARATUR DURCHFÜHREN ---
+      // Wir korrigieren nur, wenn wir WIRKLICH sicher sind, dass das Abo abgelaufen ist
+      if (performDbCorrection && !isPro) {
+          console.log("Führe DB-Korrektur durch (Setze Status auf FREE)...");
+          supabaseClient.auth.updateUser({
+              data: { subscription_status: 'free', subscription_end: null }
+          });
+      }
       // --- ENDE STATUS-PRÜFUNG ---
 
-      // --- ✅ PROFIL & UI UPDATES (Diese Zeile fehlte dir!) ---
+      // --- ✅ PROFIL & UI UPDATES (Nach der Status-Prüfung!) ---
+      
+      // 1. Profil-Tab aktualisieren (JETZT weiß die App, ob du PRO bist!)
       loadUserProfile(user);
 
       // 2. Schloss am Scanner-Button steuern
@@ -288,28 +308,34 @@ async function initializeApp() {
   initLiveWidget();
 
   // --- ✅ UPDATE: LIVE-CHECK (Der Wächter) ---
+  // Prüft alle 60 Sekunden
   setInterval(async () => {
-    const isNative = typeof isNativeApp === 'function' ? isNativeApp() : (typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform());
+    
+    // 1. Native Prüfung (RevenueCat)
+    // Das sorgt dafür, dass auch bei offener App ein abgelaufenes Abo erkannt wird
+    if (isNativeApp() && typeof refreshSubscriptionStatus === 'function') {
+         // Wir machen das vllt. nicht jede Minute, um Akku zu sparen? 
+         // Doch, invalidateCache ist billig, Google Play Anfragen kosten nix.
+         await refreshSubscriptionStatus();
+    }
 
-    if (isNative) {
-        // 📱 Native App: Wir fragen NUR RevenueCat nach dem neuesten Stand.
-        // Die native App darf niemals selbständig die Supabase auf FREE setzen!
-        if (typeof refreshSubscriptionStatus === 'function') {
-            await refreshSubscriptionStatus();
-        }
-    } else {
-        // 💻 Web App: Zeit-Prüfung (Nur für Stripe-Kunden wichtig)
-        if (currentUserSubscription === "pro" && window.currentSubscriptionEnd && window.currentUserSubscriptionSource === "stripe") {
-            const now = Math.floor(Date.now() / 1000);
-            if (now > window.currentSubscriptionEnd) {
-                console.warn("Live-Check: Stripe Subscription expired.");
-                currentUserSubscription = "free";
-                if (typeof updateLockVisuals === 'function') updateLockVisuals();
-                supabaseClient.auth.updateUser({
-                    data: { subscription_status: 'free', subscription_end: null }
-                });
-            }
-        }
+    // 2. Zeit-Prüfung (Bestehender Code für Supabase-Datum)
+    if (currentUserSubscription === "pro" && currentSubscriptionEnd) {
+      const now = Math.floor(Date.now() / 1000);
+
+      if (now > currentSubscriptionEnd) {
+        console.warn("Live-Check: Subscription expired (Time Check).");
+        
+        // ... (Dein existierender Downgrade Code hier) ...
+        currentUserSubscription = "free";
+        updateLockVisuals();
+        // ...
+        
+        // WICHTIG: Auch hier die Selbstheilung der DB anstoßen!
+        supabaseClient.auth.updateUser({
+            data: { subscription_status: 'free', subscription_end: null }
+        });
+      }
     }
   }, 60000); // Alle 60 Sekunden
 
