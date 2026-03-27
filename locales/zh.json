@@ -991,6 +991,13 @@
   "onlyTodayHint": "* 搜索仅显示今日的航班。",
   "errorWrongDate": "航班搜索仅支持今天或未来的日期。",
   "modalTitleFuture": "未来航班"
+  },
+
+"upcoming": {
+  "title": "未来航班",
+  "inDays": "{days} 天后",
+  "tomorrow": "明天！",
+  "flightNumber": "航班"
   }
 
 }

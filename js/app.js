@@ -5033,6 +5033,22 @@ window.renderCurrentLiveFlight = function() {
         nav.classList.remove('flex');
     }
 
+    // 🚀 NEU: Klick-Event für die Live-Karte setzen!
+    const widgetContainer = document.getElementById('live-flight-widget');
+    if (widgetContainer) {
+        widgetContainer.onclick = function(e) {
+            // Verhindern, dass Klicks auf die Pfeil-Buttons die Ticket-Ansicht öffnen
+            if (e.target.closest('button')) return;
+            
+            // Ticket-Ansicht öffnen und die heutigen Flüge als "Swipe-Scope" übergeben
+            if (typeof viewFlightDetails === 'function') {
+                viewFlightDetails(flight.id || flight.flight_id, false, window.todaysLiveFlights);
+            }
+        };
+        // Macht den Mauszeiger zum klickbaren "Finger"
+        widgetContainer.classList.add('cursor-pointer'); 
+    }
+
     // API sofort anfeuern
     refreshLiveFlightData();
 };

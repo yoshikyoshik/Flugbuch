@@ -991,6 +991,13 @@
   "onlyTodayHint": "* La búsqueda solo muestra los vuelos de hoy.",
   "errorWrongDate": "La búsqueda de vuelos solo funciona para hoy o una fecha futura.",
   "modalTitleFuture": "Vuelos futuros"
+  },
+
+"upcoming": {
+  "title": "Vuelos próximos",
+  "inDays": "En {days} días",
+  "tomorrow": "¡Mañana!",
+  "flightNumber": "Vuelo"
   }
 
 }
