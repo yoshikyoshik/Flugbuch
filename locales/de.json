@@ -994,7 +994,8 @@
   "errorTitle": "Fehler",
   "errorMissingRoute": "Bitte gib zuerst den Abflug- und Zielort (IATA) ein.",
   "onlyTodayHint": "* Die Suche zeigt nur tagesaktuelle Flüge an.",
-  "errorWrongDate": "Die Flugsuche funktioniert nur für das heutige oder ein zukünftiges Datum."
+  "errorWrongDate": "Die Flugsuche funktioniert nur für das heutige oder ein zukünftiges Datum.",
+  "modalTitleFuture": "Zukünftige Flüge"
   }
 
 }

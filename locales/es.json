@@ -989,7 +989,8 @@
   "errorTitle": "Error",
   "errorMissingRoute": "Por favor, introduce primero los aeropuertos de salida y llegada (IATA).",
   "onlyTodayHint": "* La búsqueda solo muestra los vuelos de hoy.",
-  "errorWrongDate": "La búsqueda de vuelos solo funciona para hoy o una fecha futura."
+  "errorWrongDate": "La búsqueda de vuelos solo funciona para hoy o una fecha futura.",
+  "modalTitleFuture": "Vuelos futuros"
   }
 
 }

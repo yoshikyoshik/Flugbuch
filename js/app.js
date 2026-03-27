@@ -5229,6 +5229,14 @@ async function searchFlightByRoute() {
     const modal = document.getElementById('flight-selector-modal');
     const content = document.getElementById('fs-modal-content');
     const list = document.getElementById('flight-selector-list');
+
+    // --- NEU: Titel dynamisch anpassen ---
+    const modalTitleEl = content.querySelector('h3');
+    if (isFuture) {
+        modalTitleEl.textContent = getTranslation('flightSearch.modalTitleFuture') || 'Zukünftige Flüge';
+    } else {
+        modalTitleEl.textContent = getTranslation('flightSearch.modalTitle') || 'Heutige Flüge';
+    }
     
     modal.classList.remove('hidden');
     setTimeout(() => { modal.classList.remove('opacity-0'); content.classList.remove('scale-95'); }, 10);

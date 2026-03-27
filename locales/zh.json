@@ -989,7 +989,8 @@
   "errorTitle": "错误",
   "errorMissingRoute": "请先输入起飞和降落机场 (IATA)。",
   "onlyTodayHint": "* 搜索仅显示今日的航班。",
-  "errorWrongDate": "航班搜索仅支持今天或未来的日期。"
+  "errorWrongDate": "航班搜索仅支持今天或未来的日期。",
+  "modalTitleFuture": "未来航班"
   }
 
 }
