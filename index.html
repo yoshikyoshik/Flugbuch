@@ -424,7 +424,13 @@
 
                   <div class="lg:col-span-2">
                     <label for="flightNumber" data-i18n="form.flightNumberOptional" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1">Flugnummer (Optional)</label>
-                    <input type="text" id="flightNumber" placeholder="z.B. LH400" data-i18n="placeholder.egFlightNumber" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium" />
+                    <div class="flex gap-2">
+                      <input type="text" id="flightNumber" placeholder="z.B. LH400" data-i18n="placeholder.egFlightNumber" class="block w-full flex-1 rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium uppercase" />
+                      
+                      <button type="button" onclick="searchFlightByRoute()" class="flex-shrink-0 w-12 flex items-center justify-center bg-primary hover:bg-primary/90 text-white rounded-xl shadow-sm transition-all transform hover:-translate-y-0.5" title="Flugnummer anhand der Route suchen">
+                        <span class="material-symbols-outlined">search</span>
+                      </button>
+                    </div>
                   </div>
                   
                   <div class="lg:col-span-2">
@@ -1815,6 +1821,22 @@
                     🌐 <span data-i18n="invite.btnBrowser">Im Browser fortfahren</span>
                 </button>
             </div>
+        </div>
+    </div>
+
+    <div id="flight-selector-modal" class="fixed inset-0 z-[110] hidden flex items-center justify-center p-6 sm:p-4 bg-slate-900/80 backdrop-blur-md transition-opacity duration-300 opacity-0 font-display">
+        <div class="bg-surface-container-lowest dark:bg-slate-900 rounded-[2rem] shadow-3xl w-full max-w-md relative flex flex-col max-h-[80vh] overflow-hidden border border-outline-variant/20 dark:border-white/10 transform scale-95 transition-transform" id="fs-modal-content">
+            
+            <div class="p-5 border-b border-outline-variant/10 dark:border-white/10 flex justify-between items-center bg-surface-container-low dark:bg-slate-800">
+                <h3 class="text-xl font-bold text-on-surface dark:text-white">Heutige Flüge</h3>
+                <button onclick="closeFlightSelector()" class="w-8 h-8 flex items-center justify-center bg-slate-200 dark:bg-slate-700 rounded-full text-on-surface dark:text-white hover:bg-slate-300 dark:hover:bg-slate-600 transition">
+                    <span class="material-symbols-outlined text-[18px]">close</span>
+                </button>
+            </div>
+            
+            <div id="flight-selector-list" class="p-4 overflow-y-auto custom-scrollbar flex-1 space-y-2">
+            </div>
+
         </div>
     </div>
 

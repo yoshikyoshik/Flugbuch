@@ -5191,3 +5191,81 @@ window.refreshLiveFlightData = async function() {
         if (icon) icon.classList.remove('animate-spin');
     }
 };
+
+// Sucht heutige Flüge basierend auf IATA-Codes
+async function searchFlightByRoute() {
+    // 1. IATA-Codes aus dem Formular holen (Passe die IDs an dein Formular an!)
+    const dep = document.getElementById('departure').value.trim().toUpperCase();
+    const arr = document.getElementById('arrival').value.trim().toUpperCase();
+
+    if(!dep || !arr) {
+        showMessage("Fehler", "Bitte gib zuerst den Abflug- und Zielort (IATA) ein.", "error");
+        return;
+    }
+
+    // 2. Modal öffnen und Loading-Spinner zeigen
+    const modal = document.getElementById('flight-selector-modal');
+    const content = document.getElementById('fs-modal-content');
+    const list = document.getElementById('flight-selector-list');
+    
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        content.classList.remove('scale-95');
+    }, 10);
+    
+    list.innerHTML = `
+        <div class="text-center p-8 text-slate-500">
+            <span class="material-symbols-outlined animate-spin text-4xl mb-3 text-primary">sync</span>
+            <p class="font-bold">Suche Flüge...</p>
+        </div>`;
+
+    // 3. API über Netlify aufrufen
+    try {
+        const response = await fetch(`/.netlify/functions/fetch-route-schedules?dep=${dep}&arr=${arr}`);
+        const flights = await response.json();
+
+        if(flights.length === 0) {
+            list.innerHTML = `<div class="text-center p-8 text-slate-500 font-bold">Keine direkten Flüge für heute gefunden.</div>`;
+            return;
+        }
+
+        // 4. Liste rendern
+        list.innerHTML = flights.map(f => `
+            <button onclick="selectFoundFlight('${f.flight.iataNumber}')" class="w-full text-left p-4 rounded-xl bg-surface-container-low dark:bg-slate-800 hover:bg-primary/10 transition border border-transparent hover:border-primary/30 flex justify-between items-center group">
+                <div>
+                    <div class="font-black text-lg text-on-surface dark:text-white group-hover:text-primary transition-colors">${f.flight.iataNumber}</div>
+                    <div class="text-xs font-bold text-slate-500 dark:text-slate-400">${f.airline.name}</div>
+                </div>
+                <div class="text-right">
+                    <div class="font-black text-primary text-lg">${f.departure.scheduledTime.substring(11, 16)}</div>
+                    <div class="text-xs font-bold text-slate-500 dark:text-slate-400">Abflug</div>
+                </div>
+            </button>
+        `).join('');
+
+    } catch (err) {
+        console.error(err);
+        list.innerHTML = `<div class="text-center p-8 text-red-500 font-bold">Fehler bei der Abfrage.</div>`;
+    }
+}
+
+// Wird aufgerufen, wenn man auf einen Flug in der Liste tippt
+function selectFoundFlight(flightNumber) {
+    // Trägt die Flugnummer ins Formular ein (Passe die ID an dein Formular an!)
+    document.getElementById('flightNumber').value = flightNumber;
+    closeFlightSelector();
+    
+    // Optional: Direkt eine visuelle Bestätigung zeigen
+    showMessage("Gefunden!", `Flug ${flightNumber} wurde eingetragen.`, "success");
+}
+
+// Modal schließen
+function closeFlightSelector() {
+    const modal = document.getElementById('flight-selector-modal');
+    const content = document.getElementById('fs-modal-content');
+    
+    modal.classList.add('opacity-0');
+    content.classList.add('scale-95');
+    setTimeout(() => modal.classList.add('hidden'), 300);
+}
