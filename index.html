@@ -667,7 +667,7 @@
               <div id="upcoming-flights-container" class="hidden flex-col gap-4 mt-6 mb-10 w-full relative z-20">
                   </div>
 
-              <details class="bg-slate-50/50 dark:bg-slate-800/50 p-4 md:p-6 rounded-2xl mb-8 shadow-sm border border-slate-200 dark:border-slate-700 group transition-all duration-300" open>
+              <details id="last-flight-map-details" class="bg-slate-50/50 dark:bg-slate-800/50 p-4 md:p-6 rounded-2xl mb-8 shadow-sm border border-slate-200 dark:border-slate-700 group transition-all duration-300">
                 <summary class="list-none cursor-pointer border-b pb-2 border-slate-200 dark:border-slate-700">
                   <h2 data-i18n="lastFlightMap" class="text-xl md:text-2xl font-bold text-slate-800 dark:text-white inline-block">
                     Zuletzt geloggter Flug
@@ -697,112 +697,18 @@
                 </h2>
               </div>
 
-              <details class="bg-surface-container-low/40 dark:bg-slate-800/40 py-3 px-5 rounded-2xl mb-3 border border-outline-variant/30 dark:border-slate-700 group transition-all duration-300">
-                <summary class="list-none cursor-pointer flex items-center">
-                  <span class="material-symbols-outlined text-primary/70 dark:text-indigo-400 transition-transform duration-300 mr-2.5 text-[20px] group-open:rotate-180">build_circle</span>
-                  <h3 class="text-base font-bold text-on-surface/90 dark:text-white font-display" data-i18n="flights.actionsTitle">
-                    Aktionen & Tools
-                  </h3>
-                </summary>
-
-                <div class="mt-4 border-t border-outline-variant/10 dark:border-slate-700 pt-4 flex flex-wrap items-center gap-2">
-                  <button id="play-chronicle-btn" class="flex items-center justify-center gap-1.5 px-4 py-2 bg-surface-container-lowest hover:bg-surface-container-low dark:bg-slate-900 dark:hover:bg-slate-700 text-green-600 dark:text-green-400 rounded-xl transition-all shadow-sm border border-outline-variant/20 dark:border-slate-700 font-bold text-xs" data-i18n-title="flights.playChronicle">
-                    <span class="material-symbols-outlined text-[16px]">play_circle</span> <span data-i18n="flights.playChronicle">Chronik abspielen</span>
-                  </button>
-                  <button id="toggle-map-view-btn" onclick="toggleAllRoutesView()" class="flex items-center justify-center gap-1.5 px-4 py-2 bg-surface-container-lowest hover:bg-surface-container-low dark:bg-slate-900 dark:hover:bg-slate-700 text-primary dark:text-indigo-300 rounded-xl transition-all shadow-sm border border-outline-variant/20 dark:border-slate-700 font-bold text-xs" data-i18n-title="flights.showAllRoutes">
-                    <span class="material-symbols-outlined text-[16px]">map</span> <span data-i18n="flights.showAllRoutes">Alle Routen zeigen</span>
-                  </button>
-                  <button id="show-globe-btn" class="flex items-center justify-center gap-1.5 px-4 py-2 bg-surface-container-lowest hover:bg-surface-container-low dark:bg-slate-900 dark:hover:bg-slate-700 text-cyan-600 dark:text-cyan-400 rounded-xl transition-all shadow-sm border border-outline-variant/20 dark:border-slate-700 font-bold text-xs" data-i18n-title="flights.show3DGlobe">
-                    <span class="material-symbols-outlined text-[16px]">public</span> <span data-i18n="flights.show3DGlobe">3D Globus</span>
-                  </button>
-                  <button id="print-book-btn" class="flex items-center justify-center gap-1.5 px-4 py-2 bg-surface-container-lowest hover:bg-surface-container-low dark:bg-slate-900 dark:hover:bg-slate-700 text-on-surface dark:text-slate-300 rounded-xl transition-all shadow-sm border border-outline-variant/20 dark:border-slate-700 font-bold text-xs" data-i18n-title="flights.createBook">
-                    <span class="material-symbols-outlined text-[16px]">menu_book</span> <span data-i18n="flights.createBook">Buch erstellen</span>
-                  </button>
-                  <button onclick="renderFlights()" class="flex items-center justify-center gap-1.5 px-4 py-2 bg-surface-container-lowest hover:bg-surface-container-low dark:bg-slate-900 dark:hover:bg-slate-700 text-on-surface dark:text-slate-300 rounded-xl transition-all shadow-sm border border-outline-variant/20 dark:border-slate-700 font-bold text-xs" data-i18n-title="flights.refresh">
-                    <span class="material-symbols-outlined text-[16px]">refresh</span> <span data-i18n="flights.refresh">Aktualisieren</span>
-                  </button>
-                </div>
-              </details>
-
-              <div class="py-2 mb-2 px-4">
-                <div class="h-px w-full bg-gradient-to-r from-transparent via-outline-variant/40 dark:via-slate-600 to-transparent"></div>
-              </div>
-
-              <details class="bg-surface-container-low/40 dark:bg-slate-800/40 py-3 px-5 rounded-2xl mb-3 border border-outline-variant/30 dark:border-slate-700 group transition-all duration-300">
-                <summary class="list-none cursor-pointer flex items-center">
-                  <span class="material-symbols-outlined text-primary/70 dark:text-indigo-400 group-open:rotate-180 transition-transform duration-300 mr-2.5 text-[20px]">keyboard_arrow_down</span>
-                  <h3 class="text-base font-bold text-on-surface/90 dark:text-white font-display" data-i18n="flights.filterTitle">
-                    Suchen & Filtern
-                  </h3>
-                </summary>
-
-                <div class="mt-4 border-t border-outline-variant/10 dark:border-slate-700 pt-4">
+              <div class="flex flex-col sm:flex-row gap-3 mb-6 relative z-20">
+                  <div class="relative flex-1 group">
+                      <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface/40 dark:text-slate-500 group-focus-within:text-primary transition-colors">search</span>
+                      
+                      <input type="text" id="search-input" onkeyup="applyFilters()" data-i18n="flights.filterPlaceholder" placeholder="Suche (Ort, Airline, Reise, Datum...)" class="w-full pl-12 pr-4 py-3.5 rounded-2xl bg-surface-container-lowest dark:bg-slate-800 border-none shadow-sm focus:ring-2 focus:ring-primary/50 text-on-surface dark:text-white font-medium transition-all">
                   
-                  <div class="mb-6 relative group">
-                    <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface/40 dark:text-slate-400 group-focus-within:text-primary dark:group-focus-within:text-indigo-400 transition-colors">search</span>
-                    <input
-                      type="text"
-                      id="search-input"
-                      onkeyup="applyFilters()"
-                      class="w-full bg-surface-container-low dark:bg-slate-900 text-on-surface dark:text-white border-none rounded-full py-3.5 pl-12 pr-4 focus:ring-2 focus:ring-primary/50 dark:focus:ring-indigo-500 shadow-inner transition-all font-medium text-sm placeholder-on-surface/40 dark:placeholder-slate-500"
-                      data-i18n="flights.filterPlaceholder"
-                      placeholder="Suche (Ort, Airline, Reise, Datum...)"
-                    />
                   </div>
-
-                  <div class="grid grid-cols-2 lg:grid-cols-3 gap-4 items-end">
-                    <div>
-                      <label for="filter-departure" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1" data-i18n="flights.filterDeparture">Abflugort (IATA)</label>
-                      <input type="text" id="filter-departure" placeholder="z.B. FRA" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white" />
-                    </div>
-                    <div>
-                      <label for="filter-arrival" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1" data-i18n="flights.filterArrival">Zielort (IATA)</label>
-                      <input type="text" id="filter-arrival" placeholder="z.B. JFK" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white" />
-                    </div>
-
-                    <div>
-                      <label for="filter-trip" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1" data-i18n="flights.sortTrip">Reise / Trip</label>
-                      <div class="relative">
-                          <select id="filter-trip" onchange="applyFilters()" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3 text-sm focus:ring-2 focus:ring-primary/50 appearance-none dark:text-white cursor-pointer">
-                            <option value="" data-i18n="flights.filterTripPlaceholder">Alle Reisen</option>
-                          </select>
-                          <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-on-surface/40">
-                            <span class="material-symbols-outlined text-[18px]">expand_more</span>
-                          </div>
-                      </div>
-                    </div>
-
-                    <div>
-                      <label for="filter-date-from" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1" data-i18n="flights.filterDateFrom">Datum (von)</label>
-                      <input type="date" id="filter-date-from" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white" />
-                    </div>
-                    <div>
-                      <label for="filter-date-to" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1" data-i18n="flights.filterDateTo">Datum (bis)</label>
-                      <input type="date" id="filter-date-to" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white" />
-                    </div>
-                    <div class="flex space-x-2 col-span-2 lg:col-span-1 h-[44px]">
-                      <button onclick="applyFilters()" class="w-full h-full bg-primary hover:bg-primary/90 text-white rounded-xl transition shadow-sm font-bold text-sm" data-i18n="flights.filterButton">Filtern</button>
-                      <button onclick="resetFilters()" class="w-full h-full bg-surface-container-highest dark:bg-slate-700 text-on-surface dark:text-white rounded-xl hover:bg-outline-variant/50 transition font-bold text-sm" data-i18n="flights.resetButton">Reset</button>
-                    </div>
-                  </div>
-                </div>
-              </details>
-              
-              <details class="bg-surface-container-low/40 dark:bg-slate-800/40 py-3 px-5 rounded-2xl mb-6 border border-outline-variant/30 dark:border-slate-700 group transition-all duration-300">
-                <summary class="list-none cursor-pointer flex items-center">
-                  <span class="material-symbols-outlined text-primary/70 dark:text-indigo-400 transition-transform duration-300 mr-2.5 text-[20px] group-open:rotate-180">sort</span>
-                  <h3 class="text-base font-bold text-on-surface/90 dark:text-white font-display" data-i18n="flights.sortBy">
-                    Sortieren nach
-                  </h3>
-                </summary>
-
-                <div id="sort-bar" class="mt-4 border-t border-outline-variant/10 dark:border-slate-700 pt-4 flex flex-wrap items-center gap-2 text-sm font-semibold">                  <button id="sort-btn-flightLogNumber" onclick="setSortOrder('flightLogNumber')" class="sort-btn flex-shrink-0 px-4 py-1.5 rounded-xl transition bg-surface-container-low dark:bg-slate-900 hover:bg-surface-container-highest dark:hover:bg-slate-700 text-on-surface dark:text-slate-300 shadow-inner">#</button>
-                  <button id="sort-btn-date" onclick="setSortOrder('date')" class="sort-btn flex-shrink-0 px-4 py-1.5 rounded-xl transition bg-surface-container-low dark:bg-slate-900 hover:bg-surface-container-highest dark:hover:bg-slate-700 text-on-surface dark:text-slate-300 shadow-inner" data-i18n="flights.sortDate">Datum</button>
-                  <button id="sort-btn-trip" onclick="setSortOrder('trip')" class="sort-btn flex-shrink-0 px-4 py-1.5 rounded-xl transition bg-surface-container-low dark:bg-slate-900 hover:bg-surface-container-highest dark:hover:bg-slate-700 text-on-surface dark:text-slate-300 shadow-inner" data-i18n="flights.sortTrip">Reise</button>
-                  <button id="sort-btn-departure" onclick="setSortOrder('departure')" class="sort-btn flex-shrink-0 px-4 py-1.5 rounded-xl transition bg-surface-container-low dark:bg-slate-900 hover:bg-surface-container-highest dark:hover:bg-slate-700 text-on-surface dark:text-slate-300 shadow-inner" data-i18n="flights.sortRoute">Route</button>
-                  <button id="sort-btn-distance" onclick="setSortOrder('distance')" class="sort-btn flex-shrink-0 px-4 py-1.5 rounded-xl transition bg-surface-container-low dark:bg-slate-900 hover:bg-surface-container-highest dark:hover:bg-slate-700 text-on-surface dark:text-slate-300 shadow-inner" data-i18n="flights.sortDistance">Distanz</button>
-                </div>
-              </details>
+                  <button onclick="openFilterModal()" class="flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white px-6 py-3.5 rounded-2xl shadow-sm transition-all transform hover:-translate-y-0.5 font-bold flex-shrink-0">
+                      <span class="material-symbols-outlined">tune</span>
+                      <span data-i18n="filterModal.btnOpen">Filter & Tools</span>
+                  </button>
+              </div>
 
               <div
                 id="flight-log-list"
@@ -1844,6 +1750,90 @@
 
         </div>
     </div>
+
+    <div id="filter-tools-modal" class="fixed inset-0 z-[110] hidden flex items-center justify-center p-4 sm:p-6 bg-slate-900/80 backdrop-blur-md transition-opacity duration-300 opacity-0 font-display">
+    <div class="bg-surface-container-lowest dark:bg-slate-900 rounded-[2.5rem] shadow-3xl w-full max-w-lg relative flex flex-col max-h-[90vh] overflow-hidden border border-outline-variant/20 dark:border-white/10 transform scale-95 transition-transform" id="ft-modal-content">
+        
+        <div class="p-5 border-b border-outline-variant/10 dark:border-white/10 flex justify-between items-center bg-surface-container-low dark:bg-slate-800">
+            <h3 class="text-xl font-black text-on-surface dark:text-white" data-i18n="filterModal.title">Filter & Werkzeuge</h3>
+            <button onclick="closeFilterModal()" class="w-8 h-8 flex items-center justify-center bg-slate-200 dark:bg-slate-700 rounded-full text-on-surface dark:text-white hover:bg-slate-300 dark:hover:bg-slate-600 transition">
+                <span class="material-symbols-outlined text-sm font-bold">close</span>
+            </button>
+        </div>
+
+        <div class="p-6 overflow-y-auto space-y-8">
+            
+            <div>
+                <label data-i18n="flights.sortBy" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-3">Sortieren nach</label>
+                <div id="sort-bar" class="flex flex-wrap items-center gap-2 text-sm font-semibold">
+                    <button id="sort-btn-flightLogNumber" onclick="setSortOrder('flightLogNumber')" class="sort-btn flex-shrink-0 px-4 py-2 rounded-xl transition bg-surface-container hover:bg-surface-container-high dark:bg-slate-800 dark:hover:bg-slate-700 text-on-surface dark:text-slate-300">#</button>
+                    <button id="sort-btn-date" onclick="setSortOrder('date')" class="sort-btn flex-shrink-0 px-4 py-2 rounded-xl transition bg-surface-container hover:bg-surface-container-high dark:bg-slate-800 dark:hover:bg-slate-700 text-on-surface dark:text-slate-300" data-i18n="flights.sortDate">Datum</button>
+                    <button id="sort-btn-trip" onclick="setSortOrder('trip')" class="sort-btn flex-shrink-0 px-4 py-2 rounded-xl transition bg-surface-container hover:bg-surface-container-high dark:bg-slate-800 dark:hover:bg-slate-700 text-on-surface dark:text-slate-300" data-i18n="flights.sortTrip">Reise</button>
+                    <button id="sort-btn-departure" onclick="setSortOrder('departure')" class="sort-btn flex-shrink-0 px-4 py-2 rounded-xl transition bg-surface-container hover:bg-surface-container-high dark:bg-slate-800 dark:hover:bg-slate-700 text-on-surface dark:text-slate-300" data-i18n="flights.sortRoute">Route</button>
+                    <button id="sort-btn-distance" onclick="setSortOrder('distance')" class="sort-btn flex-shrink-0 px-4 py-2 rounded-xl transition bg-surface-container hover:bg-surface-container-high dark:bg-slate-800 dark:hover:bg-slate-700 text-on-surface dark:text-slate-300" data-i18n="flights.sortDistance">Distanz</button>
+                </div>
+            </div>
+
+            <div>
+                 <label data-i18n="flights.filterTitle" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-3">Erweiterte Filter</label>
+                 <div class="grid grid-cols-2 gap-4">
+                    <div class="col-span-2">
+                      <label for="filter-trip" class="block text-xs font-bold text-on-surface/60 dark:text-slate-400 mb-1" data-i18n="flights.sortTrip">Reise / Trip</label>
+                      <select id="filter-trip" onchange="applyFilters()" class="block w-full rounded-xl bg-surface-container dark:bg-slate-800 border-none p-3 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white cursor-pointer">
+                        <option value="" data-i18n="flights.filterTripPlaceholder">Alle Reisen</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label for="filter-departure" class="block text-xs font-bold text-on-surface/60 dark:text-slate-400 mb-1" data-i18n="flights.filterDeparture">Abflugort (IATA)</label>
+                      <input type="text" id="filter-departure" placeholder="FRA" class="block w-full rounded-xl bg-surface-container dark:bg-slate-800 border-none p-3 text-sm dark:text-white" />
+                    </div>
+                    <div>
+                      <label for="filter-arrival" class="block text-xs font-bold text-on-surface/60 dark:text-slate-400 mb-1" data-i18n="flights.filterArrival">Zielort (IATA)</label>
+                      <input type="text" id="filter-arrival" placeholder="JFK" class="block w-full rounded-xl bg-surface-container dark:bg-slate-800 border-none p-3 text-sm dark:text-white" />
+                    </div>
+                    <div>
+                      <label for="filter-date-from" class="block text-xs font-bold text-on-surface/60 dark:text-slate-400 mb-1" data-i18n="flights.filterDateFrom">Datum (von)</label>
+                      <input type="date" id="filter-date-from" class="block w-full rounded-xl bg-surface-container dark:bg-slate-800 border-none p-3 text-sm dark:text-white" />
+                    </div>
+                    <div>
+                      <label for="filter-date-to" class="block text-xs font-bold text-on-surface/60 dark:text-slate-400 mb-1" data-i18n="flights.filterDateTo">Datum (bis)</label>
+                      <input type="date" id="filter-date-to" class="block w-full rounded-xl bg-surface-container dark:bg-slate-800 border-none p-3 text-sm dark:text-white" />
+                    </div>
+                 </div>
+                 <div class="flex gap-2 mt-4">
+                     <button onclick="applyFilters()" class="flex-1 bg-primary hover:bg-primary/90 text-white py-2 rounded-xl font-bold text-sm" data-i18n="flights.filterButton">Filtern</button>
+                     <button onclick="resetFilters()" class="flex-1 bg-surface-container-highest dark:bg-slate-700 text-on-surface dark:text-white py-2 rounded-xl font-bold text-sm" data-i18n="flights.resetButton">Reset</button>
+                 </div>
+            </div>
+
+            <div class="pt-4 border-t border-outline-variant/10 dark:border-white/10">
+                <label data-i18n="flights.actionsTitle" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-3">Aktionen & Tools</label>
+                <div class="flex flex-wrap gap-2">
+                    <button id="play-chronicle-btn" onclick="openMapAndCloseModal()" class="flex items-center justify-center gap-1.5 px-4 py-2 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-xl font-bold text-xs" data-i18n="flights.playChronicle">
+                        <span class="material-symbols-outlined text-[16px]">play_circle</span> Chronik
+                    </button>
+                    <button id="toggle-map-view-btn" onclick="toggleAllRoutesView(); closeFilterModal();" class="flex items-center justify-center gap-1.5 px-4 py-2 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 rounded-xl font-bold text-xs" data-i18n="flights.showAllRoutes">
+                        <span class="material-symbols-outlined text-[16px]">map</span> Alle Routen
+                    </button>
+                    <button id="show-globe-btn" onclick="closeFilterModal()" class="flex items-center justify-center gap-1.5 px-4 py-2 bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-400 rounded-xl font-bold text-xs" data-i18n="flights.show3DGlobe">
+                        <span class="material-symbols-outlined text-[16px]">public</span> 3D Globus
+                    </button>
+                    <button id="print-book-btn" onclick="closeFilterModal()" class="flex items-center justify-center gap-1.5 px-4 py-2 bg-surface-container dark:bg-slate-800 text-on-surface dark:text-white rounded-xl font-bold text-xs" data-i18n="flights.createBook">
+                        <span class="material-symbols-outlined text-[16px]">menu_book</span> Buch
+                    </button>
+                </div>
+            </div>
+            
+        </div>
+
+        <div class="p-5 bg-surface-container-low dark:bg-slate-800 border-t border-outline-variant/10 dark:border-white/10">
+            <button onclick="closeFilterModal()" class="w-full py-4 bg-primary hover:bg-primary/90 text-white rounded-xl font-black text-lg shadow-sm" data-i18n="filterModal.apply">
+                Fertig
+            </button>
+        </div>
+
+    </div>
+</div>
 
   </body>
 </html>

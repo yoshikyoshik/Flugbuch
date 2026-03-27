@@ -5457,3 +5457,50 @@ function closeFlightSelector() {
     content.classList.add('scale-95');
     setTimeout(() => modal.classList.add('hidden'), 300);
 }
+
+// ==========================================
+// FILTER & TOOLS MODAL LOGIC
+// ==========================================
+window.openFilterModal = function() {
+    const modal = document.getElementById('filter-tools-modal');
+    const content = document.getElementById('ft-modal-content');
+    
+    modal.classList.remove('hidden');
+    // Mini-Verzögerung für flüssige Animation
+    setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        content.classList.remove('scale-95');
+    }, 10);
+};
+
+window.closeFilterModal = function() {
+    const modal = document.getElementById('filter-tools-modal');
+    const content = document.getElementById('ft-modal-content');
+    
+    modal.classList.add('opacity-0');
+    content.classList.add('scale-95');
+    
+    // Warten bis Animation beendet ist, dann verstecken
+    setTimeout(() => {
+        modal.classList.add('hidden');
+    }, 300);
+};
+
+window.openMapAndCloseModal = function() {
+    // 1. Modal aus dem Weg räumen
+    closeFilterModal();
+    
+    // 2. Die 2D-Karte finden und aufklappen
+    const mapDetails = document.getElementById('last-flight-map-details');
+    if (mapDetails) {
+        mapDetails.open = true;
+        
+        // 3. Leaflet-Karte nach kurzer Animations-Pause aktualisieren,
+        // damit sie nicht grau bleibt oder kaputt aussieht
+        setTimeout(() => {
+            if (typeof window.map !== 'undefined' && window.map !== null) {
+                window.map.invalidateSize();
+            }
+        }, 350); // Wartet 350ms, bis das Aufklappen optisch beendet ist
+    }
+};

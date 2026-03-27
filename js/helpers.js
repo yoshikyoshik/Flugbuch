@@ -469,6 +469,12 @@ async function setLanguage(lang) {
       else if (document.getElementById("logbook-view-airport").classList.contains("bg-white")) renderLogbookView("airport");
       else if (document.getElementById("logbook-view-registration").classList.contains("bg-white")) renderLogbookView("registration");
   }
+
+  // 🚀 NEU: 4. Upcoming-Widget aktualisieren
+  if (typeof initUpcomingWidget === 'function') {
+      initUpcomingWidget();
+  }
+
   // -----------------------------------------------------------------------
 
 }

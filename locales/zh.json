@@ -998,6 +998,12 @@
   "inDays": "{days} 天后",
   "tomorrow": "明天！",
   "flightNumber": "航班"
+  },
+
+"filterModal": {
+  "btnOpen": "筛选与工具",
+  "title": "筛选与工具",
+  "apply": "完成"
   }
 
 }

@@ -998,6 +998,12 @@
   "inDays": "Через {days} дн.",
   "tomorrow": "Завтра!",
   "flightNumber": "Рейс"
+  },
+
+"filterModal": {
+  "btnOpen": "Фильтры и инструменты",
+  "title": "Фильтры и инструменты",
+  "apply": "Готово"
   }
 
 }

@@ -1003,6 +1003,12 @@
   "inDays": "In {days} Tagen",
   "tomorrow": "Morgen!",
   "flightNumber": "Flug"
+  },
+
+"filterModal": {
+  "btnOpen": "Filter & Tools",
+  "title": "Filter & Werkzeuge",
+  "apply": "Fertig"
   }
 
 }
