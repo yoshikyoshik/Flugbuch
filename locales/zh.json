@@ -816,7 +816,8 @@
     "updateErrorBody": "无法保存更改。",
     "updateErrorTitle": "更新错误",
     "uploadErrorTitle": "上传错误",
-    "uploadLimitTitle": "上传限制"
+    "uploadLimitTitle": "上传限制",
+    "flightDeleted": "航班已删除"
   },
   "trips": {
     "createError": "无法创建行程。",
@@ -988,7 +989,7 @@
   "errorTitle": "错误",
   "errorMissingRoute": "请先输入起飞和降落机场 (IATA)。",
   "onlyTodayHint": "* 搜索仅显示今日的航班。",
-  "errorWrongDate": "航班搜索仅支持今天的日期。"
+  "errorWrongDate": "航班搜索仅支持今天或未来的日期。"
   }
 
 }

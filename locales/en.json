@@ -820,7 +820,8 @@
     "updateErrorBody": "Changes could not be saved.",
     "updateErrorTitle": "Update Error",
     "uploadErrorTitle": "Upload Error",
-    "uploadLimitTitle": "Upload Limit"
+    "uploadLimitTitle": "Upload Limit",
+    "flightDeleted": "Flight deleted"
   },
   "trips": {
     "createError": "Trip could not be created.",
@@ -992,7 +993,7 @@
   "errorTitle": "Error",
   "errorMissingRoute": "Please enter the departure and arrival airports (IATA) first.",
   "onlyTodayHint": "* Search only shows today's flights.",
-  "errorWrongDate": "The flight search only works for today's date."
+  "errorWrongDate": "The flight search only works for today or a future date."
   }
 
 }

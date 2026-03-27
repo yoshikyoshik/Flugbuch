@@ -35,13 +35,17 @@ exports.handler = async function(event, context) {
         const data = await response.json();
 
         if (data && data.data) {
-            // 4. DER TRICK: Wir filtern direkt im Backend nach dem Zielort!
-            // Da GoFlightLabs manchmal die Liste direkt in 'data' oder verschachtelt liefert,
-            // sichern wir uns hier ab:
+            // 4. DER TRICK: Wir filtern direkt im Backend nach dem Zielort UND filtern Codeshares raus!
             const flightList = Array.isArray(data) ? data : (data.response || data.data || []);
             
             const filteredFlights = flightList.filter(flight => {
                 if (!flight.arr_iata) return false;
+                
+                // 🛑 NEU: Codeshares herausfiltern (Wenn es ein Codeshare-Feld gibt, ist es nicht der Originalflug)
+                if (flight.cs_flight_iata || flight.cs_flight_number) {
+                    return false;
+                }
+
                 // Exakter Abgleich des Ziel-IATA-Codes
                 return flight.arr_iata.toUpperCase() === arrIata.toUpperCase();
             });

@@ -821,7 +821,8 @@
     "updateErrorBody": "Änderungen konnten nicht gespeichert werden.",
     "updateErrorTitle": "Update-Fehler",
     "uploadErrorTitle": "Upload Fehler",
-    "uploadLimitTitle": "Upload-Limit"
+    "uploadLimitTitle": "Upload-Limit",
+    "flightDeleted": "Flug gelöscht"
   },
   "trips": {
     "createError": "Reise konnte nicht erstellt werden.",
@@ -993,7 +994,7 @@
   "errorTitle": "Fehler",
   "errorMissingRoute": "Bitte gib zuerst den Abflug- und Zielort (IATA) ein.",
   "onlyTodayHint": "* Die Suche zeigt nur tagesaktuelle Flüge an.",
-  "errorWrongDate": "Die Flugsuche funktioniert nur für das heutige Datum."
+  "errorWrongDate": "Die Flugsuche funktioniert nur für das heutige oder ein zukünftiges Datum."
   }
 
 }

@@ -816,7 +816,8 @@
     "updateErrorBody": "Los cambios no se pudieron guardar.",
     "updateErrorTitle": "Error de Actualización",
     "uploadErrorTitle": "Error de Subida",
-    "uploadLimitTitle": "Límite de Subida"
+    "uploadLimitTitle": "Límite de Subida",
+    "flightDeleted": "Vuelo eliminado"
   },
   "trips": {
     "createError": "El viaje no pudo ser creado.",
@@ -988,7 +989,7 @@
   "errorTitle": "Error",
   "errorMissingRoute": "Por favor, introduce primero los aeropuertos de salida y llegada (IATA).",
   "onlyTodayHint": "* La búsqueda solo muestra los vuelos de hoy.",
-  "errorWrongDate": "La búsqueda de vuelos solo funciona para la fecha de hoy."
+  "errorWrongDate": "La búsqueda de vuelos solo funciona para hoy o una fecha futura."
   }
 
 }
