@@ -1000,7 +1000,6 @@ window.logFlight = async function () {
 	
     renderFlights(null, newFlightId);
     initLiveWidget(); // 🚀 NEU: Widget sofort updaten!
-    initUpcomingWidget();
 
   // --- NEU: Review Trigger ---
     // Wir holen kurz die aktuelle Anzahl der Flüge um zu prüfen
@@ -1266,6 +1265,7 @@ async function updateFlight() {
   
   renderFlights(null, flightIdToFocus);
   initLiveWidget(); // 🚀 NEU: Widget sofort updaten!
+  initUpcomingWidget();
 }
 
 // *** Rendern und Löschen ***
