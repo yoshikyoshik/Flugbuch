@@ -36,14 +36,20 @@ exports.handler = async function(event, context) {
 
         if (data && data.data) {
             // 4. DER TRICK: Wir filtern direkt im Backend nach dem Zielort!
-            const filteredFlights = data.data.filter(flight => 
-                flight.arrival && flight.arrival.iataCode === arrIata
-            );
+            // Da GoFlightLabs manchmal die Liste direkt in 'data' oder verschachtelt liefert,
+            // sichern wir uns hier ab:
+            const flightList = Array.isArray(data) ? data : (data.response || data.data || []);
+            
+            const filteredFlights = flightList.filter(flight => {
+                if (!flight.arr_iata) return false;
+                // Exakter Abgleich des Ziel-IATA-Codes
+                return flight.arr_iata.toUpperCase() === arrIata.toUpperCase();
+            });
             
             // 5. Nur die passenden Flüge an die App zurücksenden
             return { 
                 statusCode: 200, 
-                headers, // <-- HIER HINZUGEFÜGT
+                headers, 
                 body: JSON.stringify(filteredFlights) 
             };
         } else {

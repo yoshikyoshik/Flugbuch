@@ -5230,19 +5230,37 @@ async function searchFlightByRoute() {
             return;
         }
 
-        // 4. Liste rendern
-        list.innerHTML = flights.map(f => `
-            <button onclick="selectFoundFlight('${f.flight.iataNumber}')" class="w-full text-left p-4 rounded-xl bg-surface-container-low dark:bg-slate-800 hover:bg-primary/10 transition border border-transparent hover:border-primary/30 flex justify-between items-center group">
+        // 4. Liste rendern (Angepasst an die flache GoFlightLabs-Struktur)
+        list.innerHTML = flights.map(f => {
+            // Die flachen Felder laut Doku auslesen
+            const flightNum = f.flight_iata || f.flight_number || 'Unbekannt';
+            
+            // GoFlightLabs liefert hier leider nicht den vollen Namen, sondern nur den IATA-Code (z.B. "LH")
+            const airlineName = f.airline_iata || 'Unbekannte Airline';
+            
+            // Zeit sicher extrahieren (oft kommt das Format "2024-03-27 10:30:00" oder ähnlich)
+            let timeStr = '--:--';
+            if (f.dep_time) {
+                // Wir suchen mit einem regulären Ausdruck nach der Uhrzeit (HH:MM) im String
+                const timeMatch = f.dep_time.match(/(\d{2}:\d{2})/);
+                if (timeMatch) {
+                    timeStr = timeMatch[1];
+                }
+            }
+
+            return `
+            <button onclick="selectFoundFlight('${flightNum}')" class="w-full text-left p-4 rounded-xl bg-surface-container-low dark:bg-slate-800 hover:bg-primary/10 transition border border-transparent hover:border-primary/30 flex justify-between items-center group">
                 <div>
-                    <div class="font-black text-lg text-on-surface dark:text-white group-hover:text-primary transition-colors">${f.flight.iataNumber}</div>
-                    <div class="text-xs font-bold text-slate-500 dark:text-slate-400">${f.airline.name}</div>
+                    <div class="font-black text-lg text-on-surface dark:text-white group-hover:text-primary transition-colors">${flightNum}</div>
+                    <div class="text-xs font-bold text-slate-500 dark:text-slate-400">${airlineName}</div>
                 </div>
                 <div class="text-right">
-                    <div class="font-black text-primary text-lg">${f.departure.scheduledTime.substring(11, 16)}</div>
+                    <div class="font-black text-primary text-lg">${timeStr}</div>
                     <div class="text-xs font-bold text-slate-500 dark:text-slate-400">Abflug</div>
                 </div>
             </button>
-        `).join('');
+            `;
+        }).join('');
 
     } catch (err) {
         console.error(err);
