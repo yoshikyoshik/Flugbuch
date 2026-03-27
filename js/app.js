@@ -310,6 +310,9 @@ async function initializeApp() {
   // 🚀 NEU: Live-Widget für heutige Flüge prüfen
   initLiveWidget();
 
+  // 🚀 NEU: Upcoming-Widget für zukünftige Flüge prüfen
+  initUpcomingWidget();
+
   // --- ✅ UPDATE: LIVE-CHECK (Der Wächter) ---
   // Prüft alle 60 Sekunden
   setInterval(async () => {
@@ -997,6 +1000,7 @@ window.logFlight = async function () {
 	
     renderFlights(null, newFlightId);
     initLiveWidget(); // 🚀 NEU: Widget sofort updaten!
+    initUpcomingWidget();
 
   // --- NEU: Review Trigger ---
     // Wir holen kurz die aktuelle Anzahl der Flüge um zu prüfen
@@ -5189,6 +5193,95 @@ window.refreshLiveFlightData = async function() {
         statusEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-gray-200 text-gray-700 shadow-sm";
     } finally {
         if (icon) icon.classList.remove('animate-spin');
+    }
+};
+
+// =================================================================
+// UPCOMING FLIGHTS WIDGET (ZUKUNFT)
+// =================================================================
+
+window.initUpcomingWidget = async function() {
+    const container = document.getElementById('upcoming-flights-container');
+    if (!container) return;
+
+    // Alle Flüge holen
+    const allFlights = typeof isDemoMode !== 'undefined' && isDemoMode && typeof flights !== 'undefined' ? flights : await getFlights();
+    if (!allFlights || allFlights.length === 0) return;
+
+    // Heutiges Datum als Referenz (YYYY-MM-DD)
+    const today = new Date();
+    const todayStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+    
+    // 1. Filtern: Nur Flüge, deren Datum GRÖSSER als heute ist
+    const upcomingFlights = allFlights.filter(f => f.date > todayStr);
+
+    // 2. Sortieren: Der Flug, der als Nächstes ansteht, ganz oben
+    upcomingFlights.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    if (upcomingFlights.length > 0) {
+        // Container sichtbar machen
+        container.classList.remove('hidden');
+        container.classList.add('flex');
+        
+        let html = `<h2 class="text-lg font-black text-on-surface dark:text-white px-2">${getTranslation("upcoming.title") || "Anstehende Flüge"}</h2>`;
+
+        upcomingFlights.forEach(flight => {
+            // Countdown berechnen
+            const flightDate = new Date(flight.date);
+            const timeDiff = flightDate.getTime() - today.getTime();
+            const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+            
+            let countdownText = "";
+            let countdownColor = "text-indigo-600 dark:text-indigo-400 bg-indigo-100 dark:bg-indigo-900/40";
+            
+            if (daysDiff === 1) {
+                countdownText = getTranslation("upcoming.tomorrow") || "Morgen!";
+                countdownColor = "text-orange-600 dark:text-orange-400 bg-orange-100 dark:bg-orange-900/40";
+            } else {
+                countdownText = (getTranslation("upcoming.inDays") || "In {days} Tagen").replace("{days}", daysDiff);
+            }
+
+            const flightNumStr = flight.flightNumber || "-";
+            const airlineStr = flight.airline || "Unbekannte Airline";
+            const logoHtml = flight.airline_logo ? `<img src="${flight.airline_logo}" class="w-6 h-6 object-contain">` : `✈️`;
+
+            html += `
+            <div class="relative overflow-hidden bg-surface-container-lowest dark:bg-slate-800 p-5 rounded-[2rem] shadow-sm border border-outline-variant/20 dark:border-slate-700 hover:shadow-md transition-shadow cursor-pointer group" onclick="viewFlightDetails('${flight.id || flight.flight_id}')">
+                <div class="absolute -right-8 -top-8 text-9xl opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none transform -rotate-12">⏳</div>
+                
+                <div class="relative z-10 flex justify-between items-center mb-3">
+                    <div class="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider ${countdownColor} shadow-sm border border-current/10">
+                        ${countdownText}
+                    </div>
+                    <div class="text-sm font-bold text-on-surface/50 dark:text-slate-400">
+                        ${new Date(flight.date).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </div>
+                </div>
+
+                <div class="relative z-10 flex items-center justify-between">
+                    <div>
+                        <div class="flex items-center gap-2 mb-1">
+                            ${logoHtml}
+                            <span class="font-bold text-sm text-on-surface/60 dark:text-slate-400">${airlineStr}</span>
+                        </div>
+                        <div class="text-2xl font-black text-on-surface dark:text-white group-hover:text-primary transition-colors">
+                            ${flight.departure} <span class="text-primary/50 mx-1">➔</span> ${flight.arrival}
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-[10px] uppercase font-bold text-on-surface/40 dark:text-slate-500 mb-1">${getTranslation("upcoming.flightNumber") || "Flug"}</div>
+                        <div class="text-lg font-black text-primary">${flightNumStr}</div>
+                    </div>
+                </div>
+            </div>
+            `;
+        });
+
+        container.innerHTML = html;
+    } else {
+        // Keine zukünftigen Flüge gefunden
+        container.classList.add('hidden');
+        container.classList.remove('flex');
     }
 };
 

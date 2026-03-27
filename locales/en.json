@@ -995,6 +995,13 @@
   "onlyTodayHint": "* Search only shows today's flights.",
   "errorWrongDate": "The flight search only works for today or a future date.",
   "modalTitleFuture": "Future Flights"
+  },
+
+"upcoming": {
+  "title": "Upcoming Flights",
+  "inDays": "In {days} days",
+  "tomorrow": "Tomorrow!",
+  "flightNumber": "Flight"
   }
 
 }
