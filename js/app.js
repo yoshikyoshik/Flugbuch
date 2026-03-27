@@ -5201,22 +5201,40 @@ window.refreshLiveFlightData = async function() {
 // =================================================================
 
 window.initUpcomingWidget = async function() {
+    console.log("🚀 Upcoming-Widget: Funktion wurde gestartet!");
+    
     const container = document.getElementById('upcoming-flights-container');
-    if (!container) return;
+    if (!container) {
+        console.error("❌ Upcoming-Widget: Container-Div in index.html nicht gefunden!");
+        return;
+    }
 
     // Alle Flüge holen
     const allFlights = typeof isDemoMode !== 'undefined' && isDemoMode && typeof flights !== 'undefined' ? flights : await getFlights();
+    console.log("📦 Upcoming-Widget: Alle Flüge aus der DB geladen:", allFlights);
+    
     if (!allFlights || allFlights.length === 0) return;
 
     // Heutiges Datum als Referenz (YYYY-MM-DD)
     const today = new Date();
     const todayStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+    console.log("📅 Upcoming-Widget: Heutiges Datum berechnet als:", todayStr);
     
-    // 1. Filtern: Nur Flüge, deren Datum GRÖSSER als heute ist
-    const upcomingFlights = allFlights.filter(f => f.date > todayStr);
+    // 1. Filtern: Wir prüfen verschiedene Feld-Namen, falls dein Datum anders heißt!
+    const upcomingFlights = allFlights.filter(f => {
+        // Welches Feld nutzt deine Datenbank für das Datum?
+        const flightDateValue = f.date || f.flightDate || f.flight_date || f.date_of_flight;
+        return flightDateValue && flightDateValue > todayStr;
+    });
+
+    console.log("✨ Upcoming-Widget: Zukünftige Flüge gefunden:", upcomingFlights);
 
     // 2. Sortieren: Der Flug, der als Nächstes ansteht, ganz oben
-    upcomingFlights.sort((a, b) => new Date(a.date) - new Date(b.date));
+    upcomingFlights.sort((a, b) => {
+        const dateA = a.date || a.flightDate || a.flight_date;
+        const dateB = b.date || b.flightDate || b.flight_date;
+        return new Date(dateA) - new Date(dateB);
+    });
 
     if (upcomingFlights.length > 0) {
         // Container sichtbar machen
