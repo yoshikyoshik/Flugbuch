@@ -5199,9 +5199,35 @@ async function searchFlightByRoute() {
     const arr = document.getElementById('arrival').value.trim().toUpperCase();
 
     if(!dep || !arr) {
-        showMessage("Fehler", "Bitte gib zuerst den Abflug- und Zielort (IATA) ein.", "error");
+        showMessage(
+            getTranslation("flightSearch.errorTitle") || "Fehler", 
+            getTranslation("flightSearch.errorMissingRoute") || "Bitte gib zuerst den Abflug- und Zielort (IATA) ein.", 
+            "error"
+        );
         return;
     }
+
+    // --- NEU: DATUMS-PRÜFUNG ---
+    const dateInput = document.getElementById('flightDate').value;
+    if (dateInput) {
+        // Heutiges Datum im Format YYYY-MM-DD generieren (Passend zum <input type="date">)
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        const todayStr = `${yyyy}-${mm}-${dd}`;
+
+        // Wenn ein Datum drin steht und es NICHT heute ist -> Abbrechen!
+        if (dateInput !== todayStr) {
+            showMessage(
+                getTranslation("flightSearch.errorTitle") || "Fehler",
+                getTranslation("flightSearch.errorWrongDate") || "Die Flugsuche funktioniert nur für das heutige Datum.",
+                "error"
+            );
+            return; 
+        }
+    }
+    // --- ENDE DATUMS-PRÜFUNG ---
 
     // 2. Modal öffnen und Loading-Spinner zeigen
     const modal = document.getElementById('flight-selector-modal');
@@ -5217,7 +5243,7 @@ async function searchFlightByRoute() {
     list.innerHTML = `
         <div class="text-center p-8 text-slate-500">
             <span class="material-symbols-outlined animate-spin text-4xl mb-3 text-primary">sync</span>
-            <p class="font-bold">Suche Flüge...</p>
+            <p class="font-bold">${getTranslation('flightSearch.loading') || 'Suche Flüge...'}</p>
         </div>`;
 
     // 3. API über Netlify aufrufen
@@ -5226,28 +5252,31 @@ async function searchFlightByRoute() {
         const flights = await response.json();
 
         if(flights.length === 0) {
-            list.innerHTML = `<div class="text-center p-8 text-slate-500 font-bold">Keine direkten Flüge für heute gefunden.</div>`;
+            list.innerHTML = `<div class="text-center p-8 text-slate-500 font-bold">${getTranslation('flightSearch.noResults') || 'Keine direkten Flüge für heute gefunden.'}</div>`;
             return;
         }
 
-        // 4. Liste rendern (Angepasst an die flache GoFlightLabs-Struktur)
+        // 4. Liste rendern
         list.innerHTML = flights.map(f => {
-            // Die flachen Felder laut Doku auslesen
-            const flightNum = f.flight_iata || f.flight_number || 'Unbekannt';
+            // 1. Übersetzungen für diese Runde laden
+            const unknownText = getTranslation('flightSearch.unknown') || 'Unbekannt';
+            const unknownAirlineText = getTranslation('flightSearch.unknownAirline') || 'Unbekannte Airline';
+            const depText = getTranslation('flightSearch.departure') || 'Abflug'; // <-- NEU
             
-            // GoFlightLabs liefert hier leider nicht den vollen Namen, sondern nur den IATA-Code (z.B. "LH")
-            const airlineName = f.airline_iata || 'Unbekannte Airline';
+            // 2. Die flachen Felder laut Doku auslesen und Fallbacks nutzen
+            const flightNum = f.flight_iata || f.flight_number || unknownText; // <-- WICHTIG (Fehlte in deinem Snippet)
+            const airlineName = f.airline_iata || unknownAirlineText;          // <-- WICHTIG (Fehlte in deinem Snippet)
             
-            // Zeit sicher extrahieren (oft kommt das Format "2024-03-27 10:30:00" oder ähnlich)
+            // 3. Zeit sicher extrahieren
             let timeStr = '--:--';
             if (f.dep_time) {
-                // Wir suchen mit einem regulären Ausdruck nach der Uhrzeit (HH:MM) im String
                 const timeMatch = f.dep_time.match(/(\d{2}:\d{2})/);
                 if (timeMatch) {
                     timeStr = timeMatch[1];
                 }
             }
 
+            // 4. HTML zurückgeben (mit ${depText} statt "Abflug")
             return `
             <button onclick="selectFoundFlight('${flightNum}')" class="w-full text-left p-4 rounded-xl bg-surface-container-low dark:bg-slate-800 hover:bg-primary/10 transition border border-transparent hover:border-primary/30 flex justify-between items-center group">
                 <div>
@@ -5256,7 +5285,7 @@ async function searchFlightByRoute() {
                 </div>
                 <div class="text-right">
                     <div class="font-black text-primary text-lg">${timeStr}</div>
-                    <div class="text-xs font-bold text-slate-500 dark:text-slate-400">Abflug</div>
+                    <div class="text-xs font-bold text-slate-500 dark:text-slate-400">${depText}</div>
                 </div>
             </button>
             `;
@@ -5275,7 +5304,11 @@ function selectFoundFlight(flightNumber) {
     closeFlightSelector();
     
     // Optional: Direkt eine visuelle Bestätigung zeigen
-    showMessage("Gefunden!", `Flug ${flightNumber} wurde eingetragen.`, "success");
+    showMessage(
+        getTranslation("flightSearch.successTitle") || "Gefunden!", 
+        `Flug ${flightNumber} ${getTranslation("flightSearch.successMsg") || "wurde eingetragen."}`, 
+        "success"
+    );
 }
 
 // Modal schließen

@@ -972,5 +972,23 @@
     "distance": "距离",
     "flightTime": "飞行时间",
     "notes": "备注"
+  },
+
+  "flightSearch": {
+  "modalTitle": "今日航班",
+  "loading": "正在搜索航班...",
+  "noResults": "今天没有找到直达航班。",
+  "error": "搜索时出错。",
+  "departure": "起飞",
+  "unknown": "未知",
+  "unknownAirline": "未知航空公司",
+  "successTitle": "找到了！",
+  "successMsg": "已输入。",
+  "btnTitle": "按航线搜索航班号",
+  "errorTitle": "错误",
+  "errorMissingRoute": "请先输入起飞和降落机场 (IATA)。",
+  "onlyTodayHint": "* 搜索仅显示今日的航班。",
+  "errorWrongDate": "航班搜索仅支持今天的日期。"
   }
+
 }

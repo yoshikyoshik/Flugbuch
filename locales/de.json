@@ -977,6 +977,23 @@
   "distance": "Distanz",
   "flightTime": "Flugzeit",
   "notes": "Notizen"
+  },
+
+"flightSearch": {
+  "modalTitle": "Heutige Flüge",
+  "loading": "Suche Flüge...",
+  "noResults": "Keine direkten Flüge für heute gefunden.",
+  "error": "Fehler bei der Abfrage.",
+  "departure": "Abflug",
+  "unknown": "Unbekannt",
+  "unknownAirline": "Unbekannte Airline",
+  "successTitle": "Gefunden!",
+  "successMsg": "wurde eingetragen.",
+  "btnTitle": "Flugnummer anhand der Route suchen",
+  "errorTitle": "Fehler",
+  "errorMissingRoute": "Bitte gib zuerst den Abflug- und Zielort (IATA) ein.",
+  "onlyTodayHint": "* Die Suche zeigt nur tagesaktuelle Flüge an.",
+  "errorWrongDate": "Die Flugsuche funktioniert nur für das heutige Datum."
   }
 
 }

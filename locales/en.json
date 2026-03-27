@@ -976,6 +976,23 @@
     "distance": "Distance",
     "flightTime": "Flight Time",
     "notes": "Notes"
+  },
+
+"flightSearch": {
+  "modalTitle": "Today's Flights",
+  "loading": "Searching flights...",
+  "noResults": "No direct flights found for today.",
+  "error": "Error during search.",
+  "departure": "Departure",
+  "unknown": "Unknown",
+  "unknownAirline": "Unknown Airline",
+  "successTitle": "Found!",
+  "successMsg": "has been entered.",
+  "btnTitle": "Search flight number by route",
+  "errorTitle": "Error",
+  "errorMissingRoute": "Please enter the departure and arrival airports (IATA) first.",
+  "onlyTodayHint": "* Search only shows today's flights.",
+  "errorWrongDate": "The flight search only works for today's date."
   }
 
 }

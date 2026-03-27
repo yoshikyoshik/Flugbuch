@@ -972,6 +972,23 @@
     "distance": "Distancia",
     "flightTime": "Tiempo de vuelo",
     "notes": "Notas"
+  },
+
+"flightSearch": {
+  "modalTitle": "Vuelos de hoy",
+  "loading": "Buscando vuelos...",
+  "noResults": "No se encontraron vuelos directos para hoy.",
+  "error": "Error en la búsqueda.",
+  "departure": "Salida",
+  "unknown": "Desconocido",
+  "unknownAirline": "Aerolínea desconocida",
+  "successTitle": "¡Encontrado!",
+  "successMsg": "ha sido ingresado.",
+  "btnTitle": "Buscar número de vuelo por ruta",
+  "errorTitle": "Error",
+  "errorMissingRoute": "Por favor, introduce primero los aeropuertos de salida y llegada (IATA).",
+  "onlyTodayHint": "* La búsqueda solo muestra los vuelos de hoy.",
+  "errorWrongDate": "La búsqueda de vuelos solo funciona para la fecha de hoy."
   }
 
 }
