@@ -1000,6 +1000,7 @@ window.logFlight = async function () {
 	
     renderFlights(null, newFlightId);
     initLiveWidget(); // 🚀 NEU: Widget sofort updaten!
+    initUpcomingWidget(); // 🚀 NEU: Upcoming Widget auch updaten!
 
   // --- NEU: Review Trigger ---
     // Wir holen kurz die aktuelle Anzahl der Flüge um zu prüfen
@@ -1322,6 +1323,7 @@ window.deleteFlight = async function (id) {
         renderFlights(null, null, currentPage);
     }
     initLiveWidget(); // 🚀 NEU: Falls der heutige Flug gelöscht wurde, Widget verstecken!
+    initUpcomingWidget(); // 🚀 NEU: Und auch hier das Upcoming Widget aktualisieren!
   }
 };
 
@@ -5039,6 +5041,16 @@ window.renderCurrentLiveFlight = function() {
         widgetContainer.onclick = function(e) {
             // Verhindern, dass Klicks auf die Pfeil-Buttons die Ticket-Ansicht öffnen
             if (e.target.closest('button')) return;
+            
+            // 🚀 NEU: Die fehlenden Flugnummern aus der Hauptdatenbank rüberkopieren!
+            if (window.flights && window.todaysLiveFlights) {
+                window.todaysLiveFlights.forEach(liveF => {
+                    const originalF = window.flights.find(f => f.id === (liveF.id || liveF.flight_id));
+                    if (originalF && originalF.flightLogNumber) {
+                        liveF.flightLogNumber = originalF.flightLogNumber;
+                    }
+                });
+            }
             
             // Ticket-Ansicht öffnen und die heutigen Flüge als "Swipe-Scope" übergeben
             if (typeof viewFlightDetails === 'function') {
