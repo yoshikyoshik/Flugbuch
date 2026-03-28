@@ -5376,8 +5376,8 @@ async function searchFlightByRoute() {
 
     // --- API AUFRUF ENTSCHEIDEN ---
     let fetchUrl = isFuture 
-        ? `/.netlify/functions/fetch-future-schedules?dep=${dep}&arr=${arr}&date=${targetDate}`
-        : `/.netlify/functions/fetch-route-schedules?dep=${dep}&arr=${arr}`;
+        ? `${API_BASE_URL}/.netlify/functions/fetch-future-schedules?dep=${dep}&arr=${arr}&date=${targetDate}`
+        : `${API_BASE_URL}/.netlify/functions/fetch-route-schedules?dep=${dep}&arr=${arr}`;
 
     try {
         const response = await fetch(fetchUrl);
