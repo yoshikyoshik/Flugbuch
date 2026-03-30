@@ -1016,7 +1016,14 @@ function toggleStoryMode() {
   }
 }
 
-// CHRONIK ANIMATION HELPER
+// ==========================================
+// CHRONIK ANIMATION HELPER (Perfektioniert)
+// ==========================================
+
+// Globale Variablen für den Animations-Status
+window.animationState = "stopped";
+window.animationStartIndex = 0;
+
 function interpolatePoints(startLat, startLng, endLat, endLng, steps) {
   const points = [];
   const deltaLat = (endLat - startLat) / steps;
@@ -1027,61 +1034,66 @@ function interpolatePoints(startLat, startLng, endLat, endLng, steps) {
   return points;
 }
 
-function stopAnimation() {
-  animationState = "stopped";
-  animationStartIndex = 0;
-  const btn = document.getElementById("play-chronicle-btn");
-  if (btn) {
-    btn.disabled = false;
-    btn.innerHTML = getTranslation("flights.playChronicle");
-  }
-}
+// 🚀 NEU: Echte, dedizierte Steuerungs-Funktionen
+window.stopTravelChronicle = function() {
+  window.animationState = "stopped";
+  window.animationStartIndex = 0;
+};
 
-async function animateTravelChronicle() {
-  const btn = document.getElementById("play-chronicle-btn");
-  if (animationState === "stopped") {
+window.pauseTravelChronicle = function() {
+  if (window.animationState === "running") {
+      window.animationState = "paused";
+  }
+};
+
+window.resumeTravelChronicle = function() {
+  if (window.animationState === "paused") {
+      window.animationState = "running";
+      // 🚀 BUGHUNT FIX: KEIN neuer Aufruf von runAnimationLoop() hier! 
+      // Die ursprüngliche Schleife schläft ja nur und wacht jetzt von selbst auf.
+  }
+};
+
+// Fallback für alte Aufrufe (falls noch vorhanden)
+window.stopAnimation = window.stopTravelChronicle;
+
+window.animateTravelChronicle = async function() {
+  if (window.animationState === "stopped") {
     map.invalidateSize();
     map.setView([20, 0], 2);
     await delay(150);
   }
-  if (animationState === "running") {
-    animationState = "paused";
-    btn.innerHTML = getTranslation("flights.continueChronicle");
-    return;
-  }
-  if (animationState === "paused") {
-    animationState = "running";
-    btn.innerHTML = getTranslation("flights.pauseChronicle");
-    runAnimationLoop();
-    return;
-  }
-  animationState = "running";
-  animationStartIndex = 0;
-  btn.innerHTML = getTranslation("flights.pauseChronicle");
+  window.animationState = "running";
+  window.animationStartIndex = 0; // Immer bei 0 anfangen, wenn "Start" gedrückt wird
   runAnimationLoop();
-}
+};
 
 /**
- * Die Haupt-Animationsschleife (ausgelagert für Pause/Fortsetzen).
+ * Die Haupt-Animationsschleife.
  */
 async function runAnimationLoop() {
   const mapInfo = document.getElementById("map-info");
 
   // Nur beim allerersten Start (Reset) die Karte leeren
-  if (animationStartIndex === 0) {
+  if (window.animationStartIndex === 0) {
     routeLayer.clearLayers();
     map.setView([20, 0], 2);
-    await delay(100); // Kurze Pause nach dem Reset
+    await delay(100); 
   }
 
-  const allFlights = await getFlights();
-  if (allFlights.length === 0) {
-    mapInfo.textContent = getTranslation("anim.noFlights");
-    stopAnimation();
+  // 🚀 BUGHUNT FIX: Flüge intelligent laden (Demo vs. Filter vs. Datenbank)
+  const allFlights = (typeof isDemoMode !== 'undefined' && isDemoMode && window.flights) 
+        ? window.flights 
+        : (typeof currentlyFilteredFlights !== 'undefined' && currentlyFilteredFlights ? currentlyFilteredFlights : await getFlights());
+
+  if (!allFlights || allFlights.length === 0) {
+    if(mapInfo) mapInfo.textContent = getTranslation("anim.noFlights") || "Keine Flüge vorhanden.";
+    window.stopTravelChronicle();
+    if (typeof updateChronicleUI === 'function') updateChronicleUI('stopped');
     return;
   }
 
-  const sortedFlights = resequenceAndAssignNumbers(allFlights);
+  const sortedFlights = typeof resequenceAndAssignNumbers === 'function' ? resequenceAndAssignNumbers(allFlights) : allFlights;
   const chronicleColors = [
     "#312E81",
     "#10B981",
@@ -1091,26 +1103,29 @@ async function runAnimationLoop() {
   ];
 
   try {
-    // Starte die Schleife bei dem Flug, bei dem pausiert wurde (oder 0)
-    for (let i = animationStartIndex; i < sortedFlights.length; i++) {
-      // KORREKTUR 2 (PAUSE-FIX):
-      // Die Prüfung findet jetzt VOR dem Zeichnen des nächsten Flugs statt.
-      if (animationState !== "running") {
-        animationStartIndex = i; // Speichere den Index des NÄCHSTEN Flugs
+    for (let i = window.animationStartIndex; i < sortedFlights.length; i++) {
+      
+      // --- ALTE, FALSCHE LOGIK LÖSCHEN ---
+      // if (window.animationState !== "running") {
+      //   window.animationStartIndex = i; 
+      //   if (window.animationState === "paused") { ... }
+      //   return; 
+      // }
+      // -----------------------------------
 
-        if (animationState === "paused") {
-          //mapInfo.textContent = `Animation pausiert. Bereit für Flug #${sortedFlights[i].flightLogNumber}.`;
-          mapInfo.textContent = getTranslation("anim.paused").replace("{count}", sortedFlights[i].flightLogNumber);
-        }
-        return; // Beende die Funktion, die Schleife wird hier unterbrochen
+      // 🚀 BUGHUNT FIX: RICHTIGE LOGIK (Einfach schlafen, anstatt abzubrechen!)
+      while (window.animationState === "paused") {
+          if(mapInfo) mapInfo.textContent = (getTranslation("anim.paused") || "Pausiert").replace("{count}", sortedFlights[i].flightLogNumber || (i+1));
+          await delay(100);
       }
+      if (window.animationState === "stopped") return;
 
       const flight = sortedFlights[i];
       const color = chronicleColors[i % chronicleColors.length];
 
       if (flight.depLat && flight.arrLat) {
-        mapInfo.textContent = (getTranslation("map.animationProgress") || "Flug {number} / {total}: {date} von {dep} nach {arr}")
-          .replace("{number}", flight.flightLogNumber)
+        if(mapInfo) mapInfo.textContent = (getTranslation("map.animationProgress") || "Flug {number} / {total}: {date} von {dep} nach {arr}")
+          .replace("{number}", flight.flightLogNumber || (i+1))
           .replace("{total}", sortedFlights.length)
           .replace("{date}", flight.date)
           .replace("{dep}", flight.departure)
@@ -1119,7 +1134,6 @@ async function runAnimationLoop() {
         L.marker([flight.depLat, flight.depLon]).addTo(routeLayer);
         L.marker([flight.arrLat, flight.arrLon]).addTo(routeLayer);
 
-        // Der Zoom-Fix (durch das Warten in animateTravelChronicle) sollte jetzt greifen
         map.fitBounds(
           [
             [flight.depLat, flight.depLon],
@@ -1144,6 +1158,7 @@ async function runAnimationLoop() {
           weight: 2.5,
           opacity: 0.8,
         }).addTo(routeLayer);
+        
         const decorator = L.polylineDecorator(animatedPath, {
           patterns: [
             {
@@ -1157,7 +1172,7 @@ async function runAnimationLoop() {
           ],
         }).addTo(routeLayer);
 
-        const iconHtml = `<span style="color: ${color};">#${flight.flightLogNumber}</span>`;
+        const iconHtml = `<span style="color: ${color};">#${flight.flightLogNumber || (i+1)}</span>`;
         const flightMarkerIcon = L.divIcon({
           html: iconHtml,
           className: "animated-flight-marker",
@@ -1167,38 +1182,51 @@ async function runAnimationLoop() {
           icon: flightMarkerIcon,
         }).addTo(routeLayer);
 
-        // Diese innere Schleife läuft jetzt immer bis zum Ende durch
+        // Die innere Schleife (Schritt für Schritt fliegen)
         for (let p = 0; p < points.length; p++) {
+          
+          // 🚀 BUGHUNT FIX: Harter Abbruch WÄHREND des Flugs, falls Stop gedrückt wird!
+          if (window.animationState === "stopped") {
+              return; 
+          }
+          
+          // 🚀 BUGHUNT FIX: Millisekunden-genaue Pause WÄHREND das Flugzeug in der Luft ist!
+          while (window.animationState === "paused") {
+              await delay(100);
+              if (window.animationState === "stopped") return;
+          }
+
           animatedPath.addLatLng(points[p]);
           decorator.setPaths(animatedPath);
           flightMarker.setLatLng(points[p]);
           await delay(delayPerStep);
         }
 
-        const centerLatLng = animatedPath.getCenter();
-        flightMarker.setLatLng(centerLatLng);
+        // 🚀 BUGHUNT FIX (Der getCenter Crash): 
+        // Prüfe, ob die Map die Line noch hat (falls in genau dieser Millisekunde Stopp gedrückt wurde),
+        // bevor getCenter aufgerufen wird!
+        if (window.animationState === "running" && map.hasLayer(animatedPath) && animatedPath.getLatLngs().length > 0) {
+            const centerLatLng = animatedPath.getCenter();
+            flightMarker.setLatLng(centerLatLng);
+        }
       }
-    } // Ende der 'for'-Schleife
+    } // Ende for-Schleife
 
-    if (animationState === "running") {
-      mapInfo.textContent = getTranslation("anim.finished").replace("{count}", sortedFlights.length);
+    // Wenn er komplett durchgelaufen ist:
+    if (window.animationState === "running") {
+      if(mapInfo) mapInfo.textContent = (getTranslation("anim.finished") || "Fertig").replace("{count}", sortedFlights.length);
+      window.animationState = "stopped";
+      window.animationStartIndex = 0;
+      if (typeof updateChronicleUI === 'function') updateChronicleUI('stopped');
     }
+    
   } catch (error) {
     console.error("Fehler bei der Reise-Chronik Animation:", error);
-    mapInfo.textContent = getTranslation("map.animationFailed") || "Animation fehlgeschlagen.";
-  } finally {
-    // Setzt den Zustand zurück, WENN die Animation nicht pausiert wurde
-    if (animationState !== "paused") {
-      stopAnimation();
-    }
+    if(mapInfo) mapInfo.textContent = getTranslation("map.animationFailed") || "Animation fehlgeschlagen.";
+    window.animationState = "stopped";
+    if (typeof updateChronicleUI === 'function') updateChronicleUI('stopped');
   }
 }
-
-// map.js - Am Ende der Datei einfügen
-
-// map.js
-
-// map.js
 
 async function takeGlobeScreenshot() {
   const modalElement = document.getElementById("globe-modal");

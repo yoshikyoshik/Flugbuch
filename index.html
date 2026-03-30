@@ -87,12 +87,14 @@
   <script src="js/demo.js"></script>
 	<script src="js/app.js"></script>
 
+  <!--
   <script src="https://unpkg.com/vconsole@latest/dist/vconsole.min.js"></script>
     <script>
       var vConsole = new window.VConsole();
     </script>
-	
-    <style>
+  -->
+    
+  <style>
 	/* --- CSS befindet sich in style.css --- */
 	</style>
 	
@@ -228,82 +230,22 @@
       id="app-container"
       class="hidden relative z-10 flex flex-col items-center justify-start w-full px-0 sm:px-4 pt-0 sm:pt-10 pb-14 md:pb-8"
     >
+    <div id="app-boot-screen" class="fixed inset-0 z-[200] bg-surface-container-lowest dark:bg-slate-900 flex flex-col items-center justify-center transition-opacity duration-500 ease-in-out">
+            <div class="relative w-20 h-20 flex items-center justify-center mb-6">
+                 <div class="absolute inset-0 border-4 border-primary/20 dark:border-indigo-500/20 rounded-full"></div>
+                 <div class="absolute inset-0 border-4 border-primary dark:border-indigo-400 rounded-full border-t-transparent animate-spin"></div>
+                 <span class="material-symbols-outlined text-primary dark:text-indigo-400 text-3xl absolute animate-pulse">flight</span>
+            </div>
+            <h2 class="text-2xl font-display font-black text-on-surface dark:text-white mb-2 tracking-tight">AvioSphere</h2>
+            <p class="text-[10px] font-bold uppercase tracking-widest text-on-surface/50 dark:text-slate-400 animate-pulse">Flugdaten werden synchronisiert...</p>
+        </div>
       <div
         class="w-full max-w-4xl bg-transparent sm:bg-surface-container-lowest/90 sm:dark:bg-slate-900/80 sm:backdrop-blur-3xl sm:shadow-2xl rounded-none sm:rounded-[2.5rem] px-3 pb-4 pt-[max(1.5rem,env(safe-area-inset-top))] sm:p-8 md:p-12 sm:border border-outline-variant/20 dark:border-slate-800"
       >
-        <div class="flex justify-between items-center mb-10">
+        <div class="flex justify-center items-center mb-8">
           <div id="app-header-logo" class="flex items-center gap-4 cursor-pointer select-none">
-            <img
-              src="pictures/logo.png"
-              alt="Logo"
-              class="w-12 h-12 rounded-2xl shadow-sm ring-1 ring-black/5 dark:ring-white/10"
-            />
-            <h1
-              class="text-2xl md:text-3xl font-display font-extrabold text-on-surface dark:text-white tracking-tight"
-            >
-              AvioSphere
-            </h1>
-          </div>
-          <div class="relative">
-            <button
-              id="burger-menu-btn"
-              class="p-2 rounded-xl text-on-surface/70 hover:text-primary hover:bg-primary/10 dark:text-slate-300 dark:hover:bg-slate-800 transition-colors"
-            >
-              <span class="material-symbols-outlined text-3xl">menu</span>
-            </button>
-            <div
-              id="burger-menu"
-              class="hidden absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-md shadow-lg z-50 border dark:border-gray-700 overflow-hidden"
-            >
-              <div class="border-b dark:border-gray-700 py-1 flex justify-around bg-gray-50 dark:bg-gray-800/50">
-                <button onclick="setLanguage('de'); toggleBurgerMenu();" class="p-2 text-sm font-medium rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition">🇩🇪</button>
-                <button onclick="setLanguage('en'); toggleBurgerMenu();" class="p-2 text-sm font-medium rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition">🇬🇧</button>
-                <button onclick="setLanguage('es'); toggleBurgerMenu();" class="p-2 text-sm font-medium rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition">🇪🇸</button>
-                <button onclick="setLanguage('ru'); toggleBurgerMenu();" class="p-2 text-sm font-medium rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition">🇷🇺</button>
-                <button onclick="setLanguage('zh'); toggleBurgerMenu();" class="p-2 text-sm font-medium rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition">🇨🇳</button>
-              </div>
-
-              <div class="border-b dark:border-gray-700 py-1">
-                <a href="#" onclick="event.preventDefault(); exportData('json'); toggleBurgerMenu();" data-i18n="burgerMenu.exportJSON" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
-                  Daten Exportieren (JSON)
-                </a>
-                <a href="#" onclick="event.preventDefault(); exportData('csv'); toggleBurgerMenu();" data-i18n="burgerMenu.exportCSV" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
-                  Daten Exportieren (CSV)
-                </a>
-                
-                <label for="import-file-input" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer group">
-                  <div class="text-sm font-bold text-red-500 dark:text-red-400 group-hover:text-red-600 dark:group-hover:text-red-300 transition-colors" data-i18n="burgerMenu.import">
-                    Daten importieren
-                  </div>
-                  <div class="text-[10px] leading-tight text-gray-500 dark:text-gray-400 mt-0.5" data-i18n="burgerMenu.importSub">
-                    JSON, CSV (Flightradar24, App in the Air)
-                  </div>
-                </label>
-                <input type="file" id="import-file-input" accept=".json,.csv" class="hidden" />
-              </div>
-
-              <div class="py-1">
-                <a href="#" id="menu-theme-toggle" data-i18n="burgerMenu.toggleMode" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
-                  🌓 Modus wechseln
-                </a>
-
-                <a href="#" id="menu-exit-demo-btn" class="hidden block px-4 py-2 text-sm font-bold text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 border-t dark:border-gray-700" data-i18n="burgerMenu.exitDemo">
-                  🚪 Demo Beenden
-                </a>
-              </div>
-
-              <div class="p-3 border-t border-indigo-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
-                  <button onclick="document.getElementById('burger-menu').classList.add('hidden'); showTab('profil');" class="w-full flex items-center justify-between p-2 bg-white dark:bg-gray-700 hover:bg-indigo-50 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600 rounded-xl transition-colors shadow-sm group">
-                      <div class="flex items-center gap-3">
-                          
-                          <div class="text-left">
-                              <p class="text-sm font-bold text-gray-800 dark:text-white" data-i18n="tabs.profile">Mein Profil</p>
-                          </div>
-                      </div>
-                      <svg class="w-4 h-4 text-gray-400 group-hover:text-indigo-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-                  </button>
-              </div>
-            </div>
+            <img src="pictures/logo.png" alt="Logo" class="w-12 h-12 rounded-2xl shadow-sm ring-1 ring-black/5 dark:ring-white/10" />
+            <h1 class="text-2xl md:text-3xl font-display font-extrabold text-on-surface dark:text-white tracking-tight">AvioSphere</h1>
           </div>
         </div>
 
@@ -311,272 +253,23 @@
         <div>
           
           <div class="py-6 pb-28">
-            <div id="tab-content-neue-fluege">
+            
+            <div id="tab-content-radar">
               <div class="flex items-center justify-between mb-8 pr-2">
-                <h2 data-i18n="logNewFlight" class="text-2xl font-display font-extrabold text-on-surface dark:text-white tracking-tight">
-                  Neuen Flug loggen
+                <h2 class="text-2xl font-display font-extrabold text-on-surface dark:text-white tracking-tight">
+                  Radar
                 </h2>
               </div>
 
-              <div id="import-promo-container" class="relative mb-8 group">
-                  <button onclick="dismissImportPromo(event)" class="absolute -top-3 -right-3 bg-surface-container-lowest dark:bg-slate-800 border border-outline-variant/20 dark:border-slate-700 hover:bg-surface-container-low dark:hover:bg-slate-700 text-on-surface/50 dark:text-slate-400 rounded-full w-8 h-8 flex items-center justify-center shadow-md z-10 transition-colors" title="Ausblenden">
-                      <span class="material-symbols-outlined text-[18px]">close</span>
-                  </button>
-
-                  <button onclick="document.getElementById('import-file-input').click()" class="w-full p-6 border-2 border-dashed border-primary/30 bg-primary/5 dark:bg-primary/10 rounded-[2rem] hover:bg-primary/10 dark:hover:bg-primary/20 transition-all flex flex-col items-center justify-center gap-3">
-                      <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-300">
-                          <span class="material-symbols-outlined text-2xl">upload_file</span>
-                      </div>
-                      <div class="text-center">
-                          <span class="block font-bold text-primary dark:text-indigo-400 text-sm md:text-base mb-1 font-display" data-i18n="import.promoTitle">Wechselst du von Flightradar24 oder App in the Air?</span>
-                          <span class="block text-xs text-primary/70 dark:text-indigo-300 px-4" data-i18n="import.promoSub">Lade deinen CSV-Export hoch. Wir erkennen das Format automatisch!</span>
-                      </div>
+              <div id="radar-empty-state" class="text-center py-12 px-4 bg-surface-container-lowest dark:bg-slate-800 rounded-[2rem] border border-dashed border-outline-variant/30 dark:border-slate-700">
+                  <div class="text-5xl mb-4 opacity-50">📡</div>
+                  <h3 class="text-lg font-bold text-on-surface dark:text-white font-display mb-2">Keine anstehenden Flüge</h3>
+                  <p class="text-sm text-on-surface/60 dark:text-slate-400 mb-6">Zeit für dein nächstes Abenteuer!</p>
+                  <button onclick="openAddMenu()" class="px-6 py-3 bg-primary/10 text-primary dark:bg-indigo-900/30 dark:text-indigo-400 font-bold rounded-xl transition-colors hover:bg-primary/20">
+                      Flug planen
                   </button>
               </div>
 
-              <details class="bg-surface-container-lowest dark:bg-slate-800 p-6 md:p-8 rounded-[2rem] mb-6 shadow-sm border border-outline-variant/20 dark:border-slate-700 group transition-all duration-300" open>
-                <summary class="list-none cursor-pointer flex items-center justify-between">
-                  <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-cyan-accent/10 flex items-center justify-center text-cyan-accent">
-                        <span class="material-symbols-outlined">smart_toy</span>
-                    </div>
-                    <h3 class="text-lg font-bold text-on-surface dark:text-white font-display flex items-center gap-2">
-                        <span data-i18n="autoPilot">Autopilot: Flugdaten laden</span>
-                    </h3>
-                  </div>
-                  <span class="material-symbols-outlined text-on-surface/40 group-open:rotate-180 transition-transform duration-300">keyboard_arrow_down</span>
-                </summary>
-
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end mt-6 border-t border-outline-variant/10 dark:border-slate-700 pt-6">
-                  <div>
-                    <label for="auto-flight-number" data-i18n="autoFlightNumber" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1">Flugnummer</label>
-                    <input type="text" id="auto-flight-number" placeholder="z.B. LH202" data-i18n="placeholder.egFlightNumber" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium placeholder-on-surface/30" />
-                  </div>
-                  <div>
-                    <label for="auto-flight-date" data-i18n="autoFlightDate" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1">Flugdatum</label>
-                    <input type="date" id="auto-flight-date" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium text-on-surface/70" />
-                  </div>
-                  <button id="autofill-btn" data-i18n="autofillBtn" class="w-full h-[48px] bg-primary hover:bg-primary/90 text-white rounded-xl transition-all shadow-sm font-bold text-sm flex items-center justify-center gap-2">
-                    <span class="material-symbols-outlined text-[18px]">cloud_download</span> Daten abrufen
-                  </button>
-                </div>
-              </details>
-
-              <div class="bg-gradient-to-br from-primary to-indigo-900 p-6 md:p-8 rounded-[2rem] mb-8 shadow-xl text-white group cursor-pointer hover:shadow-primary/20 hover:-translate-y-1 transition-all duration-300 relative overflow-hidden" onclick="startBoardingPassScanner()">
-                <div class="absolute -right-8 -top-8 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
-                <div class="flex items-center justify-between relative z-10">
-                  <div class="flex items-center gap-5">
-                    <div class="bg-white/20 p-4 rounded-2xl backdrop-blur-md border border-white/10">
-                      <span class="material-symbols-outlined text-3xl">qr_code_scanner</span>
-                    </div>
-                    <div>
-                      <h3 class="text-xl font-display font-extrabold flex items-center gap-2">
-                          <span data-i18n="scanner.title">Bordkarte scannen</span>
-                          <span id="scanner-lock" class="text-sm opacity-80" title="Pro Feature">🔒</span>
-                      </h3>
-                      <p class="text-white/70 text-sm font-medium mt-1" data-i18n="scanner.subtitle">QR- oder Barcode mit der Kamera erfassen</p>
-                    </div>
-                  </div>
-                  <span class="material-symbols-outlined text-white/50 group-hover:translate-x-1 group-hover:text-white transition-all text-3xl">chevron_right</span>
-                </div>
-              </div>
-
-              <details class="bg-surface-container-lowest dark:bg-slate-800 p-6 md:p-8 rounded-[2rem] mb-6 shadow-sm border border-outline-variant/20 dark:border-slate-700 group transition-all duration-300" open>
-                <summary class="list-none cursor-pointer flex items-center justify-between">
-                  <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                        <span class="material-symbols-outlined">edit_document</span>
-                    </div>
-                    <h2 data-i18n="logNewFlight" class="text-lg font-bold text-on-surface dark:text-white font-display">
-                        Manuelle Eingabe
-                    </h2>
-                  </div>
-                  <span class="material-symbols-outlined text-on-surface/40 group-open:rotate-180 transition-transform duration-300">keyboard_arrow_down</span>
-                </summary>
-
-                <div class="mt-6 pt-6 border-t border-outline-variant/10 dark:border-slate-700 grid grid-cols-1 lg:grid-cols-6 gap-x-6 gap-y-5">
-                  
-                  <div class="autocomplete-container lg:col-span-3">
-                    <label for="departure" data-i18n="departureNewFlight" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1">Abflugort (IATA/Name)</label>
-                    <input type="text" id="departure" placeholder="z.B. FRA" data-i18n="placeholder.egDeparture" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium" />
-                    <div id="departure-list" class="autocomplete-list hidden rounded-xl shadow-lg border border-outline-variant/20 mt-1 z-50"></div>
-                  </div>
-                  
-                  <div class="autocomplete-container lg:col-span-3">
-                    <label for="arrival" data-i18n="arrivalNewFlight" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1">Zielort (IATA/Name)</label>
-                    <input type="text" id="arrival" placeholder="z.B. JFK" data-i18n="placeholder.egArrival" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium" />
-                    <div id="arrival-list" class="autocomplete-list hidden rounded-xl shadow-lg border border-outline-variant/20 mt-1 z-50"></div>
-                  </div>
-
-                  <div class="lg:col-span-3">
-                    <label for="flightDate" data-i18n="flightDateNewFlight" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1">Flugdatum (Optional)</label>
-                    <input type="date" id="flightDate" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium text-on-surface/70" />
-                  </div>
-                  
-                  <div class="lg:col-span-3">
-                    <label for="flightClass" data-i18n="flightClassNewFlight" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1">Klasse/Zweck (Optional)</label>
-                    <div class="relative">
-                        <select id="flightClass" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium appearance-none cursor-pointer">
-                        <option value="Economy" data-i18n="flightClassEconomy">Economy</option>
-                        <option value="Business" data-i18n="flightClassBusiness">Business</option>
-                        <option value="First" data-i18n="flightClassFirst">First</option>
-                        <option value="Privat" data-i18n="flightClassPrivat">Privat</option>
-                        <option value="Cargo" data-i18n="flightClassCargo">Cargo</option>
-                        </select>
-                        <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface/40 pointer-events-none">expand_more</span>
-                    </div>
-                  </div>
-
-                  <div class="lg:col-span-2">
-                    <label for="flightNumber" data-i18n="form.flightNumberOptional" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1">Flugnummer (Optional)</label>
-                    <div class="flex gap-2">
-                      <input type="text" id="flightNumber" placeholder="z.B. LH400" data-i18n="placeholder.egFlightNumber" class="block w-full flex-1 rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium uppercase" />
-                      
-                      <button type="button" onclick="searchFlightByRoute()" data-i18n-title="flightSearch.btnTitle" class="flex-shrink-0 w-12 flex items-center justify-center bg-primary hover:bg-primary/90 text-white rounded-xl shadow-sm transition-all transform hover:-translate-y-0.5" title="Flugnummer anhand der Route suchen">
-                        <span class="material-symbols-outlined">search</span>
-                      </button>
-                    </div>
-                    <p class="mt-1.5 text-[11px] text-on-surface/50 dark:text-slate-500 font-medium" data-i18n="flightSearch.onlyTodayHint">
-                      * Die Suche zeigt nur tagesaktuelle Flüge an.
-                    </p>
-                  </div>
-                  
-                  <div class="lg:col-span-2">
-                    <label for="airline" data-i18n="form.airline" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1">Airline (Optional)</label>
-                    <input type="text" id="airline" placeholder="z.B. Lufthansa" data-i18n="placeholder.egAirline" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium" />
-                  </div>
-                  
-                  <div class="lg:col-span-2">
-                    <label for="aircraftType" data-i18n="form.aircraft" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1">Flugzeugtyp (Optional)</label>
-                    <input type="text" id="aircraftType" placeholder="z.B. A320" data-i18n="placeholder.egAircraft" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium" />
-                  </div>
-
-                  <div class="lg:col-span-2">
-                    <label for="registration" data-i18n="form.registration" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1">Registrierung (Optional)</label>
-                    <input type="text" id="registration" placeholder="z.B. D-AINC" data-i18n="placeholder.egRegistration" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium" />
-                    
-                    <div id="planespotters-preview" class="hidden mt-3 rounded-2xl overflow-hidden border border-outline-variant/20 dark:border-slate-700 shadow-sm relative group transition-all duration-300">
-                      <img id="planespotters-img" src="" alt="Aircraft Preview" class="w-full h-40 object-cover">
-                      <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent p-3 flex flex-col justify-end text-white text-[10px] text-right opacity-80 group-hover:opacity-100 transition-opacity">
-                          <span>Foto: <span id="planespotters-credit" class="font-bold"></span></span>
-                          <span>via <a id="planespotters-link" href="#" target="_blank" class="underline hover:text-cyan-accent">Planespotters.net</a></span>
-                      </div>
-                      <button type="button" onclick="clearPlanespottersPreview()" class="absolute top-2 right-2 bg-black/40 hover:bg-red-500 backdrop-blur-md text-white rounded-full w-7 h-7 flex items-center justify-center transition-colors">
-                          <span class="material-symbols-outlined text-[16px]">close</span>
-                      </button>
-                    </div>
-                  </div>
-                  
-                  <div class="lg:col-span-2">
-                    <label for="price" data-i18n="priceNewFlight" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1">Ticketpreis (Optional)</label>
-                    <input type="number" id="price" placeholder="z.B. 199.99" data-i18n="placeholder.egPrice" step="0.01" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium" />
-                  </div>
-                  
-                  <div class="lg:col-span-2">
-                    <label for="currency" data-i18n="currencyNewFlight" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1">Währung (Optional)</label>
-                    <input type="text" id="currency" placeholder="z.B. EUR" data-i18n="placeholder.egCurrency" maxlength="3" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium" />
-                  </div>
-
-                  <div class="lg:col-span-3">
-                    <label data-i18n="form.photo" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-2">Eigene Fotos (Optional)</label>
-                    <div id="existing-photos-preview" class="mb-3 flex flex-wrap gap-2"></div>
-                    <input type="file" id="flightPhoto" accept="image/*" class="hidden" multiple />
-                    <div class="flex items-center gap-4">
-                        <label for="flightPhoto" class="inline-flex items-center gap-2 bg-surface-container-highest dark:bg-slate-700 text-on-surface dark:text-white rounded-xl px-5 py-3 text-sm font-bold cursor-pointer hover:bg-outline-variant/50 transition-colors shadow-sm">
-                        <span class="material-symbols-outlined text-[18px]">add_photo_alternate</span>
-                        <span data-i18n="form.chooseFile">Datei auswählen...</span>
-                        </label>
-                        <span id="photo-preview-text" class="text-xs text-on-surface/50 dark:text-slate-400 truncate max-w-[150px]" data-i18n="form.noPhotoSelected">Kein Foto ausgewählt</span>
-                    </div>
-                  </div>
-                  
-                  <div class="lg:col-span-3">
-                    <label for="notes" data-i18n="notesNewFlight" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1">Bemerkungen (Optional)</label>
-                    <textarea id="notes" rows="3" placeholder="Wie war der Flug?" data-i18n="form.notesPlaceholder" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium resize-none"></textarea>
-                  </div>
-
-                  <div class="lg:col-span-6 border-t border-outline-variant/10 dark:border-slate-700 pt-5 mt-2">
-                    <label for="tripSelect" data-i18n="form.tripLabel" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-2">Reise / Trip (Optional)</label>
-                    <div class="flex gap-3 items-center">
-                        <div class="relative flex-1">
-                            <select id="tripSelect" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-4 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-bold appearance-none cursor-pointer">
-                                <option value="" data-i18n="form.tripNone">-- Keine Reise (Einzelflug) --</option>
-                            </select>
-                            <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface/40 pointer-events-none">expand_more</span>
-                        </div>
-                      
-                      <button type="button" onclick="createNewTrip()" class="flex-shrink-0 flex items-center justify-center w-[52px] h-[52px] rounded-xl bg-primary/10 text-primary hover:bg-primary/20 dark:bg-primary/20 dark:text-indigo-300 transition-colors" data-i18n-title="trips.createNew" title="Neue Reise anlegen">
-                        <span class="material-symbols-outlined text-2xl">add</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  <div class="lg:col-span-6 mt-2">
-                    <div class="grid grid-cols-3 gap-3 bg-surface-container-low dark:bg-slate-900 p-4 rounded-2xl border border-outline-variant/10 dark:border-slate-700/50">
-                      <div class="text-center">
-                        <p data-i18n="estimatedDistanceNewFlight" class="text-[10px] font-bold uppercase tracking-wider text-primary/70 dark:text-indigo-400/80 mb-1">Distanz</p>
-                        <p id="distance-display" class="text-lg font-display font-black text-primary dark:text-indigo-300">-</p>
-                      </div>
-                      <div class="text-center border-l border-r border-outline-variant/10 dark:border-slate-700/50">
-                        <p data-i18n="estimatedFlightTimeNewFlight" class="text-[10px] font-bold uppercase tracking-wider text-primary/70 dark:text-indigo-400/80 mb-1">Dauer</p>
-                        <p id="time-display" class="text-lg font-display font-black text-primary dark:text-indigo-300">-</p>
-                      </div>
-                      <div class="text-center">
-                        <p data-i18n="estimatedCO2Emissions" class="text-[10px] font-bold uppercase tracking-wider text-orange-600/70 dark:text-orange-400/80 mb-1">CO₂</p>
-                        <p id="co2-display" class="text-lg font-display font-black text-orange-600 dark:text-orange-400">-</p>
-                      </div>
-                    </div> 
-                  </div> 
-                </div> 
-              </details> 
-
-              <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mt-8">
-                <button
-                  onclick="logFlight()"
-                  id="log-button"
-                  disabled
-                  data-i18n="logFlightNewFlight"
-                  class="flex-1 py-4 px-6 rounded-2xl font-bold shadow-md transition-all duration-300 flex items-center justify-center gap-2
-                         bg-primary text-white hover:bg-primary/90 hover:shadow-lg hover:-translate-y-0.5
-                         disabled:bg-surface-container-highest disabled:text-on-surface/40 disabled:shadow-none disabled:translate-y-0 disabled:cursor-not-allowed
-                         dark:disabled:bg-slate-800 dark:disabled:text-slate-500"
-                >
-                  <span class="material-symbols-outlined text-[20px]">save</span> Flug loggen und speichern
-                </button>
-				
-                <button
-                  onclick="clearOnlyFields(event)"
-                  id="reset-button"
-                  data-i18n="form.reset"
-                  class="w-full sm:w-auto py-4 px-8 rounded-2xl font-bold transition-colors bg-surface-container-lowest dark:bg-slate-800 border border-outline-variant/30 dark:border-slate-700 text-on-surface dark:text-white hover:bg-surface-container-low dark:hover:bg-slate-700 shadow-sm"
-                >
-                  Zurücksetzen
-                </button>
-                
-                <button type="button" id="cancel-edit-button" onclick="cancelEditFlight()" class="hidden w-full py-4 bg-surface-container-low hover:bg-surface-container-highest dark:bg-slate-800 dark:hover:bg-slate-700 text-on-surface dark:text-white font-bold rounded-2xl transition-all shadow-sm border border-outline-variant/10 dark:border-slate-700 mt-4">
-                    Abbrechen
-                </button>
-              </div>
-            </div>
-
-            <div id="tab-content-fluege">
-
-              <details id="live-flight-promo" class="hidden mb-6 relative bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-indigo-900/20 dark:to-blue-900/20 border border-blue-200 dark:border-indigo-800 rounded-2xl py-3 px-4 shadow-sm group transition-all duration-300">
-                <summary class="list-none cursor-pointer flex items-center justify-between">
-                  <div class="flex items-center gap-3">
-                    <div class="text-2xl animate-bounce">🛫</div>
-                    <h4 class="font-bold text-indigo-800 dark:text-indigo-300 text-sm" data-i18n="live.promoTitle">Tipp für deinen Reisetag</h4>
-                  </div>
-                  <span class="material-symbols-outlined text-indigo-800/50 dark:text-indigo-300/50 group-open:rotate-180 transition-transform duration-300">keyboard_arrow_down</span>
-                </summary>
-                
-                <div class="mt-2 pl-11 pr-2 pb-1 border-t border-indigo-200/50 dark:border-indigo-800/50 pt-2">
-                  <p class="text-xs text-indigo-900/70 dark:text-indigo-200/80 leading-relaxed" data-i18n="live.promoDesc">
-                    Trage deinen Flug schon vorab ein und erhalte am Abflugtag Live-Updates zu Gate, Terminal und Verspätungen direkt hier!
-                  </p>
-                </div>
-              </details>
-              
               <div id="live-flight-widget" class="hidden mb-12 relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-on-primary-container to-slate-900 shadow-2xl border border-white/10 group transition-transform duration-300 hover:-translate-y-1 hover:shadow-primary/20">
                 
                 <div class="absolute -top-32 -right-32 w-64 h-64 bg-cyan-accent/20 rounded-full blur-3xl pointer-events-none"></div>
@@ -669,10 +362,66 @@
                     </div>
                 </div>
               </div>
-              <div id="upcoming-flights-container" class="hidden flex-col gap-4 mt-6 mb-10 w-full relative z-20">
-                  </div>
 
-              <details id="last-flight-map-details" class="bg-slate-50/50 dark:bg-slate-800/50 p-4 md:p-6 rounded-2xl mb-8 shadow-sm border border-slate-200 dark:border-slate-700 group transition-all duration-300">
+              <div id="upcoming-flights-container" class="hidden flex-col gap-4 mt-6 mb-10 w-full relative z-20"></div>
+            </div>
+
+            
+            <div id="tab-content-timeline" class="hidden">
+              
+              <div class="flex items-center justify-between mb-6 pr-2">
+                <h2 class="text-2xl font-display font-extrabold text-on-surface dark:text-white tracking-tight">
+                  Timeline
+                </h2>
+              </div>
+
+              <div class="mb-8 flex flex-col sm:flex-row items-center gap-4 w-full">
+                  <div class="flex bg-surface-container-low dark:bg-slate-800/50 p-1.5 rounded-2xl border border-outline-variant/10 dark:border-slate-700/50 shadow-inner gap-1 w-full sm:w-max overflow-x-auto hide-scrollbar">
+                    <button id="timeline-view-flights" onclick="switchTimelineView('flights')" class="flex-1 sm:flex-none px-6 py-2.5 text-sm font-bold rounded-xl transition-all bg-surface-container-lowest dark:bg-slate-700 text-on-surface dark:text-white shadow-sm flex items-center justify-center gap-2">
+                      <span class="material-symbols-outlined text-[18px]">flight_takeoff</span> Einzelflüge
+                    </button>
+                    <button id="timeline-view-trips" onclick="switchTimelineView('trips')" class="flex-1 sm:flex-none px-6 py-2.5 text-sm font-bold rounded-xl transition-all text-on-surface/60 hover:text-on-surface dark:text-slate-400 dark:hover:text-white hover:bg-surface-container-lowest dark:hover:bg-slate-700 flex items-center justify-center gap-2">
+                      <span class="material-symbols-outlined text-[18px]">luggage</span> Meine Reisen
+                    </button>
+                  </div>
+                  
+                  <button id="print-book-btn" class="w-full sm:w-auto sm:ml-auto flex items-center justify-center gap-2 px-5 py-2.5 bg-surface-container-low hover:bg-surface-container-highest dark:bg-slate-800 dark:hover:bg-slate-700 text-on-surface dark:text-white rounded-xl font-bold text-sm transition-all shadow-sm border border-outline-variant/10 dark:border-slate-700">
+                      <span class="material-symbols-outlined text-[18px]">menu_book</span> <span data-i18n="flights.createBook">Buch (PDF)</span>
+                  </button>
+              </div>
+
+              <div class="grid grid-cols-2 gap-4 mb-8">
+                  <button id="toggle-map-view-btn" onclick="toggleAllRoutesView()" class="p-4 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/20 dark:hover:bg-indigo-900/40 border border-indigo-200 dark:border-indigo-800 rounded-2xl flex flex-col items-center justify-center gap-2 transition-all group">
+                      <span class="material-symbols-outlined text-3xl text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform">map</span>
+                      <span class="text-sm font-bold text-indigo-900 dark:text-indigo-300">2D Karte</span>
+                  </button>
+                  
+                  <button id="show-globe-btn" onclick="" class="p-4 bg-cyan-50 hover:bg-cyan-100 dark:bg-cyan-900/20 dark:hover:bg-cyan-900/40 border border-cyan-200 dark:border-cyan-800 rounded-2xl flex flex-col items-center justify-center gap-2 transition-all group">
+                      <span class="material-symbols-outlined text-3xl text-cyan-600 dark:text-cyan-400 group-hover:scale-110 transition-transform">public</span>
+                      <span class="text-sm font-bold text-cyan-900 dark:text-cyan-300">3D Globus</span>
+                  </button>
+              </div>
+
+              <div id="chronicle-controls-container" class="hidden mb-8 overflow-hidden transition-all duration-300">
+                  <div class="flex flex-wrap items-center justify-center gap-3 p-4 bg-indigo-50/50 dark:bg-indigo-900/10 rounded-2xl border border-indigo-100 dark:border-indigo-800/30">
+                      <span class="text-xs font-bold uppercase tracking-widest text-indigo-500 dark:text-indigo-400 mr-2 w-full sm:w-auto text-center" data-i18n="flights.chronicleTitle">Routen-Chronik</span>
+                      
+                      <button id="play-chronicle-btn" onclick="startChronicle()" class="flex items-center justify-center gap-1.5 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-sm transition-colors shadow-sm flex-1 sm:flex-none">
+                          <span class="material-symbols-outlined text-[18px]">play_arrow</span> Starten
+                      </button>
+                      <button id="pause-chronicle-btn" onclick="pauseChronicle()" class="hidden flex items-center justify-center gap-1.5 px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-bold text-sm transition-colors shadow-sm flex-1 sm:flex-none">
+                          <span class="material-symbols-outlined text-[18px]">pause</span> Pause
+                      </button>
+                      <button id="resume-chronicle-btn" onclick="resumeChronicle()" class="hidden flex items-center justify-center gap-1.5 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-sm transition-colors shadow-sm flex-1 sm:flex-none">
+                          <span class="material-symbols-outlined text-[18px]">play_arrow</span> Weiter
+                      </button>
+                      <button id="stop-chronicle-btn" onclick="stopChronicle()" class="hidden flex items-center justify-center gap-1.5 px-5 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl font-bold text-sm transition-colors shadow-sm flex-1 sm:flex-none">
+                          <span class="material-symbols-outlined text-[18px]">stop</span> Stopp
+                      </button>
+                  </div>
+              </div>
+
+              <details id="last-flight-map-details" class="bg-slate-50/50 dark:bg-slate-800/50 p-4 md:p-6 rounded-2xl mb-8 shadow-sm border border-slate-200 dark:border-slate-700 group transition-all duration-300" open>
                 <summary class="list-none cursor-pointer border-b pb-2 border-slate-200 dark:border-slate-700">
                   <h2 data-i18n="lastFlightMap" class="text-xl md:text-2xl font-bold text-slate-800 dark:text-white inline-block">
                     Zuletzt geloggter Flug
@@ -696,226 +445,276 @@
                   <div id="flight-map-container" class="h-[300px] rounded-xl shadow-inner z-0 border border-slate-200 dark:border-slate-700"></div>
                 </div>
               </details>
-              <div class="flex items-center justify-between mb-4 pr-2 mt-4">
-                <h2 class="text-2xl font-display font-extrabold text-on-surface dark:text-white tracking-tight" data-i18n="flights.title">
-                  Gespeicherte Flüge
-                </h2>
-              </div>
 
-              <div class="flex flex-col sm:flex-row gap-3 mb-6 relative z-20">
-                  <div class="relative flex-1 group">
-                      <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface/40 dark:text-slate-500 group-focus-within:text-primary transition-colors">search</span>
-                      
-                      <input type="text" id="search-input" onkeyup="applyFilters()" data-i18n="flights.filterPlaceholder" placeholder="Suche (Ort, Airline, Reise, Datum...)" class="w-full pl-12 pr-4 py-3.5 rounded-2xl bg-surface-container-lowest dark:bg-slate-800 border-none shadow-sm focus:ring-2 focus:ring-primary/50 text-on-surface dark:text-white font-medium transition-all">
+              <div id="timeline-flights-container">
+                  <div class="flex flex-col sm:flex-row gap-3 mb-6 relative z-20">
+                      <div class="relative flex-1 group">
+                          <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface/40 dark:text-slate-500 group-focus-within:text-primary transition-colors">search</span>
+                          <input type="text" id="search-input" onkeyup="applyFilters()" placeholder="Flüge durchsuchen..." class="w-full pl-12 pr-4 py-3.5 rounded-2xl bg-surface-container-lowest dark:bg-slate-800 border-none shadow-sm focus:ring-2 focus:ring-primary/50 text-on-surface dark:text-white font-medium transition-all">
+                      </div>
+                      <button onclick="openFilterModal()" class="flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white px-6 py-3.5 rounded-2xl shadow-sm transition-all font-bold">
+                          <span class="material-symbols-outlined">tune</span> Filter
+                      </button>
+                  </div>
+
+                  <div id="flight-log-list" class="space-y-3 max-h-[65vh] overflow-y-auto pr-2 pb-24"></div>
                   
+                  <div id="pagination-controls" class="mt-4 mb-0 flex justify-center items-center gap-4 w-full">
+                    <button id="prev-page-btn" onclick="prevPage()" class="p-4 bg-surface-container-low dark:bg-slate-800 text-primary dark:text-indigo-400 font-bold rounded-2xl hover:bg-surface-container-highest dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-sm border border-outline-variant/10 dark:border-slate-700 flex items-center justify-center">
+                      <span class="material-symbols-outlined text-2xl">chevron_left</span>
+                    </button>
+                    
+                    <span id="page-info" class="text-[11px] font-black text-on-surface/60 dark:text-slate-400 tracking-widest uppercase bg-surface-container-lowest dark:bg-slate-900/50 px-6 py-2.5 rounded-xl shadow-inner border border-outline-variant/10 dark:border-slate-700/50 whitespace-nowrap min-w-[100px] text-center">
+                      Seite 1
+                    </span>
+                    
+                    <button id="next-page-btn" onclick="nextPage()" class="p-4 bg-surface-container-low dark:bg-slate-800 text-primary dark:text-indigo-400 font-bold rounded-2xl hover:bg-surface-container-highest dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-sm border border-outline-variant/10 dark:border-slate-700 flex items-center justify-center">
+                      <span class="material-symbols-outlined text-2xl">chevron_right</span>
+                    </button>
                   </div>
-                  <button onclick="openFilterModal()" class="flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white px-6 py-3.5 rounded-2xl shadow-sm transition-all transform hover:-translate-y-0.5 font-bold flex-shrink-0">
-                      <span class="material-symbols-outlined">tune</span>
-                      <span data-i18n="filterModal.btnOpen">Filter & Tools</span>
-                  </button>
               </div>
 
-              <div
-                id="flight-log-list"
-                class="space-y-3 max-h-[65vh] overflow-y-auto pr-2"
-              ></div>
-              <div id="pagination-controls" class="mt-4 mb-0 flex justify-center items-center gap-4 w-full">
-                <button id="prev-page-btn" onclick="prevPage()" class="p-4 bg-surface-container-low dark:bg-slate-800 text-primary dark:text-indigo-400 font-bold rounded-2xl hover:bg-surface-container-highest dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-sm border border-outline-variant/10 dark:border-slate-700 flex items-center justify-center">
-                  <span class="material-symbols-outlined text-2xl">chevron_left</span>
-                </button>
-                
-                <span id="page-info" class="text-[11px] font-black text-on-surface/60 dark:text-slate-400 tracking-widest uppercase bg-surface-container-lowest dark:bg-slate-900/50 px-6 py-2.5 rounded-xl shadow-inner border border-outline-variant/10 dark:border-slate-700/50 whitespace-nowrap min-w-[100px] text-center">
-                  Seite 1
-                </span>
-                
-                <button id="next-page-btn" onclick="nextPage()" class="p-4 bg-surface-container-low dark:bg-slate-800 text-primary dark:text-indigo-400 font-bold rounded-2xl hover:bg-surface-container-highest dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-sm border border-outline-variant/10 dark:border-slate-700 flex items-center justify-center">
-                  <span class="material-symbols-outlined text-2xl">chevron_right</span>
-                </button>
+              <div id="timeline-trips-container" class="hidden">
+                  <div id="trips-content" class="grid grid-cols-1 md:grid-cols-2 gap-5"></div>
               </div>
-            </div>
+              
+            </div> 
 
-            <div id="tab-content-stats">
-              <div class="flex justify-between items-center mb-8 pr-2">
-                  <h2 class="text-2xl font-display font-extrabold text-on-surface dark:text-white tracking-tight" data-i18n="tabs.stats">Statistiken</h2>
-                  <button 
-                      onclick="shareStatsScreenshot()"
-                      class="flex items-center justify-center gap-2 p-3 bg-surface-container-low dark:bg-slate-800 hover:bg-surface-container-highest dark:hover:bg-slate-700 text-primary dark:text-indigo-300 rounded-xl transition-all shadow-sm border border-outline-variant/20 dark:border-slate-700"
-                      title="Teilen"
-                  >
-                      <span class="material-symbols-outlined text-[20px]">ios_share</span> 
-                  </button>
-              </div>
-
-              <div id="statistics-panel" class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                <div class="bg-surface-container-low dark:bg-slate-800/50 p-5 rounded-2xl border border-outline-variant/10 dark:border-white/5 flex flex-col justify-center">
-                  <p class="text-[10px] text-on-surface/50 dark:text-slate-400 font-bold mb-2 uppercase tracking-widest" data-i18n="stats.totalFlights">Gesamte Flüge</p>
-                  <p id="stat-count" class="text-2xl md:text-3xl font-display font-black text-primary dark:text-indigo-400">0</p>
-                </div>
-                <div class="bg-surface-container-low dark:bg-slate-800/50 p-5 rounded-2xl border border-outline-variant/10 dark:border-white/5 flex flex-col justify-center">
-                  <p class="text-[10px] text-on-surface/50 dark:text-slate-400 font-bold mb-2 uppercase tracking-widest" data-i18n="stats.totalDistance">Gesamtdistanz</p>
-                  <p id="stat-distance" class="text-xl md:text-2xl font-display font-black text-on-surface dark:text-white">0 km</p>
-                </div>
-                <div class="col-span-2 bg-surface-container-low dark:bg-slate-800/50 p-5 rounded-2xl border border-outline-variant/10 dark:border-white/5 flex flex-col justify-center">
-                  <p class="text-[10px] text-on-surface/50 dark:text-slate-400 font-bold mb-2 uppercase tracking-widest" data-i18n="stats.totalSpending">Gesamtausgaben</p>
-                  <p id="stat-total-spending" class="text-2xl font-display font-black text-green-600 dark:text-green-400">-</p>
-                </div>
-
-                <div class="col-span-2 bg-surface-container-low dark:bg-slate-800/50 p-5 rounded-2xl border border-outline-variant/10 dark:border-white/5 flex flex-col justify-center">
-                  <p class="text-[10px] text-on-surface/50 dark:text-slate-400 font-bold mb-2 uppercase tracking-widest" data-i18n="stats.frequentAirport">Häufigster Flughafen</p>
-                  <p id="stat-frequent" class="text-lg font-display font-bold text-on-surface dark:text-white">-</p>
-                </div>
-                <div class="col-span-2 bg-surface-container-low dark:bg-slate-800/50 p-5 rounded-2xl border border-outline-variant/10 dark:border-white/5 flex flex-col justify-center">
-                  <p class="text-[10px] text-on-surface/50 dark:text-slate-400 font-bold mb-2 uppercase tracking-widest" data-i18n="stats.frequentAircraft">Häufigster Flugzeugtyp</p>
-                  <p id="stat-frequent-aircraft" class="text-lg font-display font-bold text-on-surface dark:text-white">-</p>
-                </div>
-
-                <div class="bg-surface-container-low dark:bg-slate-800/50 p-4 rounded-2xl border border-outline-variant/10 dark:border-white/5 flex flex-col justify-center">
-                  <p class="text-[10px] text-on-surface/50 dark:text-slate-400 font-bold mb-1 uppercase tracking-widest" data-i18n="stats.longestFlight">Längster</p>
-                  <p id="stat-longest-flight" class="text-sm font-bold text-primary dark:text-indigo-400">-</p>
-                </div>
-                <div class="bg-surface-container-low dark:bg-slate-800/50 p-4 rounded-2xl border border-outline-variant/10 dark:border-white/5 flex flex-col justify-center">
-                  <p class="text-[10px] text-on-surface/50 dark:text-slate-400 font-bold mb-1 uppercase tracking-widest" data-i18n="stats.shortestFlight">Kürzester</p>
-                  <p id="stat-shortest-flight" class="text-sm font-bold text-primary dark:text-indigo-400">-</p>
-                </div>
-                <div class="bg-surface-container-low dark:bg-slate-800/50 p-4 rounded-2xl border border-outline-variant/10 dark:border-white/5 flex flex-col justify-center">
-                  <p class="text-[10px] text-on-surface/50 dark:text-slate-400 font-bold mb-1 uppercase tracking-widest" data-i18n="stats.mostExpensive">Teuerster</p>
-                  <p id="stat-most-expensive" class="text-sm font-bold text-green-600 dark:text-green-400">-</p>
-                </div>
-                <div class="bg-surface-container-low dark:bg-slate-800/50 p-4 rounded-2xl border border-outline-variant/10 dark:border-white/5 flex flex-col justify-center">
-                  <p class="text-[10px] text-on-surface/50 dark:text-slate-400 font-bold mb-1 uppercase tracking-widest" data-i18n="stats.leastExpensive">Günstigster</p>
-                  <p id="stat-least-expensive" class="text-sm font-bold text-green-600 dark:text-green-400">-</p>
-                </div>
-
-                <div class="col-span-2 md:col-span-1 bg-surface-container-low dark:bg-slate-800/50 p-5 rounded-2xl border border-outline-variant/10 dark:border-white/5 flex flex-col justify-center">
-                  <p class="text-[10px] text-on-surface/50 dark:text-slate-400 font-bold mb-2 uppercase tracking-widest" data-i18n="stats.avgDistance">Ø Distanz</p>
-                  <p id="stat-avg-distance" class="text-xl font-display font-black text-on-surface dark:text-white">0 km</p>
-                </div>
-                <div class="bg-surface-container-low dark:bg-slate-800/50 p-5 rounded-2xl border border-outline-variant/10 dark:border-white/5 flex flex-col justify-center">
-                  <p class="text-[10px] text-on-surface/50 dark:text-slate-400 font-bold mb-2 uppercase tracking-widest" data-i18n="stats.avgCo2">Ø CO₂</p>
-                  <p id="stat-avg-co2" class="text-xl font-display font-black text-orange-600 dark:text-orange-400">0 kg</p>
-                </div>
-                <div class="col-span-2 md:col-span-2 bg-surface-container-low dark:bg-slate-800/50 p-5 rounded-2xl border border-outline-variant/10 dark:border-white/5 flex flex-col justify-center">
-                  <p class="text-[10px] text-on-surface/50 dark:text-slate-400 font-bold mb-2 uppercase tracking-widest" data-i18n="stats.totalCo2">Gesamter CO₂-Fußabdruck</p>
-                  <p id="stat-total-co2" class="text-2xl font-display font-black text-orange-600 dark:text-orange-500">0 kg</p>
-                </div>
-
-                <div class="col-span-2 md:col-span-4 bg-gradient-to-br from-primary/10 to-indigo-900/10 dark:from-indigo-900/20 dark:to-slate-800 p-6 rounded-3xl border border-primary/20 dark:border-indigo-500/20 shadow-sm mt-2 text-left">
-                  <div class="flex items-center justify-between mb-4">
-                    <p class="text-xs font-bold uppercase tracking-widest text-primary dark:text-indigo-400" data-i18n="stats.yearlySummary">Jahreszusammenfassung</p>
-                    <select id="stat-year-select" class="text-sm font-bold p-2 bg-surface-container-lowest dark:bg-slate-900 border-none rounded-xl shadow-inner cursor-pointer outline-none focus:ring-2 focus:ring-primary/50 text-on-surface dark:text-white appearance-none pr-8 relative"></select>
-                  </div>
-                  <p id="stat-yearly-summary" class="text-lg md:text-xl font-medium text-on-surface/80 dark:text-slate-300 leading-relaxed">-</p>
-                </div>
-              </div>
-            </div>
-            <div id="tab-content-charts" class="hidden">
-              <div class="flex items-center justify-between mb-8 pr-2">
-                <h2 data-i18n="charts.title" class="text-2xl font-display font-extrabold text-on-surface dark:text-white tracking-tight">
-                  Visuelle Auswertungen
+            <div id="tab-content-analytics" class="hidden">
+              <div class="flex items-center justify-between mb-6 pr-2">
+                <h2 class="text-2xl font-display font-extrabold text-on-surface dark:text-white tracking-tight">
+                  Analytics
                 </h2>
-                <div class="flex items-center bg-surface-container-low dark:bg-slate-800/50 p-1.5 rounded-xl shadow-inner border border-outline-variant/10 dark:border-slate-700/50">
+                <button onclick="shareStatsScreenshot()" class="flex items-center justify-center gap-2 p-3 bg-surface-container-low dark:bg-slate-800 hover:bg-surface-container-highest dark:hover:bg-slate-700 text-primary dark:text-indigo-300 rounded-xl transition-all shadow-sm border border-outline-variant/20 dark:border-slate-700" title="Teilen">
+                    <span class="material-symbols-outlined text-[20px]">ios_share</span> 
+                </button>
+              </div>
+
+              <div class="mb-8 flex bg-surface-container-low dark:bg-slate-800/50 p-1.5 rounded-2xl border border-outline-variant/10 dark:border-slate-700/50 shadow-inner gap-1 w-full overflow-x-auto hide-scrollbar">
+                <button id="analytics-view-stats" onclick="switchAnalyticsView('stats')" class="flex-shrink-0 px-6 py-2.5 text-sm font-bold rounded-xl transition-all bg-surface-container-lowest dark:bg-slate-700 text-on-surface dark:text-white shadow-sm flex items-center justify-center gap-2">
+                  <span class="material-symbols-outlined text-[18px]">query_stats</span> Statistiken
+                </button>
+                <button id="analytics-view-charts" onclick="switchAnalyticsView('charts')" class="flex-shrink-0 px-6 py-2.5 text-sm font-bold rounded-xl transition-all text-on-surface/60 hover:text-on-surface dark:text-slate-400 dark:hover:text-white hover:bg-surface-container-lowest dark:hover:bg-slate-700 flex items-center justify-center gap-2">
+                  <span class="material-symbols-outlined text-[18px]">bar_chart</span> Charts
+                </button>
+                <button id="analytics-view-logbook" onclick="switchAnalyticsView('logbook')" class="flex-shrink-0 px-6 py-2.5 text-sm font-bold rounded-xl transition-all text-on-surface/60 hover:text-on-surface dark:text-slate-400 dark:hover:text-white hover:bg-surface-container-lowest dark:hover:bg-slate-700 flex items-center justify-center gap-2">
+                  <span class="material-symbols-outlined text-[18px]">menu_book</span> Logbuch
+                </button>
+              </div>
+
+              <div id="analytics-stats-container">
+                <div id="statistics-panel" class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                  <div class="bg-surface-container-low dark:bg-slate-800/50 p-5 rounded-2xl border border-outline-variant/10 dark:border-white/5 flex flex-col justify-center">
+                    <p class="text-[10px] text-on-surface/50 dark:text-slate-400 font-bold mb-2 uppercase tracking-widest" data-i18n="stats.totalFlights">Gesamte Flüge</p>
+                    <p id="stat-count" class="text-2xl md:text-3xl font-display font-black text-primary dark:text-indigo-400">0</p>
+                  </div>
+                  <div class="bg-surface-container-low dark:bg-slate-800/50 p-5 rounded-2xl border border-outline-variant/10 dark:border-white/5 flex flex-col justify-center">
+                    <p class="text-[10px] text-on-surface/50 dark:text-slate-400 font-bold mb-2 uppercase tracking-widest" data-i18n="stats.totalDistance">Gesamtdistanz</p>
+                    <p id="stat-distance" class="text-xl md:text-2xl font-display font-black text-on-surface dark:text-white">0 km</p>
+                  </div>
+                  <div class="col-span-2 bg-surface-container-low dark:bg-slate-800/50 p-5 rounded-2xl border border-outline-variant/10 dark:border-white/5 flex flex-col justify-center">
+                    <p class="text-[10px] text-on-surface/50 dark:text-slate-400 font-bold mb-2 uppercase tracking-widest" data-i18n="stats.totalSpending">Gesamtausgaben</p>
+                    <p id="stat-total-spending" class="text-2xl font-display font-black text-green-600 dark:text-green-400">-</p>
+                  </div>
+
+                  <div class="col-span-2 bg-surface-container-low dark:bg-slate-800/50 p-5 rounded-2xl border border-outline-variant/10 dark:border-white/5 flex flex-col justify-center">
+                    <p class="text-[10px] text-on-surface/50 dark:text-slate-400 font-bold mb-2 uppercase tracking-widest" data-i18n="stats.frequentAirport">Häufigster Flughafen</p>
+                    <p id="stat-frequent" class="text-lg font-display font-bold text-on-surface dark:text-white">-</p>
+                  </div>
+                  <div class="col-span-2 bg-surface-container-low dark:bg-slate-800/50 p-5 rounded-2xl border border-outline-variant/10 dark:border-white/5 flex flex-col justify-center">
+                    <p class="text-[10px] text-on-surface/50 dark:text-slate-400 font-bold mb-2 uppercase tracking-widest" data-i18n="stats.frequentAircraft">Häufigster Flugzeugtyp</p>
+                    <p id="stat-frequent-aircraft" class="text-lg font-display font-bold text-on-surface dark:text-white">-</p>
+                  </div>
+
+                  <div class="bg-surface-container-low dark:bg-slate-800/50 p-4 rounded-2xl border border-outline-variant/10 dark:border-white/5 flex flex-col justify-center">
+                    <p class="text-[10px] text-on-surface/50 dark:text-slate-400 font-bold mb-1 uppercase tracking-widest" data-i18n="stats.longestFlight">Längster</p>
+                    <p id="stat-longest-flight" class="text-sm font-bold text-primary dark:text-indigo-400">-</p>
+                  </div>
+                  <div class="bg-surface-container-low dark:bg-slate-800/50 p-4 rounded-2xl border border-outline-variant/10 dark:border-white/5 flex flex-col justify-center">
+                    <p class="text-[10px] text-on-surface/50 dark:text-slate-400 font-bold mb-1 uppercase tracking-widest" data-i18n="stats.shortestFlight">Kürzester</p>
+                    <p id="stat-shortest-flight" class="text-sm font-bold text-primary dark:text-indigo-400">-</p>
+                  </div>
+                  <div class="bg-surface-container-low dark:bg-slate-800/50 p-4 rounded-2xl border border-outline-variant/10 dark:border-white/5 flex flex-col justify-center">
+                    <p class="text-[10px] text-on-surface/50 dark:text-slate-400 font-bold mb-1 uppercase tracking-widest" data-i18n="stats.mostExpensive">Teuerster</p>
+                    <p id="stat-most-expensive" class="text-sm font-bold text-green-600 dark:text-green-400">-</p>
+                  </div>
+                  <div class="bg-surface-container-low dark:bg-slate-800/50 p-4 rounded-2xl border border-outline-variant/10 dark:border-white/5 flex flex-col justify-center">
+                    <p class="text-[10px] text-on-surface/50 dark:text-slate-400 font-bold mb-1 uppercase tracking-widest" data-i18n="stats.leastExpensive">Günstigster</p>
+                    <p id="stat-least-expensive" class="text-sm font-bold text-green-600 dark:text-green-400">-</p>
+                  </div>
+
+                  <div class="col-span-2 md:col-span-1 bg-surface-container-low dark:bg-slate-800/50 p-5 rounded-2xl border border-outline-variant/10 dark:border-white/5 flex flex-col justify-center">
+                    <p class="text-[10px] text-on-surface/50 dark:text-slate-400 font-bold mb-2 uppercase tracking-widest" data-i18n="stats.avgDistance">Ø Distanz</p>
+                    <p id="stat-avg-distance" class="text-xl font-display font-black text-on-surface dark:text-white">0 km</p>
+                  </div>
+                  <div class="bg-surface-container-low dark:bg-slate-800/50 p-5 rounded-2xl border border-outline-variant/10 dark:border-white/5 flex flex-col justify-center">
+                    <p class="text-[10px] text-on-surface/50 dark:text-slate-400 font-bold mb-2 uppercase tracking-widest" data-i18n="stats.avgCo2">Ø CO₂</p>
+                    <p id="stat-avg-co2" class="text-xl font-display font-black text-orange-600 dark:text-orange-400">0 kg</p>
+                  </div>
+                  <div class="col-span-2 md:col-span-2 bg-surface-container-low dark:bg-slate-800/50 p-5 rounded-2xl border border-outline-variant/10 dark:border-white/5 flex flex-col justify-center">
+                    <p class="text-[10px] text-on-surface/50 dark:text-slate-400 font-bold mb-2 uppercase tracking-widest" data-i18n="stats.totalCo2">Gesamter CO₂-Fußabdruck</p>
+                    <p id="stat-total-co2" class="text-2xl font-display font-black text-orange-600 dark:text-orange-500">0 kg</p>
+                  </div>
+
+                  <div class="col-span-2 md:col-span-4 bg-gradient-to-br from-primary/10 to-indigo-900/10 dark:from-indigo-900/20 dark:to-slate-800 p-6 rounded-3xl border border-primary/20 dark:border-indigo-500/20 shadow-sm mt-2 text-left">
+                    <div class="flex items-center justify-between mb-4">
+                      <p class="text-xs font-bold uppercase tracking-widest text-primary dark:text-indigo-400" data-i18n="stats.yearlySummary">Jahreszusammenfassung</p>
+                      <select id="stat-year-select" class="text-sm font-bold p-2 bg-surface-container-lowest dark:bg-slate-900 border-none rounded-xl shadow-inner cursor-pointer outline-none focus:ring-2 focus:ring-primary/50 text-on-surface dark:text-white appearance-none pr-8 relative"></select>
+                    </div>
+                    <p id="stat-yearly-summary" class="text-lg md:text-xl font-medium text-on-surface/80 dark:text-slate-300 leading-relaxed">-</p>
+                  </div>
+                </div>
+              </div>
+
+              <div id="analytics-graphs-container" class="hidden">
+                <div class="mb-4 flex items-center bg-surface-container-low dark:bg-slate-800/50 p-1.5 rounded-xl shadow-inner border border-outline-variant/10 dark:border-slate-700/50 w-max">
                   <button id="chart-view-year" class="chart-view-btn active px-4 py-1.5 rounded-lg transition-all text-xs font-bold text-on-surface/60 dark:text-slate-400 hover:text-on-surface dark:hover:text-white" data-i18n="charts.perYear">Pro Jahr</button>
                   <button id="chart-view-month" class="chart-view-btn px-4 py-1.5 rounded-lg transition-all text-xs font-bold text-on-surface/60 dark:text-slate-400 hover:text-on-surface dark:hover:text-white" data-i18n="charts.perMonth">Pro Monat</button>
                 </div>
-              </div>
-              
-              <div class="bg-surface-container-lowest dark:bg-slate-800 p-6 md:p-8 rounded-[2.5rem] shadow-sm border border-outline-variant/20 dark:border-slate-700 transition-all duration-300">
-                <div class="grid grid-cols-1 gap-12 mt-2">
-                  <div>
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-4 flex items-center justify-center gap-2" data-i18n="charts.flightsOverTime"><span class="material-symbols-outlined text-[16px]">bar_chart</span> Flüge pro Zeitraum</h3>
-                    <canvas id="flightsChart" class="w-full"></canvas>
-                  </div>
-                  <div class="border-t border-outline-variant/10 dark:border-slate-700/50 pt-8">
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-4 flex items-center justify-center gap-2" data-i18n="charts.distanceOverTime"><span class="material-symbols-outlined text-[16px]">straighten</span> Distanz pro Zeitraum (km)</h3>
-                    <canvas id="distanceChart" class="w-full"></canvas>
-                  </div>
-                  <div class="border-t border-outline-variant/10 dark:border-slate-700/50 pt-8">
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-4 flex items-center justify-center gap-2" data-i18n="charts.durationOverTime"><span class="material-symbols-outlined text-[16px]">schedule</span> Flugzeit pro Zeitraum</h3>
-                    <canvas id="timeChart" class="w-full"></canvas>
+                
+                <div class="bg-surface-container-lowest dark:bg-slate-800 p-6 md:p-8 rounded-[2.5rem] shadow-sm border border-outline-variant/20 dark:border-slate-700 transition-all duration-300">
+                  <div class="grid grid-cols-1 gap-12 mt-2">
+                    <div>
+                      <h3 class="text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-4 flex items-center justify-center gap-2" data-i18n="charts.flightsOverTime"><span class="material-symbols-outlined text-[16px]">bar_chart</span> Flüge pro Zeitraum</h3>
+                      <canvas id="flightsChart" class="w-full"></canvas>
+                    </div>
+                    <div class="border-t border-outline-variant/10 dark:border-slate-700/50 pt-8">
+                      <h3 class="text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-4 flex items-center justify-center gap-2" data-i18n="charts.distanceOverTime"><span class="material-symbols-outlined text-[16px]">straighten</span> Distanz pro Zeitraum (km)</h3>
+                      <canvas id="distanceChart" class="w-full"></canvas>
+                    </div>
+                    <div class="border-t border-outline-variant/10 dark:border-slate-700/50 pt-8">
+                      <h3 class="text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-4 flex items-center justify-center gap-2" data-i18n="charts.durationOverTime"><span class="material-symbols-outlined text-[16px]">schedule</span> Flugzeit pro Zeitraum</h3>
+                      <canvas id="timeChart" class="w-full"></canvas>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-            <div id="tab-content-trips" class="hidden">
-              <div class="flex items-center justify-between mb-8 pr-2">
-                <h2 data-i18n="tabs.trips" class="text-2xl font-display font-extrabold text-on-surface dark:text-white tracking-tight">
-                  Meine Reisen & Events
-                </h2>
-              </div>
-              
-              <div id="trips-content" class="grid grid-cols-1 md:grid-cols-2 gap-5"></div>
-            </div>
-            <div id="tab-content-logbook" class="hidden">
-              <div class="flex items-center justify-between mb-8 pr-2">
-                <h2 data-i18n="tabs.logbook" class="text-2xl font-display font-extrabold text-on-surface dark:text-white tracking-tight">
-                  Logbuch
-                </h2>
-              </div>
-              
-              <div class="mb-8 flex flex-wrap bg-surface-container-low dark:bg-slate-800/50 p-1.5 rounded-2xl border border-outline-variant/10 dark:border-slate-700/50 shadow-inner gap-1 w-full lg:w-max">
-                <button id="logbook-view-aircraft" class="flex-1 md:flex-none px-4 py-2 text-xs md:text-sm font-bold rounded-xl transition-all text-on-surface/60 hover:text-on-surface dark:text-slate-400 dark:hover:text-white hover:bg-surface-container-lowest dark:hover:bg-slate-700 flex items-center justify-center gap-1.5">
-                  <span class="material-symbols-outlined text-[18px]">airlines</span> <span data-i18n="logbook.tabAircraft">Flugzeuge</span>
-                </button>
-                <button id="logbook-view-airline" class="flex-1 md:flex-none px-4 py-2 text-xs md:text-sm font-bold rounded-xl transition-all text-on-surface/60 hover:text-on-surface dark:text-slate-400 dark:hover:text-white hover:bg-surface-container-lowest dark:hover:bg-slate-700 flex items-center justify-center gap-1.5">
-                  <span class="material-symbols-outlined text-[18px]">domain</span> <span data-i18n="logbook.tabAirline">Airlines</span>
-                </button>
-                <button id="logbook-view-airport" class="flex-1 md:flex-none px-4 py-2 text-xs md:text-sm font-bold rounded-xl transition-all text-on-surface/60 hover:text-on-surface dark:text-slate-400 dark:hover:text-white hover:bg-surface-container-lowest dark:hover:bg-slate-700 flex items-center justify-center gap-1.5">
-                  <span class="material-symbols-outlined text-[18px]">flight_takeoff</span> <span data-i18n="logbook.tabAirport">Airports</span>
-                </button>
-                <button id="logbook-view-registration" class="flex-1 md:flex-none px-4 py-2 text-xs md:text-sm font-bold rounded-xl transition-all text-on-surface/60 hover:text-on-surface dark:text-slate-400 dark:hover:text-white hover:bg-surface-container-lowest dark:hover:bg-slate-700 flex items-center justify-center gap-1.5">
-                  <span class="material-symbols-outlined text-[18px]">tag</span> <span data-i18n="logbook.tabRegistration">Regs</span>
-                </button>
-              </div>
 
-              <div id="logbook-content" class="grid grid-cols-1 md:grid-cols-2 gap-5"></div>
+              <div id="analytics-logbook-container" class="hidden">
+                <div class="mb-8 flex flex-wrap bg-surface-container-low dark:bg-slate-800/50 p-1.5 rounded-2xl border border-outline-variant/10 dark:border-slate-700/50 shadow-inner gap-1 w-full lg:w-max">
+                  <button id="logbook-view-aircraft" class="flex-1 md:flex-none px-4 py-2 text-xs md:text-sm font-bold rounded-xl transition-all text-on-surface/60 hover:text-on-surface dark:text-slate-400 dark:hover:text-white hover:bg-surface-container-lowest dark:hover:bg-slate-700 flex items-center justify-center gap-1.5">
+                    <span class="material-symbols-outlined text-[18px]">airlines</span> <span data-i18n="logbook.tabAircraft">Flugzeuge</span>
+                  </button>
+                  <button id="logbook-view-airline" class="flex-1 md:flex-none px-4 py-2 text-xs md:text-sm font-bold rounded-xl transition-all text-on-surface/60 hover:text-on-surface dark:text-slate-400 dark:hover:text-white hover:bg-surface-container-lowest dark:hover:bg-slate-700 flex items-center justify-center gap-1.5">
+                    <span class="material-symbols-outlined text-[18px]">domain</span> <span data-i18n="logbook.tabAirline">Airlines</span>
+                  </button>
+                  <button id="logbook-view-airport" class="flex-1 md:flex-none px-4 py-2 text-xs md:text-sm font-bold rounded-xl transition-all text-on-surface/60 hover:text-on-surface dark:text-slate-400 dark:hover:text-white hover:bg-surface-container-lowest dark:hover:bg-slate-700 flex items-center justify-center gap-1.5">
+                    <span class="material-symbols-outlined text-[18px]">flight_takeoff</span> <span data-i18n="logbook.tabAirport">Airports</span>
+                  </button>
+                  <button id="logbook-view-registration" class="flex-1 md:flex-none px-4 py-2 text-xs md:text-sm font-bold rounded-xl transition-all text-on-surface/60 hover:text-on-surface dark:text-slate-400 dark:hover:text-white hover:bg-surface-container-lowest dark:hover:bg-slate-700 flex items-center justify-center gap-1.5">
+                    <span class="material-symbols-outlined text-[18px]">tag</span> <span data-i18n="logbook.tabRegistration">Regs</span>
+                  </button>
+                </div>
+                <div id="logbook-content" class="grid grid-cols-1 md:grid-cols-2 gap-5"></div>
+              </div>
             </div>
 
-            <div id="tab-content-achievements" class="hidden w-full">
-              <div class="flex items-center justify-between mb-8 pr-2">
-                <h2 data-i18n="tabs.achievements" class="text-2xl font-display font-extrabold text-on-surface dark:text-white tracking-tight">
-                  Rekorde & Errungenschaften
+            <div id="tab-content-profil" class="hidden">
+              <div class="flex items-center justify-between mb-6 pr-2">
+                <h2 class="text-2xl font-display font-extrabold text-on-surface dark:text-white tracking-tight">
+                  Profil
                 </h2>
+                <div id="profile-header-status" class="px-3 py-1 bg-surface-container dark:bg-slate-800 rounded-full text-xs font-bold text-on-surface/60 dark:text-slate-400">
+                  Pilot
+                </div>
               </div>
 
-              <div class="mb-8 flex flex-wrap bg-surface-container-low dark:bg-slate-800/50 p-1.5 rounded-2xl border border-outline-variant/10 dark:border-slate-700/50 shadow-inner gap-1 w-full lg:w-max">
-                <button id="btn-view-badges" onclick="toggleAchievementsView('badges')" class="flex-1 md:flex-none px-4 py-2 text-xs md:text-sm font-bold rounded-xl transition-all text-on-surface/60 hover:text-on-surface dark:text-slate-400 dark:hover:text-white hover:bg-surface-container-lowest dark:hover:bg-slate-700 flex items-center justify-center gap-1.5">
-                  <span class="material-symbols-outlined text-[18px]">military_tech</span> <span data-i18n="achievements.tabBadges">Badges</span>
+              <div class="mb-8 flex bg-surface-container-low dark:bg-slate-800/50 p-1.5 rounded-2xl border border-outline-variant/10 dark:border-slate-700/50 shadow-inner gap-1 w-full overflow-x-auto hide-scrollbar">
+                <button id="profil-view-badges" onclick="switchProfileView('badges')" class="flex-shrink-0 px-6 py-2.5 text-sm font-bold rounded-xl transition-all bg-surface-container-lowest dark:bg-slate-700 text-on-surface dark:text-white shadow-sm flex items-center justify-center gap-2">
+                  <span class="material-symbols-outlined text-[18px]">military_tech</span> Erfolge
                 </button>
-
-                <button id="btn-view-records" onclick="toggleAchievementsView('records')" class="flex-1 md:flex-none px-4 py-2 text-xs md:text-sm font-bold rounded-xl transition-all text-on-surface/60 hover:text-on-surface dark:text-slate-400 dark:hover:text-white hover:bg-surface-container-lowest dark:hover:bg-slate-700 flex items-center justify-center gap-1.5">
-                  <span class="material-symbols-outlined text-[18px]">emoji_events</span> <span data-i18n="achievements.tabRecords">Rekorde</span>
+                <button id="profil-view-community" onclick="switchProfileView('community')" class="flex-shrink-0 px-6 py-2.5 text-sm font-bold rounded-xl transition-all text-on-surface/60 hover:text-on-surface dark:text-slate-400 dark:hover:text-white hover:bg-surface-container-lowest dark:hover:bg-slate-700 flex items-center justify-center gap-2">
+                  <span class="material-symbols-outlined text-[18px]">groups</span> Community
                 </button>
-                
-                <button id="btn-view-leaderboard" onclick="toggleAchievementsView('leaderboard')" class="flex-1 md:flex-none px-4 py-2 text-xs md:text-sm font-bold rounded-xl transition-all text-on-surface/60 hover:text-on-surface dark:text-slate-400 dark:hover:text-white hover:bg-surface-container-lowest dark:hover:bg-slate-700 flex items-center justify-center gap-1.5">
-                  <span class="material-symbols-outlined text-[18px]">public</span> <span data-i18n="achievements.tabLeaderboard">Community</span>
+                <button id="profil-view-settings" onclick="switchProfileView('settings')" class="flex-shrink-0 px-6 py-2.5 text-sm font-bold rounded-xl transition-all text-on-surface/60 hover:text-on-surface dark:text-slate-400 dark:hover:text-white hover:bg-surface-container-lowest dark:hover:bg-slate-700 flex items-center justify-center gap-2">
+                  <span class="material-symbols-outlined text-[18px]">settings</span> Account
                 </button>
               </div>
 
-              <div onclick="initWrapped()" class="mb-8 group cursor-pointer bg-gradient-to-br from-primary to-purple-900 rounded-[2rem] p-6 flex items-center justify-between shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 relative overflow-hidden border border-white/10">
-                  <div class="absolute -right-8 -top-8 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
-                  <div class="flex items-center gap-4 relative z-10">
-                      <div class="w-12 h-12 rounded-full bg-white/20 text-white flex items-center justify-center text-xl shadow-inner backdrop-blur-md border border-white/20">
-                          <span class="material-symbols-outlined">auto_awesome</span>
+              <div id="profile-badges-content">
+                  <div onclick="initWrapped()" class="mb-8 group cursor-pointer bg-gradient-to-br from-primary to-purple-900 rounded-[2rem] p-6 flex items-center justify-between shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 relative overflow-hidden border border-white/10">
+                      <div class="absolute -right-8 -top-8 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+                      <div class="flex items-center gap-4 relative z-10">
+                          <div class="w-12 h-12 rounded-full bg-white/20 text-white flex items-center justify-center text-xl shadow-inner backdrop-blur-md border border-white/20">
+                              <span class="material-symbols-outlined">auto_awesome</span>
+                          </div>
+                          <div>
+                              <h4 class="font-display font-black text-lg text-white leading-tight">AvioSphere Wrapped</h4>
+                              <p class="text-[10px] text-white/70 uppercase tracking-widest font-bold mt-0.5" data-i18n="wrapped.bannerPre">Dein Jahresrückblick</p>
+                          </div>
                       </div>
-                      <div>
-                          <h4 class="font-display font-black text-lg text-white leading-tight">AvioSphere Wrapped</h4>
-                          <p class="text-[10px] text-white/70 uppercase tracking-widest font-bold mt-0.5" data-i18n="wrapped.bannerPre">Dein Jahresrückblick</p>
+                      <div class="text-white/50 group-hover:translate-x-1 group-hover:text-white transition-all relative z-10">
+                          <span class="material-symbols-outlined text-3xl">chevron_right</span>
                       </div>
                   </div>
-                  <div class="text-white/50 group-hover:translate-x-1 group-hover:text-white transition-all relative z-10">
-                      <span class="material-symbols-outlined text-3xl">chevron_right</span>
+
+                  <div class="flex justify-center mb-6">
+                      <div class="bg-surface-container-low dark:bg-slate-800/50 p-1 rounded-xl inline-flex text-xs font-bold shadow-inner border border-outline-variant/10 dark:border-slate-700/50">
+                          <button id="toggle-achievements-badges" onclick="switchAchievementsView('badges')" class="px-5 py-1.5 rounded-lg bg-surface-container-lowest dark:bg-slate-600 shadow-sm text-primary dark:text-indigo-300 transition-all">
+                              Badges
+                          </button>
+                          <button id="toggle-achievements-records" onclick="switchAchievementsView('records')" class="px-5 py-1.5 rounded-lg text-on-surface/60 hover:text-on-surface dark:text-slate-400 dark:hover:text-white transition-all">
+                              Rekorde
+                          </button>
+                      </div>
+                  </div>
+
+                  <div id="achievements-grid-container">
+                      <div id="achievements-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8"></div>
+                  </div>
+                  
+                  <div id="records-grid-container" class="hidden">
+                      <div id="records-container" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5 mb-8"></div>
                   </div>
               </div>
 
-              <div id="view-achievements-badges">
-                <div id="achievements-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
-              </div>
+              <div id="profile-community-content" class="hidden">
+                  <div class="bg-surface-container-lowest dark:bg-slate-800 p-6 md:p-8 rounded-[2rem] mb-6 shadow-sm border border-outline-variant/20 dark:border-slate-700 transition-all duration-300">
+                      <div class="space-y-6">
+                          <div class="flex gap-4">
+                              <div class="w-24 shrink-0">
+                                  <label class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1" data-i18n="profile.avatarLabel">Avatar</label>
+                                  <div class="relative">
+                                      <select id="profile-avatar" class="w-full p-4 rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner focus:ring-2 focus:ring-primary/50 outline-none transition text-2xl appearance-none text-center cursor-pointer">
+                                          <option value="🧑‍✈️">🧑‍✈️</option>
+                                          <option value="👨‍✈️">👨‍✈️</option>
+                                          <option value="👩‍✈️">👩‍✈️</option>
+                                          <option value="✈️">✈️</option>
+                                          <option value="🚀">🚀</option>
+                                          <option value="🚁">🚁</option>
+                                          <option value="🌍">🌍</option>
+                                          <option value="🦅">🦅</option>
+                                          <option value="🪂">🪂</option>
+                                          <option value="🛸">🛸</option>
+                                          <option value="🎈">🎈</option>
+                                          <option value="😎">😎</option>
+                                      </select>
+                                      <span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-on-surface/40 pointer-events-none text-sm">expand_more</span>
+                                  </div>
+                              </div>
+                              <div class="flex-grow">
+                                  <label class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1" data-i18n="profile.nicknameLabel">Dein Nickname</label>
+                                  <input type="text" id="profile-username" placeholder="z.B. SkyKing99" data-i18n="placeholder.nickname" class="w-full p-4 rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner focus:ring-2 focus:ring-primary/50 outline-none transition font-bold text-on-surface dark:text-white" />
+                                  <p class="text-[10px] text-on-surface/40 dark:text-slate-500 mt-1" data-i18n="profile.nicknameHint">Dieser Name wird im globalen Leaderboard angezeigt.</p>
+                              </div>
+                          </div>
+                          
+                          <div class="flex items-center justify-between bg-surface-container-low dark:bg-slate-900 p-5 rounded-2xl border border-outline-variant/10 dark:border-slate-700/50">
+                              <div>
+                                  <p class="font-bold text-sm text-on-surface dark:text-white" data-i18n="profile.leaderboardOptIn">Am Leaderboard teilnehmen</p>
+                                  <p class="text-xs text-on-surface/60 dark:text-slate-400 mt-0.5" data-i18n="profile.leaderboardOptInDesc">Macht dein Profil für andere sichtbar.</p>
+                              </div>
+                              <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="profile-is-public" class="sr-only peer">
+                                <div class="w-11 h-6 bg-outline-variant/50 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-outline-variant after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-primary shadow-inner"></div>
+                              </label>
+                          </div>
 
-              <div id="view-achievements-records" class="hidden">
-                <div id="records-container" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5"></div>
-              </div>
-              
-              <div id="view-achievements-leaderboard" class="hidden">
+                          <button onclick="saveUserProfile()" id="btn-save-profile" data-i18n="profile.saveBtn" class="w-full py-4 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition shadow-sm flex justify-center items-center gap-2">
+                              <span class="material-symbols-outlined">save</span> Profil speichern
+                          </button>
+                      </div>
+                  </div>
 
                   <div class="mb-6 flex flex-col sm:flex-row justify-between items-center gap-6 bg-surface-container-lowest dark:bg-slate-800 p-6 md:p-8 rounded-[2rem] shadow-sm border border-outline-variant/20 dark:border-slate-700">
                       <div class="text-center sm:text-left w-full sm:w-auto">
@@ -934,192 +733,262 @@
                     </div>
                   </div>
 
-                  <div class="bg-surface-container-lowest dark:bg-slate-800 rounded-[2rem] shadow-sm border border-outline-variant/20 dark:border-slate-700 overflow-hidden">
+                  <div class="bg-surface-container-lowest dark:bg-slate-800 rounded-[2rem] shadow-sm border border-outline-variant/20 dark:border-slate-700 overflow-hidden mb-8">
                       <div class="p-6 border-b border-outline-variant/10 dark:border-slate-700/50 bg-surface-container-low dark:bg-slate-900/50 flex justify-between items-center">
                           <h3 id="leaderboard-title" class="font-display font-bold text-on-surface dark:text-white" data-i18n="leaderboard.top100">Top 100 - Diesen Monat</h3>
                           <button onclick="loadLeaderboard()" class="text-xs text-primary hover:text-primary/80 dark:text-indigo-400 font-bold transition-colors flex items-center gap-1 bg-primary/10 dark:bg-indigo-900/30 px-3 py-1.5 rounded-full">
                               <span class="material-symbols-outlined text-[14px]">refresh</span> <span data-i18n="flights.refresh">Aktualisieren</span>
                           </button>
                       </div>
-                      <div id="leaderboard-container" class="divide-y divide-outline-variant/10 dark:divide-slate-700/50 max-h-[60vh] overflow-y-auto custom-scrollbar">
+                      <div id="leaderboard-container" class="divide-y divide-outline-variant/10 dark:divide-slate-700/50 max-h-[60vh] overflow-y-auto custom-scrollbar pb-24">
                       </div>
                   </div>
               </div>
-            </div>
 
-			      <div id="tab-content-hilfe" class="hidden">
-              <div class="flex items-center justify-between mb-8 pr-2">
-                <h2 data-i18n="help.title" class="text-2xl font-display font-extrabold text-on-surface dark:text-white tracking-tight">
-                  Hilfe & FAQ
-                </h2>
-              </div>
-
-              <div class="bg-surface-container-lowest dark:bg-slate-800 p-6 md:p-8 rounded-[2rem] shadow-sm border border-outline-variant/20 dark:border-slate-700 mb-8 transition-all">
-                  <div class="flex items-center gap-4 mb-6 pb-6 border-b border-outline-variant/10 dark:border-slate-700/50">
-                      <div class="w-12 h-12 rounded-full bg-cyan-accent/10 flex items-center justify-center text-cyan-accent shrink-0">
-                          <span class="material-symbols-outlined text-2xl">support_agent</span>
-                      </div>
-                      <div>
-                          <h3 class="text-lg font-display font-bold text-on-surface dark:text-white" data-i18n="help.subtitle">Support & Informationen</h3>
-                          <p class="text-xs text-on-surface/60 dark:text-slate-400 mt-0.5" data-i18n="help.subtitle2">Fragen, Antworten und Kontakt</p>
-                      </div>
-                  </div>
-
-                  <div id="help-content-container" class="prose dark:prose-invert max-w-none space-y-4 text-on-surface/80 dark:text-slate-300 text-sm">
-                      </div>
-              </div>
-            </div>
-
-            <div id="tab-content-profil" class="hidden w-full">
-              <div class="flex items-center justify-between mb-8 pr-2">
-                <h2 data-i18n="tabs.profile" class="text-2xl font-display font-extrabold text-on-surface dark:text-white tracking-tight">
-                  Mein Profil
-                </h2>
-              </div>
-
-              <div class="bg-surface-container-lowest dark:bg-slate-800 p-6 md:p-8 rounded-[2rem] mb-6 shadow-sm border border-outline-variant/20 dark:border-slate-700 transition-all duration-300">
-                  <div class="flex items-center gap-4 mb-6 pb-6 border-b border-outline-variant/10 dark:border-slate-700/50">
-                      <div class="w-12 h-12 rounded-full bg-cyan-accent/10 flex items-center justify-center text-cyan-accent shrink-0">
-                          <span class="material-symbols-outlined text-2xl">trophy</span>
-                      </div>
-                      <div>
-                          <h3 class="text-lg font-display font-bold text-on-surface dark:text-white" data-i18n="profile.communityTitle">Community & Leaderboard</h3>
-                          <p class="text-xs text-on-surface/60 dark:text-slate-400 mt-0.5" data-i18n="profile.communityDesc">Vergleiche deine Flugstatistiken mit anderen.</p>
-                      </div>
-                  </div>
-
-                  <div class="space-y-6">
-                      <div class="flex gap-4">
-                          <div class="w-24 shrink-0">
-                              <label class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1" data-i18n="profile.avatarLabel">Avatar</label>
-                              <div class="relative">
-                                  <select id="profile-avatar" class="w-full p-4 rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner focus:ring-2 focus:ring-primary/50 outline-none transition text-2xl appearance-none text-center cursor-pointer">
-                                      <option value="🧑‍✈️">🧑‍✈️</option>
-                                      <option value="👨‍✈️">👨‍✈️</option>
-                                      <option value="👩‍✈️">👩‍✈️</option>
-                                      <option value="✈️">✈️</option>
-                                      <option value="🚀">🚀</option>
-                                      <option value="🚁">🚁</option>
-                                      <option value="🌍">🌍</option>
-                                      <option value="🦅">🦅</option>
-                                      <option value="🪂">🪂</option>
-                                      <option value="🛸">🛸</option>
-                                      <option value="🎈">🎈</option>
-                                      <option value="😎">😎</option>
-                                  </select>
-                                  <span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-on-surface/40 pointer-events-none text-sm">expand_more</span>
+              <div id="profile-settings-content" class="hidden">
+                  <div class="bg-surface-container-lowest dark:bg-slate-800 rounded-3xl border border-outline-variant/20 dark:border-slate-700/50 overflow-hidden shadow-sm mb-6">
+                      
+                      <div class="flex items-center justify-between p-4 border-b border-outline-variant/10 dark:border-slate-700/50">
+                          <div class="flex items-center gap-3">
+                              <span class="material-symbols-outlined text-on-surface/60 dark:text-slate-400">mail</span>
+                              <div class="flex flex-col">
+                                  <span class="font-bold text-sm text-on-surface dark:text-white">E-Mail Adresse</span>
+                                  <span id="profile-email-display" class="text-xs font-medium text-on-surface/50 dark:text-slate-400">-</span>
                               </div>
                           </div>
-                          <div class="flex-grow">
-                              <label class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1" data-i18n="profile.nicknameLabel">Dein Nickname</label>
-                              <input type="text" id="profile-username" placeholder="z.B. SkyKing99" data-i18n="placeholder.nickname" class="w-full p-4 rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner focus:ring-2 focus:ring-primary/50 outline-none transition font-bold text-on-surface dark:text-white" />
-                              <p class="text-[10px] text-on-surface/40 dark:text-slate-500 mt-1" data-i18n="profile.nicknameHint">Dieser Name wird im globalen Leaderboard angezeigt.</p>
-                          </div>
-                      </div>
-                      
-                      <div class="flex items-center justify-between bg-surface-container-low dark:bg-slate-900 p-5 rounded-2xl border border-outline-variant/10 dark:border-slate-700/50">
-                          <div>
-                              <p class="font-bold text-sm text-on-surface dark:text-white" data-i18n="profile.leaderboardOptIn">Am Leaderboard teilnehmen</p>
-                              <p class="text-xs text-on-surface/60 dark:text-slate-400 mt-0.5" data-i18n="profile.leaderboardOptInDesc">Macht dein Profil für andere sichtbar.</p>
-                          </div>
-                          <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" id="profile-is-public" class="sr-only peer">
-                            <div class="w-11 h-6 bg-outline-variant/50 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-outline-variant after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-primary shadow-inner"></div>
-                          </label>
                       </div>
 
-                      <button onclick="saveUserProfile()" id="btn-save-profile" data-i18n="profile.saveBtn" class="w-full py-4 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition shadow-sm flex justify-center items-center gap-2">
-                          <span class="material-symbols-outlined">save</span> Profil speichern
+                      <div class="flex flex-col sm:flex-row sm:items-center justify-between p-4 border-b border-outline-variant/10 dark:border-slate-700/50 gap-4">
+                          <div class="flex items-center gap-3">
+                              <span class="material-symbols-outlined text-on-surface/60 dark:text-slate-400">verified_user</span>
+                              <div class="flex flex-col">
+                                  <span class="font-bold text-sm text-on-surface dark:text-white">Abo-Status</span>
+                                  <span id="profile-status-badge" class="text-xs font-bold mt-0.5 w-max">Lade...</span>
+                              </div>
+                          </div>
+                          <div class="flex items-center gap-2">
+                              <button id="profile-upgrade-btn" onclick="openPremiumModal()" class="hidden px-4 py-2 bg-gradient-to-r from-primary to-indigo-900 text-white text-xs font-bold rounded-xl shadow-sm hover:shadow-md transition">Upgrade Pro</button>
+                              <button id="profile-manage-btn" onclick="manageSubscription()" class="hidden px-4 py-2 bg-surface-container-highest dark:bg-slate-700 text-on-surface dark:text-white text-xs font-bold rounded-xl hover:bg-outline-variant/50 transition">Verwalten</button>
+                          </div>
+                      </div>
+
+                      <div class="flex items-center justify-between p-4 border-b border-outline-variant/10 dark:border-slate-700/50">
+                          <div class="flex items-center gap-3">
+                              <span class="material-symbols-outlined text-on-surface/60 dark:text-slate-400">dark_mode</span>
+                              <span class="font-bold text-sm text-on-surface dark:text-white">Dark Mode</span>
+                          </div>
+                          <button onclick="toggleDarkMode()" class="w-12 h-6 bg-surface-container-highest dark:bg-slate-700 rounded-full relative transition-colors border border-outline-variant/20 dark:border-slate-600">
+                              <div class="w-5 h-5 bg-white rounded-full absolute top-0.5 left-0.5 dark:translate-x-6 transition-transform shadow-sm"></div>
+                          </button>
+                      </div>
+
+                      <div class="flex items-center justify-between p-4 border-b border-outline-variant/10 dark:border-slate-700/50">
+                          <div class="flex items-center gap-3">
+                              <span class="material-symbols-outlined text-on-surface/60 dark:text-slate-400">language</span>
+                              <span class="font-bold text-sm text-on-surface dark:text-white">Sprache / Language</span>
+                          </div>
+                          <select onchange="setLanguage(this.value)" id="language-select" class="bg-surface-container dark:bg-slate-900 border-none rounded-xl text-xs font-bold py-2 pl-3 pr-8 focus:ring-2 focus:ring-primary/50 dark:text-white cursor-pointer appearance-none text-right">
+                              <option value="de">🇩🇪 Deutsch</option>
+                              <option value="en">🇬🇧 English</option>
+                              <option value="es">🇪🇸 Español</option>
+                              <option value="ru">🇷🇺 Русский</option>
+                              <option value="zh">🇨🇳 中文</option>
+                          </select>
+                      </div>
+
+                      <button onclick="showPasswordChangeModal()" class="w-full flex items-center justify-between p-4 border-b border-outline-variant/10 dark:border-slate-700/50 hover:bg-surface-container-low dark:hover:bg-slate-700/50 transition-colors text-left">
+                          <div class="flex items-center gap-3">
+                              <span class="material-symbols-outlined text-on-surface/60 dark:text-slate-400">lock_reset</span>
+                              <span class="font-bold text-sm text-on-surface dark:text-white">Passwort ändern</span>
+                          </div>
+                          <span class="material-symbols-outlined text-on-surface/30 dark:text-slate-500 text-sm">chevron_right</span>
+                      </button>
+
+                      <button onclick="exportData('json')" class="w-full flex items-center justify-between p-4 border-b border-outline-variant/10 dark:border-slate-700/50 hover:bg-surface-container-low dark:hover:bg-slate-700/50 transition-colors text-left">
+                          <div class="flex items-center gap-3">
+                              <span class="material-symbols-outlined text-on-surface/60 dark:text-slate-400">download</span>
+                              <span class="font-bold text-sm text-on-surface dark:text-white" data-i18n="burgerMenu.exportJSON">Exportieren (JSON)</span>
+                          </div>
+                      </button>
+                      <button onclick="exportData('csv')" class="w-full flex items-center justify-between p-4 border-b border-outline-variant/10 dark:border-slate-700/50 hover:bg-surface-container-low dark:hover:bg-slate-700/50 transition-colors text-left">
+                          <div class="flex items-center gap-3">
+                              <span class="material-symbols-outlined text-on-surface/60 dark:text-slate-400">csv</span>
+                              <span class="font-bold text-sm text-on-surface dark:text-white" data-i18n="burgerMenu.exportCSV">Exportieren (CSV)</span>
+                          </div>
+                      </button>
+                      <label for="import-file-input" class="w-full flex items-center justify-between p-4 border-b border-outline-variant/10 dark:border-slate-700/50 hover:bg-surface-container-low dark:hover:bg-slate-700/50 transition-colors text-left cursor-pointer group mb-0">
+                          <div class="flex items-center gap-3">
+                              <span class="material-symbols-outlined text-red-500 dark:text-red-400 group-hover:text-red-600 transition-colors">upload</span>
+                              <div class="flex flex-col">
+                                  <span class="font-bold text-sm text-red-500 dark:text-red-400 group-hover:text-red-600 transition-colors" data-i18n="burgerMenu.import">Daten importieren</span>
+                                  <span class="text-[10px] text-on-surface/40 dark:text-slate-500 mt-0.5" data-i18n="burgerMenu.importSub">JSON, CSV</span>
+                              </div>
+                          </div>
+                      </label>
+
+                      <button onclick="renderHelpContent(); document.getElementById('help-modal-overlay').classList.remove('hidden');" class="w-full flex items-center justify-between p-4 border-b border-outline-variant/10 dark:border-slate-700/50 hover:bg-surface-container-low dark:hover:bg-slate-700/50 transition-colors text-left">
+                          <div class="flex items-center gap-3">
+                              <span class="material-symbols-outlined text-on-surface/60 dark:text-slate-400">support_agent</span>
+                              <span class="font-bold text-sm text-on-surface dark:text-white" data-i18n="help.title">Hilfe & FAQ</span>
+                          </div>
+                      </button>
+
+                      <button id="menu-exit-demo-btn" class="hidden w-full flex items-center justify-between p-4 border-b border-outline-variant/10 dark:border-slate-700/50 hover:bg-surface-container-low dark:hover:bg-slate-700/50 transition-colors text-left">
+                          <div class="flex items-center gap-3">
+                              <span class="material-symbols-outlined text-amber-500">door_open</span>
+                              <span class="font-bold text-sm text-amber-600 dark:text-amber-500" data-i18n="burgerMenu.exitDemo">Demo Beenden</span>
+                          </div>
+                      </button>
+
+                      <button onclick="logout()" class="w-full flex items-center justify-between p-4 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors text-left group">
+                          <div class="flex items-center gap-3">
+                              <span class="material-symbols-outlined text-red-500">logout</span>
+                              <span class="font-bold text-sm text-red-600 dark:text-red-400">Abmelden</span>
+                          </div>
                       </button>
                   </div>
               </div>
 
-              <div class="bg-surface-container-lowest dark:bg-slate-800 p-6 md:p-8 rounded-[2rem] mb-6 shadow-sm border border-outline-variant/20 dark:border-slate-700">
-                  <div class="flex items-center gap-2 mb-6">
-                      <span class="material-symbols-outlined text-primary/70 dark:text-indigo-400">account_circle</span>
-                      <h3 class="text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400" data-i18n="profile.accountDetails">Account Details</h3>
-                  </div>
-                  
-                  <div class="space-y-6">
-                      <div class="bg-surface-container-low dark:bg-slate-900 p-4 rounded-2xl border border-outline-variant/10 dark:border-slate-700/50">
-                          <p class="text-[10px] font-bold uppercase tracking-widest text-on-surface/50 dark:text-slate-500 mb-1" data-i18n="profile.emailLabel">E-Mail Adresse (Login)</p>
-                          <p id="profile-email-display" class="font-bold text-on-surface dark:text-white">-</p>
-                      </div>
+            </div>
+            </div>
 
-                      <div class="bg-surface-container-low dark:bg-slate-900 p-4 rounded-2xl border border-outline-variant/10 dark:border-slate-700/50">
-                          <p class="text-[10px] font-bold uppercase tracking-widest text-on-surface/50 dark:text-slate-500 mb-2" data-i18n="profile.subStatus">Abo-Status</p>
-                          <div class="flex items-center justify-between">
-                              <span id="profile-status-badge" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-surface-container-highest text-on-surface dark:bg-slate-700 dark:text-slate-300 shadow-inner">Lade...</span>
-                              <span id="app-version" class="text-xs font-medium text-on-surface/40 dark:text-slate-500">v--</span>
-                          </div>
-                          
-                          <button id="profile-upgrade-btn" onclick="openPremiumModal()" data-i18n="premium.menuBtn" class="hidden mt-4 w-full py-3 bg-gradient-to-r from-primary to-indigo-900 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition transform hover:-translate-y-0.5 flex justify-center items-center gap-2">
-                              <span class="material-symbols-outlined text-[18px]">workspace_premium</span> Upgrade auf AvioSphere Pro
-                          </button>
-                          <button id="profile-manage-btn" onclick="manageSubscription()" data-i18n="burgerMenu.manageSubscription" class="hidden mt-4 w-full py-3 bg-surface-container-highest dark:bg-slate-700 text-on-surface dark:text-white font-bold rounded-xl hover:bg-outline-variant/50 transition flex justify-center items-center gap-2">
-                              <span class="material-symbols-outlined text-[18px]">settings</span> Abo verwalten
-                          </button>
-                      </div>
-                  </div>
+            <div id="tab-content-profil" class="hidden">
+              <div class="flex items-center justify-between mb-6 pr-2">
+                <h2 class="text-2xl font-display font-extrabold text-on-surface dark:text-white tracking-tight">
+                  Profil
+                </h2>
+                <div id="profile-header-status" class="px-3 py-1 bg-surface-container dark:bg-slate-800 rounded-full text-xs font-bold text-on-surface/60 dark:text-slate-400">
+                  Pilot
+                </div>
               </div>
 
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <button onclick="showPasswordChangeModal()" data-i18n="burgerMenu.changePassword" class="py-4 bg-surface-container-lowest dark:bg-slate-800 text-on-surface dark:text-white font-bold rounded-2xl border border-outline-variant/20 dark:border-slate-700 hover:bg-surface-container-low dark:hover:bg-slate-700 transition shadow-sm flex justify-center items-center gap-2">
-                      <span class="material-symbols-outlined text-[20px] text-primary dark:text-indigo-400">lock_reset</span> Passwort ändern
-                  </button>
-                  <button onclick="logout()" data-i18n="burgerMenu.logout" class="py-4 bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 font-bold rounded-2xl border border-red-200 dark:border-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/20 transition shadow-sm flex justify-center items-center gap-2">
-                      <span class="material-symbols-outlined text-[20px]">logout</span> Logout
-                  </button>
+              <div class="mb-8 flex bg-surface-container-low dark:bg-slate-800/50 p-1.5 rounded-2xl border border-outline-variant/10 dark:border-slate-700/50 shadow-inner gap-1 w-full sm:w-max">
+                <button id="profil-view-badges" onclick="/* JS folgt */" class="flex-1 sm:flex-none px-6 py-2.5 text-sm font-bold rounded-xl transition-all bg-surface-container-lowest dark:bg-slate-700 text-on-surface dark:text-white shadow-sm flex items-center justify-center gap-2">
+                  <span class="material-symbols-outlined text-[18px]">military_tech</span> Errungenschaften
+                </button>
+                <button id="profil-view-community" onclick="/* JS folgt */" class="flex-1 sm:flex-none px-6 py-2.5 text-sm font-bold rounded-xl transition-all text-on-surface/60 hover:text-on-surface dark:text-slate-400 dark:hover:text-white hover:bg-surface-container-lowest dark:hover:bg-slate-700 flex items-center justify-center gap-2">
+                  <span class="material-symbols-outlined text-[18px]">groups</span> Community
+                </button>
+              </div>
+
+              <div id="profile-badges-content">
+                  </div>
+
+              <div id="profile-community-content" class="hidden">
+                  </div>
+
+              <div class="mt-12 mb-4">
+                  <h3 class="text-xs font-bold uppercase tracking-widest text-on-surface/50 dark:text-slate-500 mb-4 px-2">Einstellungen & Daten</h3>
+                  
+                  <div class="bg-surface-container-lowest dark:bg-slate-800 rounded-3xl border border-outline-variant/20 dark:border-slate-700/50 overflow-hidden shadow-sm">
+                      
+                      <div class="flex items-center justify-between p-4 border-b border-outline-variant/10 dark:border-slate-700/50">
+                          <div class="flex items-center gap-3">
+                              <span class="material-symbols-outlined text-on-surface/60 dark:text-slate-400">dark_mode</span>
+                              <span class="font-bold text-sm text-on-surface dark:text-white">Dark Mode</span>
+                          </div>
+                          <button onclick="toggleDarkMode()" class="w-12 h-6 bg-surface-container-highest dark:bg-slate-700 rounded-full relative transition-colors border border-outline-variant/20 dark:border-slate-600">
+                              <div class="w-5 h-5 bg-white rounded-full absolute top-0.5 left-0.5 dark:translate-x-6 transition-transform shadow-sm"></div>
+                          </button>
+                      </div>
+
+                      <div class="flex items-center justify-between p-4 border-b border-outline-variant/10 dark:border-slate-700/50">
+                          <div class="flex items-center gap-3">
+                              <span class="material-symbols-outlined text-on-surface/60 dark:text-slate-400">language</span>
+                              <span class="font-bold text-sm text-on-surface dark:text-white">Sprache / Language</span>
+                          </div>
+                          <select onchange="setLanguage(this.value)" id="language-select" class="bg-surface-container dark:bg-slate-900 border-none rounded-xl text-xs font-bold py-2 pl-3 pr-8 focus:ring-2 focus:ring-primary/50 dark:text-white cursor-pointer appearance-none text-right">
+                              <option value="de">🇩🇪 Deutsch</option>
+                              <option value="en">🇬🇧 English</option>
+                              <option value="es">🇪🇸 Español</option>
+                              <option value="ru">🇷🇺 Русский</option>
+                              <option value="zh">🇨🇳 中文</option>
+                          </select>
+                      </div>
+
+                      <button onclick="openPremiumModal()" class="w-full flex items-center justify-between p-4 border-b border-outline-variant/10 dark:border-slate-700/50 hover:bg-surface-container-low dark:hover:bg-slate-700/50 transition-colors text-left group">
+                          <div class="flex items-center gap-3">
+                              <span class="material-symbols-outlined text-amber-500 group-hover:scale-110 transition-transform">workspace_premium</span>
+                              <span class="font-bold text-sm text-on-surface dark:text-white">AvioSphere Pro</span>
+                          </div>
+                          <span class="material-symbols-outlined text-on-surface/30 dark:text-slate-500 text-sm">chevron_right</span>
+                      </button>
+
+                      <button onclick="exportData('json')" class="w-full flex items-center justify-between p-4 border-b border-outline-variant/10 dark:border-slate-700/50 hover:bg-surface-container-low dark:hover:bg-slate-700/50 transition-colors text-left">
+                          <div class="flex items-center gap-3">
+                              <span class="material-symbols-outlined text-on-surface/60 dark:text-slate-400">download</span>
+                              <span class="font-bold text-sm text-on-surface dark:text-white" data-i18n="burgerMenu.exportJSON">Exportieren (JSON)</span>
+                          </div>
+                      </button>
+                      <button onclick="exportData('csv')" class="w-full flex items-center justify-between p-4 border-b border-outline-variant/10 dark:border-slate-700/50 hover:bg-surface-container-low dark:hover:bg-slate-700/50 transition-colors text-left">
+                          <div class="flex items-center gap-3">
+                              <span class="material-symbols-outlined text-on-surface/60 dark:text-slate-400">csv</span>
+                              <span class="font-bold text-sm text-on-surface dark:text-white" data-i18n="burgerMenu.exportCSV">Exportieren (CSV)</span>
+                          </div>
+                      </button>
+                      <label for="import-file-input" class="w-full flex items-center justify-between p-4 border-b border-outline-variant/10 dark:border-slate-700/50 hover:bg-surface-container-low dark:hover:bg-slate-700/50 transition-colors text-left cursor-pointer group mb-0">
+                          <div class="flex items-center gap-3">
+                              <span class="material-symbols-outlined text-red-500 dark:text-red-400 group-hover:text-red-600 transition-colors">upload</span>
+                              <div class="flex flex-col">
+                                  <span class="font-bold text-sm text-red-500 dark:text-red-400 group-hover:text-red-600 transition-colors" data-i18n="burgerMenu.import">Daten importieren</span>
+                                  <span class="text-[10px] text-on-surface/40 dark:text-slate-500 mt-0.5" data-i18n="burgerMenu.importSub">JSON, CSV</span>
+                              </div>
+                          </div>
+                      </label>
+
+                      <button onclick="renderHelpContent(); document.getElementById('help-modal-overlay').classList.remove('hidden');" class="w-full flex items-center justify-between p-4 border-b border-outline-variant/10 dark:border-slate-700/50 hover:bg-surface-container-low dark:hover:bg-slate-700/50 transition-colors text-left">
+                          <div class="flex items-center gap-3">
+                              <span class="material-symbols-outlined text-on-surface/60 dark:text-slate-400">support_agent</span>
+                              <span class="font-bold text-sm text-on-surface dark:text-white" data-i18n="help.title">Hilfe & FAQ</span>
+                          </div>
+                      </button>
+
+                      <button id="menu-exit-demo-btn" class="hidden w-full flex items-center justify-between p-4 border-b border-outline-variant/10 dark:border-slate-700/50 hover:bg-surface-container-low dark:hover:bg-slate-700/50 transition-colors text-left">
+                          <div class="flex items-center gap-3">
+                              <span class="material-symbols-outlined text-amber-500">door_open</span>
+                              <span class="font-bold text-sm text-amber-600 dark:text-amber-500" data-i18n="burgerMenu.exitDemo">Demo Beenden</span>
+                          </div>
+                      </button>
+
+                      <button onclick="logout()" class="w-full flex items-center justify-between p-4 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors text-left group">
+                          <div class="flex items-center gap-3">
+                              <span class="material-symbols-outlined text-red-500">logout</span>
+                              <span class="font-bold text-sm text-red-600 dark:text-red-400">Abmelden</span>
+                          </div>
+                      </button>
+                  </div>
               </div>
             </div>
-			
-          </div> </div> </div> 
-        <div class="fixed bottom-0 left-0 right-0 z-[100] bg-surface-container-lowest/80 dark:bg-slate-900/80 backdrop-blur-2xl border-t border-outline-variant/20 dark:border-slate-700/50 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] dark:shadow-[0_-10px_40px_rgba(0,0,0,0.3)] pb-[max(0.5rem,env(safe-area-inset-bottom))] transition-colors duration-500">
-          <nav class="flex items-center overflow-x-auto hide-scrollbar px-2 py-2 gap-1 max-w-4xl mx-auto" aria-label="Tabs">
+
+          </div>
+        </div> 
+        <div class="fixed bottom-0 left-0 right-0 z-[100] bg-surface-container-lowest/90 dark:bg-slate-900/90 backdrop-blur-2xl border-t border-outline-variant/20 dark:border-slate-700/50 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+          <nav class="flex items-end justify-between px-2 sm:px-8 max-w-md mx-auto relative h-16" aria-label="Tabs">
             
-            <button onclick="showTab('neue-fluege')" id="tab-btn-neue-fluege" class="tab-btn flex-shrink-0 flex flex-col items-center justify-center text-on-surface/60 dark:text-slate-400 px-4 py-2 hover:bg-surface-container-low dark:hover:bg-slate-800/50 rounded-2xl transition-all duration-300 ease-out">
-              <span class="material-symbols-outlined mb-1 text-[26px]">add_circle</span>
-              <span class="font-display text-[10px] font-bold tracking-wide uppercase" data-i18n="tabs.newFlight">Neuer Flug</span>
+            <button onclick="showTab('radar')" id="tab-btn-radar" class="tab-btn flex-1 flex flex-col items-center justify-center text-primary dark:text-indigo-400 pb-2 transition-all">
+              <span class="material-symbols-outlined text-[24px] mb-1">radar</span>
+              <span class="font-display text-[10px] font-bold uppercase tracking-wider">Radar</span>
             </button>
             
-            <button onclick="showTab('fluege')" id="tab-btn-fluege" class="tab-btn flex-shrink-0 flex flex-col items-center justify-center text-on-surface/60 dark:text-slate-400 px-4 py-2 hover:bg-surface-container-low dark:hover:bg-slate-800/50 rounded-2xl transition-all duration-300 ease-out">
-              <span class="material-symbols-outlined mb-1 text-[26px]">flight_takeoff</span>
-              <span class="font-display text-[10px] font-bold tracking-wide uppercase" data-i18n="tabs.flights">Flüge</span>
+            <button onclick="showTab('timeline')" id="tab-btn-timeline" class="tab-btn flex-1 flex flex-col items-center justify-center text-on-surface/40 dark:text-slate-500 hover:text-on-surface/80 dark:hover:text-slate-300 pb-2 transition-all">
+              <span class="material-symbols-outlined text-[24px] mb-1">history</span>
+              <span class="font-display text-[10px] font-bold uppercase tracking-wider">Timeline</span>
+            </button>
+
+            <div class="flex-shrink-0 flex justify-center relative -top-6 px-2">
+                <button onclick="openAddMenu()" class="w-14 h-14 bg-primary text-white rounded-full flex items-center justify-center shadow-xl hover:scale-105 transition-transform border-4 border-background dark:border-gray-900">
+                    <span class="material-symbols-outlined text-3xl">add</span>
+                </button>
+            </div>
+            
+            <button onclick="showTab('analytics')" id="tab-btn-analytics" class="tab-btn flex-1 flex flex-col items-center justify-center text-on-surface/40 dark:text-slate-500 hover:text-on-surface/80 dark:hover:text-slate-300 pb-2 transition-all">
+              <span class="material-symbols-outlined text-[24px] mb-1">analytics</span>
+              <span class="font-display text-[10px] font-bold uppercase tracking-wider">Analytics</span>
             </button>
             
-            <button onclick="showTab('stats')" id="tab-btn-stats" class="tab-btn flex-shrink-0 flex flex-col items-center justify-center text-on-surface/60 dark:text-slate-400 px-4 py-2 hover:bg-surface-container-low dark:hover:bg-slate-800/50 rounded-2xl transition-all duration-300 ease-out">
-              <span class="material-symbols-outlined mb-1 text-[26px]">bar_chart</span>
-              <span class="font-display text-[10px] font-bold tracking-wide uppercase" data-i18n="tabs.stats">Statistiken</span>
-            </button>
-            
-            <button onclick="showTab('charts')" id="tab-btn-charts" class="tab-btn flex-shrink-0 flex flex-col items-center justify-center text-on-surface/60 dark:text-slate-400 px-4 py-2 hover:bg-surface-container-low dark:hover:bg-slate-800/50 rounded-2xl transition-all duration-300 ease-out">
-              <span class="material-symbols-outlined mb-1 text-[26px]">pie_chart</span>
-              <span class="font-display text-[10px] font-bold tracking-wide uppercase" data-i18n="tabs.charts">Charts</span>
-            </button>
-            
-            <button onclick="showTab('trips')" id="tab-btn-trips" class="tab-btn flex-shrink-0 flex flex-col items-center justify-center text-on-surface/60 dark:text-slate-400 px-4 py-2 hover:bg-surface-container-low dark:hover:bg-slate-800/50 rounded-2xl transition-all duration-300 ease-out">
-              <span class="material-symbols-outlined mb-1 text-[26px]">luggage</span>
-              <span class="font-display text-[10px] font-bold tracking-wide uppercase" data-i18n="tabs.trips">Reisen</span>
-            </button>
-            
-            <button onclick="showTab('logbook')" id="tab-btn-logbook" class="tab-btn flex-shrink-0 flex flex-col items-center justify-center text-on-surface/60 dark:text-slate-400 px-4 py-2 hover:bg-surface-container-low dark:hover:bg-slate-800/50 rounded-2xl transition-all duration-300 ease-out">
-              <span class="material-symbols-outlined mb-1 text-[26px]">menu_book</span>
-              <span class="font-display text-[10px] font-bold tracking-wide uppercase" data-i18n="tabs.logbook">Logbuch</span>
-            </button>
-            
-            <button onclick="showTab('achievements')" id="tab-btn-achievements" class="tab-btn flex-shrink-0 flex flex-col items-center justify-center text-on-surface/60 dark:text-slate-400 px-4 py-2 hover:bg-surface-container-low dark:hover:bg-slate-800/50 rounded-2xl transition-all duration-300 ease-out">
-              <span class="material-symbols-outlined mb-1 text-[26px]">military_tech</span>
-              <span class="font-display text-[10px] font-bold tracking-wide uppercase" data-i18n="tabs.achievements">Rekorde</span>
-            </button>
-            
-            <button onclick="showTab('profil')" id="tab-btn-profil" class="tab-btn flex-shrink-0 flex flex-col items-center justify-center text-on-surface/60 dark:text-slate-400 px-4 py-2 hover:bg-surface-container-low dark:hover:bg-slate-800/50 rounded-2xl transition-all duration-300 ease-out">
-              <span class="material-symbols-outlined mb-1 text-[26px]">person</span>
-              <span class="font-display text-[10px] font-bold tracking-wide uppercase" data-i18n="tabs.profile">Profil</span>
-            </button>
-            
-            <button onclick="showTab('hilfe')" id="tab-btn-hilfe" class="tab-btn flex-shrink-0 flex flex-col items-center justify-center text-on-surface/60 dark:text-slate-400 px-4 py-2 hover:bg-surface-container-low dark:hover:bg-slate-800/50 rounded-2xl transition-all duration-300 ease-out">
-              <span class="material-symbols-outlined mb-1 text-[26px]">support_agent</span>
-              <span class="font-display text-[10px] font-bold tracking-wide uppercase" data-i18n="tabs.help">Hilfe</span>
+            <button onclick="showTab('profil')" id="tab-btn-profil" class="tab-btn flex-1 flex flex-col items-center justify-center text-on-surface/40 dark:text-slate-500 hover:text-on-surface/80 dark:hover:text-slate-300 pb-2 transition-all">
+              <span class="material-symbols-outlined text-[24px] mb-1">person</span>
+              <span class="font-display text-[10px] font-bold uppercase tracking-wider">Profil</span>
             </button>
 
           </nav>
@@ -1810,25 +1679,7 @@
                      <button onclick="resetFilters()" class="flex-1 bg-surface-container-highest dark:bg-slate-700 text-on-surface dark:text-white py-2 rounded-xl font-bold text-sm" data-i18n="flights.resetButton">Reset</button>
                  </div>
             </div>
-
-            <div class="pt-4 border-t border-outline-variant/10 dark:border-white/10">
-                <label data-i18n="flights.actionsTitle" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-3">Aktionen & Tools</label>
-                <div class="flex flex-wrap gap-2">
-                    <button id="play-chronicle-btn" onclick="openMapAndCloseModal()" class="flex items-center justify-center gap-1.5 px-4 py-2 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-xl font-bold text-xs" data-i18n="flights.playChronicle">
-                        <span class="material-symbols-outlined text-[16px]">play_circle</span> Chronik
-                    </button>
-                    <button id="toggle-map-view-btn" onclick="toggleAllRoutesView(); closeFilterModal();" class="flex items-center justify-center gap-1.5 px-4 py-2 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 rounded-xl font-bold text-xs" data-i18n="flights.showAllRoutes">
-                        <span class="material-symbols-outlined text-[16px]">map</span> Alle Routen
-                    </button>
-                    <button id="show-globe-btn" onclick="closeFilterModal()" class="flex items-center justify-center gap-1.5 px-4 py-2 bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-400 rounded-xl font-bold text-xs" data-i18n="flights.show3DGlobe">
-                        <span class="material-symbols-outlined text-[16px]">public</span> 3D Globus
-                    </button>
-                    <button id="print-book-btn" onclick="closeFilterModal()" class="flex items-center justify-center gap-1.5 px-4 py-2 bg-surface-container dark:bg-slate-800 text-on-surface dark:text-white rounded-xl font-bold text-xs" data-i18n="flights.createBook">
-                        <span class="material-symbols-outlined text-[16px]">menu_book</span> Buch
-                    </button>
-                </div>
-            </div>
-            
+  
         </div>
 
         <div class="p-5 bg-surface-container-low dark:bg-slate-800 border-t border-outline-variant/10 dark:border-white/10">
@@ -1839,6 +1690,244 @@
 
     </div>
 </div>
+
+  <div id="add-action-modal" class="fixed inset-0 z-[120] hidden items-end sm:items-center justify-center bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300 opacity-0 font-display">
+        <div class="bg-surface-container-lowest dark:bg-slate-900 w-full sm:max-w-md rounded-t-[2.5rem] sm:rounded-[2.5rem] p-6 pb-10 sm:pb-6 transform translate-y-full sm:translate-y-0 sm:scale-95 transition-all duration-300 ease-out shadow-2xl border-t sm:border border-outline-variant/20 dark:border-white/10" id="add-modal-content">
+            
+            <div class="w-12 h-1.5 bg-outline-variant/30 dark:bg-slate-700 rounded-full mx-auto mb-6 sm:hidden"></div>
+
+            <div class="flex justify-between items-center mb-6 px-2">
+                <h3 class="text-xl font-display font-black text-on-surface dark:text-white">Flug erfassen</h3>
+                <button onclick="closeAddMenu()" class="w-8 h-8 bg-surface-container-low dark:bg-slate-800 rounded-full flex items-center justify-center text-on-surface/60 dark:text-slate-400 hover:text-primary transition-colors">
+                    <span class="material-symbols-outlined text-[18px]">close</span>
+                </button>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <button onclick="closeAddMenu(); openAddFlightModal(); setTimeout(()=>document.getElementById('auto-flight-number').focus(), 300);" class="bg-cyan-accent/10 hover:bg-cyan-accent/20 border border-cyan-accent/20 p-5 rounded-3xl flex flex-col items-center justify-center gap-3 transition-colors group">
+                    <span class="material-symbols-outlined text-3xl text-cyan-accent group-hover:scale-110 transition-transform">smart_toy</span>
+                    <span class="text-sm font-bold text-on-surface dark:text-white">Autopilot</span>
+                </button>
+                
+                <button onclick="closeAddMenu(); startBoardingPassScanner();" class="bg-primary/10 hover:bg-primary/20 border border-primary/20 p-5 rounded-3xl flex flex-col items-center justify-center gap-3 transition-colors group relative overflow-hidden">
+                    <span class="absolute top-3 right-3 text-[10px]">🔒</span>
+                    <span class="material-symbols-outlined text-3xl text-primary dark:text-indigo-400 group-hover:scale-110 transition-transform">qr_code_scanner</span>
+                    <span class="text-sm font-bold text-on-surface dark:text-white">Bordkarte</span>
+                </button>
+                
+                <button onclick="closeAddMenu(); openAddFlightModal();" class="col-span-2 bg-surface-container-low dark:bg-slate-800 hover:bg-surface-container-highest dark:hover:bg-slate-700 border border-outline-variant/10 dark:border-white/5 p-5 rounded-3xl flex items-center gap-4 transition-colors group">
+                    <div class="w-12 h-12 rounded-full bg-surface-container-lowest dark:bg-slate-900 flex items-center justify-center text-on-surface/60 dark:text-slate-400 group-hover:text-primary transition-colors shadow-sm shrink-0">
+                        <span class="material-symbols-outlined">edit_document</span>
+                    </div>
+                    <div class="text-left">
+                        <span class="block text-sm font-bold text-on-surface dark:text-white mb-0.5">Manuell eintragen</span>
+                        <span class="block text-[10px] text-on-surface/50 dark:text-slate-400 uppercase tracking-widest font-bold">Details selbst ausfüllen oder suchen</span>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="add-flight-modal" class="fixed inset-0 z-[150] hidden flex-col bg-surface-container-lowest dark:bg-slate-900 transition-transform duration-300 translate-y-full font-display">
+        
+        <div class="flex items-center justify-between p-4 border-b border-outline-variant/20 dark:border-slate-800 bg-surface-container-lowest/90 dark:bg-slate-900/90 backdrop-blur-md sticky top-0 z-20">
+            <h2 class="text-xl font-display font-extrabold text-on-surface dark:text-white tracking-tight" data-i18n="logNewFlight">Neuen Flug loggen</h2>
+            <button onclick="closeAddFlightModal()" class="w-8 h-8 flex items-center justify-center rounded-full bg-surface-container-low dark:bg-slate-800 text-on-surface/60 dark:text-slate-400 hover:text-primary transition-colors">
+                <span class="material-symbols-outlined text-[20px]">close</span>
+            </button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-4 sm:p-6 pb-24">
+            
+            <div id="import-promo-container" class="relative mb-8 group">
+                  <button onclick="dismissImportPromo(event)" class="absolute -top-3 -right-3 bg-surface-container-lowest dark:bg-slate-800 border border-outline-variant/20 dark:border-slate-700 hover:bg-surface-container-low dark:hover:bg-slate-700 text-on-surface/50 dark:text-slate-400 rounded-full w-8 h-8 flex items-center justify-center shadow-md z-10 transition-colors" title="Ausblenden">
+                      <span class="material-symbols-outlined text-[18px]">close</span>
+                  </button>
+
+                  <button onclick="document.getElementById('import-file-input').click()" class="w-full p-6 border-2 border-dashed border-primary/30 bg-primary/5 dark:bg-primary/10 rounded-[2rem] hover:bg-primary/10 dark:hover:bg-primary/20 transition-all flex flex-col items-center justify-center gap-3">
+                      <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-300">
+                          <span class="material-symbols-outlined text-2xl">upload_file</span>
+                      </div>
+                      <div class="text-center">
+                          <span class="block font-bold text-primary dark:text-indigo-400 text-sm md:text-base mb-1 font-display" data-i18n="import.promoTitle">Wechselst du von Flightradar24 oder App in the Air?</span>
+                          <span class="block text-xs text-primary/70 dark:text-indigo-300 px-4" data-i18n="import.promoSub">Lade deinen CSV-Export hoch. Wir erkennen das Format automatisch!</span>
+                      </div>
+                  </button>
+              </div>
+
+              <details class="bg-surface-container-lowest dark:bg-slate-800 p-6 md:p-8 rounded-[2rem] mb-6 shadow-sm border border-outline-variant/20 dark:border-slate-700 group transition-all duration-300" open>
+                <summary class="list-none cursor-pointer flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-cyan-accent/10 flex items-center justify-center text-cyan-accent">
+                        <span class="material-symbols-outlined">smart_toy</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-on-surface dark:text-white font-display flex items-center gap-2">
+                        <span data-i18n="autoPilot">Autopilot: Flugdaten laden</span>
+                    </h3>
+                  </div>
+                  <span class="material-symbols-outlined text-on-surface/40 group-open:rotate-180 transition-transform duration-300">keyboard_arrow_down</span>
+                </summary>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end mt-6 border-t border-outline-variant/10 dark:border-slate-700 pt-6">
+                  <div>
+                    <label for="auto-flight-number" data-i18n="autoFlightNumber" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1">Flugnummer</label>
+                    <input type="text" id="auto-flight-number" placeholder="z.B. LH202" data-i18n="placeholder.egFlightNumber" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium placeholder-on-surface/30" />
+                  </div>
+                  <div>
+                    <label for="auto-flight-date" data-i18n="autoFlightDate" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1">Flugdatum</label>
+                    <input type="date" id="auto-flight-date" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium text-on-surface/70" />
+                  </div>
+                  <button id="autofill-btn" data-i18n="autofillBtn" class="w-full h-[48px] bg-primary hover:bg-primary/90 text-white rounded-xl transition-all shadow-sm font-bold text-sm flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined text-[18px]">cloud_download</span> Daten abrufen
+                  </button>
+                </div>
+              </details>
+
+              <details class="bg-surface-container-lowest dark:bg-slate-800 p-6 md:p-8 rounded-[2rem] mb-6 shadow-sm border border-outline-variant/20 dark:border-slate-700 group transition-all duration-300" open>
+                <summary class="list-none cursor-pointer flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                        <span class="material-symbols-outlined">edit_document</span>
+                    </div>
+                    <h2 data-i18n="logNewFlight" class="text-lg font-bold text-on-surface dark:text-white font-display">
+                        Manuelle Eingabe
+                    </h2>
+                  </div>
+                  <span class="material-symbols-outlined text-on-surface/40 group-open:rotate-180 transition-transform duration-300">keyboard_arrow_down</span>
+                </summary>
+
+                <div class="mt-6 pt-6 border-t border-outline-variant/10 dark:border-slate-700 grid grid-cols-1 lg:grid-cols-6 gap-x-6 gap-y-5">
+                  
+                  <div class="autocomplete-container lg:col-span-3">
+                    <label for="departure" data-i18n="departureNewFlight" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1">Abflugort (IATA/Name)</label>
+                    <input type="text" id="departure" placeholder="z.B. FRA" data-i18n="placeholder.egDeparture" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium" />
+                    <div id="departure-list" class="autocomplete-list hidden rounded-xl shadow-lg border border-outline-variant/20 mt-1 z-50"></div>
+                  </div>
+                  
+                  <div class="autocomplete-container lg:col-span-3">
+                    <label for="arrival" data-i18n="arrivalNewFlight" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1">Zielort (IATA/Name)</label>
+                    <input type="text" id="arrival" placeholder="z.B. JFK" data-i18n="placeholder.egArrival" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium" />
+                    <div id="arrival-list" class="autocomplete-list hidden rounded-xl shadow-lg border border-outline-variant/20 mt-1 z-50"></div>
+                  </div>
+
+                  <div class="lg:col-span-3">
+                    <label for="flightDate" data-i18n="flightDateNewFlight" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1">Flugdatum (Optional)</label>
+                    <input type="date" id="flightDate" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium text-on-surface/70" />
+                  </div>
+                  
+                  <div class="lg:col-span-3">
+                    <label for="flightClass" data-i18n="flightClassNewFlight" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1">Klasse/Zweck (Optional)</label>
+                    <div class="relative">
+                        <select id="flightClass" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium appearance-none cursor-pointer">
+                        <option value="Economy" data-i18n="flightClassEconomy">Economy</option>
+                        <option value="Business" data-i18n="flightClassBusiness">Business</option>
+                        <option value="First" data-i18n="flightClassFirst">First</option>
+                        <option value="Privat" data-i18n="flightClassPrivat">Privat</option>
+                        <option value="Cargo" data-i18n="flightClassCargo">Cargo</option>
+                        </select>
+                        <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface/40 pointer-events-none">expand_more</span>
+                    </div>
+                  </div>
+
+                  <div class="lg:col-span-2">
+                    <label for="flightNumber" data-i18n="form.flightNumberOptional" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1">Flugnummer (Optional)</label>
+                    <div class="flex gap-2">
+                      <input type="text" id="flightNumber" placeholder="z.B. LH400" data-i18n="placeholder.egFlightNumber" class="block w-full flex-1 rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium uppercase" />
+                      
+                      <button type="button" onclick="searchFlightByRoute()" data-i18n-title="flightSearch.btnTitle" class="flex-shrink-0 w-12 flex items-center justify-center bg-primary hover:bg-primary/90 text-white rounded-xl shadow-sm transition-all transform hover:-translate-y-0.5" title="Flugnummer anhand der Route suchen">
+                        <span class="material-symbols-outlined">search</span>
+                      </button>
+                    </div>
+                    <p class="mt-1.5 text-[11px] text-on-surface/50 dark:text-slate-500 font-medium" data-i18n="flightSearch.onlyTodayHint">
+                      * Die Suche zeigt nur tagesaktuelle Flüge an.
+                    </p>
+                  </div>
+                  
+                  <div class="lg:col-span-2">
+                    <label for="airline" data-i18n="form.airline" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1">Airline (Optional)</label>
+                    <input type="text" id="airline" placeholder="z.B. Lufthansa" data-i18n="placeholder.egAirline" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium" />
+                  </div>
+                  
+                  <div class="lg:col-span-2">
+                    <label for="aircraftType" data-i18n="form.aircraft" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1">Flugzeugtyp (Optional)</label>
+                    <input type="text" id="aircraftType" placeholder="z.B. A320" data-i18n="placeholder.egAircraft" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium" />
+                  </div>
+
+                  <div class="lg:col-span-2">
+                    <label for="registration" data-i18n="form.registration" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1">Registrierung (Optional)</label>
+                    <input type="text" id="registration" placeholder="z.B. D-AINC" data-i18n="placeholder.egRegistration" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium" />
+                  </div>
+                  
+                  <div class="lg:col-span-2">
+                    <label for="price" data-i18n="priceNewFlight" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1">Ticketpreis (Optional)</label>
+                    <input type="number" id="price" placeholder="z.B. 199.99" data-i18n="placeholder.egPrice" step="0.01" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium" />
+                  </div>
+                  
+                  <div class="lg:col-span-2">
+                    <label for="currency" data-i18n="currencyNewFlight" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1">Währung (Optional)</label>
+                    <input type="text" id="currency" placeholder="z.B. EUR" data-i18n="placeholder.egCurrency" maxlength="3" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium" />
+                  </div>
+
+                  <div class="lg:col-span-3">
+                    <label data-i18n="form.photo" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-2">Eigene Fotos (Optional)</label>
+                    <div id="existing-photos-preview" class="mb-3 flex flex-wrap gap-2"></div>
+                    <input type="file" id="flightPhoto" accept="image/*" class="hidden" multiple />
+                    <div class="flex items-center gap-4">
+                        <label for="flightPhoto" class="inline-flex items-center gap-2 bg-surface-container-highest dark:bg-slate-700 text-on-surface dark:text-white rounded-xl px-5 py-3 text-sm font-bold cursor-pointer hover:bg-outline-variant/50 transition-colors shadow-sm">
+                        <span class="material-symbols-outlined text-[18px]">add_photo_alternate</span>
+                        <span data-i18n="form.chooseFile">Datei auswählen...</span>
+                        </label>
+                        <span id="photo-preview-text" class="text-xs text-on-surface/50 dark:text-slate-400 truncate max-w-[150px]" data-i18n="form.noPhotoSelected">Kein Foto ausgewählt</span>
+                    </div>
+                  </div>
+                  
+                  <div class="lg:col-span-3">
+                    <label for="notes" data-i18n="notesNewFlight" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1">Bemerkungen (Optional)</label>
+                    <textarea id="notes" rows="3" placeholder="Wie war der Flug?" data-i18n="form.notesPlaceholder" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium resize-none"></textarea>
+                  </div>
+
+                  <div class="lg:col-span-6 border-t border-outline-variant/10 dark:border-slate-700 pt-5 mt-2">
+                    <label for="tripSelect" data-i18n="form.tripLabel" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-2">Reise / Trip (Optional)</label>
+                    <div class="flex gap-3 items-center">
+                        <div class="relative flex-1">
+                            <select id="tripSelect" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-4 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-bold appearance-none cursor-pointer">
+                                <option value="" data-i18n="form.tripNone">-- Keine Reise (Einzelflug) --</option>
+                            </select>
+                            <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface/40 pointer-events-none">expand_more</span>
+                        </div>
+                      <button type="button" onclick="createNewTrip()" class="flex-shrink-0 flex items-center justify-center w-[52px] h-[52px] rounded-xl bg-primary/10 text-primary hover:bg-primary/20 dark:bg-primary/20 dark:text-indigo-300 transition-colors" data-i18n-title="trips.createNew" title="Neue Reise anlegen">
+                        <span class="material-symbols-outlined text-2xl">add</span>
+                      </button>
+                    </div>
+                  </div>
+                </div> 
+              </details> 
+
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mt-8">
+                <button onclick="logFlight(); closeAddFlightModal();" id="log-button" disabled data-i18n="logFlightNewFlight" class="flex-1 py-4 px-6 rounded-2xl font-bold shadow-md transition-all duration-300 flex items-center justify-center gap-2 bg-primary text-white hover:bg-primary/90 hover:shadow-lg hover:-translate-y-0.5 disabled:bg-surface-container-highest disabled:text-on-surface/40 disabled:shadow-none disabled:translate-y-0 disabled:cursor-not-allowed dark:disabled:bg-slate-800 dark:disabled:text-slate-500">
+                  <span class="material-symbols-outlined text-[20px]">save</span> Flug loggen und speichern
+                </button>
+				
+                <button onclick="clearOnlyFields(event)" id="reset-button" data-i18n="form.reset" class="w-full sm:w-auto py-4 px-8 rounded-2xl font-bold transition-colors bg-surface-container-lowest dark:bg-slate-800 border border-outline-variant/30 dark:border-slate-700 text-on-surface dark:text-white hover:bg-surface-container-low dark:hover:bg-slate-700 shadow-sm">
+                  Zurücksetzen
+                </button>
+                
+                <button type="button" id="cancel-edit-button" onclick="cancelEditFlight(); closeAddFlightModal();" class="hidden w-full py-4 bg-surface-container-low hover:bg-surface-container-highest dark:bg-slate-800 dark:hover:bg-slate-700 text-on-surface dark:text-white font-bold rounded-2xl transition-all shadow-sm border border-outline-variant/10 dark:border-slate-700">
+                    Abbrechen
+                </button>
+              </div>
+        </div>
+    </div>
+
+    <div id="help-modal-overlay" class="fixed inset-0 z-[200] hidden items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md">
+        <div class="bg-surface-container-lowest dark:bg-slate-900 rounded-[2.5rem] w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden border border-outline-variant/20 dark:border-slate-700">
+            <div class="flex justify-between items-center p-6 border-b border-outline-variant/10 dark:border-slate-700/50 bg-surface-container-low dark:bg-slate-800">
+                <h3 class="text-xl font-display font-extrabold dark:text-white" data-i18n="help.title">Hilfe & FAQ</h3>
+                <button onclick="document.getElementById('help-modal-overlay').classList.add('hidden')" class="w-8 h-8 flex items-center justify-center bg-slate-200 dark:bg-slate-700 rounded-full text-on-surface/60 hover:text-primary transition-colors"><span class="material-symbols-outlined text-sm font-bold">close</span></button>
+            </div>
+            <div id="help-content-container" class="p-6 md:p-8 overflow-y-auto custom-scrollbar prose dark:prose-invert max-w-none text-sm dark:text-slate-300 leading-relaxed"></div>
+        </div>
+    </div>
 
   </body>
 </html>

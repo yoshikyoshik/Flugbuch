@@ -50,6 +50,12 @@ async function initializeApp() {
   document.getElementById("auth-container").classList.add("hidden");
   document.getElementById("app-container").classList.remove("hidden");
 
+  // 🚀 NEU: Boot-Screen nach Login wieder einblenden (falls er durch Logout weg war)
+  const bootScreen = document.getElementById('app-boot-screen');
+  if (bootScreen) {
+      bootScreen.classList.remove('hidden', 'opacity-0');
+  }
+
   try {
     const { data, error } = await supabaseClient.auth.getUser();
     if (error) throw error;
@@ -63,10 +69,6 @@ async function initializeApp() {
         // Die URL sofort bereinigen, damit der Dialog beim Neuladen nicht nochmal kommt
         window.history.replaceState({}, document.title, window.location.pathname);
     }
-
-    // --- NEU: Profil-Daten laden ---
-    //// loadUserProfile(user);
-    // -------------------------------
 
     // --- BILLING INIT ---
     // Wir übergeben die ID, damit RevenueCat den User zuordnen kann
@@ -91,8 +93,6 @@ async function initializeApp() {
       let performDbCorrection = false;
 
       // 🚀 1. REVENUECAT (NATIV) HAT VORRANG!
-      // Wenn das native SDK durch initializeBilling() den Nutzer bereits als PRO markiert hat,
-      // vertrauen wir dem zu 100%, egal was in der Supabase steht.
       const isNative = typeof isNativeApp === 'function' ? isNativeApp() : (typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform());
       
       if (isNative && window.currentUserSubscription === "pro") {
@@ -112,10 +112,6 @@ async function initializeApp() {
             performDbCorrection = true;
           }
         } else {
-          // Fall B: "Pro" ohne Datum.
-          // Google Play und Apple Abos verlängern sich automatisch. 
-          // RevenueCat schreibt nicht immer zwingend ein Enddatum in die Supabase.
-          // Daher erlauben wir diese Quellen jetzt ausdrücklich!
           const validSources = ['lifetime', 'google_play', 'apple_app_store', 'stripe'];
           
           if (validSources.includes(meta.subscription_source)) {
@@ -133,7 +129,6 @@ async function initializeApp() {
       window.currentUserSubscriptionSource = meta.subscription_source || null;
 
       // --- 🛠 DB REPARATUR DURCHFÜHREN ---
-      // Wir korrigieren nur, wenn wir WIRKLICH sicher sind, dass das Abo abgelaufen ist
       if (performDbCorrection && !isPro) {
           console.log("Führe DB-Korrektur durch (Setze Status auf FREE)...");
           supabaseClient.auth.updateUser({
@@ -142,9 +137,7 @@ async function initializeApp() {
       }
       // --- ENDE STATUS-PRÜFUNG ---
 
-      // --- ✅ PROFIL & UI UPDATES (Nach der Status-Prüfung!) ---
-      
-      // 1. Profil-Tab aktualisieren (JETZT weiß die App, ob du PRO bist!)
+      // --- ✅ PROFIL & UI UPDATES ---
       loadUserProfile(user);
 
       // 2. Schloss am Scanner-Button steuern
@@ -165,7 +158,6 @@ async function initializeApp() {
   await migrateAndLoadAirports();
 
   if (!map) {
-    // Neu: gestureHandling: true hinzugefügt
     map = L.map("flight-map-container", {
       gestureHandling: true
     }).setView([20, 0], 2);
@@ -177,36 +169,24 @@ async function initializeApp() {
   }
 
   // --- Event-Listener: ---
+  const autofillBtn = document.getElementById("autofill-btn");
+  if (autofillBtn) autofillBtn.addEventListener("click", autofillFlightData);
 
-  // Listener für Flight-Number:
-  document
-    .getElementById("autofill-btn")
-    .addEventListener("click", autofillFlightData);
+  const menu = document.getElementById("burger-menu");
+  const menuBtn = document.getElementById("burger-menu-btn");
+  if (menu && menuBtn) {
+      document.addEventListener("click", function (event) {
+        if (
+          !menu.classList.contains("hidden") &&
+          !menu.contains(event.target) &&
+          !menuBtn.contains(event.target)
+        ) {
+          if (typeof toggleBurgerMenu === 'function') toggleBurgerMenu();
+        }
+      });
+  }
 
-  // Listener für das neue Burger-Menü
-  ////document
-    ////.getElementById("burger-menu-btn")
-    ////.addEventListener("click", toggleBurgerMenu);
-  //// document.getElementById("menu-logout-btn").addEventListener("click", logout);
-  
-
-  // Listener, um das Menü zu schließen, wenn man daneben klickt
-  document.addEventListener("click", function (event) {
-    const menu = document.getElementById("burger-menu");
-    const menuBtn = document.getElementById("burger-menu-btn");
-    if (
-      !menu.classList.contains("hidden") &&
-      !menu.contains(event.target) &&
-      !menuBtn.contains(event.target)
-    ) {
-      toggleBurgerMenu();
-    }
-  });
-
-  // Listener für Autopilot (Sperre)
-  const autopilotSummary = document
-    .querySelector('[data-i18n="autoPilot"]')
-    ?.closest("summary");
+  const autopilotSummary = document.querySelector('[data-i18n="autoPilot"]')?.closest("summary");
   if (autopilotSummary) {
     autopilotSummary.addEventListener("click", (e) => {
       if (currentUserSubscription === "free") {
@@ -216,154 +196,156 @@ async function initializeApp() {
     });
   }
 
-  // ✅ NEU: Listener für Foto-Upload (Sperre / Gatekeeper)
-  // Wir hängen den Listener an das LABEL, da man darauf klickt, um Dateien zu wählen
   const photoLabelInput = document.querySelector('label[for="flightPhoto"]');
   if (photoLabelInput) {
     photoLabelInput.addEventListener("click", (e) => {
-      // Wir prüfen den Status "live" beim Klick
       if (currentUserSubscription === "free") {
-        e.preventDefault(); // 🛑 Verhindert das Öffnen des Datei-Managers
+        e.preventDefault(); 
         e.stopPropagation();
-        openPremiumModal("photos"); // Öffnet das Upsell-Modal
+        openPremiumModal("photos"); 
       }
-      // Wenn Pro: Mach nichts, Browser öffnet Standard-Upload
     });
   }
 
-  document
-    .getElementById("play-chronicle-btn")
-    .addEventListener("click", animateTravelChronicle);
-  document
-    .getElementById("flightClass")
-    .addEventListener("change", updateFlightDetails);
-  document
-    .getElementById("chart-view-year")
-    .addEventListener("click", () => setChartTimeframe("year"));
-  document
-    .getElementById("chart-view-month")
-    .addEventListener("click", () => setChartTimeframe("month"));
-  document
-    .getElementById("password-change-form")
-    .addEventListener("submit", changePassword);
+  // --- CHRONIK STEUERUNG ---
+  window.updateChronicleUI = function(state) {
+      const playBtn = document.getElementById('play-chronicle-btn');
+      const pauseBtn = document.getElementById('pause-chronicle-btn');
+      const resumeBtn = document.getElementById('resume-chronicle-btn');
+      const stopBtn = document.getElementById('stop-chronicle-btn');
 
-  // Listener für Foto-Vorschau (wenn Dateien gewählt wurden)
-  document.getElementById("flightPhoto").addEventListener("change", (event) => {
-    const files = event.target.files;
-    const previewText = document.getElementById("photo-preview-text");
-    const previewContainer = document.getElementById("photo-preview-container");
+      if(!playBtn) return;
 
-    if (files && files.length > 0) {
-      previewText.textContent = getTranslation("form.filesSelected").replace(
-        "{count}",
-        files.length
-      );
-      previewContainer.classList.remove("hidden");
-    } else {
-      previewText.textContent = getTranslation("form.noFileSelected");
-      previewContainer.classList.add("hidden");
-    }
-  });
+      [playBtn, pauseBtn, resumeBtn, stopBtn].forEach(btn => btn.classList.add('hidden'));
 
-  document.getElementById("departure").addEventListener("input", () => {
-    updateAutocompleteList("departure", "departure-list");
-    updateFlightDetails();
-  });
-  document.getElementById("arrival").addEventListener("input", () => {
-    updateAutocompleteList("arrival", "arrival-list");
-    updateFlightDetails();
-  });
-  document
-    .getElementById("logbook-view-aircraft")
-    .addEventListener("click", () => renderLogbookView("aircraftType"));
-  document
-    .getElementById("logbook-view-airline")
-    .addEventListener("click", () => renderLogbookView("airline"));
-  document
-    .getElementById("logbook-view-airport")
-    .addEventListener("click", () => renderLogbookView("airport"));
-  document
-    .getElementById("logbook-view-registration")
-    .addEventListener("click", () => renderLogbookView("registration"));
+      if (state === 'playing') {
+          pauseBtn.classList.remove('hidden');
+          stopBtn.classList.remove('hidden');
+      } else if (state === 'paused') {
+          resumeBtn.classList.remove('hidden');
+          stopBtn.classList.remove('hidden');
+      } else {
+          // stopped oder idle
+          playBtn.classList.remove('hidden');
+      }
+  };
 
-  document
-    .getElementById("import-file-input")
-    .addEventListener("change", handleImport);
+  const flightClassEl = document.getElementById("flightClass");
+  if (flightClassEl) flightClassEl.addEventListener("change", updateFlightDetails);
+  
+  const chartViewYear = document.getElementById("chart-view-year");
+  if (chartViewYear) chartViewYear.addEventListener("click", () => setChartTimeframe("year"));
+  
+  const chartViewMonth = document.getElementById("chart-view-month");
+  if (chartViewMonth) chartViewMonth.addEventListener("click", () => setChartTimeframe("month"));
+  
+  const pwdChangeForm = document.getElementById("password-change-form");
+  if (pwdChangeForm) pwdChangeForm.addEventListener("submit", changePassword);
 
-  document
-    .getElementById("show-globe-btn")
-    .addEventListener("click", openGlobeModal);
+  const flightPhotoEl = document.getElementById("flightPhoto");
+  if (flightPhotoEl) {
+      flightPhotoEl.addEventListener("change", (event) => {
+        const files = event.target.files;
+        const previewText = document.getElementById("photo-preview-text");
+        const previewContainer = document.getElementById("photo-preview-container");
 
-  // Listener für den Druck-Button
-  document
-    .getElementById("print-book-btn")
-    .addEventListener("click", triggerPrintView_FlightsTab);
+        if (files && files.length > 0) {
+          if(previewText) previewText.textContent = getTranslation("form.filesSelected").replace("{count}", files.length);
+          if(previewContainer) previewContainer.classList.remove("hidden");
+        } else {
+          if(previewText) previewText.textContent = getTranslation("form.noFileSelected");
+          if(previewContainer) previewContainer.classList.add("hidden");
+        }
+      });
+  }
+
+  const depEl = document.getElementById("departure");
+  if (depEl) {
+      depEl.addEventListener("input", () => {
+        updateAutocompleteList("departure", "departure-list");
+        updateFlightDetails();
+      });
+  }
+  const arrEl = document.getElementById("arrival");
+  if (arrEl) {
+      arrEl.addEventListener("input", () => {
+        updateAutocompleteList("arrival", "arrival-list");
+        updateFlightDetails();
+      });
+  }
+  
+  const lbAircraft = document.getElementById("logbook-view-aircraft");
+  if (lbAircraft) lbAircraft.addEventListener("click", () => renderLogbookView("aircraftType"));
+  
+  const lbAirline = document.getElementById("logbook-view-airline");
+  if (lbAirline) lbAirline.addEventListener("click", () => renderLogbookView("airline"));
+  
+  const lbAirport = document.getElementById("logbook-view-airport");
+  if (lbAirport) lbAirport.addEventListener("click", () => renderLogbookView("airport"));
+  
+  const lbReg = document.getElementById("logbook-view-registration");
+  if (lbReg) lbReg.addEventListener("click", () => renderLogbookView("registration"));
+
+  const importFileInp = document.getElementById("import-file-input");
+  if (importFileInp) importFileInp.addEventListener("change", handleImport);
+
+  const showGlobeBtn = document.getElementById("show-globe-btn");
+  if (showGlobeBtn) showGlobeBtn.addEventListener("click", openGlobeModal);
+
+  const printBookBtn = document.getElementById("print-book-btn");
+  if (printBookBtn) printBookBtn.addEventListener("click", triggerPrintView_FlightsTab);
 
   // --- ENDE Event-Listener ---
 
   // Initiales Rendern der App
-  showTab("fluege");
+  showTab("radar"); // 🚀 BUGHUNT FIX: Es heißt jetzt "radar", nicht mehr "fluege"!
   renderFlights();
   displayAppVersion();
   showFirstStepsTutorial();
   updateLockVisuals();
-  // 🚀 NEU: Live-Widget für heutige Flüge prüfen
+  
   initLiveWidget();
-
-  // 🚀 NEU: Upcoming-Widget für zukünftige Flüge prüfen
   initUpcomingWidget();
 
-  // --- ✅ UPDATE: LIVE-CHECK (Der Wächter) ---
-  // Prüft alle 60 Sekunden
+  // --- ✅ UPDATE: LIVE-CHECK ---
   setInterval(async () => {
-    
-    // 1. Native Prüfung (RevenueCat)
-    // Das sorgt dafür, dass auch bei offener App ein abgelaufenes Abo erkannt wird
     if (isNativeApp() && typeof refreshSubscriptionStatus === 'function') {
-         // Wir machen das vllt. nicht jede Minute, um Akku zu sparen? 
-         // Doch, invalidateCache ist billig, Google Play Anfragen kosten nix.
          await refreshSubscriptionStatus();
     }
-
-    // 2. Zeit-Prüfung (Bestehender Code für Supabase-Datum)
     if (currentUserSubscription === "pro" && currentSubscriptionEnd) {
       const now = Math.floor(Date.now() / 1000);
-
       if (now > currentSubscriptionEnd) {
         console.warn("Live-Check: Subscription expired (Time Check).");
-        
-        // ... (Dein existierender Downgrade Code hier) ...
         currentUserSubscription = "free";
         updateLockVisuals();
-        // ...
-        
-        // WICHTIG: Auch hier die Selbstheilung der DB anstoßen!
         supabaseClient.auth.updateUser({
             data: { subscription_status: 'free', subscription_end: null }
         });
       }
     }
-  }, 60000); // Alle 60 Sekunden
+  }, 60000); 
 
-  // Trips initial laden
+  // Trips laden
   loadTripsIntoDropdown();
-
-  // Trips für den Filter laden (für den Tab "Flüge")
   populateTripFilterDropdown();
 
   // --- OFFLINE SYNC LISTENER ---
-  // 1. Beim Start prüfen
   syncOfflineFlights();
-  
-  // 2. Nach fehlenden Registrierungen für vergangene Flüge suchen (Butler)
   autoSyncMissingFlightData();
 
-  // 3. Wenn Verbindung wiederkommt
   window.addEventListener('online', () => {
       console.log("🌐 Verbindung wiederhergestellt. Starte Sync...");
       syncOfflineFlights();
   });
 
+  // 🚀 NEU: Boot-Screen sanft ausblenden, wenn die App ready ist!
+  setTimeout(() => {
+      const bootScreen = document.getElementById('app-boot-screen');
+      if (bootScreen) {
+          bootScreen.classList.add('opacity-0');
+          setTimeout(() => bootScreen.classList.add('hidden'), 500);
+      }
+  }, 600);
 }
 
 // ==========================================
@@ -602,23 +584,21 @@ async function startDemoMode() {
     document.getElementById("auth-container").classList.add("hidden");
     document.getElementById("app-container").classList.remove("hidden");
     
-    // User-Display anpassen
+    const bootScreen = document.getElementById('app-boot-screen');
+    if (bootScreen) {
+        bootScreen.classList.remove('hidden', 'opacity-0');
+    }
+    
     const userDisplay = document.getElementById("user-display");
     if (userDisplay) {
         userDisplay.textContent = getTranslation("demo.userBadge") || "Demo Pilot 🚀";
     }
 
-    // 2. Demo-Daten laden (Interne Funktion statt externe Datei)
+    // 2. Demo-Daten laden
     let demoData = getDemoData();
-    
-    // Daten vorbereiten (Nummerierung #1, #2, etc.)
     demoData = resequenceAndAssignNumbers(demoData);
-    
-    // WICHTIG: Global speichern für Globus & Map
     window.flights = demoData; 
 
-    // 🔥 NEU: Cache für Länder-Highlights manuell füllen
-    // Damit der Globus weiß, welche Länder er einfärben muss
     window.airportData = window.airportData || {};
     Object.assign(window.airportData, {
         "FRA": { name: "Frankfurt am Main", lat: 50.0333, lon: 8.5706, country_code: "DE" },
@@ -627,16 +607,10 @@ async function startDemoMode() {
         "SIN": { name: "Singapore Changi", lat: 1.3644, lon: 103.991, country_code: "SG" },
         "DXB": { name: "Dubai Intl", lat: 25.2532, lon: 55.3657, country_code: "AE" }
     });
-    // ---------------------------------------------------
 
-    // 3. Tab wechseln (Direkt zur Liste)
-    showTab('fluege'); 
-
-    // --- KARTE INITIALISIEREN (Wichtig, sonst Crash!) ---
-    // --- KARTE INITIALISIEREN (Wichtig, sonst Crash!) ---
+    // 🚀 BUGHUNT FIX 1: ZUERST DIE KARTE INITIALISIEREN!
     if (!map) {
         try {
-            // Neu: gestureHandling: true hinzugefügt
             map = L.map("flight-map-container", {
                 gestureHandling: true
             }).setView([20, 0], 2);
@@ -644,30 +618,55 @@ async function startDemoMode() {
               attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
             }).addTo(map);
             routeLayer = L.layerGroup().addTo(map);
-            console.log("Karte für Demo-Modus initialisiert.");
+            
+            // Wichtig: MarkerCluster initialisieren, sonst crasht 'clearLayers'
+            if (typeof L.markerClusterGroup === 'function') {
+                window.markerClusterGroup = L.markerClusterGroup({
+                    maxClusterRadius: 40,
+                    spiderfyOnMaxZoom: true,
+                    showCoverageOnHover: false,
+                    zoomToBoundsOnClick: true
+                });
+                map.addLayer(window.markerClusterGroup);
+            }
         } catch (e) {
             console.error("Fehler beim Initialisieren der Karte:", e);
         }
     }
-    
+
+    // 🚀 BUGHUNT FIX 2: ERST JETZT DEN TAB WECHSELN!
+    showTab('timeline'); 
+
     // 4. Listen rendern
     if (typeof renderFlights === 'function') {
         await renderFlights(demoData); 
         
-        // Karte auf alle Routen zoomen
         setTimeout(() => {
              if(typeof drawAllRoutesOnMap === 'function') {
                  drawAllRoutesOnMap(demoData);
-                 // Button Text anpassen
+                 window.isAllRoutesViewActive = true;
+                 
+                 // Button Text direkt auf "Einzelansicht" stellen
                  const btn = document.getElementById("toggle-map-view-btn");
-                 if(btn) btn.textContent = getTranslation("flights.showSingleRoute");
-                 isAllRoutesViewActive = true;
+                 if(btn) {
+                     btn.innerHTML = `
+                         <span class="material-symbols-outlined text-3xl text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform">map</span>
+                         <span class="text-sm font-bold text-indigo-900 dark:text-indigo-300">Einzelansicht</span>
+                     `;
+                 }
              }
         }, 500);
     }
     
-    // UI sperren (kein Löschen/Speichern)
+    // UI sperren
     lockUiForDemo();
+
+    setTimeout(() => {
+        if (bootScreen) {
+            bootScreen.classList.add('opacity-0');
+            setTimeout(() => bootScreen.classList.add('hidden'), 500);
+        }
+    }, 600);
 
     showMessage(
         getTranslation("demo.welcomeTitle") || "Demo-Modus", 
@@ -681,62 +680,42 @@ function lockUiForDemo() {
     const fab = document.getElementById('add-flight-fab');
     if (fab) fab.classList.add('hidden');
 
-    // 2. Gefährliche Buttons in der Liste verstecken
-    // EINFÜGEN: 'return-flight-btn' in dieses Array aufnehmen!
+    // 2. Gefährliche Buttons in der Liste & Profil verstecken
+    // (Die 2D Karte erlauben wir im Demo Modus, deshalb ist 'toggle-map-view-btn' raus!)
     const dangerousButtons = [
         'play-chronicle-btn', 
-        'toggle-map-view-btn', 
         'print-book-btn', 
-        'return-flight-btn' // <--- NEU
+        'return-flight-btn',
+        'btn-save-profile' // <-- Profil-Sperre
     ];
     
     dangerousButtons.forEach(id => {
         const btn = document.getElementById(id);
-        // Wir nutzen 'style.display = none', das ist stärker als classList bei manchen UI-Logiken
         if (btn) {
             btn.classList.add('hidden');
-            btn.style.display = 'none'; // Zur Sicherheit, falls JS es wieder einblenden will
+            btn.style.display = 'none'; 
         }
     });
     
-    // 3. Refresh-Button verstecken
-    const refreshBtn = document.querySelector('button[data-i18n="flights.refresh"]');
+    // 3. Refresh-Button im Leaderboard verstecken
+    const refreshBtn = document.querySelector('button[onclick="loadLeaderboard()"]');
     if (refreshBtn) refreshBtn.classList.add('hidden');
 
-    // 4. Burger-Menü: ALLES verstecken außer Exit
-    const burgerMenu = document.getElementById('burger-menu');
-    if (burgerMenu) {
-        // A) Sektionen verstecken
-        const sections = burgerMenu.querySelectorAll('div.border-b, div.border-t, div.md\\:hidden');
-        sections.forEach(el => el.classList.add('hidden'));
-
-        // B) Alle Links/Buttons verstecken (Ausnahme: Exit & Theme-Toggle)
-        const allInteractives = burgerMenu.querySelectorAll('a, button');
-        allInteractives.forEach(el => {
-            if (el.id !== 'menu-exit-demo-btn' && el.id !== 'menu-theme-toggle') {
-                el.classList.add('hidden');
-            }
-        });
-
-        // Sicherstellen, dass der Theme-Toggle auch wirklich sichtbar ist
-        const themeToggleBtn = document.getElementById('menu-theme-toggle');
-        if (themeToggleBtn) {
-            themeToggleBtn.classList.remove('hidden');
-        }
-
-        // C) Exit Button anzeigen
-        const exitBtn = document.getElementById('menu-exit-demo-btn');
-        if (exitBtn) {
-            exitBtn.classList.remove('hidden');
-            // Container sichtbar machen
-            if (exitBtn.parentElement) exitBtn.parentElement.classList.remove('hidden');
-            exitBtn.textContent = getTranslation("demo.exit") || "🚪 Demo Beenden";
-        }
-    }
-
-    // 5. Import Label verstecken
+    // 4. Import / Export / Account-Einstellungen verstecken
     const importLabel = document.querySelector('label[for="import-file-input"]');
     if (importLabel) importLabel.classList.add('hidden');
+
+    const pwdBtn = document.querySelector('button[onclick="showPasswordChangeModal()"]');
+    const logoutBtn = document.querySelector('button[onclick="logout()"]');
+    if (pwdBtn) pwdBtn.classList.add('hidden');
+    if (logoutBtn) logoutBtn.classList.add('hidden');
+
+    // 5. "Demo Beenden" Button im Profil GANZ WICHTIG einblenden!
+    const exitBtn = document.getElementById('menu-exit-demo-btn');
+    if (exitBtn) {
+        exitBtn.classList.remove('hidden');
+        exitBtn.textContent = getTranslation("demo.exit") || "🚪 Demo Beenden";
+    }
 }
 
 // Globale Funktionen für HTML-Aufrufe
@@ -990,28 +969,30 @@ window.logFlight = async function () {
     resetForm();
 	
 	// ID in Supabase Metadaten speichern
-	// Wir machen das "im Hintergrund" (kein await nötig, damit die UI nicht blockiert)
 	supabaseClient.auth.updateUser({
 		data: { last_flight_id: newFlightId }
 	}).then(() => {
-		globalLastFlightId = newFlightId; // Auch lokal sofort updaten
+		globalLastFlightId = newFlightId; 
 		console.log("Last Flight ID gespeichert:", newFlightId);
 	});
+
+    // 🚀 NEU: Smartes Routing nach dem Speichern!
+    const flightDateStr = newFlightForSupabase.date;
+    const todayStr = new Date().toISOString().slice(0, 10);
+    
+    if (flightDateStr > todayStr) {
+        showTab("radar"); // In die Zukunft springen
+    } else {
+        showTab("timeline"); // In die Vergangenheit springen
+    }
 	
     renderFlights(null, newFlightId);
-    initLiveWidget(); // 🚀 NEU: Widget sofort updaten!
-    initUpcomingWidget(); // 🚀 NEU: Upcoming Widget auch updaten!
+    initLiveWidget(); 
+    initUpcomingWidget(); 
 
-  // --- NEU: Review Trigger ---
-    // Wir holen kurz die aktuelle Anzahl der Flüge um zu prüfen
-    // (Da wir gerade einen hinzugefügt haben, ist die lokale Liste evtl. noch alt, 
-    // aber renderFlights lädt neu oder wir zählen manuell).
-    // Am sichersten: Wir warten kurz auf das Update oder nutzen getFlights.
     getFlights().then(flights => {
         checkAndAskForReview(flights.length);
     });
-    // --------------------------
-
   }
   logButton.textContent = getTranslation("form.buttonLogFlight") || "Log Flight";
   logButton.disabled = true;
@@ -1248,24 +1229,32 @@ async function updateFlight() {
   } else {
     showMessage(getTranslation("toast.successTitle"), getTranslation("toast.flightUpdated"), "success");
 	
-	// ID in Supabase Metadaten speichern
 	const currentId = currentlyEditingFlightData.id;
 	supabaseClient.auth.updateUser({
 		data: { last_flight_id: currentId }
 	}).then(() => {
-		globalLastFlightId = currentId; // Auch lokal sofort updaten
+		globalLastFlightId = currentId;
 		console.log("Last Flight ID aktualisiert:", currentId);
 	});
-	
   }
+
   const flightIdToFocus = currentlyEditingFlightData.id;
+  
+  // 🚀 NEU: Das Datum des bearbeiteten Flugs prüfen!
+  const targetDate = updatedFlightForSupabase.date;
+  const todayStr = new Date().toISOString().slice(0, 10);
+  
   resetForm();
   
-  // Nach dem Bearbeiten automatisch zurück zur Liste springen
-    showTab("fluege");
+  // 🚀 NEU: Smartes Routing!
+  if (targetDate > todayStr) {
+      showTab("radar");
+  } else {
+      showTab("timeline");
+  }
   
   renderFlights(null, flightIdToFocus);
-  initLiveWidget(); // 🚀 NEU: Widget sofort updaten!
+  initLiveWidget(); 
   initUpcomingWidget();
 }
 
@@ -4387,7 +4376,8 @@ window.loadUserProfile = async function(user) {
     if (!user) return;
     
     // 1. Account Details (Email & Version) ins Profil-Tab eintragen
-    document.getElementById('profile-email-display').textContent = user.email;
+    const emailDisplay = document.getElementById('profile-email-display');
+    if (emailDisplay) emailDisplay.textContent = user.email;
 
     // 2. Pro-Status Buttons im Profil-Tab updaten
     const badge = document.getElementById('profile-status-badge');
@@ -4395,13 +4385,17 @@ window.loadUserProfile = async function(user) {
     const manBtn = document.getElementById('profile-manage-btn');
     
     if (currentUserSubscription === "pro") {
-        badge.textContent = "PRO";
-        badge.className = "inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200 border border-indigo-200 dark:border-indigo-800";
+        if (badge) {
+            badge.textContent = "PRO";
+            badge.className = "inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200 border border-indigo-200 dark:border-indigo-800";
+        }
         if(upgBtn) upgBtn.classList.add('hidden');
         if(manBtn) manBtn.classList.remove('hidden');
     } else {
-        badge.textContent = "FREE";
-        badge.className = "inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400 border border-gray-200 dark:border-gray-600";
+        if (badge) {
+            badge.textContent = "FREE";
+            badge.className = "inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400 border border-gray-200 dark:border-gray-600";
+        }
         if(upgBtn) upgBtn.classList.remove('hidden');
         if(manBtn) manBtn.classList.add('hidden');
     }
@@ -4412,17 +4406,19 @@ window.loadUserProfile = async function(user) {
             .from('profiles')
             .select('*')
             .eq('id', user.id)
-            .maybeSingle(); // maybeSingle verhindert Fehler, falls noch kein Profil existiert
+            .maybeSingle(); 
 
         if (error && error.code !== 'PGRST116') throw error;
 
         if (data) {
-            document.getElementById('profile-username').value = data.username || "";
-            document.getElementById('profile-is-public').checked = data.is_public || false;
-            // 🚀 NEU: Avatar laden (falls vorhanden)
-            if (data.avatar_url) {
-                document.getElementById('profile-avatar').value = data.avatar_url;
-            }
+            const usernameInput = document.getElementById('profile-username');
+            if (usernameInput) usernameInput.value = data.username || "";
+            
+            const isPublicCheck = document.getElementById('profile-is-public');
+            if (isPublicCheck) isPublicCheck.checked = data.is_public || false;
+            
+            const avatarInput = document.getElementById('profile-avatar');
+            if (avatarInput && data.avatar_url) avatarInput.value = data.avatar_url;
         }
     } catch (err) {
         console.error("Fehler beim Laden des Profils:", err);
@@ -5515,4 +5511,35 @@ window.openMapAndCloseModal = function() {
             }
         }, 350); // Wartet 350ms, bis das Aufklappen optisch beendet ist
     }
+};
+
+// ==========================================
+// PLUS BUTTON MODAL LOGIC
+// ==========================================
+window.openAddMenu = function() {
+    const modal = document.getElementById('add-action-modal');
+    const content = document.getElementById('add-modal-content');
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        if (window.innerWidth < 640) {
+            content.classList.remove('translate-y-full');
+        } else {
+            content.classList.remove('scale-95');
+        }
+    }, 10);
+};
+
+window.closeAddMenu = function() {
+    const modal = document.getElementById('add-action-modal');
+    const content = document.getElementById('add-modal-content');
+    modal.classList.add('opacity-0');
+    if (window.innerWidth < 640) {
+        content.classList.add('translate-y-full');
+    } else {
+        content.classList.add('scale-95');
+    }
+    setTimeout(() => {
+        modal.classList.add('hidden');
+    }, 300);
 };

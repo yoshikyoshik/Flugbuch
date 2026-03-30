@@ -504,69 +504,70 @@ function showFlightDisambiguationModal(flights) {
 }
 
 // TABS
-function showTab(tabName) {
-  // 🚀 Profil im Demo-Modus blockieren!
-  if (tabName === 'profil' && typeof isDemoMode !== 'undefined' && isDemoMode) {
-      showMessage(getTranslation("toast.infoTitle") || "Hinweis", getTranslation("profile.demoTabDisabled") || "Das Profil ist im Demo-Modus nicht verfügbar.", "info");
-      return; 
-  }
-  
-  // Alle Inhalte verstecken
-  document.getElementById("tab-content-stats")?.classList.add("hidden");
-  document.getElementById("tab-content-charts")?.classList.add("hidden");
-  document.getElementById("tab-content-logbook")?.classList.add("hidden");
-  document.getElementById("tab-content-fluege")?.classList.add("hidden");
-  document.getElementById("tab-content-neue-fluege")?.classList.add("hidden");
-  document.getElementById("tab-content-achievements")?.classList.add("hidden");
-  document.getElementById("tab-content-hilfe")?.classList.add("hidden");
-  document.getElementById("tab-content-trips")?.classList.add("hidden");
-  document.getElementById("tab-content-profil")?.classList.add("hidden");
+// ==========================================
+// 🚀 NEUE 5-TAB NAVIGATION LOGIC
+// ==========================================
+window.showTab = function (tabId) {
+    // ❌ Wir haben die alte Profil-Sperre hier gelöscht, 
+    // damit du im Demo-Modus an den "Demo Beenden" und Dark-Mode Button kommst!
 
-  // === 1. Zuerst ALLE Buttons auf "inaktiv" setzen ===
-  document.querySelectorAll(".tab-btn").forEach((btn) => {
-    // 🧹 Wir putzen ALLE alten, harten Tailwind-Farbklassen rigoros weg
-    btn.classList.remove(
-      "bg-white", "shadow-md", "text-indigo-900", "font-extrabold",
-      "dark:bg-indigo-500", "dark:text-white",
-      "font-medium", "text-indigo-800/70", "hover:text-indigo-900", "hover:bg-indigo-300/50",
-      "dark:text-indigo-300/70", "dark:hover:text-indigo-100", "dark:hover:bg-indigo-800/50",
-      "active" // Nimmt unseren neuen Leucht-Effekt weg
-    );
-  });
+    // 1. Alle Tab-Inhalte verstecken
+    const allTabs = ['radar', 'timeline', 'analytics', 'profil'];
+    allTabs.forEach(id => {
+        const contentBlock = document.getElementById(`tab-content-${id}`);
+        if (contentBlock) {
+            contentBlock.classList.add('hidden');
+        }
+    });
 
-  // === 2. Den AKTIVEN Button hervorheben ===
-  const activeBtn = document.getElementById(`tab-btn-${tabName}`);
-  const activeContent = document.getElementById(`tab-content-${tabName}`);
-  
-  if (activeBtn && activeContent) {
-    activeContent.classList.remove("hidden");
-    
-    // 🚀 HIER KOMMT DIE MAGIE: Wir setzen einfach nur "active" und das CSS macht den Rest!
-    activeBtn.classList.add("active");
-  }
-
-  // Tab-spezifische Funktionen laden
-  if (tabName === "logbook") renderLogbookView("aircraftType");
-  if (tabName === "achievements") updateAchievements();
-  if (tabName === "hilfe") renderHelpContent();
-  if (tabName === "trips") renderTripManager();
-  
-  if (tabName === "fluege") {
-    if (typeof map !== 'undefined' && map) {
-        setTimeout(() => { map.invalidateSize(); }, 50);
+    // 2. Gewünschten Tab-Inhalt anzeigen
+    const activeContent = document.getElementById(`tab-content-${tabId}`);
+    if (activeContent) {
+        activeContent.classList.remove('hidden');
     }
-  }
 
-  // Den aktiven Button in der Nav-Leiste in den sichtbaren Bereich scrollen
-  const targetBtn = document.getElementById(`tab-btn-${tabName}`);
-  if (targetBtn) {
-      targetBtn.scrollIntoView({ 
-          behavior: 'smooth', 
-          inline: 'center',  
-          block: 'nearest' 
-      });
-  }
-}
+    // 3. UI-Status der Navigations-Buttons in der unteren Leiste aktualisieren
+    allTabs.forEach(id => {
+        const btn = document.getElementById(`tab-btn-${id}`);
+        if (btn) {
+            btn.classList.remove('text-primary', 'dark:text-indigo-400');
+            btn.classList.add('text-on-surface/40', 'dark:text-slate-500', 'hover:text-on-surface/80', 'dark:hover:text-slate-300');
+        }
+    });
+
+    // Aktiven Button hervorheben
+    const activeBtn = document.getElementById(`tab-btn-${tabId}`);
+    if (activeBtn) {
+        activeBtn.classList.remove('text-on-surface/40', 'dark:text-slate-500', 'hover:text-on-surface/80', 'dark:hover:text-slate-300');
+        activeBtn.classList.add('text-primary', 'dark:text-indigo-400');
+    }
+
+    // 4. Tab-spezifische Funktionen laden
+    if (tabId === "timeline") {
+        if (typeof map !== 'undefined' && map) {
+            setTimeout(() => { map.invalidateSize(); }, 50);
+        }
+        if (typeof renderFlights === 'function') {
+            // 🚀 BUGHUNT FIX: Verhindert, dass die Demo-Flüge durch eine leere DB-Abfrage gelöscht werden!
+            if (typeof isDemoMode !== 'undefined' && isDemoMode && typeof flights !== 'undefined') {
+                renderFlights(flights);
+            } else {
+                renderFlights();
+            }
+        }
+    } 
+    else if (tabId === "radar") {
+        if (typeof initUpcomingWidget === 'function') initUpcomingWidget();
+        if (typeof initLiveWidget === 'function') initLiveWidget();
+    } 
+    else if (tabId === "profil") {
+        // Erfolge beim Öffnen des Profils laden
+        if (typeof updateAchievements === 'function') updateAchievements();
+    }
+    
+    // Ganz nach oben scrollen beim Tab-Wechsel
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+};
 
 // RENDERING
 window.renderFlights = async function (
@@ -574,28 +575,39 @@ window.renderFlights = async function (
   flightIdToFocus,
   page = 1
 ) {
-  stopAnimation();
-  currentPage = page;
+  if (typeof stopAnimation === 'function') stopAnimation();
+  window.currentPage = page;
 
-  isAllRoutesViewActive = false;
-  document.getElementById("toggle-map-view-btn").textContent = getTranslation(
-    "flights.showAllRoutes"
-  );
+  // 🚀 BUGHUNT FIX: Wir löschen isAllRoutesViewActive NICHT mehr blind!
+  // isAllRoutesViewActive = false; 
 
-  // let allFlights = flightsToRender || (await getFlights());
+  // Button-Status mit der Variablen synchronisieren (Aktions-orientiert)
+  const mapBtn = document.getElementById("toggle-map-view-btn");
+  if (mapBtn) {
+      if (window.isAllRoutesViewActive) {
+          mapBtn.innerHTML = `
+              <span class="material-symbols-outlined text-3xl text-primary dark:text-indigo-400 group-hover:scale-110 transition-transform">location_on</span>
+              <span class="text-sm font-bold text-on-surface dark:text-white">Einzelansicht</span>
+          `;
+          mapBtn.classList.add('bg-primary/10', 'dark:bg-indigo-900/40');
+      } else {
+          mapBtn.innerHTML = `
+              <span class="material-symbols-outlined text-3xl text-primary dark:text-indigo-400 group-hover:scale-110 transition-transform">map</span>
+              <span class="text-sm font-bold text-on-surface dark:text-white">Alle Routen</span>
+          `;
+          mapBtn.classList.remove('bg-primary/10', 'dark:bg-indigo-900/40');
+      }
+  }
+
   let allFlights;
   if (flightsToRender) {
-    // Fall 1: Ein neuer Filter wird angewendet (aus applyFilters)
     allFlights = flightsToRender;
   } else if (currentlyFilteredFlights) {
-    // Fall 2: Wir paginieren (next/prev) durch ein GEFILTERTES Ergebnis
     allFlights = currentlyFilteredFlights;
   } else {
-    // Fall 3: Kein Filter aktiv (z.B. beim ersten Laden oder nach Reset)
     allFlights = await getFlights();
   }
 
-  // NEU: Nummerierung nach dem Laden der Daten anwenden
   allFlights = resequenceAndAssignNumbers(allFlights);
 
   if (allFlights.length > 0) {
@@ -607,14 +619,11 @@ window.renderFlights = async function (
       const valB = b[sortKey];
       let comparison = 0;
 
-      // ✅ NEU: Sortierung nach Trip
       if (sortKey === "trip") {
-          // Falls kein Trip da ist, leerer String (sortiert nach unten/oben)
           const nameA = a.trips ? a.trips.name : "";
           const nameB = b.trips ? b.trips.name : "";
           comparison = nameA.localeCompare(nameB);
       }
-      // Bestehende Sortierungen:
       else if (typeof valA === "number") {
         comparison = valA - valB;
       } else if (sortKey === "date") {
@@ -625,7 +634,8 @@ window.renderFlights = async function (
       return comparison * direction;
     });
   }
-  updateCharts(allFlights); // Ruft die Charts mit der Standard-Jahresansicht auf
+  
+  updateCharts(allFlights); 
   updatePaginationUI(allFlights);
   updateStatisticsDisplay(allFlights);
 
@@ -633,117 +643,89 @@ window.renderFlights = async function (
   const endIndex = startIndex + ITEMS_PER_PAGE;
   const paginatedFlights = allFlights.slice(startIndex, endIndex);
 
-  let flightForMap = null;
-
-  // 1. Wurde ein spezifischer Flug (direkt nach Speichern/Update) übergeben?
-  if (flightIdToFocus) {
-    flightForMap = allFlights.find((f) => f.id === flightIdToFocus);
-  }
-
-  // 2. Wenn kein direkter Fokus da ist, schauen wir in die globale Variable (aus Supabase geladen)
-  if (!flightForMap && globalLastFlightId) {
-      // '==' Vergleich, da IDs manchmal String/Number gemischt sein können
-      flightForMap = allFlights.find((f) => f.id == globalLastFlightId);
-  }
-
-  // 3. Fallback: Wenn immer noch nichts gefunden wurde (z.B. allererster Start)
-  // Dann nehmen wir den chronologisch NEUESTEN Flug
-  if (!flightForMap && allFlights.length > 0) {
-    flightForMap = [...allFlights].sort((a, b) => {
-        const dateDiff = new Date(b.date) - new Date(a.date);
-        if (dateDiff !== 0) return dateDiff;
-        return b.id - a.id;
-    })[0];
-  }
-
-  if (flightForMap) {
-    window.drawRouteOnMap(
-      flightForMap.depLat,
-      flightForMap.depLon,
-      flightForMap.arrLat,
-      flightForMap.arrLon,
-      flightForMap.departure,
-      flightForMap.arrival,
-      flightForMap.depName,
-      flightForMap.arrName,
-      flightForMap
-    );
+  // 🚀 BUGHUNT FIX: Karte nur dann als Einzelansicht zeichnen, wenn der Modus inaktiv ist!
+  if (window.isAllRoutesViewActive) {
+      if (typeof drawAllRoutesOnMap === 'function') {
+          drawAllRoutesOnMap(allFlights);
+      }
   } else {
-    window.drawRouteOnMap();
+      let flightForMap = null;
+
+      if (flightIdToFocus) {
+        flightForMap = allFlights.find((f) => f.id === flightIdToFocus);
+      }
+
+      if (!flightForMap && globalLastFlightId) {
+          flightForMap = allFlights.find((f) => f.id == globalLastFlightId);
+      }
+
+      if (!flightForMap && allFlights.length > 0) {
+        flightForMap = [...allFlights].sort((a, b) => {
+            const dateDiff = new Date(b.date) - new Date(a.date);
+            if (dateDiff !== 0) return dateDiff;
+            return b.id - a.id;
+        })[0];
+      }
+
+      if (flightForMap) {
+        window.drawRouteOnMap(
+          flightForMap.depLat,
+          flightForMap.depLon,
+          flightForMap.arrLat,
+          flightForMap.arrLon,
+          flightForMap.departure,
+          flightForMap.arrival,
+          flightForMap.depName,
+          flightForMap.arrName,
+          flightForMap
+        );
+      } else {
+        window.drawRouteOnMap();
+      }
   }
 
   const flightList = document.getElementById("flight-log-list");
   flightList.innerHTML = "";
 
   if (paginatedFlights.length === 0 && currentPage === 1) {
-    flightList.innerHTML = `<p id="no-flights-message" class="log-placeholder text-gray-500 italic text-center py-4">${getTranslation(
-      "flights.noFlights"
-    )}</p>`;
+    flightList.innerHTML = `<p id="no-flights-message" class="log-placeholder text-gray-500 italic text-center py-4">${getTranslation("flights.noFlights")}</p>`;
   } else {
     paginatedFlights.forEach((flight) => {
-      // Sichere Datenabfrage (Fallback, falls airportData noch lädt)
       const depName = (airportData && airportData[flight.departure]) ? airportData[flight.departure].name : flight.departure;
       const arrName = (airportData && airportData[flight.arrival]) ? airportData[flight.arrival].name : flight.arrival;
-
-      // Farbe für den Meilenstein-Kreis bestimmen (wir filtern "bg-" und "text-white" raus für den kleinen Punkt)
       const rawMilestoneColor = getMilestoneColor(flight.flightLogNumber) || "";
       const dotColor = rawMilestoneColor.replace('bg-', 'bg-').replace('text-white', '').trim() || 'bg-indigo-500';
 
       const flightElement = document.createElement("div");
       flightElement.className = "w-full max-w-3xl mx-auto relative group cursor-pointer mb-6";
-      
-      // Das Klick-Event wandert direkt auf den Wrapper
       flightElement.setAttribute("onclick", `viewFlightDetails('${flight.id || flight.flight_id || flight.flightLogNumber}')`);
 
-      // --- 1. NEUER TEIL: Buttons vorab definieren ---
-      const isDemo = (typeof isDemoMode !== 'undefined' && isDemoMode);
-      let actionButtonsHtml = "";
-
-      
-
-      // --- 2. HINTERGRUND & BILDER ---
       const planeBg = flight.planespotters_url ? `style="background-image: url('${flight.planespotters_url}');"` : '';
       const planeOpacity = flight.planespotters_url ? 'opacity-[0.04] group-hover:opacity-15' : 'opacity-0';
-      
-      const logoHtml = flight.airline_logo 
-          ? `<img src="${flight.airline_logo}" class="h-5 md:h-6 max-w-[80px] object-contain opacity-90 drop-shadow-sm" alt="Logo">` 
-          : '';
-
+      const logoHtml = flight.airline_logo ? `<img src="${flight.airline_logo}" class="h-5 md:h-6 max-w-[80px] object-contain opacity-90 drop-shadow-sm" alt="Logo">` : '';
       const formattedDate = flight.date ? new Date(flight.date).toLocaleDateString() : '--';
       const formattedTime = (flight.time || "").replace("Std.", getTranslation("units.hoursShort") || "Std.").replace("Min.", getTranslation("units.minutesShort") || "Min.");
-
-      // Trip-Badge
       const tripBadge = flight.trips && flight.trips.name 
-          ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-tertiary-fixed text-on-tertiary-container dark:bg-purple-900/30 dark:text-purple-300 uppercase tracking-wide">
-               🏝️ ${flight.trips.name}
-             </span>` 
+          ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-tertiary-fixed text-on-tertiary-container dark:bg-purple-900/30 dark:text-purple-300 uppercase tracking-wide">🏝️ ${flight.trips.name}</span>` 
           : '';
 
-      // --- 3. HTML ZUSAMMENBAUEN ---
       flightElement.innerHTML = `
         <div class="bg-surface-container-lowest dark:bg-slate-800 rounded-[2rem] p-5 md:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none relative overflow-hidden border border-outline-variant/20 dark:border-slate-700 transition-all duration-300 group-hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] group-hover:-translate-y-1">
-            
             <div class="absolute right-0 top-0 w-3/4 h-full ${planeOpacity} transition-opacity duration-500 bg-cover bg-center pointer-events-none" ${planeBg}></div>
             <div class="absolute inset-0 bg-gradient-to-r from-surface-container-lowest via-surface-container-lowest/90 to-transparent dark:from-slate-800 dark:via-slate-800/90 z-0 pointer-events-none"></div>
 
             <div class="relative z-10">
-                ${actionButtonsHtml}
-
                 <div class="flex flex-wrap justify-between items-start mb-6 gap-3">
                     <div class="flex flex-wrap items-center gap-2">
                         <div class="bg-surface-container-low dark:bg-slate-700 px-3 py-1 rounded-full shadow-inner flex items-center gap-1.5" title="${getTranslation("flights.flightNumberTitle") || 'Flugnummer'}">
                             <span class="w-2 h-2 rounded-full ${dotColor}"></span>
-                            <span class="font-display text-[10px] font-bold text-on-surface/70 dark:text-slate-300 uppercase tracking-wider">
-                                #${flight.flightLogNumber || "-"} • ${formattedDate}
-                            </span>
+                            <span class="font-display text-[10px] font-bold text-on-surface/70 dark:text-slate-300 uppercase tracking-wider">#${flight.flightLogNumber || "-"} • ${formattedDate}</span>
                         </div>
                         ${tripBadge}
                     </div>
                     <div class="flex items-center gap-3 ml-auto">
                         ${logoHtml}
-                        <h3 class="font-display text-xl md:text-2xl font-bold tracking-tight text-on-surface dark:text-white truncate">
-                            ${flight.flightNumber || '-'}
-                        </h3>
+                        <h3 class="font-display text-xl md:text-2xl font-bold tracking-tight text-on-surface dark:text-white truncate">${flight.flightNumber || '-'}</h3>
                     </div>
                 </div>
 
@@ -752,13 +734,11 @@ window.renderFlights = async function (
                         <p class="font-display text-4xl md:text-5xl font-extrabold text-primary dark:text-indigo-400 tracking-tighter leading-none">${flight.departure || 'N/A'}</p>
                         <p class="text-[10px] md:text-xs font-medium text-on-surface/60 dark:text-slate-400 mt-1 max-w-[120px] md:max-w-[150px] line-clamp-2 leading-tight" title="${depName}">${depName}</p>
                     </div>
-                    
                     <div class="flex-1 px-2 md:px-8 relative flex items-center justify-center">
                         <div class="h-[2px] w-full bg-gradient-to-r from-transparent via-outline-variant/50 dark:via-slate-500 to-transparent relative">
                             <span class="material-symbols-outlined absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-outline-variant dark:text-slate-400 bg-surface-container-lowest dark:bg-slate-800 px-2 text-xl" style="font-variation-settings: 'FILL' 1;">flight</span>
                         </div>
                     </div>
-
                     <div class="flex flex-col items-end">
                         <p class="font-display text-4xl md:text-5xl font-extrabold text-primary dark:text-indigo-400 tracking-tighter leading-none">${flight.arrival || 'N/A'}</p>
                         <p class="text-[10px] md:text-xs font-medium text-on-surface/60 dark:text-slate-400 mt-1 max-w-[120px] md:max-w-[150px] line-clamp-2 text-right leading-tight" title="${arrName}">${arrName}</p>
@@ -766,39 +746,33 @@ window.renderFlights = async function (
                 </div>
 
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-5 border-t border-outline-variant/20 dark:border-slate-700">
-                    
                     <div class="flex flex-col">
                         <span class="text-[9px] font-bold uppercase tracking-widest text-on-surface/50 dark:text-slate-500 mb-1 flex items-center gap-1"><span class="material-symbols-outlined text-[12px]">schedule</span> ${getTranslation('boardingPass.flightTime') || 'Flugzeit'}</span>
                         <span class="text-xs font-bold text-on-surface/90 dark:text-slate-200">${formattedTime}</span>
                     </div>
-                    
                     <div class="flex flex-col">
                         <span class="text-[9px] font-bold uppercase tracking-widest text-on-surface/50 dark:text-slate-500 mb-1 flex items-center gap-1"><span class="material-symbols-outlined text-[12px]">straighten</span> ${getTranslation('boardingPass.distance') || 'Distanz'}</span>
                         <span class="text-xs font-bold text-on-surface/90 dark:text-slate-200">${flight.distance ? flight.distance.toLocaleString("de-DE") : '--'} ${getTranslation("achievements.unitKm") || "km"}</span>
                     </div>
-
                     ${flight.aircraftType ? `
                     <div class="flex flex-col">
                         <span class="text-[9px] font-bold uppercase tracking-widest text-on-surface/50 dark:text-slate-500 mb-1 flex items-center gap-1"><span class="material-symbols-outlined text-[12px]">airlines</span> ${getTranslation('boardingPass.aircraft') || 'Flugzeug'}</span>
                         <span class="text-xs font-bold text-on-surface/90 dark:text-slate-200 truncate" title="${flight.aircraftType}">${flight.aircraftType}</span>
                     </div>` : ''}
-                    
                     ${flight.seatNumber ? `
                     <div class="flex flex-col">
                         <span class="text-[9px] font-bold uppercase tracking-widest text-on-surface/50 dark:text-slate-500 mb-1 flex items-center gap-1"><span class="material-symbols-outlined text-[12px]">event_seat</span> ${getTranslation('boardingPass.seat') || 'Sitzplatz'}</span>
                         <span class="text-xs font-bold text-on-surface/90 dark:text-slate-200">${flight.seatNumber}</span>
                     </div>` : ''}
-
                 </div>
             </div>
         </div>
       `;
-      
       flightList.appendChild(flightElement);
     });
   }
 
-  updateSortButtonUI();
+  if(typeof updateSortButtonUI === 'function') updateSortButtonUI();
 };
 
 /**
@@ -2172,3 +2146,297 @@ async function shareFlightDetailsScreenshot() {
         if (nextBtn) nextBtn.style.display = nextBtnOrig; // ➡️ NEU
     }
 }
+
+// ==========================================
+// PLUS BUTTON & FLUG ERFASSEN MODALS LOGIC
+// ==========================================
+window.openAddMenu = function() {
+    const modal = document.getElementById('add-action-modal');
+    const content = document.getElementById('add-modal-content');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex'); // 🚀 NEU: Aktiviert das korrekte Layout
+    setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        if (window.innerWidth < 640) {
+            content.classList.remove('translate-y-full');
+        } else {
+            content.classList.remove('scale-95');
+        }
+    }, 10);
+};
+
+window.closeAddMenu = function() {
+    const modal = document.getElementById('add-action-modal');
+    const content = document.getElementById('add-modal-content');
+    modal.classList.add('opacity-0');
+    if (window.innerWidth < 640) {
+        content.classList.add('translate-y-full');
+    } else {
+        content.classList.add('scale-95');
+    }
+    setTimeout(() => {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex'); // 🚀 NEU: Wieder aufräumen
+    }, 300);
+};
+
+window.openAddFlightModal = function() {
+    const modal = document.getElementById('add-flight-modal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex'); // 🚀 NEU: Macht das Scrollen im Formular möglich!
+    setTimeout(() => {
+        modal.classList.remove('translate-y-full');
+    }, 10);
+};
+
+window.closeAddFlightModal = function() {
+    const modal = document.getElementById('add-flight-modal');
+    modal.classList.add('translate-y-full');
+    setTimeout(() => {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex'); // 🚀 NEU: Wieder aufräumen
+    }, 300);
+};
+
+// ==========================================
+// ==========================================
+// SUB-NAVIGATION LOGIC (TAB 4 & 5)
+// ==========================================
+window.switchAnalyticsView = function(view) {
+    const views = ['stats', 'charts', 'logbook'];
+    
+    views.forEach(v => {
+        const btn = document.getElementById(`analytics-view-${v}`);
+        const container = document.getElementById(
+            v === 'stats' ? 'analytics-stats-container' : 
+            v === 'charts' ? 'analytics-graphs-container' : 
+            'analytics-logbook-container'
+        );
+        
+        if (!btn || !container) return;
+
+        if (v === view) {
+            btn.className = 'flex-shrink-0 px-6 py-2.5 text-sm font-bold rounded-xl transition-all bg-surface-container-lowest dark:bg-slate-700 text-on-surface dark:text-white shadow-sm flex items-center justify-center gap-2';
+            container.classList.remove('hidden');
+        } else {
+            btn.className = 'flex-shrink-0 px-6 py-2.5 text-sm font-bold rounded-xl transition-all text-on-surface/60 hover:text-on-surface dark:text-slate-400 dark:hover:text-white hover:bg-surface-container-lowest dark:hover:bg-slate-700 flex items-center justify-center gap-2';
+            container.classList.add('hidden');
+        }
+    });
+
+    // Funktionen feuern
+    if (view === 'logbook' && typeof renderLogbookView === 'function') {
+        renderLogbookView("aircraftType");
+    } else if (view === 'charts' && typeof getFlights === 'function' && typeof updateCharts === 'function') {
+        // 🚀 BUGHUNT FIX: Charts dürfen nur gezeichnet werden, wenn sie sichtbar sind!
+        getFlights().then(f => updateCharts(f, typeof currentChartTimeframe !== 'undefined' ? currentChartTimeframe : 'year'));
+    }
+};
+
+window.switchProfileView = function(view) {
+    const views = ['badges', 'community', 'settings'];
+    
+    views.forEach(v => {
+        const btn = document.getElementById(`profil-view-${v}`);
+        const container = document.getElementById(`profile-${v}-content`);
+        
+        if (!btn || !container) return;
+
+        if (v === view) {
+            btn.className = 'flex-shrink-0 px-6 py-2.5 text-sm font-bold rounded-xl transition-all bg-surface-container-lowest dark:bg-slate-700 text-on-surface dark:text-white shadow-sm flex items-center justify-center gap-2';
+            container.classList.remove('hidden');
+        } else {
+            btn.className = 'flex-shrink-0 px-6 py-2.5 text-sm font-bold rounded-xl transition-all text-on-surface/60 hover:text-on-surface dark:text-slate-400 dark:hover:text-white hover:bg-surface-container-lowest dark:hover:bg-slate-700 flex items-center justify-center gap-2';
+            container.classList.add('hidden');
+        }
+    });
+
+    // Funktionen feuern
+    if (view === 'badges' && typeof updateAchievements === 'function') {
+        updateAchievements();
+    } else if (view === 'community' && typeof loadLeaderboard === 'function') {
+        loadLeaderboard();
+    }
+};
+
+window.switchTimelineView = function(view) {
+    document.getElementById('timeline-view-flights').classList.remove('bg-surface-container-lowest', 'dark:bg-slate-700', 'text-on-surface', 'dark:text-white', 'shadow-sm');
+    document.getElementById('timeline-view-flights').classList.add('text-on-surface/60', 'dark:text-slate-400');
+    
+    document.getElementById('timeline-view-trips').classList.remove('bg-surface-container-lowest', 'dark:bg-slate-700', 'text-on-surface', 'dark:text-white', 'shadow-sm');
+    document.getElementById('timeline-view-trips').classList.add('text-on-surface/60', 'dark:text-slate-400');
+    
+    document.getElementById(`timeline-view-${view}`).classList.add('bg-surface-container-lowest', 'dark:bg-slate-700', 'text-on-surface', 'dark:text-white', 'shadow-sm');
+    document.getElementById(`timeline-view-${view}`).classList.remove('text-on-surface/60', 'dark:text-slate-400');
+
+    if(view === 'flights') {
+        document.getElementById('timeline-flights-container').classList.remove('hidden');
+        document.getElementById('timeline-trips-container').classList.add('hidden');
+    } else {
+        document.getElementById('timeline-flights-container').classList.add('hidden');
+        document.getElementById('timeline-trips-container').classList.remove('hidden');
+        if (typeof renderTripManager === 'function') renderTripManager();
+    }
+};
+
+window.switchAchievementsView = function(view) {
+    const btnBadges = document.getElementById('toggle-achievements-badges');
+    const btnRecords = document.getElementById('toggle-achievements-records');
+    
+    // Klassen zurücksetzen
+    [btnBadges, btnRecords].forEach(btn => {
+        btn.className = 'px-5 py-1.5 rounded-lg text-on-surface/60 hover:text-on-surface dark:text-slate-400 dark:hover:text-white transition-all';
+    });
+
+    // Aktiven Button stylen und Container umschalten
+    if (view === 'badges') {
+        btnBadges.className = 'px-5 py-1.5 rounded-lg bg-surface-container-lowest dark:bg-slate-600 shadow-sm text-primary dark:text-indigo-300 transition-all';
+        document.getElementById('achievements-grid-container').classList.remove('hidden');
+        document.getElementById('records-grid-container').classList.add('hidden');
+    } else {
+        btnRecords.className = 'px-5 py-1.5 rounded-lg bg-surface-container-lowest dark:bg-slate-600 shadow-sm text-primary dark:text-indigo-300 transition-all';
+        document.getElementById('achievements-grid-container').classList.add('hidden');
+        document.getElementById('records-grid-container').classList.remove('hidden');
+    }
+};
+
+// ==========================================
+// KARTEN-TOGGLE LOGIC FIX
+// ==========================================
+window.toggleAllRoutesView = async function() {
+    // 1. Status umschalten
+    window.isAllRoutesViewActive = !window.isAllRoutesViewActive;
+
+    // 2. Button UI anpassen (Beschriftung = Ziel der Aktion)
+    const btn = document.getElementById("toggle-map-view-btn");
+    if (btn) {
+        if (window.isAllRoutesViewActive) {
+            // Wir zeigen gerade alle Routen -> Button bietet Rückkehr zur Einzelansicht an
+            btn.innerHTML = `
+                <span class="material-symbols-outlined text-3xl text-primary dark:text-indigo-400 group-hover:scale-110 transition-transform">location_on</span>
+                <span class="text-sm font-bold text-on-surface dark:text-white">Einzelansicht</span>
+            `;
+            // Optional: Button-Hintergrund leicht einfärben, um "Aktiven Modus" zu zeigen
+            btn.classList.add('bg-primary/10', 'dark:bg-indigo-900/40');
+        } else {
+            // Wir zeigen die Einzelansicht -> Button bietet "Alle Routen" an
+            btn.innerHTML = `
+                <span class="material-symbols-outlined text-3xl text-primary dark:text-indigo-400 group-hover:scale-110 transition-transform">map</span>
+                <span class="text-sm font-bold text-on-surface dark:text-white">Alle Routen</span>
+            `;
+            btn.classList.remove('bg-primary/10', 'dark:bg-indigo-900/40');
+        }
+    }
+
+    // 3. Daten für die Karte holen
+    let flightsForMap = (typeof isDemoMode !== 'undefined' && isDemoMode) ? window.flights : (currentlyFilteredFlights || await getFlights());
+
+    // 4. Karte aktualisieren
+    if (window.isAllRoutesViewActive) {
+        if (typeof drawAllRoutesOnMap === 'function') drawAllRoutesOnMap(flightsForMap);
+    } else {
+        // Zurück zur Einzelansicht des letzten Flugs
+        let flightForMap = flightsForMap.find(f => f.id == globalLastFlightId) || flightsForMap[0];
+        if (flightForMap && typeof drawRouteOnMap === 'function') {
+             drawRouteOnMap(flightForMap.depLat, flightForMap.depLon, flightForMap.arrLat, flightForMap.arrLon, flightForMap.departure, flightForMap.arrival, flightForMap.depName, flightForMap.arrName, flightForMap);
+        }
+    }
+
+    // 🚀 NEU: Chronik-Leiste ein-/ausblenden und ggf. stoppen
+    const chronicleContainer = document.getElementById('chronicle-controls-container');
+    if (chronicleContainer) {
+        if (window.isAllRoutesViewActive) {
+            chronicleContainer.classList.remove('hidden');
+        } else {
+            chronicleContainer.classList.add('hidden');
+            // Wenn man auf Einzelansicht geht, Chronik hart abbrechen
+            if (typeof stopTravelChronicle === 'function') stopTravelChronicle();
+            if (typeof updateChronicleUI === 'function') updateChronicleUI('stopped');
+        }
+    }
+
+};
+
+// ==========================================
+// CHRONIK STEUERUNG (Global & Kugelsicher)
+// ==========================================
+window.startChronicle = function() {
+    if (typeof animateTravelChronicle === 'function') animateTravelChronicle();
+    updateChronicleUI('playing');
+};
+
+window.pauseChronicle = function() {
+    // 1. Echte Pause versuchen
+    if (typeof pauseTravelChronicle === 'function') {
+        pauseTravelChronicle();
+    } 
+    // 2. Fallback: Harter Stopp, falls Pause nicht in map.js existiert
+    else if (typeof stopAnimation === 'function') {
+        stopAnimation(); 
+    }
+    updateChronicleUI('paused');
+};
+
+window.resumeChronicle = function() {
+    // 1. Echtes Resume versuchen
+    if (typeof resumeTravelChronicle === 'function') {
+        resumeTravelChronicle();
+    } 
+    // 2. Fallback: Neu starten
+    else if (typeof animateTravelChronicle === 'function') {
+        animateTravelChronicle(); 
+    }
+    updateChronicleUI('playing');
+};
+
+window.stopChronicle = async function() {
+    // 1. Animation in der map.js abwürgen
+    if (typeof stopTravelChronicle === 'function') stopTravelChronicle();
+    else if (typeof stopAnimation === 'function') stopAnimation();
+    
+    // UI direkt auf Stopp setzen
+    updateChronicleUI('stopped');
+    
+    // 2. Kurz warten (damit der Animations-Loop wirklich tot ist), dann Karte neu zeichnen
+    setTimeout(async () => {
+        if (window.isAllRoutesViewActive && typeof drawAllRoutesOnMap === 'function') {
+            
+            // Flüge sicher holen (Demo, Filter oder aus der Supabase DB)
+            let flightsForMap = [];
+            if (typeof isDemoMode !== 'undefined' && isDemoMode && window.flights) {
+                flightsForMap = window.flights;
+            } else if (typeof currentlyFilteredFlights !== 'undefined' && currentlyFilteredFlights) {
+                flightsForMap = currentlyFilteredFlights;
+            } else if (typeof getFlights === 'function') {
+                flightsForMap = await getFlights(); // 🚀 BUGHUNT FIX: Warten auf die Datenbank!
+            }
+            
+            // Karte final neu zeichnen
+            if (flightsForMap && flightsForMap.length > 0) {
+                drawAllRoutesOnMap(flightsForMap);
+            }
+        }
+    }, 250); // 250 Millisekunden Puffer verhindern den Crash zwischen Löschen und Neuzeichnen
+};
+
+window.updateChronicleUI = function(state) {
+    const playBtn = document.getElementById('play-chronicle-btn');
+    const pauseBtn = document.getElementById('pause-chronicle-btn');
+    const resumeBtn = document.getElementById('resume-chronicle-btn');
+    const stopBtn = document.getElementById('stop-chronicle-btn');
+
+    if(!playBtn) return;
+
+    [playBtn, pauseBtn, resumeBtn, stopBtn].forEach(btn => btn.classList.add('hidden'));
+
+    if (state === 'playing') {
+        pauseBtn.classList.remove('hidden');
+        stopBtn.classList.remove('hidden');
+    } else if (state === 'paused') {
+        resumeBtn.classList.remove('hidden');
+        stopBtn.classList.remove('hidden');
+    } else {
+        // state === 'stopped' oder idle
+        playBtn.classList.remove('hidden');
+    }
+};
