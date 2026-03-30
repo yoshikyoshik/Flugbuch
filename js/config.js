@@ -1340,20 +1340,23 @@ function selectAutocompleteItem(input, list, selectedAirport) {
 var updateFlightDetails = function () {
   var departureInput = document.getElementById("departure").value;
   var arrivalInput = document.getElementById("arrival").value;
-  var flightClass = document.getElementById("flightClass").value; // NEU
-  var departureAirport = findAirport(departureInput);
-  var arrivalAirport = findAirport(arrivalInput);
+  var flightClass = document.getElementById("flightClass").value;
+  
   var distanceDisplay = document.getElementById("distance-display");
   var timeDisplay = document.getElementById("time-display");
-  var co2Display = document.getElementById("co2-display"); // NEU
+  var co2Display = document.getElementById("co2-display");
   var logButton = document.getElementById("log-button");
 
-  distanceDisplay.textContent = "-";
-  timeDisplay.textContent = "-";
-  co2Display.textContent = "-"; // NEU
-  logButton.disabled = true;
+  // Sicherheitsprüfung: Elemente leeren, falls sie existieren
+  if (distanceDisplay) distanceDisplay.textContent = "-";
+  if (timeDisplay) timeDisplay.textContent = "-";
+  if (co2Display) co2Display.textContent = "-";
+  
+  if (logButton) logButton.disabled = true;
 
-  // (Dank Korrektur 1 wird dies jetzt 'null' sein, wenn die Felder leer sind)
+  // Wenn Felder leer sind, frühzeitig abbrechen
+  if (!departureInput || !arrivalInput) return;
+
   var departureAirport = findAirport(departureInput);
   var arrivalAirport = findAirport(arrivalInput);
 
@@ -1368,12 +1371,12 @@ var updateFlightDetails = function () {
     var estimatedTime = estimateFlightTime(distance);
     var estimatedCO2 = calculateCO2(distance, flightClass);
 
-    distanceDisplay.textContent = `${Math.round(distance).toLocaleString(
-      "de-DE"
-    )} km`;
-    timeDisplay.textContent = estimatedTime;
-    co2Display.textContent = `${estimatedCO2.toLocaleString("de-DE")} kg`;
-    logButton.disabled = false;
+    // Sicherheitsprüfung: Werte schreiben, falls Elemente existieren
+    if (distanceDisplay) distanceDisplay.textContent = `${Math.round(distance).toLocaleString("de-DE")} km`;
+    if (timeDisplay) timeDisplay.textContent = estimatedTime;
+    if (co2Display) co2Display.textContent = `${estimatedCO2.toLocaleString("de-DE")} kg`;
+    
+    if (logButton) logButton.disabled = false;
   }
 };
 
