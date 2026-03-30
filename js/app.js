@@ -37,7 +37,8 @@ async function fetchAircraftPhoto(registration) {
 
 // Manuelles Leeren der Vorschau
 window.clearPlanespottersPreview = function() {
-    document.getElementById('planespotters-preview').classList.add('hidden');
+    const previewEl = document.getElementById('planespotters-preview');
+    if (previewEl) previewEl.classList.add('hidden');
     currentPlanespottersData = null;
 };
 
@@ -983,6 +984,7 @@ window.logFlight = async function () {
 		console.log("Last Flight ID gespeichert:", newFlightId);
 	});
 
+    if (typeof closeAddFlightModal === 'function') closeAddFlightModal();
     // 🚀 NEU: Smartes Routing nach dem Speichern!
     const flightDateStr = newFlightForSupabase.date;
     const todayStr = new Date().toISOString().slice(0, 10);
@@ -1253,6 +1255,7 @@ async function updateFlight() {
   
   resetForm();
   
+  if (typeof closeAddFlightModal === 'function') closeAddFlightModal();
   // 🚀 NEU: Smartes Routing!
   if (targetDate >= todayStr) {
       showTab("radar");
@@ -1392,10 +1395,11 @@ window.cancelEditFlight = function () {
     resetForm();
 
     // Zurück zur Bordkarte springen
+    // 🚀 FIX: Modal schließen, statt in einen alten Tab zu wechseln
+    if (typeof closeAddFlightModal === 'function') closeAddFlightModal();
+
+    // Zurück zur Bordkarte springen
     if (previousFlightId) {
-        if (typeof showTab === 'function') {
-            showTab("fluege");
-        }
         setTimeout(() => {
             if (typeof viewFlightDetails === 'function') {
                 viewFlightDetails(previousFlightId);
@@ -1433,7 +1437,7 @@ window.clearOnlyFields = function (event) {
  * @param {number} id - Die ID des zu bearbeitenden Flugs.
  */
 window.editFlight = async function (id) {
-  showTab("neue-fluege"); // Wechsle zum Formular-Tab
+  if (typeof openAddFlightModal === 'function') openAddFlightModal(); // 🚀 FIX: Öffne das neue Modal
   // Wenn die Gesamtansicht aktiv ist, schalte sie zuerst aus
   if (isAllRoutesViewActive) {
     toggleAllRoutesView();
@@ -1451,10 +1455,39 @@ window.editFlight = async function (id) {
   }
 
   // --- NEUE FOTO-VORSCHAU-LOGIK ---
-  const existingPreviewContainer = document.getElementById(
-    "existing-photos-preview"
-  );
-  existingPreviewContainer.innerHTML = ""; // Vorherige Previews löschen
+  const existingPreviewContainer = document.getElementById("existing-photos-preview");
+  
+  if (existingPreviewContainer) {
+      existingPreviewContainer.innerHTML = ""; // Vorherige Previews löschen
+
+      if (flightToEdit.photo_url && flightToEdit.photo_url.length > 0) {
+        // Erstelle eine "Foto-Karte" für jedes existierende Foto
+        flightToEdit.photo_url.forEach((url) => {
+          const imgCard = document.createElement("div");
+          imgCard.className = "relative inline-block h-16 w-16"; // Feste Größe für die Vorschau
+
+          // Wir speichern die URL in einem data-Attribut,
+          // damit 'updateFlight' weiß, welche Fotos überlebt haben.
+          imgCard.dataset.url = url;
+
+          imgCard.innerHTML = `
+                  <img src="${url}" class="h-16 w-16 rounded-md object-cover shadow-sm">
+                  
+                  <button 
+                    type="button" 
+                    onclick="this.parentElement.remove()" 
+                    class="absolute top-0 right-0 -mt-2 -mr-2 bg-red-600 text-white rounded-full w-5 h-5 
+                           flex items-center justify-center text-sm font-bold 
+                           hover:bg-red-700 transition-transform hover:scale-110"
+                    title="Foto entfernen"
+                  >
+                    &times;
+                  </button>
+                `;
+          existingPreviewContainer.appendChild(imgCard);
+        });
+      }
+  }
 
   if (flightToEdit.photo_url && flightToEdit.photo_url.length > 0) {
     // Erstelle eine "Foto-Karte" für jedes existierende Foto
@@ -1520,9 +1553,13 @@ window.editFlight = async function (id) {
           photographer: flightToEdit.planespotters_photographer,
           link: "#" // Fallback, da wir den Link nicht extra speichern
       };
-      document.getElementById('planespotters-img').src = flightToEdit.planespotters_url;
-      document.getElementById('planespotters-credit').textContent = flightToEdit.planespotters_photographer || "Planespotters";
-      document.getElementById('planespotters-preview').classList.remove('hidden');
+      const psImg = document.getElementById('planespotters-img');
+      const psCredit = document.getElementById('planespotters-credit');
+      const psPreview = document.getElementById('planespotters-preview');
+      
+      if (psImg) psImg.src = flightToEdit.planespotters_url;
+      if (psCredit) psCredit.textContent = flightToEdit.planespotters_photographer || "Planespotters";
+      if (psPreview) psPreview.classList.remove('hidden');
   } else {
       if (typeof clearPlanespottersPreview === 'function') clearPlanespottersPreview();
   }
@@ -3514,7 +3551,7 @@ window.startBoardingPassScanner = async function() {
                 if (parsedData.flightDate) document.getElementById('flightDate').value = parsedData.flightDate;
                 if (parsedData.flightClass) document.getElementById('flightClass').value = parsedData.flightClass;
                 
-                showTab('neue-fluege');
+                if (typeof openAddFlightModal === 'function') openAddFlightModal();
                 updateFlightDetails();
 
                 showMessage(getTranslation("toast.successTitle") || "Erfolg", getTranslation("scanner.success") || "Bordkarte erfolgreich ausgelesen!", "success");
@@ -4946,8 +4983,13 @@ window.initLiveWidget = async function() {
         promo.classList.remove('hidden');
     }
 
-    const allFlights = typeof isDemoMode !== 'undefined' && isDemoMode && typeof flights !== 'undefined' ? flights : await getFlights();
+    let allFlights = typeof isDemoMode !== 'undefined' && isDemoMode && typeof flights !== 'undefined' ? flights : await getFlights();
     
+    // 🚀 BUGHUNT FIX: Wir müssen die Flüge erst chronologisch nummerieren!
+    if (typeof resequenceAndAssignNumbers === 'function' && allFlights && allFlights.length > 0) {
+        allFlights = resequenceAndAssignNumbers(allFlights);
+    }
+
     // 🚀 BUGHUNT FIX: Vorzeitigem Return den Schiedsrichter-Aufruf mitgeben!
     if (!allFlights || allFlights.length === 0) {
         if (typeof checkRadarEmptyState === 'function') checkRadarEmptyState();
@@ -5052,16 +5094,6 @@ window.renderCurrentLiveFlight = function() {
             // Verhindern, dass Klicks auf die Pfeil-Buttons die Ticket-Ansicht öffnen
             if (e.target.closest('button')) return;
             
-            // 🚀 NEU: Die fehlenden Flugnummern aus der Hauptdatenbank rüberkopieren!
-            if (window.flights && window.todaysLiveFlights) {
-                window.todaysLiveFlights.forEach(liveF => {
-                    const originalF = window.flights.find(f => f.id === (liveF.id || liveF.flight_id));
-                    if (originalF && originalF.flightLogNumber) {
-                        liveF.flightLogNumber = originalF.flightLogNumber;
-                    }
-                });
-            }
-            
             // Ticket-Ansicht öffnen und die heutigen Flüge als "Swipe-Scope" übergeben
             if (typeof viewFlightDetails === 'function') {
                 viewFlightDetails(flight.id || flight.flight_id, false, window.todaysLiveFlights);
@@ -5111,6 +5143,52 @@ window.refreshLiveFlightData = async function() {
         }
 
         const data = await response.json();
+        
+        // --- 0. 🚀 NEU: AIRLINE UPDATE (Falls "Unbekannt") ---
+        const isUnknownAirline = !window.currentLiveFlight.airline || window.currentLiveFlight.airline.toLowerCase().includes('unbekannt') || window.currentLiveFlight.airline.toLowerCase().includes('unknown');
+        if (isUnknownAirline && (data.airline_iata || data.airline_icao)) {
+             try {
+                const codeToSearch = data.airline_iata || data.airline_icao;
+                const airlineUrl = `${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-airline-details?iata_code=${codeToSearch}`;
+                const airlineRes = await fetch(airlineUrl);
+                if (airlineRes.ok) {
+                    const airlineJson = await airlineRes.json();
+                    if (airlineJson && airlineJson.data && airlineJson.data.length > 0) {
+                        const ad = airlineJson.data[0];
+                        const newName = ad.name || codeToSearch;
+                        
+                        // UI Update
+                        const airEl = document.getElementById('live-airline-name');
+                        if (airEl) {
+                            airEl.removeAttribute('data-i18n');
+                            airEl.textContent = newName;
+                        }
+                        
+                        // Logo Update
+                        const newLogo = ad.logo_url || ad.brandmark_url || ad.tail_logo_url;
+                        if (newLogo) {
+                            const logoEl = document.getElementById('live-airline-logo');
+                            if (logoEl) {
+                                logoEl.src = newLogo;
+                                logoEl.parentElement.classList.remove('hidden');
+                            }
+                            window.currentLiveFlight.airline_logo = newLogo;
+                        }
+                        
+                        // DB lautlos im Hintergrund updaten
+                        const flightIdToUpdate = window.currentLiveFlight.id || window.currentLiveFlight.flight_id;
+                        supabaseClient.from('flights')
+                            .update({ airline: newName, airline_logo: newLogo })
+                            .eq('flight_id', flightIdToUpdate)
+                            .then();
+                            
+                        window.currentLiveFlight.airline = newName;
+                    }
+                }
+            } catch(e) {
+                console.warn("Konnte Airline für Live-Flight nicht auflösen", e);
+            }
+        }
         
         // --- 1. ZEITEN UPDATEN ---
         const extractTime = (apiStr) => {
@@ -5317,10 +5395,16 @@ window.initUpcomingWidget = async function() {
                     <div>
                         <div class="flex items-center gap-2 mb-1">
                             ${logoHtml}
-                            <span class="font-bold text-sm text-on-surface/60 dark:text-slate-400">${airlineStr}</span>
+                            <span id="upc-airline-${flight.id || flight.flight_id}" class="font-bold text-sm text-on-surface/60 dark:text-slate-400">${airlineStr}</span>
                         </div>
-                        <div class="text-2xl font-black text-on-surface dark:text-white group-hover:text-primary transition-colors">
-                            ${flight.departure} <span class="text-primary/50 mx-1">➔</span> ${flight.arrival}
+                        <div class="text-xl sm:text-2xl font-black text-on-surface dark:text-white group-hover:text-primary transition-colors flex items-center gap-2">
+                            <span class="flex items-baseline gap-1.5">
+                                ${flight.departure} <span id="upc-dep-time-${flight.id || flight.flight_id}" class="text-xs font-bold text-on-surface/40 dark:text-slate-500"></span>
+                            </span>
+                            <span class="text-primary/50 mx-1">➔</span> 
+                            <span class="flex items-baseline gap-1.5">
+                                ${flight.arrival} <span id="upc-arr-time-${flight.id || flight.flight_id}" class="text-xs font-bold text-on-surface/40 dark:text-slate-500"></span>
+                            </span>
                         </div>
                     </div>
                     <div class="text-right">
@@ -5333,6 +5417,14 @@ window.initUpcomingWidget = async function() {
         });
 
         container.innerHTML = html;
+        
+        // 🚀 NEU: Lade jetzt die asynchronen Details (Zeiten und Airline) im Hintergrund nach!
+        upcomingFlights.forEach(flight => {
+            if (typeof updateUpcomingFlightDetails === 'function') {
+                updateUpcomingFlightDetails(flight);
+            }
+        });
+
     } else {
         container.classList.add('hidden');
         container.classList.remove('flex');
@@ -5340,6 +5432,60 @@ window.initUpcomingWidget = async function() {
 
     // 🚀 SCHIEDSRICHTER RUFEN
     if (typeof checkRadarEmptyState === 'function') checkRadarEmptyState();
+};
+
+window.updateUpcomingFlightDetails = async function(flight) {
+    try {
+        const flightId = flight.id || flight.flight_id;
+        const cleanFlightNum = (flight.flightNumber || "").replace(/\s+/g, '').toUpperCase();
+        
+        // 1. Hole Live-Schedule für diesen Tag und diese Route aus unserer API
+        const url = `${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-future-schedules?dep=${flight.departure}&arr=${flight.arrival}&date=${flight.date}`;
+        const response = await fetch(url);
+        if (!response.ok) return;
+        const schedules = await response.json();
+        
+        let match = null;
+        
+        // 2. Finde den exakten Flug
+        if (cleanFlightNum) {
+             match = schedules.find(s => {
+                 const sNum = s.carrier ? `${s.carrier.fs}${s.carrier.flightNumber}`.toUpperCase() : "";
+                 return sNum === cleanFlightNum || sNum.includes(cleanFlightNum) || cleanFlightNum.includes(sNum);
+             });
+        }
+        // Fallback: Wenn es an dem Tag nur einen einzigen Flug auf der Route gibt, nehmen wir den
+        if (!match && schedules.length === 1) {
+             match = schedules[0];
+        }
+
+        if (match) {
+             // Zeiten optisch eintragen
+             if (match.departureTime && match.departureTime.time24) {
+                 const depEl = document.getElementById(`upc-dep-time-${flightId}`);
+                 if (depEl) depEl.textContent = match.departureTime.time24;
+             }
+             if (match.arrivalTime && match.arrivalTime.time24) {
+                 const arrEl = document.getElementById(`upc-arr-time-${flightId}`);
+                 if (arrEl) arrEl.textContent = match.arrivalTime.time24;
+             }
+             
+             // Airline updaten, falls sie noch "Unbekannt" war
+             const isUnknownAirline = !flight.airline || flight.airline.toLowerCase().includes('unbekannt') || flight.airline.toLowerCase().includes('unknown');
+             if (isUnknownAirline && match.carrier && match.carrier.name) {
+                 const airEl = document.getElementById(`upc-airline-${flightId}`);
+                 if (airEl) {
+                     airEl.textContent = match.carrier.name;
+                 }
+                 
+                 // Wir updaten die DB lautlos im Hintergrund, damit sie beim nächsten Mal direkt da ist!
+                 supabaseClient.from('flights').update({ airline: match.carrier.name }).eq('flight_id', flightId).then();
+                 flight.airline = match.carrier.name; 
+             }
+        }
+    } catch(e) {
+        console.warn("Fehler beim Abrufen der Upcoming-Details:", e);
+    }
 };
 
 // Sucht heutige Flüge basierend auf IATA-Codes
