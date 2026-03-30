@@ -161,10 +161,6 @@ window.drawRouteOnMap = async function (
     .replace("{arrName}", arrName)
     .replace("{arrCode}", arrCode);
 
-  const returnFlightContainer = document.getElementById("return-flight-container");
-  const returnFlightBtn = document.getElementById("return-flight-btn");
-  returnFlightBtn.setAttribute("onclick", `prefillReturnFlight('${arrCode}', '${depCode}')`);
-  returnFlightContainer.classList.remove("hidden");
 };
 
 window.drawAllRoutesOnMap = function (flights) {

@@ -563,6 +563,15 @@ window.showTab = function (tabId) {
     else if (tabId === "profil") {
         // Erfolge beim Öffnen des Profils laden
         if (typeof updateAchievements === 'function') updateAchievements();
+        
+        // 🚀 NEU: Rang berechnen, sobald das Profil geöffnet wird!
+        if (typeof getFlights === 'function') {
+            getFlights().then(flights => {
+                if (typeof updateUserRank === 'function') {
+                    updateUserRank(flights.length);
+                }
+            });
+        }
     }
     
     // Ganz nach oben scrollen beim Tab-Wechsel
@@ -701,7 +710,7 @@ window.renderFlights = async function (
       flightElement.setAttribute("onclick", `viewFlightDetails('${flight.id || flight.flight_id || flight.flightLogNumber}')`);
 
       const planeBg = flight.planespotters_url ? `style="background-image: url('${flight.planespotters_url}');"` : '';
-      const planeOpacity = flight.planespotters_url ? 'opacity-[0.04] group-hover:opacity-15' : 'opacity-0';
+      const planeOpacity = flight.planespotters_url ? 'opacity-20 group-hover:opacity-40' : 'opacity-0';
       const logoHtml = flight.airline_logo ? `<img src="${flight.airline_logo}" class="h-5 md:h-6 max-w-[80px] object-contain opacity-90 drop-shadow-sm" alt="Logo">` : '';
       const formattedDate = flight.date ? new Date(flight.date).toLocaleDateString() : '--';
       const formattedTime = (flight.time || "").replace("Std.", getTranslation("units.hoursShort") || "Std.").replace("Min.", getTranslation("units.minutesShort") || "Min.");
@@ -1905,71 +1914,74 @@ async function shareImageBase64(dataURL, filenamePrefix = "aviosphere_share") {
     }
 }
 
-/**
- * Spezifische Funktion für Statistiken
- */
-/**
- * Spezifische Funktion für Statistiken
- */
-async function shareStatsScreenshot() {
+// ==========================================
+// SHARE STATS SCREENSHOT
+// ==========================================
+window.shareStatsScreenshot = async function() {
     const statsPanel = document.getElementById("statistics-panel");
     if (!statsPanel) return;
 
-    // --- VORBEREITUNG: Dropdown durch Text ersetzen (Hübscher für Fotos) ---
-    const yearSelect = document.getElementById("stat-year-select");
-    let originalDisplay = "";
-    let tempLabel = null;
-
-    if (yearSelect && !yearSelect.classList.contains("hidden")) {
-        // 1. Welches Jahr ist ausgewählt?
-        const selectedText = yearSelect.options[yearSelect.selectedIndex]?.text || "";
-
-        // 2. Dropdown verstecken
-        originalDisplay = yearSelect.style.display;
-        yearSelect.style.display = "none";
-
-        // 3. Hübsches Text-Label erstellen
-        tempLabel = document.createElement("span");
-        tempLabel.textContent = selectedText;
-        // Styling passend zum Dark/Light Mode (Indigo)
-        tempLabel.className = "text-sm font-bold text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800 px-2 py-1 rounded bg-indigo-50 dark:bg-gray-800";
-        
-        // Ins DOM einfügen (direkt vor das versteckte Select)
-        yearSelect.parentNode.insertBefore(tempLabel, yearSelect);
-    }
-    // -----------------------------------------------------------------------
-
     try {
-        // Screenshot erstellen
+        if (typeof showMessage === 'function') {
+            showMessage(getTranslation("share.prepTitle") || "Moment...", getTranslation("share.prepDesc") || "Bild wird aufbereitet 📸", "info");
+        }
+
+        const isNative = typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform();
+        const isDark = document.documentElement.classList.contains('dark');
+        const bgColor = isDark ? '#111827' : '#f8f9fa';
+
+        const liveSelect = document.getElementById("stat-year-select");
+        let selectedText = "";
+        if (liveSelect && liveSelect.selectedIndex >= 0) {
+            selectedText = liveSelect.options[liveSelect.selectedIndex].text;
+        }
+
         const canvas = await html2canvas(statsPanel, {
             useCORS: true,
-            backgroundColor: null, // Transparent/Dark Mode behalten
-            scale: 2 // Für bessere Qualität (Retina)
+            allowTaint: false,
+            backgroundColor: isNative ? bgColor : null, 
+            scale: window.innerWidth < 768 ? 2 : 2,
+            
+            onclone: function(clonedDoc) {
+                // 1. Dropdown ersetzen (für die schöne Optik)
+                const clonedSelect = clonedDoc.getElementById("stat-year-select");
+                if (clonedSelect && selectedText) {
+                    const span = clonedDoc.createElement("span");
+                    span.textContent = selectedText;
+                    span.className = "text-sm font-black text-on-surface dark:text-white";
+                    clonedSelect.parentNode.replaceChild(span, clonedSelect);
+                }
+
+                // 2. 🚀 DER MAGISCHE FIX FÜR DEN "ß"-BUG (IndexSizeError)
+                // Wir suchen alles was "uppercase" ist, und machen es als echten Text groß!
+                const uppercaseElements = clonedDoc.querySelectorAll('.uppercase');
+                uppercaseElements.forEach(el => {
+                    // Nur anwenden, wenn es sich um reine Textelemente handelt (wie unsere <p> Tags)
+                    if (el.childNodes.length === 1 && el.childNodes[0].nodeType === Node.TEXT_NODE) {
+                        el.classList.remove('uppercase');
+                        el.textContent = el.textContent.toUpperCase(); // Macht aus "ß" ein echtes "SS" (24 Zeichen)
+                    }
+                });
+            }
         });
 
-        const dataURL = canvas.toDataURL("image/png");
+        const dataURL = isNative 
+            ? canvas.toDataURL("image/jpeg", 0.9) 
+            : canvas.toDataURL("image/png");
         
-        // An die zentrale Funktion übergeben
         await shareImageBase64(dataURL, "aviosphere_stats");
 
     } catch (e) {
         console.error("html2canvas Fehler:", e);
-        showMessage(
-          getTranslation("toast.errorTitle") || "Fehler",
-          getTranslation("share.statImageError") || "Konnte Statistik-Bild nicht erstellen.",
-          "error"
-        );
-    } finally {
-        // --- AUFRÄUMEN (Wichtig!) ---
-        // Egal ob Fehler oder Erfolg: Wir müssen das Dropdown wieder anzeigen
-        if (yearSelect) {
-            yearSelect.style.display = originalDisplay;
-        }
-        if (tempLabel) {
-            tempLabel.remove(); // Das temporäre Label löschen
+        if (typeof showMessage === 'function') {
+            showMessage(
+              getTranslation("toast.errorTitle") || "Fehler",
+              getTranslation("share.statImageError") || "Konnte Statistik-Bild nicht erstellen.",
+              "error"
+            );
         }
     }
-}
+};
 
 // ui.js - Am Ende einfügen
 
@@ -2199,7 +2211,6 @@ window.closeAddFlightModal = function() {
 };
 
 // ==========================================
-// ==========================================
 // SUB-NAVIGATION LOGIC (TAB 4 & 5)
 // ==========================================
 window.switchAnalyticsView = function(view) {
@@ -2216,10 +2227,12 @@ window.switchAnalyticsView = function(view) {
         if (!btn || !container) return;
 
         if (v === view) {
-            btn.className = 'flex-shrink-0 px-6 py-2.5 text-sm font-bold rounded-xl transition-all bg-surface-container-lowest dark:bg-slate-700 text-on-surface dark:text-white shadow-sm flex items-center justify-center gap-2';
+            // 🚀 BUGHUNT FIX: Die neuen schmalen Klassen beim AKTIVEN Button anwenden
+            btn.className = 'flex-shrink-0 px-4 sm:px-6 py-2.5 text-sm font-bold rounded-xl transition-all bg-surface-container-lowest dark:bg-slate-700 text-on-surface dark:text-white shadow-sm flex items-center justify-center gap-2';
             container.classList.remove('hidden');
         } else {
-            btn.className = 'flex-shrink-0 px-6 py-2.5 text-sm font-bold rounded-xl transition-all text-on-surface/60 hover:text-on-surface dark:text-slate-400 dark:hover:text-white hover:bg-surface-container-lowest dark:hover:bg-slate-700 flex items-center justify-center gap-2';
+            // 🚀 BUGHUNT FIX: Die neuen schmalen Klassen beim INAKTIVEN Button anwenden
+            btn.className = 'flex-shrink-0 px-4 sm:px-6 py-2.5 text-sm font-bold rounded-xl transition-all text-on-surface/60 hover:text-on-surface dark:text-slate-400 dark:hover:text-white hover:bg-surface-container-lowest dark:hover:bg-slate-700 flex items-center justify-center gap-2';
             container.classList.add('hidden');
         }
     });
@@ -2228,7 +2241,7 @@ window.switchAnalyticsView = function(view) {
     if (view === 'logbook' && typeof renderLogbookView === 'function') {
         renderLogbookView("aircraftType");
     } else if (view === 'charts' && typeof getFlights === 'function' && typeof updateCharts === 'function') {
-        // 🚀 BUGHUNT FIX: Charts dürfen nur gezeichnet werden, wenn sie sichtbar sind!
+        // Charts dürfen nur gezeichnet werden, wenn sie sichtbar sind!
         getFlights().then(f => updateCharts(f, typeof currentChartTimeframe !== 'undefined' ? currentChartTimeframe : 'year'));
     }
 };
@@ -2243,10 +2256,12 @@ window.switchProfileView = function(view) {
         if (!btn || !container) return;
 
         if (v === view) {
-            btn.className = 'flex-shrink-0 px-6 py-2.5 text-sm font-bold rounded-xl transition-all bg-surface-container-lowest dark:bg-slate-700 text-on-surface dark:text-white shadow-sm flex items-center justify-center gap-2';
+            // 🚀 BUGHUNT FIX: Die neuen schmalen Klassen (px-4 sm:px-6) verwenden
+            btn.className = 'flex-shrink-0 px-4 sm:px-6 py-2.5 text-sm font-bold rounded-xl transition-all bg-surface-container-lowest dark:bg-slate-700 text-on-surface dark:text-white shadow-sm flex items-center justify-center gap-2';
             container.classList.remove('hidden');
         } else {
-            btn.className = 'flex-shrink-0 px-6 py-2.5 text-sm font-bold rounded-xl transition-all text-on-surface/60 hover:text-on-surface dark:text-slate-400 dark:hover:text-white hover:bg-surface-container-lowest dark:hover:bg-slate-700 flex items-center justify-center gap-2';
+            // 🚀 BUGHUNT FIX: Die neuen schmalen Klassen (px-4 sm:px-6) verwenden
+            btn.className = 'flex-shrink-0 px-4 sm:px-6 py-2.5 text-sm font-bold rounded-xl transition-all text-on-surface/60 hover:text-on-surface dark:text-slate-400 dark:hover:text-white hover:bg-surface-container-lowest dark:hover:bg-slate-700 flex items-center justify-center gap-2';
             container.classList.add('hidden');
         }
     });
@@ -2259,23 +2274,66 @@ window.switchProfileView = function(view) {
     }
 };
 
+// ==========================================
+// TIMELINE SUB-NAVIGATION LOGIC
+// ==========================================
 window.switchTimelineView = function(view) {
-    document.getElementById('timeline-view-flights').classList.remove('bg-surface-container-lowest', 'dark:bg-slate-700', 'text-on-surface', 'dark:text-white', 'shadow-sm');
-    document.getElementById('timeline-view-flights').classList.add('text-on-surface/60', 'dark:text-slate-400');
+    const btnFlights = document.getElementById('timeline-view-flights');
+    const btnTrips = document.getElementById('timeline-view-trips');
+    const containerFlights = document.getElementById('timeline-flights-container');
+    const containerTrips = document.getElementById('timeline-trips-container');
     
-    document.getElementById('timeline-view-trips').classList.remove('bg-surface-container-lowest', 'dark:bg-slate-700', 'text-on-surface', 'dark:text-white', 'shadow-sm');
-    document.getElementById('timeline-view-trips').classList.add('text-on-surface/60', 'dark:text-slate-400');
-    
-    document.getElementById(`timeline-view-${view}`).classList.add('bg-surface-container-lowest', 'dark:bg-slate-700', 'text-on-surface', 'dark:text-white', 'shadow-sm');
-    document.getElementById(`timeline-view-${view}`).classList.remove('text-on-surface/60', 'dark:text-slate-400');
+    const mapDetails = document.getElementById('last-flight-map-details');
+    const mapButtons = document.getElementById('timeline-map-buttons-container');
+    const chronicleControls = document.getElementById('chronicle-controls-container');
 
-    if(view === 'flights') {
-        document.getElementById('timeline-flights-container').classList.remove('hidden');
-        document.getElementById('timeline-trips-container').classList.add('hidden');
+    if (!btnFlights || !btnTrips) return;
+
+    if (view === 'flights') {
+        // Buttons stylen (Einzelflüge aktiv)
+        btnFlights.className = 'flex-1 sm:flex-none px-6 py-2.5 text-sm font-bold rounded-xl transition-all bg-surface-container-lowest dark:bg-slate-700 text-on-surface dark:text-white shadow-sm flex items-center justify-center gap-2';
+        btnTrips.className = 'flex-1 sm:flex-none px-6 py-2.5 text-sm font-bold rounded-xl transition-all text-on-surface/60 hover:text-on-surface dark:text-slate-400 dark:hover:text-white hover:bg-surface-container-lowest dark:hover:bg-slate-700 flex items-center justify-center gap-2';
+        
+        // Listen umschalten
+        containerFlights.classList.remove('hidden');
+        containerTrips.classList.add('hidden');
+        
+        // Karten-Elemente wieder einblenden
+        if (mapDetails) mapDetails.classList.remove('hidden');
+        if (mapButtons) mapButtons.classList.remove('hidden');
+        
+        if (chronicleControls && window.isAllRoutesViewActive) {
+             chronicleControls.classList.remove('hidden');
+        }
+
+        setTimeout(() => { 
+            if (typeof map !== 'undefined' && map) map.invalidateSize(); 
+        }, 50);
+
     } else {
-        document.getElementById('timeline-flights-container').classList.add('hidden');
-        document.getElementById('timeline-trips-container').classList.remove('hidden');
-        if (typeof renderTripManager === 'function') renderTripManager();
+        // Buttons stylen (Reisen aktiv)
+        btnTrips.className = 'flex-1 sm:flex-none px-6 py-2.5 text-sm font-bold rounded-xl transition-all bg-surface-container-lowest dark:bg-slate-700 text-on-surface dark:text-white shadow-sm flex items-center justify-center gap-2';
+        btnFlights.className = 'flex-1 sm:flex-none px-6 py-2.5 text-sm font-bold rounded-xl transition-all text-on-surface/60 hover:text-on-surface dark:text-slate-400 dark:hover:text-white hover:bg-surface-container-lowest dark:hover:bg-slate-700 flex items-center justify-center gap-2';
+        
+        // Listen umschalten
+        containerFlights.classList.add('hidden');
+        containerTrips.classList.remove('hidden');
+        
+        // Karten-Elemente komplett verstecken!
+        if (mapDetails) mapDetails.classList.add('hidden');
+        if (mapButtons) mapButtons.classList.add('hidden');
+        if (chronicleControls) chronicleControls.classList.add('hidden');
+        
+        if (window.animationState === "running" || window.animationState === "paused") {
+            if (typeof stopChronicle === 'function') stopChronicle();
+        }
+
+        // 🚀 BUGHUNT FIX: Die richtige Funktion aus der app.js aufrufen!
+        if (typeof renderTripManager === 'function') {
+            renderTripManager();
+        } else {
+            console.warn("AvioSphere: Konnte 'renderTripManager' nicht finden.");
+        }
     }
 };
 
@@ -2439,4 +2497,54 @@ window.updateChronicleUI = function(state) {
         // state === 'stopped' oder idle
         playBtn.classList.remove('hidden');
     }
+};
+
+// ==========================================
+// DYNAMISCHE PILOT-RÄNGE
+// ==========================================
+
+window.updateUserRank = function(flightCount) {
+    const statusEl = document.getElementById('profile-header-status');
+    if (!statusEl) return;
+
+    let rank = "Anfänger";
+    let rankClass = "text-on-surface/60 dark:text-slate-400"; // Standard
+
+    if (flightCount > 500) {
+        rank = "Sky Legend 🏆";
+        rankClass = "text-amber-500 dark:text-amber-400";
+    } else if (flightCount > 100) {
+        rank = "Senior Captain";
+        rankClass = "text-primary dark:text-indigo-400";
+    } else if (flightCount > 50) {
+        rank = "Commander";
+    } else if (flightCount > 25) {
+        rank = "First Officer";
+    } else if (flightCount > 15) {
+        rank = "Vielflieger";
+    } else if (flightCount > 10) {
+        rank = "Hobbypilot";
+        rankClass = "text-primary dark:text-indigo-400";
+    }
+
+    statusEl.textContent = rank;
+    // Klassen zurücksetzen und neue setzen
+    statusEl.className = `px-3 py-1 bg-surface-container dark:bg-slate-800 rounded-full text-xs font-bold shadow-sm border border-outline-variant/10 ${rankClass}`;
+};
+
+// Modal Steuerung
+window.openRankInfoModal = function() {
+    const modal = document.getElementById('rank-info-modal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    setTimeout(() => modal.classList.remove('opacity-0'), 10);
+};
+
+window.closeRankInfoModal = function() {
+    const modal = document.getElementById('rank-info-modal');
+    modal.classList.add('opacity-0');
+    setTimeout(() => {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }, 300);
 };

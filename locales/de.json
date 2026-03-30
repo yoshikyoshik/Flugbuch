@@ -440,12 +440,12 @@
   "help": {
     "subtitle": "Support & Informationen",
     "subtitle2": "Fragen, Antworten und Kontakt",
-    "collapse": "Einklappen",
+    "collapse": " ",
     "data": {
       "content": "Im Burger-Menü (≡) oben rechts kannst du deine gesamten Flugdaten als JSON- oder CSV-Datei exportieren (Backup!). Du kannst auch eine JSON-Datei importieren (Achtung: Dies überschreibt alle aktuellen Daten). Dort findest du auch den Dark-Mode-Schalter und die Sprachauswahl.",
       "title": "⚙️ Daten (Import/Export & Einstellungen)"
     },
-    "expand": "Ausklappen",
+    "expand": " ",
     "globe": {
       "content": "Der 3D Globus ('Flüge' > '3D Globus') visualisiert alle deine Reisen. Klicke auf '📖 Story-Modus', um die Erdrotation zu stoppen. Die Flugbahnen werden dicker, und du kannst sie anklicken, um Details zu sehen (das 'Interaktive Flugbuch'). Klicke auf Flughafensäulen oder Länder, um auf diese Region zu fokussieren. Ein Klick auf den Ozean setzt den Fokus zurück.",
       "title": "🗺️ Der 3D Globus & Story-Modus"

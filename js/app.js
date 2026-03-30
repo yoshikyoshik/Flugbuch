@@ -306,6 +306,10 @@ async function initializeApp() {
   
   initLiveWidget();
   initUpcomingWidget();
+  // 🚀 NEU: Profil-Rang initial beim Start laden
+  getFlights().then(flights => {
+      if (typeof updateUserRank === 'function') updateUserRank(flights.length);
+  });
 
   // --- ✅ UPDATE: LIVE-CHECK ---
   setInterval(async () => {
@@ -598,6 +602,9 @@ async function startDemoMode() {
     let demoData = getDemoData();
     demoData = resequenceAndAssignNumbers(demoData);
     window.flights = demoData; 
+
+    // 🚀 NEU: Auch den Demo-Pilot bewerten
+    if (typeof updateUserRank === 'function') updateUserRank(demoData.length);
 
     window.airportData = window.airportData || {};
     Object.assign(window.airportData, {
@@ -4940,31 +4947,38 @@ window.initLiveWidget = async function() {
     }
 
     const allFlights = typeof isDemoMode !== 'undefined' && isDemoMode && typeof flights !== 'undefined' ? flights : await getFlights();
-    if (!allFlights || allFlights.length === 0) return;
+    
+    // 🚀 BUGHUNT FIX: Vorzeitigem Return den Schiedsrichter-Aufruf mitgeben!
+    if (!allFlights || allFlights.length === 0) {
+        if (typeof checkRadarEmptyState === 'function') checkRadarEmptyState();
+        return;
+    }
 
     const today = new Date();
     const todayStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
 
-    // 🚀 NEU: Alle Flüge von heute filtern und nach Eingabe-Reihenfolge (Chronologisch) sortieren
     window.todaysLiveFlights = allFlights
         .filter(f => f.date === todayStr)
         .sort((a, b) => {
-            // Wir sortieren aufsteigend nach der internen ID (Erstellungszeitpunkt)
             const idA = a.flightLogNumber || a.flight_id || a.id || 0;
             const idB = b.flightLogNumber || b.flight_id || b.id || 0;
             return idA - idB; 
         });
+        
     const widget = document.getElementById('live-flight-widget');
 
     if (window.todaysLiveFlights.length > 0) {
         if (window.currentLiveFlightIndex >= window.todaysLiveFlights.length) {
-            window.currentLiveFlightIndex = 0; // Reset, falls ein Flug gelöscht wurde
+            window.currentLiveFlightIndex = 0; 
         }
         renderCurrentLiveFlight();
         widget.classList.remove('hidden');
     } else {
         widget.classList.add('hidden');
     }
+
+    // 🚀 SCHIEDSRICHTER RUFEN
+    if (typeof checkRadarEmptyState === 'function') checkRadarEmptyState();
 };
 
 window.renderCurrentLiveFlight = function() {
@@ -5233,27 +5247,28 @@ window.initUpcomingWidget = async function() {
         return;
     }
 
-    // Alle Flüge holen
     const allFlights = typeof isDemoMode !== 'undefined' && isDemoMode && typeof flights !== 'undefined' ? flights : await getFlights();
     console.log("📦 Upcoming-Widget: Alle Flüge aus der DB geladen:", allFlights);
     
-    if (!allFlights || allFlights.length === 0) return;
+    // 🚀 BUGHUNT FIX: Vorzeitigem Return den Schiedsrichter-Aufruf mitgeben!
+    if (!allFlights || allFlights.length === 0) {
+        container.classList.add('hidden');
+        container.classList.remove('flex');
+        if (typeof checkRadarEmptyState === 'function') checkRadarEmptyState();
+        return;
+    }
 
-    // Heutiges Datum als Referenz (YYYY-MM-DD)
     const today = new Date();
     const todayStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
     console.log("📅 Upcoming-Widget: Heutiges Datum berechnet als:", todayStr);
     
-    // 1. Filtern: Wir prüfen verschiedene Feld-Namen, falls dein Datum anders heißt!
     const upcomingFlights = allFlights.filter(f => {
-        // Welches Feld nutzt deine Datenbank für das Datum?
         const flightDateValue = f.date || f.flightDate || f.flight_date || f.date_of_flight;
         return flightDateValue && flightDateValue > todayStr;
     });
 
     console.log("✨ Upcoming-Widget: Zukünftige Flüge gefunden:", upcomingFlights);
 
-    // 2. Sortieren: Der Flug, der als Nächstes ansteht, ganz oben
     upcomingFlights.sort((a, b) => {
         const dateA = a.date || a.flightDate || a.flight_date;
         const dateB = b.date || b.flightDate || b.flight_date;
@@ -5261,14 +5276,12 @@ window.initUpcomingWidget = async function() {
     });
 
     if (upcomingFlights.length > 0) {
-        // Container sichtbar machen
         container.classList.remove('hidden');
         container.classList.add('flex');
         
         let html = `<h2 class="text-lg font-black text-on-surface dark:text-white px-2">${getTranslation("upcoming.title") || "Anstehende Flüge"}</h2>`;
 
         upcomingFlights.forEach(flight => {
-            // Countdown berechnen
             const flightDate = new Date(flight.date);
             const timeDiff = flightDate.getTime() - today.getTime();
             const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
@@ -5321,10 +5334,12 @@ window.initUpcomingWidget = async function() {
 
         container.innerHTML = html;
     } else {
-        // Keine zukünftigen Flüge gefunden
         container.classList.add('hidden');
         container.classList.remove('flex');
     }
+
+    // 🚀 SCHIEDSRICHTER RUFEN
+    if (typeof checkRadarEmptyState === 'function') checkRadarEmptyState();
 };
 
 // Sucht heutige Flüge basierend auf IATA-Codes
@@ -5542,4 +5557,28 @@ window.closeAddMenu = function() {
     setTimeout(() => {
         modal.classList.add('hidden');
     }, 300);
+};
+
+// ==========================================
+// RADAR TAB: EMPTY STATE SCHIEDSRICHTER
+// ==========================================
+window.checkRadarEmptyState = function() {
+    const liveWidget = document.getElementById('live-flight-widget');
+    const upcomingContainer = document.getElementById('upcoming-flights-container');
+    const emptyState = document.getElementById('radar-empty-state');
+    
+    if (liveWidget && upcomingContainer && emptyState) {
+        // Prüfen, ob das Live-Widget aktiv ist
+        const isLiveVisible = !liveWidget.classList.contains('hidden');
+        
+        // Prüfen, ob die Upcoming-Liste aktiv ist (sichtbar UND hat Inhalt)
+        const isUpcomingVisible = !upcomingContainer.classList.contains('hidden') && upcomingContainer.children.length > 0;
+
+        // Wenn mindestens eins von beidem etwas anzeigt, verstecke den Platzhalter!
+        if (isLiveVisible || isUpcomingVisible) {
+            emptyState.classList.add('hidden');
+        } else {
+            emptyState.classList.remove('hidden');
+        }
+    }
 };
