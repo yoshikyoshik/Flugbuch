@@ -980,7 +980,7 @@ window.logFlight = async function () {
     const flightDateStr = newFlightForSupabase.date;
     const todayStr = new Date().toISOString().slice(0, 10);
     
-    if (flightDateStr > todayStr) {
+    if (flightDateStr >= todayStr) {
         showTab("radar"); // In die Zukunft springen
     } else {
         showTab("timeline"); // In die Vergangenheit springen
@@ -1247,7 +1247,7 @@ async function updateFlight() {
   resetForm();
   
   // 🚀 NEU: Smartes Routing!
-  if (targetDate > todayStr) {
+  if (targetDate >= todayStr) {
       showTab("radar");
   } else {
       showTab("timeline");
