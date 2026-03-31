@@ -691,7 +691,6 @@ function lockUiForDemo() {
     // 2. Gefährliche Buttons in der Liste & Profil verstecken
     // (Die 2D Karte erlauben wir im Demo Modus, deshalb ist 'toggle-map-view-btn' raus!)
     const dangerousButtons = [
-        'play-chronicle-btn', 
         'print-book-btn', 
         'return-flight-btn',
         'btn-save-profile' // <-- Profil-Sperre
@@ -4125,8 +4124,31 @@ window.viewLogbookDetails = async function(type, key) {
     window.currentLogbookFlights = filteredFlights;
 
     // 3. Header-Texte & Icons setzen
-    document.getElementById('ld-title').textContent = title;
-    document.getElementById('ld-subtitle').textContent = subtitle;
+    const titleEl = document.getElementById('ld-title');
+    titleEl.textContent = title;
+    titleEl.style.pointerEvents = 'none'; // 🚀 BUGHUNT FIX: Auch der lange Flughafen-Name darf keine Klicks blockieren!
+    
+    const subtitleEl = document.getElementById('ld-subtitle');
+    subtitleEl.style.pointerEvents = 'none'; // Untertitel bleibt ebenfalls durchlässig
+    
+    // 🚀 SICHERHEITS-FIX: Den Schließen-Button gewaltsam in den absoluten Vordergrund holen
+    const closeBtn = document.querySelector('#logbook-details-modal button[onclick="closeLogbookDetails()"]');
+    if (closeBtn) {
+        closeBtn.style.zIndex = '100';
+        closeBtn.style.position = 'absolute';
+    }
+    
+    let apiBtnHtml = "";
+    if (type === 'airline') {
+        apiBtnHtml = `<button style="pointer-events: auto;" onclick="event.stopPropagation(); showAirlineDetails('${key}')" class="inline-flex items-center gap-1 px-2.5 py-1 ml-3 bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/20 text-white rounded-full text-[10px] font-bold uppercase tracking-wider transition-all shadow-sm"><span class="material-symbols-outlined text-[14px]">info</span> Fakten</button>`;
+    } else if (type === 'aircraft') {
+        apiBtnHtml = `<button style="pointer-events: auto;" onclick="event.stopPropagation(); showAircraftDetails('${key}')" class="inline-flex items-center gap-1 px-2.5 py-1 ml-3 bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/20 text-white rounded-full text-[10px] font-bold uppercase tracking-wider transition-all shadow-sm"><span class="material-symbols-outlined text-[14px]">info</span> Fakten</button>`;
+    } else if (type === 'airport') {
+        apiBtnHtml = `<button style="pointer-events: auto;" onclick="event.stopPropagation(); showAirportDetails('${key}')" class="inline-flex items-center gap-1 px-2.5 py-1 ml-3 bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/20 text-white rounded-full text-[10px] font-bold uppercase tracking-wider transition-all shadow-sm"><span class="material-symbols-outlined text-[14px]">info</span> Fakten</button>`;
+    }
+    
+    // Untertitel mit dem neuen Button kombinieren
+    subtitleEl.innerHTML = `<span>${subtitle}</span> ${apiBtnHtml}`;
     
     const logoContainer = document.getElementById('ld-logo-container');
     const logoImg = document.getElementById('ld-logo');

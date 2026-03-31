@@ -126,6 +126,33 @@ function openPremiumModal(featureKey = null) {
 }
 function closePremiumModal() {
   document.getElementById("premium-modal").classList.add("hidden");
+
+  // 🚀 BUGHUNT FIX: UI sofort updaten, falls der Kauf erfolgreich war!
+  if (typeof currentUserSubscription !== 'undefined' && currentUserSubscription === "pro") {
+      
+      // 1. Scanner-Lock auf der Startseite absichern
+      const scannerLock = document.getElementById("scanner-lock");
+      if (scannerLock) scannerLock.classList.add("hidden");
+      
+      // 2. Das Logbuch sofort neu zeichnen, um die nervigen 🔒 zu entfernen
+      const logbookContainer = document.getElementById("analytics-logbook-container");
+      if (logbookContainer && !logbookContainer.classList.contains("hidden")) {
+          let currentView = "aircraftType"; // Standard-Fall
+          
+          if (document.getElementById("logbook-view-airline")?.classList.contains("active")) {
+              currentView = "airline";
+          } else if (document.getElementById("logbook-view-airport")?.classList.contains("active")) {
+              currentView = "airport";
+          } else if (document.getElementById("logbook-view-registration")?.classList.contains("active")) {
+              currentView = "registration";
+          }
+          
+          // Zeichnet die Liste mit den echten Info-Buttons statt der Schlösser neu!
+          if (typeof renderLogbookView === 'function') {
+              renderLogbookView(currentView);
+          }
+      }
+  }
 }
 
 // DETAILS
@@ -234,7 +261,7 @@ async function showAirlineDetails(iataCode) {
     contentContainer.innerHTML = `<p>${getTranslation("modalDetails.loading")}</p>`;
 
     try {
-        const response = await fetch(`${API_BASE_URL}/.netlify/functions/fetch-airline-details?iata_code=${iataCode}`);
+        const response = await fetch(`https://aesthetic-strudel-ecfe50.netlify.app/.netlify/functions/fetch-airline-details?iata_code=${iataCode}`);
         if (!response.ok) throw new Error("Netzwerk-Antwort war nicht OK");
         
         const result = await response.json();
@@ -2236,6 +2263,18 @@ window.switchAnalyticsView = function(view) {
             container.classList.add('hidden');
         }
     });
+
+    // 🚀 BUGHUNT FIX: Share-Button nur im "Statistiken"-Tab anzeigen
+    const shareBtn = document.getElementById('analytics-share-btn');
+    if (shareBtn) {
+        if (view === 'stats') {
+            shareBtn.classList.remove('hidden');
+            shareBtn.classList.add('flex'); // Da der Button original "flex" nutzt
+        } else {
+            shareBtn.classList.add('hidden');
+            shareBtn.classList.remove('flex');
+        }
+    }
 
     // Funktionen feuern
     if (view === 'logbook' && typeof renderLogbookView === 'function') {
