@@ -46,6 +46,20 @@
   "tagline": "Tu bitácora de vuelo, visualizada en 3D.",
   "terms": "Términos y condiciones",
   "swipeToScroll": "Desliza para ver más",
+  "searchFlights": "Buscar vuelos...",
+  "filter": "Filtro",
+  "singleFlights": "Vuelos",
+  "myTrips": "Mis Viajes",
+  "map2d": "Mapa 2D",
+  "globe3d": "Globo 3D",
+  "facts": "Datos",
+  "unknownAirline": "Aerolínea desconocida",
+  "singleView": "Vista Individual",
+  "allRoutes": "Todas las Rutas",
+  "playStart": "Iniciar",
+  "playPause": "Pausa",
+  "playResume": "Continuar",
+  "playStop": "Detener",
   
   "achievements": {
     "progress": "Progreso",
@@ -367,7 +381,8 @@
     "sortDistance": "Distancia",
     "sortRoute": "Ruta",
     "sortTrip": "Viaje",
-    "title": "Vuelos Guardados"
+    "title": "Vuelos Guardados",
+    "chronicleTitle": "Crónica de Rutas"
   },
   "form": {
     "aircraft": "Tipo de avión (Opcional)",
@@ -873,7 +888,13 @@
     "saveSuccess": "¡Perfil guardado con éxito!",
     "saveError": "Error al guardar el perfil.",
     "avatarLabel": "Avatar",
-    "demoTabDisabled": "El perfil no está disponible en el modo demo."
+    "demoTabDisabled": "El perfil no está disponible en el modo demo.",
+    "email": "Correo electrónico",
+    "manage": "Gestionar",
+    "darkMode": "Modo oscuro",
+    "language": "Idioma",
+    "changePassword": "Cambiar contraseña",
+    "logout": "Cerrar sesión"
   },
 
   "leaderboard": {
@@ -1004,6 +1025,27 @@
   "btnOpen": "Filtros y Herramientas",
   "title": "Filtros y Herramientas",
   "apply": "Listo"
+  },
+
+"nav": {
+    "stats": "Estadísticas",
+    "charts": "Gráficos",
+    "logbook": "Diario",
+    "badges": "Logros",
+    "community": "Comunidad",
+    "account": "Cuenta"
+  },
+"ranks": {
+    "title": "Rangos de Piloto",
+    "flights": "Vuelos",
+    "understood": "Entendido",
+    "beginner": "Principiante",
+    "hobbyist": "Aficionado",
+    "frequentFlyer": "Viajero Frecuente",
+    "firstOfficer": "Primer Oficial",
+    "commander": "Comandante",
+    "seniorCaptain": "Capitán Senior",
+    "legend": "Sky Legend 🏆"
   }
 
 }

@@ -623,13 +623,13 @@ window.renderFlights = async function (
       if (window.isAllRoutesViewActive) {
           mapBtn.innerHTML = `
               <span class="material-symbols-outlined text-3xl text-primary dark:text-indigo-400 group-hover:scale-110 transition-transform">location_on</span>
-              <span class="text-sm font-bold text-on-surface dark:text-white">Einzelansicht</span>
+              <span class="text-sm font-bold text-on-surface dark:text-white" data-i18n="singleView">${getTranslation("singleView") || "Einzelansicht"}</span>
           `;
           mapBtn.classList.add('bg-primary/10', 'dark:bg-indigo-900/40');
       } else {
           mapBtn.innerHTML = `
               <span class="material-symbols-outlined text-3xl text-primary dark:text-indigo-400 group-hover:scale-110 transition-transform">map</span>
-              <span class="text-sm font-bold text-on-surface dark:text-white">Alle Routen</span>
+              <span class="text-sm font-bold text-on-surface dark:text-white" data-i18n="allRoutes">${getTranslation("allRoutes") || "Alle Routen"}</span>
           `;
           mapBtn.classList.remove('bg-primary/10', 'dark:bg-indigo-900/40');
       }
@@ -671,11 +671,16 @@ window.renderFlights = async function (
     });
   }
   
-  updateCharts(allFlights); 
-  updatePaginationUI(allFlights);
   updateStatisticsDisplay(allFlights);
+  updateCharts(allFlights); 
+  if (typeof window.updatePaginationUI === 'function') {
+      window.updatePaginationUI(allFlights);
+  }
 
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  // 🚀 BUGHUNT FIX: Sicherstellen, dass 'currentPage' immer als korrekte Zahl existiert, 
+  // bevor wir die Liste zerschneiden!
+  const cp = window.currentPage || 1;
+  const startIndex = (cp - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
   const paginatedFlights = allFlights.slice(startIndex, endIndex);
 
@@ -1033,44 +1038,53 @@ async function renderLogbookView(groupBy) {
  * Aktualisiert die Paginierungs-UI (Button-Zustände, Seitenzahlanzeige).
  * @param {Array<Object>} allFlights - Das komplette, ungefilterte Array aller Flüge.
  */
-function updatePaginationUI(allFlights) {
+// ==========================================
+// 🚀 BUGHUNT FIX: KUGELSICHERE PAGINATION
+// ==========================================
+window.updatePaginationUI = function(allFlights) {
   const pageInfo = document.getElementById("page-info");
   const prevBtn = document.getElementById("prev-page-btn");
   const nextBtn = document.getElementById("next-page-btn");
   const paginationControls = document.getElementById("pagination-controls");
 
+  if (!pageInfo || !prevBtn || !nextBtn || !paginationControls) return;
+
   const totalPages = Math.ceil(allFlights.length / ITEMS_PER_PAGE);
 
   if (totalPages <= 1) {
-    paginationControls.style.display = "none"; // Verstecke Steuerung, wenn nicht benötigt
+    paginationControls.style.display = "none"; 
     return;
   }
 
-  // Stelle sicher, dass die Leiste sichtbar ist, wenn sie gebraucht wird.
   paginationControls.style.display = "flex";
 
-  // Dynamischen Text verwenden
-  pageInfo.textContent = getTranslation("flights.pageInfo")
-    .replace("{currentPage}", currentPage)
+  // Immer sicherstellen, dass wir eine gültige Seitenzahl haben
+  const cp = window.currentPage || 1;
+  
+  // Sicherer Fallback, falls der Übersetzungstext mal kurz nicht greifbar ist
+  const textTemplate = getTranslation("flights.pageInfo") || "Seite {currentPage} von {totalPages}";
+  
+  pageInfo.textContent = textTemplate
+    .replace("{currentPage}", cp)
     .replace("{totalPages}", totalPages);
 
-  prevBtn.disabled = currentPage === 1;
-  nextBtn.disabled = currentPage === totalPages;
-}
+  prevBtn.disabled = (cp === 1);
+  nextBtn.disabled = (cp === totalPages);
+};
 
-/**
- * Wechselt zur nächsten Seite.
- */
-function nextPage() {
-  renderFlights(null, null, currentPage + 1);
-}
+window.nextPage = function() {
+  const cp = window.currentPage || 1;
+  if (typeof window.renderFlights === 'function') {
+      window.renderFlights(null, null, cp + 1);
+  }
+};
 
-/**
- * Wechselt zur vorherigen Seite.
- */
-function prevPage() {
-  renderFlights(null, null, currentPage - 1);
-}
+window.prevPage = function() {
+  const cp = window.currentPage || 1;
+  if (cp > 1 && typeof window.renderFlights === 'function') {
+      window.renderFlights(null, null, cp - 1);
+  }
+};
 
 var updateStatisticsDisplay = function (flights) {
   var stats = calculateStatistics(flights);
@@ -2411,7 +2425,7 @@ window.toggleAllRoutesView = async function() {
             // Wir zeigen gerade alle Routen -> Button bietet Rückkehr zur Einzelansicht an
             btn.innerHTML = `
                 <span class="material-symbols-outlined text-3xl text-primary dark:text-indigo-400 group-hover:scale-110 transition-transform">location_on</span>
-                <span class="text-sm font-bold text-on-surface dark:text-white">Einzelansicht</span>
+                <span class="text-sm font-bold text-on-surface dark:text-white" data-i18n="singleView">${getTranslation("singleView") || "Einzelansicht"}</span>
             `;
             // Optional: Button-Hintergrund leicht einfärben, um "Aktiven Modus" zu zeigen
             btn.classList.add('bg-primary/10', 'dark:bg-indigo-900/40');
@@ -2419,7 +2433,7 @@ window.toggleAllRoutesView = async function() {
             // Wir zeigen die Einzelansicht -> Button bietet "Alle Routen" an
             btn.innerHTML = `
                 <span class="material-symbols-outlined text-3xl text-primary dark:text-indigo-400 group-hover:scale-110 transition-transform">map</span>
-                <span class="text-sm font-bold text-on-surface dark:text-white">Alle Routen</span>
+                <span class="text-sm font-bold text-on-surface dark:text-white" data-i18n="allRoutes">${getTranslation("allRoutes") || "Alle Routen"}</span>
             `;
             btn.classList.remove('bg-primary/10', 'dark:bg-indigo-900/40');
         }
@@ -2546,28 +2560,27 @@ window.updateUserRank = function(flightCount) {
     const statusEl = document.getElementById('profile-header-status');
     if (!statusEl) return;
 
-    let rank = "Anfänger";
-    let rankClass = "text-on-surface/60 dark:text-slate-400"; // Standard
+    let rank = getTranslation("ranks.beginner") || "Anfänger";
+    let rankClass = "text-on-surface/60 dark:text-slate-400"; 
 
     if (flightCount > 500) {
-        rank = "Sky Legend 🏆";
+        rank = getTranslation("ranks.legend") || "Sky Legend 🏆";
         rankClass = "text-amber-500 dark:text-amber-400";
     } else if (flightCount > 100) {
-        rank = "Senior Captain";
+        rank = getTranslation("ranks.seniorCaptain") || "Senior Captain";
         rankClass = "text-primary dark:text-indigo-400";
     } else if (flightCount > 50) {
-        rank = "Commander";
+        rank = getTranslation("ranks.commander") || "Commander";
     } else if (flightCount > 25) {
-        rank = "First Officer";
+        rank = getTranslation("ranks.firstOfficer") || "First Officer";
     } else if (flightCount > 15) {
-        rank = "Vielflieger";
+        rank = getTranslation("ranks.frequentFlyer") || "Vielflieger";
     } else if (flightCount > 10) {
-        rank = "Hobbypilot";
+        rank = getTranslation("ranks.hobbyist") || "Hobbypilot";
         rankClass = "text-primary dark:text-indigo-400";
     }
 
     statusEl.textContent = rank;
-    // Klassen zurücksetzen und neue setzen
     statusEl.className = `px-3 py-1 bg-surface-container dark:bg-slate-800 rounded-full text-xs font-bold shadow-sm border border-outline-variant/10 ${rankClass}`;
 };
 

@@ -46,6 +46,20 @@
   "tagline": "您的飞行日志，3D可视化。",
   "terms": "条款",
   "swipeToScroll": "滑动以滚动",
+  "searchFlights": "搜索航班...",
+  "filter": "筛选",
+  "singleFlights": "单程航班",
+  "myTrips": "我的行程",
+  "map2d": "2D 地图",
+  "globe3d": "3D 地球",
+  "facts": "事实",
+  "unknownAirline": "未知航空公司",
+  "singleView": "单一视图",
+  "allRoutes": "所有路线",
+  "playStart": "开始",
+  "playPause": "暂停",
+  "playResume": "继续",
+  "playStop": "停止",
   
   "achievements": {
     "progress": "进度",
@@ -367,7 +381,8 @@
     "sortDistance": "距离",
     "sortRoute": "路线",
     "sortTrip": "行程",
-    "title": "已存航班"
+    "title": "已存航班",
+    "chronicleTitle": "航线历程"
   },
   "form": {
     "aircraft": "机型 (可选)",
@@ -873,7 +888,13 @@
     "saveSuccess": "个人资料已成功保存！",
     "saveError": "无法保存个人资料。",
     "avatarLabel": "头像",
-    "demoTabDisabled": "在演示模式下个人资料不可用。"
+    "demoTabDisabled": "在演示模式下个人资料不可用。",
+    "email": "电子邮件地址",
+    "manage": "管理",
+    "darkMode": "深色模式",
+    "language": "语言",
+    "changePassword": "更改密码",
+    "logout": "登出"
   },
 
   "leaderboard": {
@@ -1004,6 +1025,27 @@
   "btnOpen": "筛选与工具",
   "title": "筛选与工具",
   "apply": "完成"
+  },
+
+"nav": {
+    "stats": "统计",
+    "charts": "图表",
+    "logbook": "飞行日志",
+    "badges": "成就",
+    "community": "社区",
+    "account": "账户"
+  },
+"ranks": {
+    "title": "飞行员级别",
+    "flights": "航班",
+    "understood": "明白",
+    "beginner": "初学者",
+    "hobbyist": "业余爱好者",
+    "frequentFlyer": "常旅客",
+    "firstOfficer": "副机长",
+    "commander": "机长",
+    "seniorCaptain": "高级机长",
+    "legend": "天空传奇 🏆"
   }
 
 }

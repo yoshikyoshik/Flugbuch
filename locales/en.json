@@ -46,6 +46,20 @@
   "tagline": "Your flight log, visualized in 3D.",
   "terms": "Terms",
   "swipeToScroll": "Swipe to scroll",
+  "searchFlights": "Search flights...",
+  "filter": "Filter",
+  "singleFlights": "Single Flights",
+  "myTrips": "My Trips",
+  "map2d": "2D Map",
+  "globe3d": "3D Globe",
+  "facts": "Facts",
+  "unknownAirline": "Unknown Airline",
+  "singleView": "Single View",
+  "allRoutes": "All Routes",
+  "playStart": "Start",
+  "playPause": "Pause",
+  "playResume": "Resume",
+  "playStop": "Stop",
   
   "achievements": {
     "progress": "Progress",
@@ -367,7 +381,8 @@
     "sortDistance": "Distance",
     "sortRoute": "Route",
     "sortTrip": "Trip",
-    "title": "Saved Flights"
+    "title": "Saved Flights",
+    "chronicleTitle": "Route Chronicle"
   },
   "form": {
     "aircraft": "Aircraft type (Optional)",
@@ -877,7 +892,13 @@
     "saveSuccess": "Profile saved successfully!",
     "saveError": "Failed to save ",
     "avatarLabel": "Avatar",
-    "demoTabDisabled": "The profile is not available in demo mode."
+    "demoTabDisabled": "The profile is not available in demo mode.",
+    "email": "Email Address",
+    "manage": "Manage",
+    "darkMode": "Dark Mode",
+    "language": "Language",
+    "changePassword": "Change Password",
+    "logout": "Logout"
   },
 
   "leaderboard": {
@@ -1008,6 +1029,27 @@
   "btnOpen": "Filters & Tools",
   "title": "Filters & Tools",
   "apply": "Done"
+  },
+
+"nav": {
+    "stats": "Statistics",
+    "charts": "Charts",
+    "logbook": "Logbook",
+    "badges": "Achievements",
+    "community": "Community",
+    "account": "Account"
+  },
+"ranks": {
+    "title": "Pilot Ranks",
+    "flights": "Flights",
+    "understood": "Got it",
+    "beginner": "Beginner",
+    "hobbyist": "Hobbyist",
+    "frequentFlyer": "Frequent Flyer",
+    "firstOfficer": "First Officer",
+    "commander": "Commander",
+    "seniorCaptain": "Senior Captain",
+    "legend": "Sky Legend 🏆"
   }
 
 }

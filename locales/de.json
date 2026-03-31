@@ -46,6 +46,20 @@
   "tagline": "Dein Flugbuch, visualisiert in 3D.",
   "terms": "AGB",
   "swipeToScroll": "Wischen zum Blättern",
+  "searchFlights": "Flüge durchsuchen...",
+  "filter": "Filter",
+  "singleFlights": "Einzelflüge",
+  "myTrips": "Meine Reisen",
+  "map2d": "2D Karte",
+  "globe3d": "3D Globus",
+  "facts": "Fakten",
+  "unknownAirline": "Unbekannte Airline",
+  "singleView": "Einzelansicht",
+  "allRoutes": "Alle Routen",
+  "playStart": "Starten",
+  "playPause": "Pause",
+  "playResume": "Weiter",
+  "playStop": "Stopp",
   
   "achievements": {
     "progress": "Fortschritt",
@@ -368,7 +382,8 @@
     "sortDistance": "Distanz",
     "sortRoute": "Route",
     "sortTrip": "Reise / Trip",
-    "title": "Gespeicherte Flüge"
+    "title": "Gespeicherte Flüge",
+    "chronicleTitle": "Routen-Chronik"
   },
   "form": {
     "aircraft": "Flugzeugtyp (Optional)",
@@ -878,7 +893,13 @@
     "saveSuccess": "Profil erfolgreich gespeichert!",
     "saveError": "Profil konnte nicht gespeichert werden.",
     "avatarLabel": "Avatar",
-    "demoTabDisabled": "Das Profil ist im Demo-Modus nicht verfügbar."
+    "demoTabDisabled": "Das Profil ist im Demo-Modus nicht verfügbar.",
+    "email": "E-Mail Adresse",
+    "manage": "Verwalten",
+    "darkMode": "Dark Mode",
+    "language": "Sprache",
+    "changePassword": "Passwort ändern",
+    "logout": "Abmelden"
   },
 
   "leaderboard": {
@@ -1009,6 +1030,27 @@
   "btnOpen": "Filter & Tools",
   "title": "Filter & Werkzeuge",
   "apply": "Fertig"
+  },
+
+"nav": {
+    "stats": "Statistiken",
+    "charts": "Charts",
+    "logbook": "Logbuch",
+    "badges": "Erfolge",
+    "community": "Community",
+    "account": "Account"
+  },
+"ranks": {
+    "title": "Pilot-Ränge",
+    "flights": "Flüge",
+    "understood": "Verstanden",
+    "beginner": "Anfänger",
+    "hobbyist": "Hobbypilot",
+    "frequentFlyer": "Vielflieger",
+    "firstOfficer": "First Officer",
+    "commander": "Commander",
+    "seniorCaptain": "Senior Captain",
+    "legend": "Sky Legend 🏆"
   }
 
 }

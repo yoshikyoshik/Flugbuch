@@ -46,6 +46,20 @@
   "tagline": "Ваш журнал полетов в 3D.",
   "terms": "Условия",
   "swipeToScroll": "Проведите, чтобы прокрутить",
+  "searchFlights": "Поиск рейсов...",
+  "filter": "Фильтр",
+  "singleFlights": "Одиночные рейсы",
+  "myTrips": "Мои поездки",
+  "map2d": "2D Карта",
+  "globe3d": "3D Глобус",
+  "facts": "Факты",
+  "unknownAirline": "Неизвестная авиакомпания",
+  "singleView": "Одиночный вид",
+  "allRoutes": "Все маршруты",
+  "playStart": "Старт",
+  "playPause": "Пауза",
+  "playResume": "Продолжить",
+  "playStop": "Стоп",
   
   "achievements": {
     "progress": "Прогресс",
@@ -367,7 +381,8 @@
     "sortDistance": "Дистанция",
     "sortRoute": "Маршрут",
     "sortTrip": "Поездка",
-    "title": "Сохраненные рейсы"
+    "title": "Сохраненные рейсы",
+    "chronicleTitle": "Хроника маршрутов"
   },
   "form": {
     "aircraft": "Тип самолета (необязательно)",
@@ -873,7 +888,13 @@
     "saveSuccess": "Профиль успешно сохранен!",
     "saveError": "Не удалось сохранить профиль.",
     "avatarLabel": "Аватар",
-    "demoTabDisabled": "Профиль недоступен в демо-режиме."
+    "demoTabDisabled": "Профиль недоступен в демо-режиме.",
+    "email": "Адрес электронной почты",
+    "manage": "Управлять",
+    "darkMode": "Темный режим",
+    "language": "Язык",
+    "changePassword": "Изменить пароль",
+    "logout": "Выйти"
   },
 
   "leaderboard": {
@@ -1004,6 +1025,27 @@
   "btnOpen": "Фильтры и инструменты",
   "title": "Фильтры и инструменты",
   "apply": "Готово"
+  },
+
+"nav": {
+    "stats": "Статистика",
+    "charts": "Графики",
+    "logbook": "Журнал",
+    "badges": "Достижения",
+    "community": "Сообщество",
+    "account": "Аккаунт"
+  },
+"ranks": {
+    "title": "Звания пилотов",
+    "flights": "Рейсы",
+    "understood": "Понятно",
+    "beginner": "Новичок",
+    "hobbyist": "Любитель",
+    "frequentFlyer": "Часто летающий",
+    "firstOfficer": "Первый помощник",
+    "commander": "Командир",
+    "seniorCaptain": "Старший капитан",
+    "legend": "Легенда неба 🏆"
   }
 
 }

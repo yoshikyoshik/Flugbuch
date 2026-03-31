@@ -658,9 +658,16 @@ async function startDemoMode() {
                  const btn = document.getElementById("toggle-map-view-btn");
                  if(btn) {
                      btn.innerHTML = `
-                         <span class="material-symbols-outlined text-3xl text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform">map</span>
-                         <span class="text-sm font-bold text-indigo-900 dark:text-indigo-300">Einzelansicht</span>
+                         <span class="material-symbols-outlined text-3xl text-primary dark:text-indigo-400 group-hover:scale-110 transition-transform">location_on</span>
+                         <span class="text-sm font-bold text-on-surface dark:text-white" data-i18n="singleView">${getTranslation("singleView") || "Einzelansicht"}</span>
                      `;
+                     btn.classList.add('bg-primary/10', 'dark:bg-indigo-900/40');
+                 }
+                 
+                 // 🚀 BUGHUNT FIX: Chronik-Controls sofort einblenden!
+                 const chronicleContainer = document.getElementById('chronicle-controls-container');
+                 if (chronicleContainer) {
+                     chronicleContainer.classList.remove('hidden');
                  }
              }
         }, 500);
@@ -3828,7 +3835,7 @@ window.viewFlightDetails = async function(id, isSwitching = false, customScope =
 
     // Modal geschmeidig einblenden
     const modal = document.getElementById('flight-details-modal');
-    modal.style.zIndex = '60'; // <-- 🚀 NEU: Legt die Flug-Karte sicher ÜBER die Reise-Karte!
+    modal.style.zIndex = '210'; // <-- 🚀 NEU: Legt die Flug-Karte sicher ÜBER die Reise-Karte!
     modal.classList.remove('hidden');
     
     if (!isSwitching) {
@@ -4039,6 +4046,7 @@ window.viewTripDetails = async function(tripId, isSwitching = false) {
 
     // 9. Karte anzeigen
     const modal = document.getElementById('trip-details-modal');
+    modal.style.zIndex = '200'; // 🚀 BUGHUNT FIX
     modal.classList.remove('hidden');
     if (!isSwitching) {
         setTimeout(() => {
@@ -4140,11 +4148,11 @@ window.viewLogbookDetails = async function(type, key) {
     
     let apiBtnHtml = "";
     if (type === 'airline') {
-        apiBtnHtml = `<button style="pointer-events: auto;" onclick="event.stopPropagation(); showAirlineDetails('${key}')" class="inline-flex items-center gap-1 px-2.5 py-1 ml-3 bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/20 text-white rounded-full text-[10px] font-bold uppercase tracking-wider transition-all shadow-sm"><span class="material-symbols-outlined text-[14px]">info</span> Fakten</button>`;
+        apiBtnHtml = `<button style="pointer-events: auto;" onclick="event.stopPropagation(); showAirlineDetails('${key}')" class="inline-flex items-center gap-1 px-2.5 py-1 ml-3 bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/20 text-white rounded-full text-[10px] font-bold uppercase tracking-wider transition-all shadow-sm"><span class="material-symbols-outlined text-[14px]">info</span> ${getTranslation("facts") || "Fakten"}</button>`;
     } else if (type === 'aircraft') {
-        apiBtnHtml = `<button style="pointer-events: auto;" onclick="event.stopPropagation(); showAircraftDetails('${key}')" class="inline-flex items-center gap-1 px-2.5 py-1 ml-3 bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/20 text-white rounded-full text-[10px] font-bold uppercase tracking-wider transition-all shadow-sm"><span class="material-symbols-outlined text-[14px]">info</span> Fakten</button>`;
+        apiBtnHtml = `<button style="pointer-events: auto;" onclick="event.stopPropagation(); showAircraftDetails('${key}')" class="inline-flex items-center gap-1 px-2.5 py-1 ml-3 bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/20 text-white rounded-full text-[10px] font-bold uppercase tracking-wider transition-all shadow-sm"><span class="material-symbols-outlined text-[14px]">info</span> ${getTranslation("facts") || "Fakten"}</button>`;
     } else if (type === 'airport') {
-        apiBtnHtml = `<button style="pointer-events: auto;" onclick="event.stopPropagation(); showAirportDetails('${key}')" class="inline-flex items-center gap-1 px-2.5 py-1 ml-3 bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/20 text-white rounded-full text-[10px] font-bold uppercase tracking-wider transition-all shadow-sm"><span class="material-symbols-outlined text-[14px]">info</span> Fakten</button>`;
+        apiBtnHtml = `<button style="pointer-events: auto;" onclick="event.stopPropagation(); showAirportDetails('${key}')" class="inline-flex items-center gap-1 px-2.5 py-1 ml-3 bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/20 text-white rounded-full text-[10px] font-bold uppercase tracking-wider transition-all shadow-sm"><span class="material-symbols-outlined text-[14px]">info</span> ${getTranslation("facts") || "Fakten"}</button>`;
     }
     
     // Untertitel mit dem neuen Button kombinieren
@@ -4235,7 +4243,7 @@ window.viewLogbookDetails = async function(type, key) {
 
     // 6. Modal anzeigen (Z-Index etwas niedriger als die Flug-Karte, damit die drüber passt)
     const modal = document.getElementById('logbook-details-modal');
-    modal.style.zIndex = '50';
+    modal.style.zIndex = '200';
     modal.classList.remove('hidden');
     
     setTimeout(() => {
@@ -4425,6 +4433,7 @@ window.viewAchievementDetails = async function(category, key, isSwitching = fals
 
     // 7. Modal anzeigen
     const modal = document.getElementById('achievement-details-modal');
+    modal.style.zIndex = '200';
     modal.classList.remove('hidden');
     if (!isSwitching) {
         setTimeout(() => {
@@ -5397,7 +5406,7 @@ window.initUpcomingWidget = async function() {
             }
 
             const flightNumStr = flight.flightNumber || "-";
-            const airlineStr = flight.airline || "Unbekannte Airline";
+            const airlineStr = flight.airline || getTranslation("unknownAirline") || "Unbekannte Airline";
             const logoHtml = flight.airline_logo ? `<img src="${flight.airline_logo}" class="w-6 h-6 object-contain">` : `✈️`;
 
             html += `
