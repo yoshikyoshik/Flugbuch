@@ -19,9 +19,12 @@ function showMessage(title, message, type = "info") {
 }
 
 // MODALS
+// MODALS
 function openInfoModal() {
-  document.getElementById("info-modal").classList.remove("hidden");
-  document.getElementById("info-modal").classList.add("flex");
+  const modal = document.getElementById("info-modal");
+  modal.style.zIndex = '250'; // 🚀 BUGHUNT FIX: Hebt das Info-Modal sicher über das Logbuch (z-200)!
+  modal.classList.remove("hidden");
+  modal.classList.add("flex");
 }
 function closeInfoModal() {
   document.getElementById("info-modal").classList.add("hidden");

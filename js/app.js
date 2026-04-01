@@ -310,6 +310,11 @@ async function initializeApp() {
   // 🚀 NEU: Profil-Rang initial beim Start laden
   getFlights().then(flights => {
       if (typeof updateUserRank === 'function') updateUserRank(flights.length);
+      
+      // 🚀 DATA FEATURE: Hausmeister starten (Silent Sync für gestern)
+      if (typeof silentPostFlightSync === 'function') {
+          silentPostFlightSync(flights); // Hier heißt das Array 'flights' statt 'allFlights'
+      }
   });
 
   // --- ✅ UPDATE: LIVE-CHECK ---
@@ -5154,6 +5159,22 @@ window.prevLiveFlight = function() {
 
 window.refreshLiveFlightData = async function() {
     if (!window.currentLiveFlight) return;
+
+    // 🚀 BUGHUNT FIX: Prüfen, ob der User diesen Flug heute schon ausgeblendet hat!
+    const hiddenDataStr = localStorage.getItem('hiddenLiveFlight');
+    if (hiddenDataStr) {
+        try {
+            const hiddenData = JSON.parse(hiddenDataStr);
+            const todayStr = new Date().toISOString().split('T')[0];
+            const flightId = window.currentLiveFlight.id || window.currentLiveFlight.flight_id;
+            
+            if (hiddenData.date === todayStr && hiddenData.id === flightId) {
+                console.log("👁️ Live-Flug ist für heute ausgeblendet. Breche Refresh ab.");
+                window.hideLiveWidget(); // Führt die versteckende UI-Logik inkl. Ghost-Button aus
+                return; 
+            }
+        } catch(e) {}
+    }
     
     const icon = document.getElementById('live-refresh-icon');
     if (icon) icon.classList.add('animate-spin');
@@ -5299,6 +5320,10 @@ window.refreshLiveFlightData = async function() {
             statusEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-yellow-400 text-yellow-950 shadow-sm";
         }
 
+        // 🚀 BUGHUNT FIX: Den Ausblenden-Button entfernen, da der Flug ONLINE ist
+        const existingHideBtnContainer = document.getElementById('live-hide-btn-container');
+        if (existingHideBtnContainer) existingHideBtnContainer.remove();
+
         // --- 4. 🚀 NEU: EXAKTE FLUGZEIT NACH LANDUNG SPEICHERN ---
         // Wenn der Flug gelandet ist UND wir beide echten Timestamps haben
         if (status === "landed" && data.dep_actual_ts && data.arr_actual_ts) {
@@ -5338,9 +5363,103 @@ window.refreshLiveFlightData = async function() {
         const statusEl = document.getElementById('live-status-badge');
         statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-gray-600"></span> <span data-i18n="live.statusOffline">${getTranslation("live.statusOffline") || "OFFLINE"}</span>`;
         statusEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-gray-200 text-gray-700 shadow-sm";
+
+        // 🚀 UX FIX: Create a proper space for the Hide button at the bottom!
+        const widgetContainer = document.getElementById('live-flight-widget');
+        if (widgetContainer && !document.getElementById('live-hide-btn-container')) {
+            const hideBtnContainer = document.createElement('div');
+            hideBtnContainer.id = 'live-hide-btn-container';
+            
+            // This centers the button with margins at the bottom of the widget
+            hideBtnContainer.className = 'w-full flex justify-center mt-6 mb-3 px-4';
+            
+            // We give it a centered, prominent, pill-shaped appearance
+            hideBtnContainer.innerHTML = `
+                <button onclick="event.stopPropagation(); window.hideLiveWidget()" class="flex items-center justify-center gap-2 px-6 py-2 bg-surface-container dark:bg-slate-800 text-on-surface/60 dark:text-slate-400 rounded-full text-xs font-bold transition-all hover:bg-surface-container-high dark:hover:bg-slate-700 border border-outline-variant/20 shadow-sm w-max" title="Live-Flug für heute ausblenden">
+                    <span class="material-symbols-outlined text-[16px]">visibility_off</span> 
+                    Live-Flug ausblenden
+                </button>
+            `;
+            
+            // By appending it, it will appear naturally *after* all the meta-data (Gates, Terminals, etc.)
+            widgetContainer.appendChild(hideBtnContainer);
+        }
     } finally {
         if (icon) icon.classList.remove('animate-spin');
     }
+};
+
+// ==========================================
+// 🚀 UX FEATURE: LIVE-WIDGET VERSTECKEN & WIEDERHERSTELLEN
+// ==========================================
+
+window.hideLiveWidget = function() {
+    const widget = document.getElementById('live-flight-widget');
+    if (widget) {
+        widget.classList.add('hidden');
+        widget.classList.remove('flex'); // Falls es ein Flex-Container ist
+    }
+    
+    // 1. Auto-Refresh stoppen, um API-Calls zu sparen
+    if (typeof window.liveFlightInterval !== 'undefined' && window.liveFlightInterval) {
+        clearInterval(window.liveFlightInterval);
+        window.liveFlightInterval = null;
+        console.log("🛑 Live-Widget ausgeblendet: Auto-Refresh gestoppt.");
+    }
+    
+    // 2. Zustand im LocalStorage für heute speichern (damit es beim Neuladen versteckt bleibt)
+    if (window.currentLiveFlight) {
+        const todayStr = new Date().toISOString().split('T')[0];
+        const flightId = window.currentLiveFlight.id || window.currentLiveFlight.flight_id;
+        localStorage.setItem('hiddenLiveFlight', JSON.stringify({ id: flightId, date: todayStr }));
+    }
+    
+    // 3. Ghost-Button anzeigen
+    showGhostButton();
+    
+    // 4. Radar Empty State prüfen
+    if (typeof checkRadarEmptyState === 'function') checkRadarEmptyState();
+};
+
+window.showGhostButton = function() {
+    let ghostBtn = document.getElementById('restore-live-widget-btn');
+    
+    // Wenn er noch nicht existiert, bauen wir ihn direkt hinter das Widget
+    if (!ghostBtn) {
+        ghostBtn = document.createElement('button');
+        ghostBtn.id = 'restore-live-widget-btn';
+        ghostBtn.className = 'mx-auto mt-4 mb-8 flex items-center justify-center gap-2 px-4 py-2 bg-surface-container hover:bg-surface-container-high dark:bg-slate-800 dark:hover:bg-slate-700 text-on-surface/60 dark:text-slate-400 rounded-full text-xs font-bold transition-all border border-outline-variant/20 shadow-sm';
+        ghostBtn.innerHTML = `<span class="material-symbols-outlined text-[16px]">visibility</span> Ausgeblendeten Live-Flug anzeigen`;
+        ghostBtn.onclick = function() { window.restoreLiveWidget(); };
+        
+        const liveWidget = document.getElementById('live-flight-widget');
+        if (liveWidget && liveWidget.parentNode) {
+            liveWidget.parentNode.insertBefore(ghostBtn, liveWidget.nextSibling);
+        }
+    }
+    ghostBtn.classList.remove('hidden');
+};
+
+window.restoreLiveWidget = function() {
+    // 1. Sperre aus LocalStorage löschen
+    localStorage.removeItem('hiddenLiveFlight');
+    
+    // 2. Ghost-Button verstecken
+    const ghostBtn = document.getElementById('restore-live-widget-btn');
+    if (ghostBtn) ghostBtn.classList.add('hidden');
+    
+    // 3. Widget wieder anzeigen und Refresh starten
+    const widget = document.getElementById('live-flight-widget');
+    if (widget) {
+        widget.classList.remove('hidden');
+        if (typeof refreshLiveFlightData === 'function') {
+            console.log("🔄 Live-Widget wiederhergestellt: Starte Refresh...");
+            refreshLiveFlightData();
+        }
+    }
+    
+    // Empty State ggf. wieder verstecken
+    if (typeof checkRadarEmptyState === 'function') checkRadarEmptyState();
 };
 
 // =================================================================
@@ -5758,4 +5877,61 @@ window.checkRadarEmptyState = function() {
             emptyState.classList.remove('hidden');
         }
     }
+};
+
+// ==========================================
+// 🚀 DATA FEATURE: SILENT POST-FLIGHT SYNC
+// ==========================================
+window.silentPostFlightSync = async function(allFlights) {
+    if (!allFlights || allFlights.length === 0) return;
+    
+    const todayStr = new Date().toISOString().split('T')[0];
+    const lastSync = localStorage.getItem('lastSilentSync');
+    
+    // Nur 1x pro Tag ausführen!
+    if (lastSync === todayStr) return; 
+
+    // Berechne "Gestern"
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.getFullYear() + '-' + String(yesterday.getMonth() + 1).padStart(2, '0') + '-' + String(yesterday.getDate()).padStart(2, '0');
+    
+    // Gibt es Flüge von gestern?
+    const yesterdaysFlights = allFlights.filter(f => (f.date || f.flightDate || f.flight_date) === yesterdayStr);
+    
+    if (yesterdaysFlights.length === 0) {
+        localStorage.setItem('lastSilentSync', todayStr);
+        return;
+    }
+
+    console.log("🔄 Starte Silent-Sync für gestrige Flüge, um finale Daten zu sichern...", yesterdaysFlights);
+
+    for (const flight of yesterdaysFlights) {
+        try {
+            const flightNum = flight.flightNumber || flight.flightLogNumber;
+            const depIata = flight.departure;
+            if (!flightNum || !depIata) continue;
+
+            const response = await fetch(`${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-live-flight?dep_iata=${depIata}&flight_iata=${flightNum}`);
+            if (response.ok) {
+                const data = await response.json();
+                
+                // Hat die API noch Daten und tatsächliche Zeiten?
+                let updates = {};
+                // (Passe die Keys hier an deine Supabase-Struktur an, falls sie anders heißen!)
+                if (data.arrival_time_actual) updates.arrival_time_actual = data.arrival_time_actual;
+                if (data.departure_time_actual) updates.departure_time_actual = data.departure_time_actual;
+                
+                if (Object.keys(updates).length > 0 && typeof supabaseClient !== 'undefined') {
+                    await supabaseClient.from('flights').update(updates).eq('flight_id', flight.id || flight.flight_id);
+                    console.log(`✅ Silent-Sync erfolgreich für Flug ${flightNum}!`);
+                }
+            }
+        } catch (e) {
+            console.warn("Silent Sync fehlgeschlagen für", flight, e);
+        }
+    }
+    
+    // Sync für heute abhaken
+    localStorage.setItem('lastSilentSync', todayStr);
 };
