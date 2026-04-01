@@ -27,12 +27,30 @@ exports.handler = async function(event, context) {
 
         const data = JSON.parse(responseBody);
 
-        return {
-            statusCode: 200,
-            headers: { "Access-Control-Allow-Origin": "*" },
-            body: JSON.stringify(data)
-        };
+        // 🚀 BUGHUNT FIX: API Ninjas liefert IMMER ein Array! 
+        // Wir extrahieren das erste Objekt, damit die UI nicht verwirrt wird.
+        if (Array.isArray(data) && data.length > 0) {
+            return {
+                statusCode: 200,
+                headers: { 
+                    "Access-Control-Allow-Origin": "*",
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data[0]) // <-- Hier ist die Magie! Wir senden nur Treffer Nr. 1
+            };
+        } else {
+            // Falls das Array leer ist (z.B. [] weil Modell unbekannt)
+            return {
+                statusCode: 404,
+                headers: { 
+                    "Access-Control-Allow-Origin": "*",
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ message: "Keine Daten zu diesem Flugzeugtyp gefunden." })
+            };
+        }
+
     } catch (error) {
-        return { statusCode: 500, body: JSON.stringify({ message: `Interner Serverfehler: ${error.message}` }) };
+        return { statusCode: 500, body: `Server Fehler: ${error.message}` };
     }
 };
