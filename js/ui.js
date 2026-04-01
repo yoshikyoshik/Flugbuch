@@ -395,77 +395,107 @@ async function showAircraftDetails(modelCode) {
   const contentContainer = document.getElementById("info-modal-content");
   contentContainer.innerHTML = `<p>${getTranslation("modalDetails.loading")}</p>`;
 
-  // 🚀 BUGHUNT FIX: Mapping prüfen und anwenden!
+  // 🚀 Mapping-Logik
   let mappedModel = modelCode;
   if (typeof window.normalizeAircraftCode === 'function') {
       mappedModel = window.normalizeAircraftCode(modelCode);
       console.log(`🔀 Mapping-Check: Aus rohem Code "${modelCode}" wurde "${mappedModel}"`);
   } else {
-      console.warn("⚠️ ACHTUNG: window.normalizeAircraftCode wurde nicht gefunden! Hast du die helpers.js gespeichert und den Browser-Cache geleert?");
+      console.warn("⚠️ ACHTUNG: window.normalizeAircraftCode wurde nicht gefunden!");
   }
 
   try {
-    // 🛑 WICHTIG: Hier muss am Ende ${mappedModel} stehen, NICHT ${modelCode}!
     const response = await fetch(
       `https://aesthetic-strudel-ecfe50.netlify.app/.netlify/functions/fetch-aircraft-details?model=${mappedModel}`
     );
     if (!response.ok) {
-        // 🚀 BUGHUNT FIX: Echte Fehler-Nachricht aus der Netlify-Funktion lesen
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.message || "Netzwerk-Antwort war nicht OK");
     }
     const data = await response.json(); // data ist ein Array [...]
 
     if (data && data.length > 0) {
-      // API-Ninjas kann mehrere Modelle zurückgeben (z.B. A320-100, A320-200)
-      // Wir nehmen das erste als Referenz.
       const aircraft = data[0];
-      const notAvailable = getTranslation("modalDetails.notAvailable");
 
-      let content = `
-                    <div class="grid grid-cols-2 gap-x-4 gap-y-1">
-                        <p><strong>${getTranslation("logbook.aircraftManufacturer")}</strong></p> 
-                        <p>${aircraft.manufacturer || notAvailable}</p>
-                        
-                        <p><strong>${getTranslation("logbook.aircraftModel")}</strong></p> 
-                        <p>${aircraft.model || notAvailable}</p>
-                        
-                        <p><strong>${getTranslation("logbook.aircraftEngineType")}</strong></p> 
-                        <p>${aircraft.engine_type || notAvailable}</p>
-                        
-                        <p><strong>${getTranslation("logbook.aircraftEngineThrust")}</strong></p> 
-                        <p>${aircraft.engine_thrust_lbf ? `${aircraft.engine_thrust_lbf} lbf` : notAvailable}</p>
+      // Umrechnungen (Imperial zu Metrisch)
+      const speedKmh = aircraft.max_speed_knots ? Math.round(aircraft.max_speed_knots * 1.852) + ' km/h' : 'N/A';
+      const rangeKm = aircraft.range_nautical_miles ? Math.round(aircraft.range_nautical_miles * 1.852).toLocaleString('de-DE') + ' km' : 'N/A';
+      const weightKg = aircraft.gross_weight_lbs ? Math.round(aircraft.gross_weight_lbs * 0.453592).toLocaleString('de-DE') + ' kg' : 'N/A';
+      const ceilingM = aircraft.ceiling_ft ? Math.round(aircraft.ceiling_ft * 0.3048).toLocaleString('de-DE') + ' m' : 'N/A';
+      const lengthM = aircraft.length_ft ? (aircraft.length_ft * 0.3048).toFixed(1) + ' m' : 'N/A';
+      const heightM = aircraft.height_ft ? (aircraft.height_ft * 0.3048).toFixed(1) + ' m' : 'N/A';
+      const wingspanM = aircraft.wing_span_ft ? (aircraft.wing_span_ft * 0.3048).toFixed(1) + ' m' : 'N/A';
 
-                        <p><strong>${getTranslation("logbook.aircraftMaxSpeed")}</strong></p> 
-                        <p>${aircraft.max_speed_knots ? `${aircraft.max_speed_knots} knots` : notAvailable}</p>
-                        
-                        <p><strong>${getTranslation("logbook.aircraftCruiseSpeed")}</strong></p> 
-                        <p>${aircraft.cruise_speed_knots ? `${aircraft.cruise_speed_knots} knots` : notAvailable}</p>
-                        
-                        <p><strong>${getTranslation("logbook.aircraftCeiling")}</strong></t></p> 
-                        <p>${aircraft.ceiling_ft ? `${aircraft.ceiling_ft.toLocaleString("de-DE")} ft` : notAvailable}</p>
-                        
-                        <p><strong>${getTranslation("logbook.aircraftRange")}</strong></p> 
-                        <p>${aircraft.range_nautical_miles ? `${aircraft.range_nautical_miles} NM` : notAvailable}</p>
-                    </div>
-                `;
+      // 🚀 NEU: Komplettes HTML inklusive der Varianten-Anzeige am Ende
+      // 🚀 BUG FIX: EXPLICIT DARK MODE COLORS FOR PROPER CONTRAST
+      contentContainer.innerHTML = `
+        <div class="space-y-4">
+          <div class="grid grid-cols-2 gap-3">
+            <div class="bg-surface-container-low dark:bg-slate-800 p-3 rounded-2xl transition-colors">
+              <p class="text-[10px] uppercase tracking-wider text-on-surface/50 dark:text-slate-400 font-bold mb-1">Modell</p>
+              <p class="font-bold text-sm text-on-surface dark:text-slate-100">${aircraft.model || mappedModel}</p>
+            </div>
+            <div class="bg-surface-container-low dark:bg-slate-800 p-3 rounded-2xl transition-colors">
+              <p class="text-[10px] uppercase tracking-wider text-on-surface/50 dark:text-slate-400 font-bold mb-1">Hersteller</p>
+              <p class="font-bold text-sm text-on-surface dark:text-slate-100">${aircraft.manufacturer || 'N/A'}</p>
+            </div>
+          </div>
 
-      // Wenn es mehr als ein Modell gab, zeige die anderen auch an
-      if (data.length > 1) {
-        content += `<hr class="my-4 dark:border-gray-700">`;
-        content += `<p class="font-semibold mb-2">${getTranslation("logbook.aircraftVariants")}:</p>`;
-        data.slice(1).forEach((variant) => {
-          content += `<p class="text-sm"><strong>${variant.model}:</strong> ${variant.engine_type || notAvailable}</p>`;
-        });
-      }
+          <div class="grid grid-cols-2 gap-3">
+            <div class="bg-surface-container-low dark:bg-slate-800 p-3 rounded-2xl transition-colors">
+              <p class="text-[10px] uppercase tracking-wider text-on-surface/50 dark:text-slate-400 font-bold mb-1">Triebwerk</p>
+              <p class="font-bold text-sm text-on-surface dark:text-slate-100">${aircraft.engine_type || 'N/A'}</p>
+            </div>
+            <div class="bg-surface-container-low dark:bg-slate-800 p-3 rounded-2xl transition-colors">
+              <p class="text-[10px] uppercase tracking-wider text-on-surface/50 dark:text-slate-400 font-bold mb-1">Max. Speed</p>
+              <p class="font-bold text-sm text-on-surface dark:text-slate-100">${speedKmh}</p>
+            </div>
+            <div class="bg-surface-container-low dark:bg-slate-800 p-3 rounded-2xl transition-colors">
+              <p class="text-[10px] uppercase tracking-wider text-on-surface/50 dark:text-slate-400 font-bold mb-1">Reichweite</p>
+              <p class="font-bold text-sm text-on-surface dark:text-slate-100">${rangeKm}</p>
+            </div>
+            <div class="bg-surface-container-low dark:bg-slate-800 p-3 rounded-2xl transition-colors">
+              <p class="text-[10px] uppercase tracking-wider text-on-surface/50 dark:text-slate-400 font-bold mb-1">Max. Flughöhe</p>
+              <p class="font-bold text-sm text-on-surface dark:text-slate-100">${ceilingM}</p>
+            </div>
+          </div>
 
-      contentContainer.innerHTML = content;
+          <div class="grid grid-cols-2 gap-3">
+            <div class="bg-surface-container-low dark:bg-slate-800 p-3 rounded-2xl transition-colors">
+              <p class="text-[10px] uppercase tracking-wider text-on-surface/50 dark:text-slate-400 font-bold mb-1">Max. Gewicht</p>
+              <p class="font-bold text-sm text-on-surface dark:text-slate-100">${weightKg}</p>
+            </div>
+            <div class="bg-surface-container-low dark:bg-slate-800 p-3 rounded-2xl transition-colors">
+              <p class="text-[10px] uppercase tracking-wider text-on-surface/50 dark:text-slate-400 font-bold mb-1">Spannweite</p>
+              <p class="font-bold text-sm text-on-surface dark:text-slate-100">${wingspanM}</p>
+            </div>
+            <div class="bg-surface-container-low dark:bg-slate-800 p-3 rounded-2xl transition-colors">
+              <p class="text-[10px] uppercase tracking-wider text-on-surface/50 dark:text-slate-400 font-bold mb-1">Länge</p>
+              <p class="font-bold text-sm text-on-surface dark:text-slate-100">${lengthM}</p>
+            </div>
+            <div class="bg-surface-container-low dark:bg-slate-800 p-3 rounded-2xl transition-colors">
+              <p class="text-[10px] uppercase tracking-wider text-on-surface/50 dark:text-slate-400 font-bold mb-1">Höhe</p>
+              <p class="font-bold text-sm text-on-surface dark:text-slate-100">${heightM}</p>
+            </div>
+          </div>
+
+          ${data.length > 1 ? `
+            <div class="mt-4 pt-4 border-t border-outline-variant/20 transition-colors">
+              <p class="text-xs text-on-surface/60 dark:text-slate-400 mb-2">Weitere gefundene Varianten:</p>
+              <div class="flex flex-wrap gap-2">
+                ${data.slice(1, 4).map(a => `<span class="text-xs px-2 py-1 bg-surface-container dark:bg-slate-700 dark:text-slate-300 rounded-md transition-colors">${a.model}</span>`).join('')}
+                ${data.length > 4 ? `<span class="text-xs px-2 py-1 bg-surface-container dark:bg-slate-700 dark:text-slate-300 rounded-md transition-colors">+${data.length - 4}</span>` : ''}
+              </div>
+            </div>
+          ` : ''}
+        </div>
+      `;
+
     } else {
-      contentContainer.innerHTML = `<p>${getTranslation("logbook.aircraftNoDetails")}</p>`;
+      contentContainer.innerHTML = `<p class="text-on-surface dark:text-white">${getTranslation("logbook.aircraftNoDetails")}</p>`;
     }
   } catch (error) {
     console.error("Fehler beim Abrufen der Flugzeug-Details:", error);
-    // Zeigt jetzt die tatsächliche Error-Message (z.B. "Keine Daten zu diesem Flugzeugtyp gefunden.") an!
     contentContainer.innerHTML = `<p class="text-red-500 font-bold">${error.message}</p>`;
   }
 }

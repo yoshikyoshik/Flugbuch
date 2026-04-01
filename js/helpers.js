@@ -598,11 +598,14 @@ window.normalizeAircraftCode = function(rawCode) {
         "B748": "747-8", 
         
         // Embraer / Bombardier
-        "E190": "ERJ 190", // Oft besser erkannt
-        "E290": "ERJ 190", 
-        "E195": "ERJ 195",
-        "BCS1": "A220-100", 
-        "BCS3": "A220-300"  
+        "E190": "190", // Oft besser erkannt
+        "E195": "195",
+        "E170": "170",
+        "CRJ100ER": "CRJ100",
+        "CRJ100": "CRJ100", 
+        "CRJ200ER": "CRJ200",
+        "CRJ200": "CRJ200",
+    
     };
 
     return aircraftMap[cleanCode] || cleanCode;
