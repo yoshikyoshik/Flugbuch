@@ -551,3 +551,65 @@ function updateLegalLinks(lang) {
         a.href = isEn ? "privacy_en.html" : "privacy.html";
     });
 }
+
+// ==========================================
+// ✈️ AIRCRAFT TYPE MAPPING (ICAO -> IATA/Generic)
+// ==========================================
+window.normalizeAircraftCode = function(rawCode) {
+    if (!rawCode) return "";
+    
+    const cleanCode = rawCode.trim().toUpperCase();
+
+    // Unser Wörterbuch für die gängigsten Typen
+    const aircraftMap = {
+        // Airbus Narrowbodies
+        "A20N": "A320", // A320neo
+        "A21N": "A321", // A321neo
+        "A318": "A318",
+        "A319": "A319",
+        "A320": "A320",
+        "A321": "A321",
+        
+        // Airbus Widebodies
+        "A332": "A330",
+        "A333": "A330",
+        "A339": "A330", // A330-900neo
+        "A343": "A340",
+        "A346": "A340",
+        "A359": "A350", // A350-900
+        "A35K": "A350", // A350-1000
+        "A388": "A380",
+
+        // Boeing Narrowbodies
+        "B737": "B737",
+        "B738": "B737", // 737-800
+        "B739": "B737", // 737-900
+        "B38M": "B737", // 737 MAX 8
+        "B39M": "B737", // 737 MAX 9
+        
+        // Boeing Widebodies
+        "B77W": "B777", // 777-300ER
+        "B77L": "B777", // 777-200LR
+        "B772": "B777",
+        "B773": "B777",
+        "B788": "B787", // 787-8
+        "B789": "B787", // 787-9
+        "B78X": "B787", // 787-10
+        "B744": "B747", // 747-400
+        "B748": "B747", // 747-8
+        
+        // Embraer
+        "E190": "E190",
+        "E290": "E190", // E190-E2
+        "E195": "E195",
+        "E295": "E195", // E195-E2
+        
+        // Bombardier / Airbus A220
+        "BCS1": "A220", // A220-100 (CS100)
+        "BCS3": "A220"  // A220-300 (CS300)
+    };
+
+    // Wenn wir den Code im Wörterbuch finden, gib die Übersetzung zurück.
+    // Falls nicht, gib einfach den Original-Code zurück (Fallback).
+    return aircraftMap[cleanCode] || cleanCode;
+};

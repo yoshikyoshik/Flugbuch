@@ -395,6 +395,9 @@ async function showAircraftDetails(modelCode) {
   const contentContainer = document.getElementById("info-modal-content");
   contentContainer.innerHTML = `<p>${getTranslation("modalDetails.loading")}</p>`;
 
+  // 🚀 BUGHUNT FIX: Hier das Mapping anwenden, bevor wir die API anfunken!
+  const mappedModel = typeof window.normalizeAircraftCode === 'function' ? window.normalizeAircraftCode(modelCode) : modelCode;
+
   try {
     // ✅ KORREKTUR: Ruft die Netlify-Funktion mit dem Parameter "?model=..." auf
     const response = await fetch(
