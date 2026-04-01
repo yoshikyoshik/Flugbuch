@@ -395,16 +395,24 @@ async function showAircraftDetails(modelCode) {
   const contentContainer = document.getElementById("info-modal-content");
   contentContainer.innerHTML = `<p>${getTranslation("modalDetails.loading")}</p>`;
 
-  // 🚀 BUGHUNT FIX: Hier das Mapping anwenden, bevor wir die API anfunken!
-  const mappedModel = typeof window.normalizeAircraftCode === 'function' ? window.normalizeAircraftCode(modelCode) : modelCode;
+  // 🚀 BUGHUNT FIX: Mapping prüfen und anwenden!
+  let mappedModel = modelCode;
+  if (typeof window.normalizeAircraftCode === 'function') {
+      mappedModel = window.normalizeAircraftCode(modelCode);
+      console.log(`🔀 Mapping-Check: Aus rohem Code "${modelCode}" wurde "${mappedModel}"`);
+  } else {
+      console.warn("⚠️ ACHTUNG: window.normalizeAircraftCode wurde nicht gefunden! Hast du die helpers.js gespeichert und den Browser-Cache geleert?");
+  }
 
   try {
-    // ✅ KORREKTUR: Ruft die Netlify-Funktion mit dem Parameter "?model=..." auf
+    // 🛑 WICHTIG: Hier muss am Ende ${mappedModel} stehen, NICHT ${modelCode}!
     const response = await fetch(
-      `https://aesthetic-strudel-ecfe50.netlify.app/.netlify/functions/fetch-aircraft-details?model=${modelCode}`
+      `https://aesthetic-strudel-ecfe50.netlify.app/.netlify/functions/fetch-aircraft-details?model=${mappedModel}`
     );
     if (!response.ok) {
-      throw new Error("Netzwerk-Antwort war nicht OK");
+        // 🚀 BUGHUNT FIX: Echte Fehler-Nachricht aus der Netlify-Funktion lesen
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || "Netzwerk-Antwort war nicht OK");
     }
     const data = await response.json(); // data ist ein Array [...]
 
@@ -457,7 +465,8 @@ async function showAircraftDetails(modelCode) {
     }
   } catch (error) {
     console.error("Fehler beim Abrufen der Flugzeug-Details:", error);
-    contentContainer.innerHTML = `<p>${getTranslation("logbook.aircraftError")}</p>`;
+    // Zeigt jetzt die tatsächliche Error-Message (z.B. "Keine Daten zu diesem Flugzeugtyp gefunden.") an!
+    contentContainer.innerHTML = `<p class="text-red-500 font-bold">${error.message}</p>`;
   }
 }
 

@@ -14,7 +14,8 @@ exports.handler = async function(event, context) {
         return { statusCode: 400, body: JSON.stringify({ message: 'Parameter "model" ist erforderlich.' }) };
     }
 
-    const API_ENDPOINT = `https://api.api-ninjas.com/v1/aircraft?model=${encodeURIComponent(model)}`;
+    // 🚀 BUGHUNT FIX: Leeren manufacturer-Parameter anhängen, damit die API Wildcards nutzt!
+    const API_ENDPOINT = `https://api.api-ninjas.com/v1/aircraft?manufacturer=&model=${encodeURIComponent(model)}`;
 
     try {
         const response = await fetch(API_ENDPOINT, {

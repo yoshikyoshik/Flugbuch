@@ -560,56 +560,50 @@ window.normalizeAircraftCode = function(rawCode) {
     
     const cleanCode = rawCode.trim().toUpperCase();
 
-    // Unser Wörterbuch für die gängigsten Typen
+    // Optimiert für die API-Ninjas Datenbank!
     const aircraftMap = {
         // Airbus Narrowbodies
-        "A20N": "A320", // A320neo
-        "A21N": "A321", // A321neo
+        "A20N": "A320",
+        "A21N": "A321", 
         "A318": "A318",
         "A319": "A319",
         "A320": "A320",
         "A321": "A321",
         
         // Airbus Widebodies
-        "A332": "A330",
-        "A333": "A330",
-        "A339": "A330", // A330-900neo
-        "A343": "A340",
-        "A346": "A340",
-        "A359": "A350", // A350-900
-        "A35K": "A350", // A350-1000
-        "A388": "A380",
+        "A332": "A330-200",
+        "A333": "A330-300",
+        "A339": "A330-900", 
+        "A343": "A340-300",
+        "A346": "A340-600",
+        "A359": "A350-900",
+        "A35K": "A350-1000",
+        "A388": "A380-800",
 
-        // Boeing Narrowbodies
-        "B737": "B737",
-        "B738": "B737", // 737-800
-        "B739": "B737", // 737-900
-        "B38M": "B737", // 737 MAX 8
-        "B39M": "B737", // 737 MAX 9
+        // Boeing (API Ninjas bevorzugt oft die Schreibweise ohne "B")
+        "B737": "737-800",
+        "B738": "737-800", 
+        "B739": "737-900",
+        "B38M": "737 MAX 8", 
+        "B39M": "737 MAX 9", 
         
-        // Boeing Widebodies
-        "B77W": "B777", // 777-300ER
-        "B77L": "B777", // 777-200LR
-        "B772": "B777",
-        "B773": "B777",
-        "B788": "B787", // 787-8
-        "B789": "B787", // 787-9
-        "B78X": "B787", // 787-10
-        "B744": "B747", // 747-400
-        "B748": "B747", // 747-8
+        "B77W": "777-300ER", 
+        "B77L": "777-200LR", 
+        "B772": "777-200",
+        "B773": "777-300",
+        "B788": "787-8", 
+        "B789": "787-9", 
+        "B78X": "787-10", 
+        "B744": "747-400", 
+        "B748": "747-8", 
         
-        // Embraer
-        "E190": "E190",
-        "E290": "E190", // E190-E2
-        "E195": "E195",
-        "E295": "E195", // E195-E2
-        
-        // Bombardier / Airbus A220
-        "BCS1": "A220", // A220-100 (CS100)
-        "BCS3": "A220"  // A220-300 (CS300)
+        // Embraer / Bombardier
+        "E190": "ERJ 190", // Oft besser erkannt
+        "E290": "ERJ 190", 
+        "E195": "ERJ 195",
+        "BCS1": "A220-100", 
+        "BCS3": "A220-300"  
     };
 
-    // Wenn wir den Code im Wörterbuch finden, gib die Übersetzung zurück.
-    // Falls nicht, gib einfach den Original-Code zurück (Fallback).
     return aircraftMap[cleanCode] || cleanCode;
 };
