@@ -169,6 +169,11 @@ async function initializeApp() {
     routeLayer = L.layerGroup().addTo(map);
   }
 
+  // 🚀 BUGHUNT FIX: Versionsnummer laden und ins Profil-Tab schreiben
+  if (typeof displayAppVersion === 'function') {
+      displayAppVersion();
+  }
+
   // --- Event-Listener: ---
   const autofillBtn = document.getElementById("autofill-btn");
   if (autofillBtn) autofillBtn.addEventListener("click", autofillFlightData);
@@ -5398,6 +5403,9 @@ window.hideLiveWidget = function() {
     if (widget) {
         widget.classList.add('hidden');
         widget.classList.remove('flex'); // Falls es ein Flex-Container ist
+        
+        // 🚀 BUGHUNT FIX: Zwingt das Lade-Skeleton absolut unsichtbar zu werden!
+        widget.style.setProperty('display', 'none', 'important');
     }
     
     // 1. Auto-Refresh stoppen, um API-Calls zu sparen
@@ -5452,6 +5460,10 @@ window.restoreLiveWidget = function() {
     const widget = document.getElementById('live-flight-widget');
     if (widget) {
         widget.classList.remove('hidden');
+
+        // 🚀 BUGHUNT FIX: Die Brute-Force Sperre wieder aufheben
+        widget.style.removeProperty('display');
+
         if (typeof refreshLiveFlightData === 'function') {
             console.log("🔄 Live-Widget wiederhergestellt: Starte Refresh...");
             refreshLiveFlightData();
@@ -5859,21 +5871,22 @@ window.closeAddMenu = function() {
 // RADAR TAB: EMPTY STATE SCHIEDSRICHTER
 // ==========================================
 window.checkRadarEmptyState = function() {
-    const liveWidget = document.getElementById('live-flight-widget');
-    const upcomingContainer = document.getElementById('upcoming-flights-container');
     const emptyState = document.getElementById('radar-empty-state');
+    const liveContainer = document.getElementById('live-flight-widget');
+    const upcomingContainer = document.getElementById('upcoming-flights-container');
     
-    if (liveWidget && upcomingContainer && emptyState) {
-        // Prüfen, ob das Live-Widget aktiv ist
-        const isLiveVisible = !liveWidget.classList.contains('hidden');
+    if (emptyState && liveContainer && upcomingContainer) {
+        // 🚀 BUGHUNT FIX: Prüft nun auch, ob das Widget per "display: none" (unsere Brechstange) versteckt wurde!
+        const isLiveVisible = !liveContainer.classList.contains('hidden') && liveContainer.style.display !== 'none';
         
-        // Prüfen, ob die Upcoming-Liste aktiv ist (sichtbar UND hat Inhalt)
+        // Prüfen ob die Upcoming-Liste aktiv ist (sichtbar UND hat Inhalt)
         const isUpcomingVisible = !upcomingContainer.classList.contains('hidden') && upcomingContainer.children.length > 0;
-
-        // Wenn mindestens eins von beidem etwas anzeigt, verstecke den Platzhalter!
+        
+        // Wenn mindestens eins von beidem etwas anzeigt, verstecke dein Platzhalter-Modal!
         if (isLiveVisible || isUpcomingVisible) {
             emptyState.classList.add('hidden');
         } else {
+            // Screen ist komplett leer -> Zeige dein schickes Modal!
             emptyState.classList.remove('hidden');
         }
     }
