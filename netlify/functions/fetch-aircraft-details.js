@@ -2,19 +2,17 @@
 // KEIN 'require('node-fetch')'. Wir verwenden die globale fetch-Funktion.
 
 exports.handler = async function(event, context) {
-    // Wir verwenden den API_NINJAS_KEY
     const API_KEY = process.env.API_NINJAS_KEY; 
     if (!API_KEY) {
         return { statusCode: 500, body: JSON.stringify({ message: 'API-Ninjas API-Schlüssel ist nicht konfiguriert.' }) };
     }
 
-    // Wir erwarten 'model' als Parameter
     const { model } = event.queryStringParameters;
     if (!model) {
         return { statusCode: 400, body: JSON.stringify({ message: 'Parameter "model" ist erforderlich.' }) };
     }
 
-    // 🚀 BUGHUNT FIX: Leeren manufacturer-Parameter anhängen, damit die API Wildcards nutzt!
+    // 🚀 BUGHUNT FIX 1: Dein fantastischer Wildcard-Parameter!
     const API_ENDPOINT = `https://api.api-ninjas.com/v1/aircraft?manufacturer=&model=${encodeURIComponent(model)}`;
 
     try {
@@ -28,8 +26,7 @@ exports.handler = async function(event, context) {
 
         const data = JSON.parse(responseBody);
 
-        // 🚀 BUGHUNT FIX: API Ninjas liefert IMMER ein Array! 
-        // Wir extrahieren das erste Objekt, damit die UI nicht verwirrt wird.
+        // 🚀 BUGHUNT FIX 2: Wir senden das VOLLE ARRAY zurück, weil deine geniale ui.js das so erwartet!
         if (Array.isArray(data) && data.length > 0) {
             return {
                 statusCode: 200,
@@ -37,10 +34,9 @@ exports.handler = async function(event, context) {
                     "Access-Control-Allow-Origin": "*",
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify(data[0]) // <-- Hier ist die Magie! Wir senden nur Treffer Nr. 1
+                body: JSON.stringify(data) // <-- HIER: KEIN [0] MEHR! Wir senden die ganze Liste!
             };
         } else {
-            // Falls das Array leer ist (z.B. [] weil Modell unbekannt)
             return {
                 statusCode: 404,
                 headers: { 
