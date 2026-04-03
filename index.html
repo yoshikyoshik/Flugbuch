@@ -263,9 +263,9 @@
 
               <div id="radar-empty-state" class="text-center py-12 px-4 bg-surface-container-lowest dark:bg-slate-800 rounded-[2rem] border border-dashed border-outline-variant/30 dark:border-slate-700">
                   <div class="text-5xl mb-4 opacity-50">📡</div>
-                  <h3 class="text-lg font-bold text-on-surface dark:text-white font-display mb-2">Keine anstehenden Flüge</h3>
-                  <p class="text-sm text-on-surface/60 dark:text-slate-400 mb-6">Zeit für dein nächstes Abenteuer!</p>
-                  <button onclick="openAddMenu()" class="px-6 py-3 bg-primary/10 text-primary dark:bg-indigo-900/30 dark:text-indigo-400 font-bold rounded-xl transition-colors hover:bg-primary/20">
+                  <h3 class="text-lg font-bold text-on-surface dark:text-white font-display mb-2" data-i18n="radarEmpty.title">Keine anstehenden Flüge</h3>
+                  <p class="text-sm text-on-surface/60 dark:text-slate-400 mb-6" data-i18n="radarEmpty.desc">Zeit für dein nächstes Abenteuer!</p>
+                  <button onclick="openAddMenu()" data-i18n="radarEmpty.flightPlan" class="px-6 py-3 bg-primary/10 text-primary dark:bg-indigo-900/30 dark:text-indigo-400 font-bold rounded-xl transition-colors hover:bg-primary/20">
                       Flug planen
                   </button>
               </div>
@@ -1718,41 +1718,41 @@
 </div>
 
   <div id="add-action-modal" class="fixed inset-0 z-[120] hidden items-end sm:items-center justify-center bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300 opacity-0 font-display">
-        <div class="bg-surface-container-lowest dark:bg-slate-900 w-full sm:max-w-md rounded-t-[2.5rem] sm:rounded-[2.5rem] p-6 pb-10 sm:pb-6 transform translate-y-full sm:translate-y-0 sm:scale-95 transition-all duration-300 ease-out shadow-2xl border-t sm:border border-outline-variant/20 dark:border-white/10" id="add-modal-content">
+    <div class="bg-surface-container-lowest dark:bg-slate-900 w-full sm:max-w-md rounded-t-[2.5rem] sm:rounded-[2.5rem] p-6 pb-10 sm:pb-6 transform translate-y-full sm:translate-y-0 sm:scale-95 transition-all duration-300 ease-out shadow-2xl border-t sm:border border-outline-variant/20 dark:border-white/10" id="add-modal-content">
+        
+        <div class="w-12 h-1.5 bg-outline-variant/30 dark:bg-slate-700 rounded-full mx-auto mb-6 sm:hidden"></div>
+
+        <div class="flex justify-between items-center mb-6 px-2">
+            <h3 class="text-xl font-display font-black text-on-surface dark:text-white" data-i18n="addAction.logFlight">Flug erfassen</h3>
+            <button onclick="closeAddMenu()" class="w-8 h-8 bg-surface-container-low dark:bg-slate-800 rounded-full flex items-center justify-center text-on-surface/60 dark:text-slate-400 hover:text-primary transition-colors">
+                <span class="material-symbols-outlined text-[18px]">close</span>
+            </button>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+            <button onclick="closeAddMenu(); openAddFlightModal(); setTimeout(()=>document.getElementById('auto-flight-number').focus(), 300);" class="bg-cyan-accent/10 hover:bg-cyan-accent/20 border border-cyan-accent/20 p-5 rounded-3xl flex flex-col items-center justify-center gap-3 transition-colors group">
+                <span class="material-symbols-outlined text-3xl text-cyan-accent group-hover:scale-110 transition-transform">smart_toy</span>
+                <span class="text-sm font-bold text-on-surface dark:text-white" data-i18n="addAction.autopilot">Autopilot</span>
+            </button>
             
-            <div class="w-12 h-1.5 bg-outline-variant/30 dark:bg-slate-700 rounded-full mx-auto mb-6 sm:hidden"></div>
-
-            <div class="flex justify-between items-center mb-6 px-2">
-                <h3 class="text-xl font-display font-black text-on-surface dark:text-white">Flug erfassen</h3>
-                <button onclick="closeAddMenu()" class="w-8 h-8 bg-surface-container-low dark:bg-slate-800 rounded-full flex items-center justify-center text-on-surface/60 dark:text-slate-400 hover:text-primary transition-colors">
-                    <span class="material-symbols-outlined text-[18px]">close</span>
-                </button>
-            </div>
-
-            <div class="grid grid-cols-2 gap-4">
-                <button onclick="closeAddMenu(); openAddFlightModal(); setTimeout(()=>document.getElementById('auto-flight-number').focus(), 300);" class="bg-cyan-accent/10 hover:bg-cyan-accent/20 border border-cyan-accent/20 p-5 rounded-3xl flex flex-col items-center justify-center gap-3 transition-colors group">
-                    <span class="material-symbols-outlined text-3xl text-cyan-accent group-hover:scale-110 transition-transform">smart_toy</span>
-                    <span class="text-sm font-bold text-on-surface dark:text-white">Autopilot</span>
-                </button>
-                
-                <button onclick="closeAddMenu(); startBoardingPassScanner();" class="bg-primary/10 hover:bg-primary/20 border border-primary/20 p-5 rounded-3xl flex flex-col items-center justify-center gap-3 transition-colors group relative overflow-hidden">
-                    <span id="scanner-lock" class="absolute top-3 right-3 text-[10px]">🔒</span>
-                    <span class="material-symbols-outlined text-3xl text-primary dark:text-indigo-400 group-hover:scale-110 transition-transform">qr_code_scanner</span>
-                    <span class="text-sm font-bold text-on-surface dark:text-white">Bordkarte</span>
-                </button>
-                
-                <button onclick="closeAddMenu(); openAddFlightModal();" class="col-span-2 bg-surface-container-low dark:bg-slate-800 hover:bg-surface-container-highest dark:hover:bg-slate-700 border border-outline-variant/10 dark:border-white/5 p-5 rounded-3xl flex items-center gap-4 transition-colors group">
-                    <div class="w-12 h-12 rounded-full bg-surface-container-lowest dark:bg-slate-900 flex items-center justify-center text-on-surface/60 dark:text-slate-400 group-hover:text-primary transition-colors shadow-sm shrink-0">
-                        <span class="material-symbols-outlined">edit_document</span>
-                    </div>
-                    <div class="text-left">
-                        <span class="block text-sm font-bold text-on-surface dark:text-white mb-0.5">Manuell eintragen</span>
-                        <span class="block text-[10px] text-on-surface/50 dark:text-slate-400 uppercase tracking-widest font-bold">Details selbst ausfüllen oder suchen</span>
-                    </div>
-                </button>
-            </div>
+            <button onclick="closeAddMenu(); startBoardingPassScanner();" class="bg-primary/10 hover:bg-primary/20 border border-primary/20 p-5 rounded-3xl flex flex-col items-center justify-center gap-3 transition-colors group relative overflow-hidden">
+                <span id="scanner-lock" class="absolute top-3 right-3 text-[10px]">🔒</span>
+                <span class="material-symbols-outlined text-3xl text-primary dark:text-indigo-400 group-hover:scale-110 transition-transform">qr_code_scanner</span>
+                <span class="text-sm font-bold text-on-surface dark:text-white" data-i18n="addAction.scanPass">Bordkarte</span>
+            </button>
+            
+            <button onclick="closeAddMenu(); openAddFlightModal();" class="col-span-2 bg-surface-container-low dark:bg-slate-800 hover:bg-surface-container-highest dark:hover:bg-slate-700 border border-outline-variant/10 dark:border-white/5 p-5 rounded-3xl flex items-center gap-4 transition-colors group">
+                <div class="w-12 h-12 rounded-full bg-surface-container-lowest dark:bg-slate-900 flex items-center justify-center text-on-surface/60 dark:text-slate-400 group-hover:text-primary transition-colors shadow-sm shrink-0">
+                    <span class="material-symbols-outlined">edit_document</span>
+                </div>
+                <div class="text-left">
+                    <span class="block text-sm font-bold text-on-surface dark:text-white mb-0.5" data-i18n="addAction.manualTitle">Manuell eintragen</span>
+                    <span class="block text-[10px] text-on-surface/50 dark:text-slate-400 uppercase tracking-widest font-bold" data-i18n="addAction.manualContent">Details selbst ausfüllen oder suchen</span>
+                </div>
+            </button>
         </div>
     </div>
+</div>
 
     <div id="add-flight-modal" class="fixed inset-0 z-[150] hidden items-end sm:items-center justify-center bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300 opacity-0 font-display">
         <div id="add-flight-modal-content" class="bg-surface-container-lowest dark:bg-slate-900 w-full sm:max-w-2xl flex flex-col h-[100vh] sm:h-[85vh] sm:rounded-[2.5rem] transform translate-y-full sm:translate-y-0 sm:scale-95 transition-all duration-300 ease-out shadow-2xl border-t sm:border border-outline-variant/20 dark:border-white/10 overflow-hidden relative">

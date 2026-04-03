@@ -453,6 +453,8 @@
     "visits": "Besuche"
   },
   "help": {
+    "collapse":" ",
+    "expand":" ",
     "title": "Hilfe & FAQ",
     "subtitle": "Support & Informationen",
     "subtitle2": "Fragen, Antworten und Kontakt",
@@ -1081,6 +1083,19 @@
     "height": "Höhe",
     "otherVariants": "Weitere gefundene Varianten:",
     "notAvailable": "N/A"
+  },
+
+  "addAction": {
+    "logFlight": "Flug erfassen",
+    "scanPass": "Bordkarte",
+    "autopilot": "Autopilot",
+    "manualTitle": "Manuell Eintragen",
+    "manualContent": "Details selbst ausfüllen oder suchen"
+  },
+  "radarEmpty": {
+    "title": "Keine anstehenden Flüge",
+    "desc": "Zeit für dein nächstes Abenteuer!",
+    "flightPlan": "Flug planen"
   }
 
 }

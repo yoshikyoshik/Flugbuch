@@ -452,6 +452,8 @@
     "visits": "Visits"
   },
   "help": {
+    "collapse":" ",
+    "expand":" ",
     "title": "Help & FAQ",
     "subtitle": "Support & Information",
     "subtitle2": "Questions, Answers and Contact",
@@ -1080,6 +1082,19 @@
     "height": "Height",
     "otherVariants": "Other variants found:",
     "notAvailable": "N/A"
+  },
+
+  "addAction": {
+    "logFlight": "Log Flight",
+    "scanPass": "Boarding Pass",
+    "autopilot": "Autopilot",
+    "manualTitle": "Enter Manually",
+    "manualContent": "Fill in or search details yourself"
+  },
+  "radarEmpty": {
+    "title": "No Upcoming Flights",
+    "desc": "Time for your next adventure!",
+    "flightPlan": "Plan Flight"
   }
 
 }

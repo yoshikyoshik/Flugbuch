@@ -2625,25 +2625,34 @@ window.updateUserRank = function(flightCount) {
 
     let rank = getTranslation("ranks.beginner") || "Anfänger";
     let rankClass = "text-on-surface/60 dark:text-slate-400"; 
+    let i18nKey = "ranks.beginner"; // 🚀 NEU: Key merken
 
     if (flightCount > 500) {
         rank = getTranslation("ranks.legend") || "Sky Legend 🏆";
         rankClass = "text-amber-500 dark:text-amber-400";
+        i18nKey = "ranks.legend";
     } else if (flightCount > 100) {
         rank = getTranslation("ranks.seniorCaptain") || "Senior Captain";
         rankClass = "text-primary dark:text-indigo-400";
+        i18nKey = "ranks.seniorCaptain";
     } else if (flightCount > 50) {
         rank = getTranslation("ranks.commander") || "Commander";
+        i18nKey = "ranks.commander";
     } else if (flightCount > 25) {
         rank = getTranslation("ranks.firstOfficer") || "First Officer";
+        i18nKey = "ranks.firstOfficer";
     } else if (flightCount > 15) {
         rank = getTranslation("ranks.frequentFlyer") || "Vielflieger";
+        i18nKey = "ranks.frequentFlyer";
     } else if (flightCount > 10) {
         rank = getTranslation("ranks.hobbyist") || "Hobbypilot";
         rankClass = "text-primary dark:text-indigo-400";
+        i18nKey = "ranks.hobbyist";
     }
 
     statusEl.textContent = rank;
+    // 🚀 BUGHUNT FIX: Das Schildchen für den Sprachwechsler ankleben!
+    statusEl.setAttribute("data-i18n", i18nKey); 
     statusEl.className = `px-3 py-1 bg-surface-container dark:bg-slate-800 rounded-full text-xs font-bold shadow-sm border border-outline-variant/10 ${rankClass}`;
 };
 

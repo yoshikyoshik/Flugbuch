@@ -452,6 +452,8 @@
     "visits": "Visitas"
   },
   "help": {
+    "collapse":" ",
+    "expand":" ",
     "title": "Ayuda y FAQ",
     "subtitle": "Soporte e Información",
     "subtitle2": "Preguntas, Respuestas y Contacto",
@@ -1076,6 +1078,19 @@
     "height": "Altura",
     "otherVariants": "Otras variantes encontradas:",
     "notAvailable": "N/D"
+  },
+
+  "addAction": {
+    "logFlight": "Registrar Vuelo",
+    "scanPass": "Tarjeta de embarque",
+    "autopilot": "Piloto automático",
+    "manualTitle": "Ingreso Manual",
+    "manualContent": "Rellena o busca los detalles tú mismo"
+  },
+  "radarEmpty": {
+    "title": "Sin vuelos próximos",
+    "desc": "¡Hora de tu próxima aventura!",
+    "flightPlan": "Planear Vuelo"
   }
 
 }

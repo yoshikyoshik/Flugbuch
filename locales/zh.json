@@ -452,6 +452,8 @@
     "visits": "访问次数"
   },
   "help": {
+    "collapse":" ",
+    "expand":" ",
     "title": "帮助与常见问题",
     "subtitle": "支持与信息",
     "subtitle2": "问题、解答与联系方式",
@@ -1076,6 +1078,19 @@
     "height": "高度",
     "otherVariants": "找到的其他变体:",
     "notAvailable": "暂无"
+  },
+
+  "addAction": {
+    "logFlight": "记录航班",
+    "scanPass": "登机牌",
+    "autopilot": "自动驾驶",
+    "manualTitle": "手动输入",
+    "manualContent": "自行填写或搜索详细信息"
+  },
+  "radarEmpty": {
+    "title": "没有即将到来的航班",
+    "desc": "是时候开启下一次冒险了！",
+    "flightPlan": "计划航班"
   }
 
 }

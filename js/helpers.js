@@ -492,6 +492,18 @@ async function setLanguage(lang) {
   if (typeof refreshLiveFlightData === 'function') {
       refreshLiveFlightData();
   }
+
+  // 🚀 NEU: 6. Piloten-Rang im Profil sofort übersetzen (KORRIGIERT!)
+  if (typeof updateUserRank === 'function') {
+      if (typeof allFlights !== 'undefined' && Array.isArray(allFlights)) {
+          updateUserRank(allFlights.length);
+      } else if (typeof getFlights === 'function') {
+          getFlights().then(flights => {
+              if(flights) updateUserRank(flights.length);
+          });
+      }
+  }
+
 }
 
 /**
