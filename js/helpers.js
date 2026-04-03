@@ -411,40 +411,51 @@ async function setLanguage(lang) {
 
 
     // Schutzabfrage: Ab hier nur weiter, wenn App initialisiert (User eingeloggt)
-    if (!isAppInitialized) {
+    if (typeof isAppInitialized === 'undefined' || !isAppInitialized) {
       return; 
     }
     // ENDE Schutzabfrage
 
-    // 2. Dynamische Inhalte der App aktualisieren (nur wenn eingeloggt)
-    if (!document.getElementById("tab-content-fluege").classList.contains("hidden")) {
-      renderFlights();
+    // 2. Dynamische Inhalte der App aktualisieren (KUGELSICHER GEMACHT 🚀)
+    const tabFluege = document.getElementById("tab-content-fluege");
+    if (tabFluege && !tabFluege.classList.contains("hidden")) {
+      if (typeof renderFlights === 'function') renderFlights();
     }
-    if (!document.getElementById("tab-content-achievements").classList.contains("hidden")) {
-      updateAchievements();
+    
+    const tabAchievements = document.getElementById("tab-content-achievements");
+    if (tabAchievements && !tabAchievements.classList.contains("hidden")) {
+      if (typeof updateAchievements === 'function') updateAchievements();
     }
-    if (!document.getElementById("tab-content-logbook").classList.contains("hidden")) {
+    
+    const tabLogbook = document.getElementById("tab-content-logbook");
+    if (tabLogbook && !tabLogbook.classList.contains("hidden")) {
       const activeBtn = document.querySelector(".logbook-view-btn.active");
       let view = "aircraftType"; 
       if (activeBtn) {
         if (activeBtn.id.includes("airline")) view = "airline";
         if (activeBtn.id.includes("airport")) view = "airport";
       }
-      renderLogbookView(view);
+      if (typeof renderLogbookView === 'function') renderLogbookView(view);
     }
-    if (!document.getElementById("tab-content-charts").classList.contains("hidden")) {
-      const flights = await getFlights();
-      updateCharts(flights, currentChartTimeframe);
+    
+    const tabCharts = document.getElementById("tab-content-charts");
+    if (tabCharts && !tabCharts.classList.contains("hidden")) {
+      if (typeof getFlights === 'function' && typeof updateCharts === 'function') {
+          const flights = await getFlights();
+          updateCharts(flights, typeof currentChartTimeframe !== 'undefined' ? currentChartTimeframe : 'year');
+      }
     }
-    if (!document.getElementById("tab-content-hilfe").classList.contains("hidden")) {
-      renderHelpContent(); 
+    
+    const tabHilfe = document.getElementById("tab-content-hilfe");
+    if (tabHilfe && !tabHilfe.classList.contains("hidden")) {
+      if (typeof renderHelpContent === 'function') renderHelpContent(); 
     }
 
   } catch (error) {
     console.error(`Sprachdatei ${lang}.json konnte nicht geladen werden:`, error);
   }
   
-  updateLockVisuals();
+  if (typeof updateLockVisuals === 'function') updateLockVisuals();
 
   // --- NEU: Dynamische Ansichten nach Sprachwechsel sofort neu rendern ---
   
@@ -452,31 +463,35 @@ async function setLanguage(lang) {
   if (typeof renderFlights === 'function') {
       const flightsToRender = (typeof currentlyFilteredFlights !== 'undefined' && currentlyFilteredFlights) ? currentlyFilteredFlights : null;
       const page = typeof currentPage !== 'undefined' ? currentPage : 1;
-      // renderFlights aufrufen (aktualisiert Liste, Charts und Stats gleichzeitig)
       renderFlights(flightsToRender, null, page);
   }
 
   // 2. Reisen-Tab aktualisieren (falls der Nutzer sich gerade in diesem Tab befindet)
-  if (typeof renderTripManager === 'function' && document.getElementById("tab-content-trips") && !document.getElementById("tab-content-trips").classList.contains("hidden")) {
+  const tabTrips = document.getElementById("tab-content-trips");
+  if (typeof renderTripManager === 'function' && tabTrips && !tabTrips.classList.contains("hidden")) {
       renderTripManager();
   }
 
-  // 3. Logbuch-Tab aktualisieren (falls der Nutzer sich gerade in diesem Tab befindet)
-  if (typeof renderLogbookView === 'function' && document.getElementById("tab-content-logbook") && !document.getElementById("tab-content-logbook").classList.contains("hidden")) {
-      // Prüfen, welcher der 4 kleinen Logbuch-Buttons gerade aktiv ist
-      if (document.getElementById("logbook-view-aircraft").classList.contains("bg-white")) renderLogbookView("aircraftType");
-      else if (document.getElementById("logbook-view-airline").classList.contains("bg-white")) renderLogbookView("airline");
-      else if (document.getElementById("logbook-view-airport").classList.contains("bg-white")) renderLogbookView("airport");
-      else if (document.getElementById("logbook-view-registration").classList.contains("bg-white")) renderLogbookView("registration");
+  // 3. Logbuch-Tab aktualisieren (Sicherheits-Check mit ?.)
+  if (typeof renderLogbookView === 'function') {
+      const analyticsTab = document.getElementById("tab-content-analytics");
+      if (analyticsTab && !analyticsTab.classList.contains("hidden")) {
+          if (document.getElementById("logbook-view-aircraft")?.classList.contains("bg-white")) renderLogbookView("aircraftType");
+          else if (document.getElementById("logbook-view-airline")?.classList.contains("bg-white")) renderLogbookView("airline");
+          else if (document.getElementById("logbook-view-airport")?.classList.contains("bg-white")) renderLogbookView("airport");
+          else if (document.getElementById("logbook-view-registration")?.classList.contains("bg-white")) renderLogbookView("registration");
+      }
   }
 
   // 🚀 NEU: 4. Upcoming-Widget aktualisieren
   if (typeof initUpcomingWidget === 'function') {
       initUpcomingWidget();
   }
-
-  // -----------------------------------------------------------------------
-
+  
+  // 🚀 NEU: 5. Live-Widget aktualisieren (Damit "Gelandet" sofort zu "Landed" wird!)
+  if (typeof refreshLiveFlightData === 'function') {
+      refreshLiveFlightData();
+  }
 }
 
 /**

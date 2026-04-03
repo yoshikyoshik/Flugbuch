@@ -453,28 +453,34 @@
     "visits": "Besuche"
   },
   "help": {
+    "title": "Hilfe & FAQ",
     "subtitle": "Support & Informationen",
     "subtitle2": "Fragen, Antworten und Kontakt",
-    "collapse": " ",
-    "data": {
-      "content": "Im Burger-Menü (≡) oben rechts kannst du deine gesamten Flugdaten als JSON- oder CSV-Datei exportieren (Backup!). Du kannst auch eine JSON-Datei importieren (Achtung: Dies überschreibt alle aktuellen Daten). Dort findest du auch den Dark-Mode-Schalter und die Sprachauswahl.",
-      "title": "⚙️ Daten (Import/Export & Einstellungen)"
+    "legal": "Rechtliches",
+    "radar": {
+      "title": "📡 Radar & Startseite",
+      "content": "Die Startseite ist dein persönliches Radar. Hier siehst du deine anstehenden Flüge sowie ein Live-Radar-Widget für den Flug, den du gerade absolvierst. Ausgeblendete Live-Flüge kannst du über den Ghost-Button jederzeit wieder einblenden."
     },
-    "expand": " ",
-    "globe": {
-      "content": "Der 3D Globus ('Flüge' > '3D Globus') visualisiert alle deine Reisen. Klicke auf '📖 Story-Modus', um die Erdrotation zu stoppen. Die Flugbahnen werden dicker, und du kannst sie anklicken, um Details zu sehen (das 'Interaktive Flugbuch'). Klicke auf Flughafensäulen oder Länder, um auf diese Region zu fokussieren. Ein Klick auf den Ozean setzt den Fokus zurück.",
-      "title": "🗺️ Der 3D Globus & Story-Modus"
+    "timeline": {
+      "title": "📜 Timeline & Historie",
+      "content": "Die Timeline bietet dir eine komplette chronologische Übersicht all deiner geloggten Flüge. Scrolle durch deine vergangenen Reisen und klicke auf eine Flug-Karte, um alle Details zu sehen oder die Daten nachträglich zu bearbeiten."
     },
     "logging": {
-      "content": "Du kannst Flüge auf zwei Arten hinzufügen: 1. Manuell, indem du Flughafen-Codes (z.B. 'FRA') eingibst. Die App berechnet Distanz und Zeit. 2. Per 'Autopilot', indem du eine Flugnummer (z.B. 'LH202') und ein Datum eingibst. Dies füllt die meisten Daten automatisch aus. Klicke in der 'Flüge'-Liste auf den Bearbeiten-Stift (Edit), um einen Flug zu ändern.",
-      "title": "✈️ Flüge loggen (Manuell & Autopilot)"
+      "title": "✈️ Flüge loggen & Import (+)",
+      "content": "Über den mittleren Plus-Tab (+) kannst du neue Flüge eintragen. Nutze den 'Autopilot' mit einer Flugnummer (z.B. LH202), scanne den Barcode deiner Bordkarte für die automatische Eingabe oder trage die Daten manuell ein. Hier kannst du auch CSV/JSON-Backups importieren."
     },
-    "tabs": {
-      "content": "'Statistiken' zeigt dir deine Rekorde (längster Flug, häufigster Flughafen). 'Charts' visualisiert deine Flüge und Distanzen über die Zeit (pro Jahr oder Monat). 'Logbuch' gruppiert deine Flüge nach Kriterien wie Flugzeugtyp oder Airline. Klicke auf das (i)-Symbol, um Details zum jeweiligen Typ abzurufen.",
-      "title": "📊 Statistiken, Charts & Logbuch"
+    "globe": {
+      "title": "🗺️ 3D Globus & Story-Modus",
+      "content": "Der Globus visualisiert alle deine Reisen in interaktivem 3D. Klicke auf 'Story-Modus', um die Erdrotation zu stoppen. Die Flugbahnen werden dicker und können angeklickt werden. Klicke auf Flughafensäulen, um die Kamera auf diese Regionen zu fokussieren."
     },
-    "title": "Hilfe & FAQ",
-    "legal": "Rechtliches"
+    "analytics": {
+      "title": "📊 Analytics (Stats, Charts & Logbuch)",
+      "content": "Der Analytics-Tab wertet deine Daten aus. 'Stats' zeigt deine persönlichen Rekorde, 'Charts' visualisiert deine Historie und das 'Logbuch' gruppiert deine Flüge. Klicke auf das (i)-Symbol bei Flugzeugen oder Airports, um spannende Hintergrundfakten abzurufen!"
+    },
+    "profile": {
+      "title": "⚙️ Profil & Einstellungen",
+      "content": "Im Profil-Tab findest du alle App-Einstellungen: Aktiviere den Dark-Mode, ändere die Sprache oder exportiere dein Flugbuch als sicheres JSON- oder CSV-Backup. Hier siehst du auch deinen aktuellen Piloten-Rang und deinen Premium-Status."
+    }
   },
   "import": {
     "cancel": "Abbrechen",
@@ -565,6 +571,15 @@
     "title": "Logbuch-Ansichten",
     "unknown": "Unbekannt",
     "relatedFlights": "Zugehörige Flüge"
+  },
+  "logbookStats": {
+    "subtitleAirline": "Airline",
+    "subtitleAircraft": "Flugzeugtyp",
+    "subtitleAirport": "Flughafen",
+    "subtitleRegistration": "Registrierung",
+    "statFlownTypes": "Geflogene Typen",
+    "statDifferentRoutes": "Verschiedene Routen",
+    "flightNumberPrefix": "Flug"
   },
   "map": {
     "animationFailed": "Animation fehlgeschlagen.",
@@ -1051,6 +1066,21 @@
     "commander": "Commander",
     "seniorCaptain": "Senior Captain",
     "legend": "Sky Legend 🏆"
+  },
+
+"aircraftFacts": {
+    "model": "Modell",
+    "manufacturer": "Hersteller",
+    "engine": "Triebwerk",
+    "maxSpeed": "Max. Speed",
+    "range": "Reichweite",
+    "maxAltitude": "Max. Flughöhe",
+    "maxWeight": "Max. Gewicht",
+    "wingspan": "Spannweite",
+    "length": "Länge",
+    "height": "Höhe",
+    "otherVariants": "Weitere gefundene Varianten:",
+    "notAvailable": "N/A"
   }
 
 }

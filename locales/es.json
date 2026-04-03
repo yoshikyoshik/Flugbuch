@@ -452,28 +452,34 @@
     "visits": "Visitas"
   },
   "help": {
-    "subtitle": "Soporte e información",
-    "subtitle2": "Preguntas, respuestas y contacto",
-    "collapse": "Ocultar",
-    "data": {
-      "content": "En el Menú de Hamburguesa (≡) arriba a la derecha, puedes exportar todos tus datos de vuelo como un archivo JSON o CSV (¡Copia de seguridad!). También puedes importar un archivo JSON (Atención: Esto sobrescribe todos los datos actuales). Allí también encontrarás el interruptor del Modo Oscuro y la selección de idioma.",
-      "title": "⚙️ Datos (Importación/Exportación y Ajustes)"
+    "title": "Ayuda y FAQ",
+    "subtitle": "Soporte e Información",
+    "subtitle2": "Preguntas, Respuestas y Contacto",
+    "legal": "Aviso Legal",
+    "radar": {
+      "title": "📡 Radar e Inicio",
+      "content": "La pantalla de inicio es tu radar personal. Muestra tus próximos vuelos y un widget de radar en vivo para el vuelo actual. Puedes restaurar vuelos en vivo ocultos en cualquier momento usando el botón fantasma."
     },
-    "expand": "Desplegar",
-    "globe": {
-      "content": "El Globo 3D ('Vuelos' > 'Globo 3D') visualiza todos tus viajes. Haz clic en '📖 Modo Historia' para detener la rotación de la tierra. Las rutas de vuelo se volverán más gruesas y puedes hacer clic en ellas para ver detalles (la 'Bitácora Interactiva'). Haz clic en los pilares de los aeropuertos o países para enfocar esa región. Al hacer clic en el océano, se restablece el foco.",
-      "title": "🗺️ El Globo 3D y el Modo Historia"
+    "timeline": {
+      "title": "📜 Cronología e Historial",
+      "content": "La cronología te ofrece un historial cronológico completo de tus vuelos registrados. Desplázate por tus viajes pasados y toca cualquier tarjeta de vuelo para ver todos los detalles o editar los datos."
     },
     "logging": {
-      "content": "Puedes añadir vuelos de dos maneras: 1. Manualmente, introduciendo códigos de aeropuerto (ej., 'FRA'). La aplicación calcula la distancia y el tiempo. 2. A través de 'Piloto automático', introduciendo un número de vuelo (ej., 'LH202') y una fecha. Esto rellena automáticamente la mayoría de los datos. Haz clic en el lápiz de Editar en la lista de 'Vuelos' para modificar un vuelo.",
-      "title": "✈️ Registro de Vuelos (Manual y Piloto Automático)"
+      "title": "✈️ Registrar Vuelos e Importar (+)",
+      "content": "Usa la pestaña central Más (+) para registrar vuelos. Usa el 'Piloto automático' con un número de vuelo (ej. LH202), escanea el código de barras de tu tarjeta de embarque para entrada automática, o ingresa los datos manualmente. También puedes importar copias de seguridad CSV/JSON aquí."
     },
-    "tabs": {
-      "content": "'Estadísticas' muestra tus récords (vuelo más largo, aeropuerto más frecuente). 'Gráficos' visualiza tus vuelos y distancias a lo largo del tiempo (por año o mes). 'Bitácora' agrupa tus vuelos por criterios como tipo de avión o aerolínea. Haz clic en el ícono (i) para obtener detalles sobre el tipo respectivo.",
-      "title": "📊 Estadísticas, Gráficos y Bitácora"
+    "globe": {
+      "title": "🗺️ Globo 3D y Modo Historia",
+      "content": "El globo visualiza todos tus viajes en 3D interactivo. Haz clic en 'Modo Historia' para detener la rotación. Las rutas se vuelven más gruesas y se pueden hacer clic. Haz clic en los pilares de los aeropuertos para enfocar la cámara en regiones específicas."
     },
-    "title": "Ayuda y Preguntas Frecuentes",
-    "legal": "Legal"
+    "analytics": {
+      "title": "📊 Analytics (Estadísticas, Gráficos y Diario)",
+      "content": "La pestaña Analytics profundiza en tus datos. Muestra tus récords, gráficos interactivos y agrupa tus vuelos. ¡Haz clic en el ícono (i) junto a aviones o aeropuertos para obtener datos fascinantes de fondo!"
+    },
+    "profile": {
+      "title": "⚙️ Perfil y Ajustes",
+      "content": "Encuentra todos los ajustes en la pestaña Perfil: Activa el modo oscuro, cambia el idioma o exporta tu diario como una copia de seguridad segura JSON o CSV. También puedes ver tu rango de piloto actual y estado Premium aquí."
+    }
   },
   "import": {
     "cancel": "Cancelar",
@@ -560,6 +566,15 @@
     "title": "Vistas de Bitácora",
     "unknown": "Desconocido",
     "relatedFlights": "Vuelos relacionados"
+  },
+  "logbookStats": {
+    "subtitleAirline": "Aerolínea",
+    "subtitleAircraft": "Tipo de avión",
+    "subtitleAirport": "Aeropuerto",
+    "subtitleRegistration": "Matrícula",
+    "statFlownTypes": "Tipos volados",
+    "statDifferentRoutes": "Diferentes rutas",
+    "flightNumberPrefix": "Vuelo"
   },
   "map": {
     "animationFailed": "La animación falló.",
@@ -1046,6 +1061,21 @@
     "commander": "Comandante",
     "seniorCaptain": "Capitán Senior",
     "legend": "Sky Legend 🏆"
+  },
+
+"aircraftFacts": {
+    "model": "Modelo",
+    "manufacturer": "Fabricante",
+    "engine": "Motor",
+    "maxSpeed": "Velocidad Máx.",
+    "range": "Alcance",
+    "maxAltitude": "Altitud Máx.",
+    "maxWeight": "Peso Máx.",
+    "wingspan": "Envergadura",
+    "length": "Longitud",
+    "height": "Altura",
+    "otherVariants": "Otras variantes encontradas:",
+    "notAvailable": "N/D"
   }
 
 }

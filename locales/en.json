@@ -452,28 +452,34 @@
     "visits": "Visits"
   },
   "help": {
+    "title": "Help & FAQ",
     "subtitle": "Support & Information",
     "subtitle2": "Questions, Answers and Contact",
-    "collapse": "Collapse",
-    "data": {
-      "content": "In the Burger Menu (≡) top right, you can export all your flight data as a JSON or CSV file (Backup!). You can also import a JSON file (Attention: This overwrites all current data). There you will also find the Dark Mode switch and language selection.",
-      "title": "⚙️ Data (Import/Export & Settings)"
+    "legal": "Legal",
+    "radar": {
+      "title": "📡 Radar & Home",
+      "content": "The home screen is your personal radar. It displays your upcoming flights and a live radar widget for the flight you are currently on. If you hide a live flight, you can restore it at any time using the ghost button."
     },
-    "expand": "Expand",
-    "globe": {
-      "content": "The 3D Globe ('Flights' > '3D Globe') visualizes all your trips. Click on '📖 Story Mode' to stop the earth's rotation. The flight paths become thicker, and you can click them to see details (the 'Interactive Logbook'). Click on airport pillars or countries to focus on that region. Clicking on the ocean resets the focus.",
-      "title": "🗺️ The 3D Globe & Story Mode"
+    "timeline": {
+      "title": "📜 Timeline & History",
+      "content": "The timeline gives you a complete chronological history of all your logged flights. Scroll through your past journeys and tap on any flight card to view its full details or edit the data."
     },
     "logging": {
-      "content": "You can add flights in two ways: 1. Manually, by entering airport codes (e.g., 'FRA'). The app calculates distance and time. 2. Via 'Autopilot', by entering a flight number (e.g., 'LH202') and a date. This automatically fills in most of the data. Click the Edit pencil in the 'Flights' list to change a flight.",
-      "title": "✈️ Logging Flights (Manual & Autopilot)"
+      "title": "✈️ Logging Flights & Import (+)",
+      "content": "Use the central Plus-Tab (+) to log new flights. Use the 'Autopilot' with a flight number (e.g., LH202), scan the barcode on your boarding pass for automatic entry, or enter the data manually. You can also import CSV/JSON backups in this tab."
     },
-    "tabs": {
-      "content": "'Statistics' shows your records (longest flight, most frequent airport). 'Charts' visualizes your flights and distances over time (per year or month). 'Logbook' groups your flights by criteria like aircraft type or airline. Click the (i)-icon to fetch details for the respective type.",
-      "title": "📊 Statistics, Charts & Logbook"
+    "globe": {
+      "title": "🗺️ 3D Globe & Story Mode",
+      "content": "The globe visualizes all your journeys in interactive 3D. Click 'Story Mode' to stop the rotation. Flight paths become thicker and clickable. Click on airport pillars to focus the camera on specific regions."
     },
-    "title": "Help & FAQ",
-    "legal": "Legal"
+    "analytics": {
+      "title": "📊 Analytics (Stats, Charts & Logbook)",
+      "content": "The Analytics tab dives deep into your data. 'Stats' shows your personal records, 'Charts' visualizes your history, and the 'Logbook' groups your flights. Click the (i) icon next to aircraft or airports to fetch exciting background facts!"
+    },
+    "profile": {
+      "title": "⚙️ Profile & Settings",
+      "content": "Find all your app settings in the Profile tab: Toggle dark mode, change the language, or export your entire flight log as a secure JSON or CSV backup. You can also check your current pilot rank and Premium status here."
+    }
   },
   "import": {
     "cancel": "Cancel",
@@ -564,6 +570,15 @@
     "title": "Logbook Views",
     "unknown": "Unknown",
     "relatedFlights": "Related Flights"
+  },
+  "logbookStats": {
+    "subtitleAirline": "Airline",
+    "subtitleAircraft": "Aircraft Type",
+    "subtitleAirport": "Airport",
+    "subtitleRegistration": "Registration",
+    "statFlownTypes": "Flown Types",
+    "statDifferentRoutes": "Different Routes",
+    "flightNumberPrefix": "Flight"
   },
   "map": {
     "animationFailed": "Animation failed.",
@@ -1050,6 +1065,21 @@
     "commander": "Commander",
     "seniorCaptain": "Senior Captain",
     "legend": "Sky Legend 🏆"
+  },
+
+"aircraftFacts": {
+    "model": "Model",
+    "manufacturer": "Manufacturer",
+    "engine": "Engine",
+    "maxSpeed": "Max. Speed",
+    "range": "Range",
+    "maxAltitude": "Max. Altitude",
+    "maxWeight": "Max. Weight",
+    "wingspan": "Wingspan",
+    "length": "Length",
+    "height": "Height",
+    "otherVariants": "Other variants found:",
+    "notAvailable": "N/A"
   }
 
 }

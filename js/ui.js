@@ -432,56 +432,56 @@ async function showAircraftDetails(modelCode) {
         <div class="space-y-4">
           <div class="grid grid-cols-2 gap-3">
             <div class="bg-surface-container-low dark:bg-slate-800 p-3 rounded-2xl transition-colors">
-              <p class="text-[10px] uppercase tracking-wider text-on-surface/50 dark:text-slate-400 font-bold mb-1">Modell</p>
+              <p class="text-[10px] uppercase tracking-wider text-on-surface/50 dark:text-slate-400 font-bold mb-1">${getTranslation("aircraftFacts.model")}</p>
               <p class="font-bold text-sm text-on-surface dark:text-slate-100">${aircraft.model || mappedModel}</p>
             </div>
             <div class="bg-surface-container-low dark:bg-slate-800 p-3 rounded-2xl transition-colors">
-              <p class="text-[10px] uppercase tracking-wider text-on-surface/50 dark:text-slate-400 font-bold mb-1">Hersteller</p>
-              <p class="font-bold text-sm text-on-surface dark:text-slate-100">${aircraft.manufacturer || 'N/A'}</p>
+              <p class="text-[10px] uppercase tracking-wider text-on-surface/50 dark:text-slate-400 font-bold mb-1">${getTranslation("aircraftFacts.manufacturer")}</p>
+              <p class="font-bold text-sm text-on-surface dark:text-slate-100">${aircraft.manufacturer || getTranslation("aircraftFacts.notAvailable")}</p>
             </div>
           </div>
 
           <div class="grid grid-cols-2 gap-3">
             <div class="bg-surface-container-low dark:bg-slate-800 p-3 rounded-2xl transition-colors">
-              <p class="text-[10px] uppercase tracking-wider text-on-surface/50 dark:text-slate-400 font-bold mb-1">Triebwerk</p>
-              <p class="font-bold text-sm text-on-surface dark:text-slate-100">${aircraft.engine_type || 'N/A'}</p>
+              <p class="text-[10px] uppercase tracking-wider text-on-surface/50 dark:text-slate-400 font-bold mb-1">${getTranslation("aircraftFacts.engine")}</p>
+              <p class="font-bold text-sm text-on-surface dark:text-slate-100">${aircraft.engine_type || getTranslation("aircraftFacts.notAvailable")}</p>
             </div>
             <div class="bg-surface-container-low dark:bg-slate-800 p-3 rounded-2xl transition-colors">
-              <p class="text-[10px] uppercase tracking-wider text-on-surface/50 dark:text-slate-400 font-bold mb-1">Max. Speed</p>
+              <p class="text-[10px] uppercase tracking-wider text-on-surface/50 dark:text-slate-400 font-bold mb-1">${getTranslation("aircraftFacts.maxSpeed")}</p>
               <p class="font-bold text-sm text-on-surface dark:text-slate-100">${speedKmh}</p>
             </div>
             <div class="bg-surface-container-low dark:bg-slate-800 p-3 rounded-2xl transition-colors">
-              <p class="text-[10px] uppercase tracking-wider text-on-surface/50 dark:text-slate-400 font-bold mb-1">Reichweite</p>
+              <p class="text-[10px] uppercase tracking-wider text-on-surface/50 dark:text-slate-400 font-bold mb-1">${getTranslation("aircraftFacts.range")}</p>
               <p class="font-bold text-sm text-on-surface dark:text-slate-100">${rangeKm}</p>
             </div>
             <div class="bg-surface-container-low dark:bg-slate-800 p-3 rounded-2xl transition-colors">
-              <p class="text-[10px] uppercase tracking-wider text-on-surface/50 dark:text-slate-400 font-bold mb-1">Max. Flughöhe</p>
+              <p class="text-[10px] uppercase tracking-wider text-on-surface/50 dark:text-slate-400 font-bold mb-1">${getTranslation("aircraftFacts.maxAltitude")}</p>
               <p class="font-bold text-sm text-on-surface dark:text-slate-100">${ceilingM}</p>
             </div>
           </div>
 
           <div class="grid grid-cols-2 gap-3">
             <div class="bg-surface-container-low dark:bg-slate-800 p-3 rounded-2xl transition-colors">
-              <p class="text-[10px] uppercase tracking-wider text-on-surface/50 dark:text-slate-400 font-bold mb-1">Max. Gewicht</p>
+              <p class="text-[10px] uppercase tracking-wider text-on-surface/50 dark:text-slate-400 font-bold mb-1">${getTranslation("aircraftFacts.maxWeight")}</p>
               <p class="font-bold text-sm text-on-surface dark:text-slate-100">${weightKg}</p>
             </div>
             <div class="bg-surface-container-low dark:bg-slate-800 p-3 rounded-2xl transition-colors">
-              <p class="text-[10px] uppercase tracking-wider text-on-surface/50 dark:text-slate-400 font-bold mb-1">Spannweite</p>
+              <p class="text-[10px] uppercase tracking-wider text-on-surface/50 dark:text-slate-400 font-bold mb-1">${getTranslation("aircraftFacts.wingspan")}</p>
               <p class="font-bold text-sm text-on-surface dark:text-slate-100">${wingspanM}</p>
             </div>
             <div class="bg-surface-container-low dark:bg-slate-800 p-3 rounded-2xl transition-colors">
-              <p class="text-[10px] uppercase tracking-wider text-on-surface/50 dark:text-slate-400 font-bold mb-1">Länge</p>
+              <p class="text-[10px] uppercase tracking-wider text-on-surface/50 dark:text-slate-400 font-bold mb-1">${getTranslation("aircraftFacts.length")}</p>
               <p class="font-bold text-sm text-on-surface dark:text-slate-100">${lengthM}</p>
             </div>
             <div class="bg-surface-container-low dark:bg-slate-800 p-3 rounded-2xl transition-colors">
-              <p class="text-[10px] uppercase tracking-wider text-on-surface/50 dark:text-slate-400 font-bold mb-1">Höhe</p>
+              <p class="text-[10px] uppercase tracking-wider text-on-surface/50 dark:text-slate-400 font-bold mb-1">${getTranslation("aircraftFacts.height")}</p>
               <p class="font-bold text-sm text-on-surface dark:text-slate-100">${heightM}</p>
             </div>
           </div>
 
           ${data.length > 1 ? `
             <div class="mt-4 pt-4 border-t border-outline-variant/20 transition-colors">
-              <p class="text-xs text-on-surface/60 dark:text-slate-400 mb-2">Weitere gefundene Varianten:</p>
+              <p class="text-xs text-on-surface/60 dark:text-slate-400 mb-2">${getTranslation("aircraftFacts.otherVariants")}</p>
               <div class="flex flex-wrap gap-2">
                 ${data.slice(1, 4).map(a => `<span class="text-xs px-2 py-1 bg-surface-container dark:bg-slate-700 dark:text-slate-300 rounded-md transition-colors">${a.model}</span>`).join('')}
                 ${data.length > 4 ? `<span class="text-xs px-2 py-1 bg-surface-container dark:bg-slate-700 dark:text-slate-300 rounded-md transition-colors">+${data.length - 4}</span>` : ''}
@@ -956,7 +956,7 @@ async function renderLogbookView(groupBy) {
             </button>
         `;
       } else {
-        titleHtml = `<span class="flex-1">${key}</span> <button onclick="event.stopPropagation(); openPremiumModal('default')" class="ml-4 p-2 rounded-xl bg-surface-container-low text-on-surface/40"><span class="text-xs">🔒</span></button>`;
+        titleHtml = `<span class="flex-1">${key}</span> <button onclick="event.stopPropagation(); openPremiumModal('default')" class="ml-4 p-2 rounded-xl bg-surface-container-low dark:bg-slate-900 text-on-surface/40 dark:text-slate-500 shadow-inner border border-outline-variant/10 dark:border-slate-700"><span class="text-xs">🔒</span></button>`;
       }
     } else if (isAirlineView && key !== unknownKey) {
       const firstFlightWithName = group.flights.find((f) => f.airline && f.airline.trim() !== "");
@@ -974,7 +974,7 @@ async function renderLogbookView(groupBy) {
             </button>
         `;
       } else {
-        titleHtml = `<span class="flex-1">${key}</span> <button onclick="event.stopPropagation(); openPremiumModal('default')" class="ml-4 p-2 rounded-xl bg-surface-container-low text-on-surface/40"><span class="text-xs">🔒</span></button>`;
+        titleHtml = `<span class="flex-1">${key}</span> <button onclick="event.stopPropagation(); openPremiumModal('default')" class="ml-4 p-2 rounded-xl bg-surface-container-low dark:bg-slate-900 text-on-surface/40 dark:text-slate-500 shadow-inner border border-outline-variant/10 dark:border-slate-700"><span class="text-xs">🔒</span></button>`;
       }
     } else if (isAircraftTypeView && key !== unknownKey) {
       titleKey = getTranslation("logbook.detailsTitleAircraft").replace("{key}", key);
@@ -987,7 +987,7 @@ async function renderLogbookView(groupBy) {
             </button>
         `;
       } else {
-        titleHtml = `<span class="flex-1">${key}</span> <button onclick="event.stopPropagation(); openPremiumModal('default')" class="ml-4 p-2 rounded-xl bg-surface-container-low text-on-surface/40"><span class="text-xs">🔒</span></button>`;
+        titleHtml = `<span class="flex-1">${key}</span> <button onclick="event.stopPropagation(); openPremiumModal('default')" class="ml-4 p-2 rounded-xl bg-surface-container-low dark:bg-slate-900 text-on-surface/40 dark:text-slate-500 shadow-inner border border-outline-variant/10 dark:border-slate-700"><span class="text-xs">🔒</span></button>`;
       }
     } else if (isRegistrationView && key !== unknownKey) {
       if (currentUserSubscription === "pro") {
@@ -998,7 +998,7 @@ async function renderLogbookView(groupBy) {
             </button>
         `;
       } else {
-        titleHtml = `<span class="flex-1">${key}</span> <button onclick="event.stopPropagation(); openPremiumModal('default')" class="ml-4 p-2 rounded-xl bg-surface-container-low text-on-surface/40"><span class="text-xs">🔒</span></button>`;
+        titleHtml = `<span class="flex-1">${key}</span> <button onclick="event.stopPropagation(); openPremiumModal('default')" class="ml-4 p-2 rounded-xl bg-surface-container-low dark:bg-slate-900 text-on-surface/40 dark:text-slate-500 shadow-inner border border-outline-variant/10 dark:border-slate-700"><span class="text-xs">🔒</span></button>`;
       }
     }
 
@@ -1704,10 +1704,12 @@ function renderHelpContent() {
 
     // Hilfetexte (mit i18n-Schlüsseln)
     const sections = [
+        { key: "help.radar.title", contentKey: "help.radar.content" },
+        { key: "help.timeline.title", contentKey: "help.timeline.content" },
         { key: "help.logging.title", contentKey: "help.logging.content" },
         { key: "help.globe.title", contentKey: "help.globe.content" },
-        { key: "help.tabs.title", contentKey: "help.tabs.content" },
-        { key: "help.data.title", contentKey: "help.data.content" },
+        { key: "help.analytics.title", contentKey: "help.analytics.content" },
+        { key: "help.profile.title", contentKey: "help.profile.content" },
     ];
 
     let html = "";
@@ -2280,19 +2282,35 @@ window.closeAddMenu = function() {
 
 window.openAddFlightModal = function() {
     const modal = document.getElementById('add-flight-modal');
+    const content = document.getElementById('add-flight-modal-content');
     modal.classList.remove('hidden');
-    modal.classList.add('flex'); // 🚀 NEU: Macht das Scrollen im Formular möglich!
+    modal.classList.add('flex'); // Zwingend notwendig für die Zentrierung!
     setTimeout(() => {
-        modal.classList.remove('translate-y-full');
+        modal.classList.remove('opacity-0');
+        if (content) {
+            if (window.innerWidth < 640) {
+                content.classList.remove('translate-y-full'); // Auf dem Handy von unten
+            } else {
+                content.classList.remove('scale-95'); // Am PC wie ein Pop-Up
+            }
+        }
     }, 10);
 };
 
 window.closeAddFlightModal = function() {
     const modal = document.getElementById('add-flight-modal');
-    modal.classList.add('translate-y-full');
+    const content = document.getElementById('add-flight-modal-content');
+    modal.classList.add('opacity-0');
+    if (content) {
+        if (window.innerWidth < 640) {
+            content.classList.add('translate-y-full');
+        } else {
+            content.classList.add('scale-95');
+        }
+    }
     setTimeout(() => {
         modal.classList.add('hidden');
-        modal.classList.remove('flex'); // 🚀 NEU: Wieder aufräumen
+        modal.classList.remove('flex'); 
     }, 300);
 };
 

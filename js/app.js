@@ -4096,7 +4096,7 @@ window.viewLogbookDetails = async function(type, key) {
     // 2. Flüge nach der angeklickten Kategorie filtern
     if (type === 'airline') {
         filteredFlights = allFlights.filter(f => f.airline === key);
-        subtitle = "Airline";
+        subtitle = getTranslation("logbookStats.subtitleAirline") || "Airline";
         icon = "🏢";
         // Wir schnappen uns das Logo vom ersten Flug, der eins hat!
         const flightWithLogo = filteredFlights.find(f => f.airline_logo);
@@ -4104,7 +4104,7 @@ window.viewLogbookDetails = async function(type, key) {
         
     } else if (type === 'aircraft') {
         filteredFlights = allFlights.filter(f => f.aircraftType === key);
-        subtitle = "Flugzeugtyp";
+        subtitle = getTranslation("logbookStats.subtitleAircraft") || "Flugzeugtyp";
         icon = "🛫";
         
         // 📸 NEU: Bild-Suche auch für den gesamten Flugzeugtyp
@@ -4113,7 +4113,7 @@ window.viewLogbookDetails = async function(type, key) {
         
     } else if (type === 'airport') {
         filteredFlights = allFlights.filter(f => f.departure === key || f.arrival === key);
-        subtitle = "Flughafen";
+        subtitle = getTranslation("logbookStats.subtitleAirport") || "Flughafen";
         icon = "📍";
         if (typeof airportData !== 'undefined' && airportData[key]) {
             title = `${airportData[key].name} (${key})`;
@@ -4121,7 +4121,7 @@ window.viewLogbookDetails = async function(type, key) {
         
     } else if (type === 'registration') {
         filteredFlights = allFlights.filter(f => f.registration === key);
-        subtitle = "Registrierung";
+        subtitle = getTranslation("logbookStats.subtitleRegistration") || "Registrierung";
         icon = "🏷️";
         
         // 📸 NEU: Bild für diese exakte Registrierung suchen
@@ -4217,10 +4217,10 @@ window.viewLogbookDetails = async function(type, key) {
     const stat3Value = document.getElementById('ld-stat3-value');
 
     if (type === 'airline') {
-        stat3Label.textContent = "Geflogene Typen";
+        stat3Label.textContent = getTranslation("logbookStats.statFlownTypes") || "Geflogene Typen";
         stat3Value.textContent = uniqueTypes.size;
     } else {
-        stat3Label.textContent = "Verschiedene Routen";
+        stat3Label.textContent = getTranslation("logbookStats.statDifferentRoutes") || "Verschiedene Routen";
         stat3Value.textContent = uniqueRoutes.size;
     }
 
@@ -4234,6 +4234,7 @@ window.viewLogbookDetails = async function(type, key) {
         el.className = `relative pb-4 ${isLast ? '' : ''}`;
         
         // Klick auf den Flug öffnet die Flug-Karte und übergibt den Logbuch-Scope!
+        const flightLabel = getTranslation("logbookStats.flightNumberPrefix") || "Flug";
         el.innerHTML = `
             <div class="absolute -left-[21px] top-1 w-2.5 h-2.5 rounded-full bg-indigo-400 border-2 border-white dark:border-gray-800"></div>
             <div class="flex justify-between items-center group cursor-pointer" onclick="viewFlightDetails('${f.id || f.flight_id}', false, window.currentLogbookFlights)">
@@ -4241,7 +4242,7 @@ window.viewLogbookDetails = async function(type, key) {
                     <p class="text-sm font-bold text-gray-800 dark:text-gray-200 group-hover:text-indigo-600 transition">
                         ${f.departure} ➔ ${f.arrival}
                     </p>
-                    <p class="text-xs text-gray-500">${f.date} • Flug #${f.flightLogNumber}</p>
+                    <p class="text-xs text-gray-500">${f.date} • ${flightLabel} #${f.flightLogNumber}</p>
                 </div>
                 <div class="bg-gray-100 dark:bg-gray-700 p-1.5 rounded text-gray-400 group-hover:bg-indigo-100 group-hover:text-indigo-600 transition">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
@@ -5947,4 +5948,73 @@ window.silentPostFlightSync = async function(allFlights) {
     
     // Sync für heute abhaken
     localStorage.setItem('lastSilentSync', todayStr);
+};
+
+// ==========================================
+// 🚀 BUGHUNT FIX: MODAL OVERRIDES (FINAL)
+// Dieser Block überschreibt alle vorherigen kaputten Modal-Funktionen!
+// ==========================================
+
+window.openAddMenu = function() {
+    const modal = document.getElementById('add-action-modal');
+    const content = document.getElementById('add-modal-content');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex'); // <-- Das fehlte und zentriert das Modal!
+    setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        if (window.innerWidth < 640) {
+            content.classList.remove('translate-y-full');
+        } else {
+            content.classList.remove('scale-95');
+        }
+    }, 10);
+};
+
+window.closeAddMenu = function() {
+    const modal = document.getElementById('add-action-modal');
+    const content = document.getElementById('add-modal-content');
+    modal.classList.add('opacity-0');
+    if (window.innerWidth < 640) {
+        content.classList.add('translate-y-full');
+    } else {
+        content.classList.add('scale-95');
+    }
+    setTimeout(() => {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex'); 
+    }, 300);
+};
+
+window.openAddFlightModal = function() {
+    const modal = document.getElementById('add-flight-modal');
+    const content = document.getElementById('add-flight-modal-content');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex'); // <-- Zentriert das Flug-Formular!
+    setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        if (content) {
+            if (window.innerWidth < 640) {
+                content.classList.remove('translate-y-full');
+            } else {
+                content.classList.remove('scale-95'); // Fährt sanft am PC ein
+            }
+        }
+    }, 10);
+};
+
+window.closeAddFlightModal = function() {
+    const modal = document.getElementById('add-flight-modal');
+    const content = document.getElementById('add-flight-modal-content');
+    modal.classList.add('opacity-0');
+    if (content) {
+        if (window.innerWidth < 640) {
+            content.classList.add('translate-y-full');
+        } else {
+            content.classList.add('scale-95');
+        }
+    }
+    setTimeout(() => {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex'); 
+    }, 300);
 };
