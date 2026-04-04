@@ -643,43 +643,55 @@ window.normalizeAircraftCode = function(rawCode) {
 // ==========================================
 
 window.fetchAviationWeather = async function(airportCode) {
+    console.log(`🌤️ WETTER-CHECK: Gestartet für Code "${airportCode}"`);
     if (!airportCode) return null;
     
     let icaoCode = airportCode.toUpperCase();
     
-    // 1. IATA zu ICAO wandeln (NOAA API braucht ICAO)
+    // 1. IATA zu ICAO wandeln
     if (icaoCode.length === 3) {
-        // Zuerst im lokalen Cache prüfen
+        console.log(`🌤️ WETTER-CHECK: "${icaoCode}" ist IATA. Suche ICAO...`);
         if (typeof airportData !== 'undefined' && airportData[icaoCode] && airportData[icaoCode].icao) {
             icaoCode = airportData[icaoCode].icao;
+            console.log(`🌤️ WETTER-CHECK: ICAO im lokalen Cache gefunden: "${icaoCode}"`);
         } else {
-             // Fallback: Über unsere bestehende Airport-API den ICAO-Code auflösen
              try {
                  const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : 'https://aesthetic-strudel-ecfe50.netlify.app';
+                 console.log(`🌤️ WETTER-CHECK: Frage Netlify API nach ICAO für "${icaoCode}"...`);
                  const res = await fetch(`${baseUrl}/.netlify/functions/fetch-airport-details?code=${icaoCode}`);
                  const json = await res.json();
                  if (json && json.data && json.data.length > 0 && json.data[0].icao) {
                      icaoCode = json.data[0].icao;
+                     console.log(`🌤️ WETTER-CHECK: ICAO von API erhalten: "${icaoCode}"`);
                  } else {
-                     return null; // Kein ICAO gefunden
+                     console.warn(`🌤️ WETTER-CHECK FEHLGESCHLAGEN: Konnte keinen ICAO für "${airportCode}" finden.`);
+                     return null; 
                  }
              } catch(e) {
+                 console.error(`🌤️ WETTER-CHECK FEHLER bei API-Abruf:`, e);
                  return null;
              }
         }
     }
     
-    // 2. Wetterdaten direkt von der FAA/NOAA abrufen (Kostenlos & Ohne Limit)
+    // 2. Wetterdaten abrufen
     try {
+        console.log(`🌤️ WETTER-CHECK: Rufe NOAA API für "${icaoCode}" auf...`);
         const res = await fetch(`https://aviationweather.gov/api/data/metar?ids=${icaoCode}&format=json`);
-        if (!res.ok) return null;
+        if (!res.ok) {
+            console.error(`🌤️ WETTER-CHECK FEHLER: NOAA antwortet mit Status ${res.status}`);
+            return null;
+        }
         const data = await res.json();
         
         if (data && data.length > 0) {
-            return data[0]; // Das aktuellste METAR-Objekt
+            console.log(`🌤️ WETTER-CHECK ERFOLG: Daten für "${icaoCode}" erhalten!`, data[0]);
+            return data[0]; 
+        } else {
+            console.warn(`🌤️ WETTER-CHECK LEER: NOAA hat keine Daten für "${icaoCode}" geschickt.`);
         }
     } catch(e) {
-        console.warn("Fehler beim Wetter-Abruf:", e);
+        console.error("🌤️ WETTER-CHECK EXCEPTION:", e);
     }
     
     return null;
