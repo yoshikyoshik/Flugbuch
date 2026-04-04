@@ -642,44 +642,31 @@ window.normalizeAircraftCode = function(rawCode) {
 // 🌤️ PILOTEN-WETTER (METAR / TAF) LOGIK
 // ==========================================
 
-// 🚀 NEU: Zwei Caches (für fertige Ergebnisse und laufende Anfragen)
 window.icaoCache = window.icaoCache || {};
 window.icaoPromiseCache = window.icaoPromiseCache || {};
 
 window.fetchAviationWeather = async function(airportCode) {
     if (!airportCode) return null;
-    let icaoCode = airportCode.toUpperCase();
+    // 🚀 BUGHUNT FIX: .trim() entfernt unsichtbare Leerzeichen!
+    let icaoCode = airportCode.toString().trim().toUpperCase();
     
     // 1. IATA zu ICAO wandeln
     if (icaoCode.length === 3) {
-        
-        // A) Zuerst im fertigen Cache schauen
         if (window.icaoCache[icaoCode]) {
             icaoCode = window.icaoCache[icaoCode];
-            
-        // B) Lokale Datenbank (airportData)
         } else if (typeof airportData !== 'undefined' && airportData[icaoCode] && airportData[icaoCode].icao) {
             icaoCode = airportData[icaoCode].icao;
-            window.icaoCache[airportCode.toUpperCase()] = icaoCode;
-            
-        // C) Netlify API fragen (mit Anti-DDoS-Schutz!)
+            window.icaoCache[icaoCode] = icaoCode;
         } else {
              try {
                  if (window.icaoPromiseCache[icaoCode]) {
                      icaoCode = await window.icaoPromiseCache[icaoCode];
                  } else {
                      const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : '';
-                     
-                     // Die Anfrage als Promise verpacken
                      const fetchPromise = (async () => {
-                         // 🚀 BUGHUNT FIX: Zufällige kleine Pause (200-700ms), damit API Ninjas nicht wegen "Too Many Requests" blockiert!
-                         await new Promise(resolve => setTimeout(resolve, Math.random() * 500 + 200));
-                         
+                         await new Promise(resolve => setTimeout(resolve, Math.random() * 500 + 100)); // Anti-DDoS
                          const res = await fetch(`${baseUrl}/.netlify/functions/fetch-airport-details?code=${icaoCode}`);
-                         if (!res.ok) {
-                             console.warn(`🌤️ Wetter: Netlify API blockiert (429) für ${icaoCode}.`);
-                             return null;
-                         }
+                         if (!res.ok) return null;
                          const json = await res.json();
                          if (json && json.data && json.data.length > 0 && json.data[0].icao) {
                              const foundIcao = json.data[0].icao;
@@ -691,27 +678,22 @@ window.fetchAviationWeather = async function(airportCode) {
                      
                      window.icaoPromiseCache[icaoCode] = fetchPromise;
                      icaoCode = await fetchPromise;
-                     
-                     // 🚀 WICHTIG: Wenn es fehlschlug, den Cache löschen, damit es beim Neuladen der App wieder frisch versucht wird!
-                     if (!icaoCode) {
-                         delete window.icaoPromiseCache[airportCode.toUpperCase()];
-                     }
+                     if (!icaoCode) delete window.icaoPromiseCache[airportCode.toString().trim().toUpperCase()];
                  }
                  
-                 if (!icaoCode) return null;
-                 
+                 if (!icaoCode) {
+                     console.warn(`🌤️ Wetter abgebrochen: Konnte keinen ICAO für ${airportCode} finden.`);
+                     return null;
+                 }
              } catch(e) {
-                 console.warn(`🌤️ Wetter: Fehler bei ICAO Auflösung für ${icaoCode}:`, e);
-                 delete window.icaoPromiseCache[airportCode.toUpperCase()];
+                 delete window.icaoPromiseCache[airportCode.toString().trim().toUpperCase()];
                  return null; 
              }
         }
     }
     
-    // 2. Wetterdaten von NOAA abrufen (Braucht 4-stelligen ICAO Code)
+    // 2. Wetterdaten von NOAA abrufen
     try {
-        // 🚀 BUGHUNT FIX: Wir MÜSSEN einen CORS-Proxy nutzen, da NOAA direkte Browser-Anfragen blockiert!
-        // 🚀 BUGHUNT FIX: corsproxy.io blockiert uns (403). Wir nutzen den AllOrigins-Proxy!
         const noaaUrl = `https://aviationweather.gov/api/data/metar?ids=${icaoCode}&format=json`;
         const proxiedUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(noaaUrl)}`;
 
@@ -721,20 +703,21 @@ window.fetchAviationWeather = async function(airportCode) {
         const data = await res.json();
         if (data && data.length > 0) {
             return data[0]; 
-        } else {
-            console.warn(`🌤️ Wetter: NOAA hat leider kein Wetter für den Flughafen "${icaoCode}" gemeldet.`);
         }
     } catch(e) {
-        console.warn("🌤️ NOAA Wetter-API nicht erreichbar:", e);
+        console.warn("🌤️ NOAA Wetter-API Fehler:", e);
     }
     
     return null;
 };
 
+// 🚀 NEU: Die HTML-Zeichner-Funktion, falls sie vorhin versehentlich gelöscht wurde
 window.buildWeatherWidgetHtml = function(weatherData, title) {
     if (!weatherData) return "";
     
-    // 1. Flugregeln (Flight Rules) zu Farben zuordnen
+    // Eine Log-Nachricht, damit wir sehen, dass HTML generiert wird!
+    console.log(`🖌️ Zeichne Wetter-Widget für: ${title} (${weatherData.icaoId})`);
+    
     let dotColor = "bg-gray-500";
     let textColor = "text-gray-700 dark:text-gray-300";
     let catText = weatherData.fltcat || "UNK";
@@ -744,12 +727,10 @@ window.buildWeatherWidgetHtml = function(weatherData, title) {
     else if (catText === "IFR") { dotColor = "bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]"; textColor = "text-red-700 dark:text-red-400"; }
     else if (catText === "LIFR") { dotColor = "bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.6)]"; textColor = "text-purple-700 dark:text-purple-400"; }
 
-    // 2. Daten decodieren
     const windDir = weatherData.wdir ? `${weatherData.wdir}°` : "VRB";
     const windSpd = weatherData.wspd ? `${weatherData.wspd}kt` : "0kt";
     const temp = weatherData.temp ? `${weatherData.temp}°C` : "";
     
-    // Optional: Sichtweite
     let vis = "";
     if (weatherData.visib) {
         vis = weatherData.visib === "10+" ? ">10km" : `${weatherData.visib}sm`;
@@ -757,7 +738,6 @@ window.buildWeatherWidgetHtml = function(weatherData, title) {
 
     return `
       <div class="flex flex-col bg-surface-container-low dark:bg-slate-900/80 p-3 rounded-2xl border border-outline-variant/10 dark:border-slate-700/50 relative group cursor-help transition-all hover:bg-surface-container dark:hover:bg-slate-800">
-          
           <div class="flex justify-between items-center mb-2">
               <span class="text-[10px] font-bold uppercase tracking-widest text-on-surface/50 dark:text-slate-400">${title}</span>
               <div class="flex items-center gap-1.5 bg-surface-container-lowest dark:bg-slate-950/50 px-2 py-0.5 rounded-full border border-outline-variant/5 dark:border-slate-700/50">
@@ -765,7 +745,6 @@ window.buildWeatherWidgetHtml = function(weatherData, title) {
                   <span class="text-[9px] font-black ${textColor}">${catText}</span>
               </div>
           </div>
-          
           <div class="flex items-center justify-between gap-2">
               <span class="text-xs font-bold text-on-surface dark:text-slate-200 flex items-center gap-1" title="Wind">
                   <span class="material-symbols-outlined text-[14px] text-primary/70">air</span> ${windDir} @ ${windSpd}
@@ -778,10 +757,9 @@ window.buildWeatherWidgetHtml = function(weatherData, title) {
                   <span class="material-symbols-outlined text-[14px] text-orange-500/70">thermostat</span> ${temp}
               </span>
           </div>
-
           <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-[280px] p-3 bg-slate-800 text-slate-200 text-[10px] font-mono leading-relaxed rounded-xl shadow-2xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 border border-slate-700">
               <div class="text-indigo-400 font-bold mb-1 uppercase tracking-widest text-[8px] font-sans">Raw METAR Data</div>
-              ${weatherData.rawOb}
+              ${weatherData.rawOb || 'N/A'}
               <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-800"></div>
           </div>
       </div>
