@@ -668,8 +668,9 @@ window.fetchAviationWeather = async function(airportCode) {
                          const res = await fetch(`${baseUrl}/.netlify/functions/fetch-airport-details?code=${icaoCode}`);
                          if (!res.ok) return null;
                          const json = await res.json();
-                         if (json && json.data && json.data.length > 0 && json.data[0].icao) {
-                             const foundIcao = json.data[0].icao;
+                         // 🚀 BUGHUNT FIX: Die API nutzt icao_code statt icao!
+                         if (json && json.data && json.data.length > 0 && json.data[0].icao_code) {
+                             const foundIcao = json.data[0].icao_code;
                              window.icaoCache[icaoCode] = foundIcao;
                              return foundIcao;
                          }
