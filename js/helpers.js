@@ -711,8 +711,9 @@ window.fetchAviationWeather = async function(airportCode) {
     // 2. Wetterdaten von NOAA abrufen (Braucht 4-stelligen ICAO Code)
     try {
         // 🚀 BUGHUNT FIX: Wir MÜSSEN einen CORS-Proxy nutzen, da NOAA direkte Browser-Anfragen blockiert!
+        // 🚀 BUGHUNT FIX: corsproxy.io blockiert uns (403). Wir nutzen den AllOrigins-Proxy!
         const noaaUrl = `https://aviationweather.gov/api/data/metar?ids=${icaoCode}&format=json`;
-        const proxiedUrl = `https://corsproxy.io/?url=${encodeURIComponent(noaaUrl)}`;
+        const proxiedUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(noaaUrl)}`;
 
         const res = await fetch(proxiedUrl);
         if (!res.ok) return null;
