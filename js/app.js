@@ -5384,17 +5384,19 @@ window.refreshLiveFlightData = async function() {
             const depHtml = window.buildWeatherWidgetHtml(depWeather, "Abflug");
             const arrHtml = window.buildWeatherWidgetHtml(arrWeather, "Ankunft");
             
+            // 🚀 BUGHUNT FIX: Vorheriges Wetter rigoros löschen, damit nichts übereinander klebt!
+            let oldWeather = document.getElementById('live-weather-container');
+            if (oldWeather) oldWeather.remove();
+
             if (depHtml || arrHtml) {
-                let weatherContainer = document.getElementById('live-weather-container');
-                if (!weatherContainer) {
-                    weatherContainer = document.createElement('div');
-                    weatherContainer.id = 'live-weather-container';
-                    weatherContainer.className = 'grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-outline-variant/10 dark:border-slate-700/50';
-                    
-                    const widgetContainer = document.getElementById('live-flight-widget');
-                    widgetContainer.appendChild(weatherContainer); // Einfach ans Ende hängen
-                }
+                const weatherContainer = document.createElement('div');
+                weatherContainer.id = 'live-weather-container';
+                // 🚀 FIX: w-full zwingt das Grid auf 100% Breite
+                weatherContainer.className = 'w-full grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-outline-variant/10 dark:border-slate-700/50';
                 weatherContainer.innerHTML = (depHtml || "") + (arrHtml || "");
+                
+                const widgetContainer = document.getElementById('live-flight-widget');
+                widgetContainer.appendChild(weatherContainer); 
             }
         } catch(we) {
             console.warn("Wetter konnte nicht geladen werden:", we);

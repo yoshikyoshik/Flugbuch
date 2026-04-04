@@ -693,12 +693,11 @@ window.fetchAviationWeather = async function(airportCode) {
         }
     }
     
-    // 2. Wetterdaten von NOAA abrufen
+    // 2. Wetterdaten über eigene Netlify-Brücke abrufen
     try {
-        const noaaUrl = `https://aviationweather.gov/api/data/metar?ids=${icaoCode}&format=json`;
-        const proxiedUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(noaaUrl)}`;
-
-        const res = await fetch(proxiedUrl);
+        const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : '';
+        const res = await fetch(`${baseUrl}/.netlify/functions/fetch-weather?icao=${icaoCode}`);
+        
         if (!res.ok) return null;
         
         const data = await res.json();
@@ -706,18 +705,14 @@ window.fetchAviationWeather = async function(airportCode) {
             return data[0]; 
         }
     } catch(e) {
-        console.warn("🌤️ NOAA Wetter-API Fehler:", e);
+        console.warn("🌤️ Wetter-Brücke nicht erreichbar:", e);
     }
     
     return null;
 };
 
-// 🚀 NEU: Die HTML-Zeichner-Funktion, falls sie vorhin versehentlich gelöscht wurde
 window.buildWeatherWidgetHtml = function(weatherData, title) {
     if (!weatherData) return "";
-    
-    // Eine Log-Nachricht, damit wir sehen, dass HTML generiert wird!
-    console.log(`🖌️ Zeichne Wetter-Widget für: ${title} (${weatherData.icaoId})`);
     
     let dotColor = "bg-gray-500";
     let textColor = "text-gray-700 dark:text-gray-300";
@@ -738,30 +733,32 @@ window.buildWeatherWidgetHtml = function(weatherData, title) {
     }
 
     return `
-      <div class="flex flex-col bg-surface-container-low dark:bg-slate-900/80 p-3 rounded-2xl border border-outline-variant/10 dark:border-slate-700/50 relative group cursor-help transition-all hover:bg-surface-container dark:hover:bg-slate-800">
-          <div class="flex justify-between items-center mb-2">
-              <span class="text-[10px] font-bold uppercase tracking-widest text-on-surface/50 dark:text-slate-400">${title}</span>
-              <div class="flex items-center gap-1.5 bg-surface-container-lowest dark:bg-slate-950/50 px-2 py-0.5 rounded-full border border-outline-variant/5 dark:border-slate-700/50">
-                  <span class="w-2 h-2 rounded-full ${dotColor} animate-pulse"></span>
+      <div class="w-full flex flex-col bg-surface-container-lowest dark:bg-slate-950 p-2.5 rounded-xl border border-outline-variant/10 dark:border-slate-800 relative group cursor-help transition-all hover:bg-surface-container dark:hover:bg-slate-900">
+          
+          <div class="flex justify-between items-center mb-1.5">
+              <span class="text-[9px] font-black uppercase tracking-widest text-on-surface/50 dark:text-slate-500">${title}</span>
+              <div class="flex items-center gap-1">
+                  <span class="w-1.5 h-1.5 rounded-full ${dotColor}"></span>
                   <span class="text-[9px] font-black ${textColor}">${catText}</span>
               </div>
           </div>
-          <div class="flex items-center justify-between gap-2">
-              <span class="text-xs font-bold text-on-surface dark:text-slate-200 flex items-center gap-1" title="Wind">
-                  <span class="material-symbols-outlined text-[14px] text-primary/70">air</span> ${windDir} @ ${windSpd}
+          
+          <div class="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+              <span class="text-[10px] font-bold text-on-surface dark:text-slate-300 flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[12px] text-primary/70">air</span> ${windDir} @ ${windSpd}
               </span>
               ${vis ? `
-              <span class="text-xs font-bold text-on-surface dark:text-slate-200 flex items-center gap-1" title="Sichtweite">
-                  <span class="material-symbols-outlined text-[14px] text-blue-500/70">visibility</span> ${vis}
+              <span class="text-[10px] font-bold text-on-surface dark:text-slate-300 flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[12px] text-blue-500/70">visibility</span> ${vis}
               </span>` : ''}
-              <span class="text-xs font-bold text-on-surface dark:text-slate-200 flex items-center gap-1" title="Temperatur">
-                  <span class="material-symbols-outlined text-[14px] text-orange-500/70">thermostat</span> ${temp}
+              <span class="text-[10px] font-bold text-on-surface dark:text-slate-300 flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[12px] text-orange-500/70">thermostat</span> ${temp}
               </span>
           </div>
-          <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-[280px] p-3 bg-slate-800 text-slate-200 text-[10px] font-mono leading-relaxed rounded-xl shadow-2xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 border border-slate-700">
-              <div class="text-indigo-400 font-bold mb-1 uppercase tracking-widest text-[8px] font-sans">Raw METAR Data</div>
+
+          <div class="absolute bottom-full left-0 mb-2 w-48 p-2.5 bg-slate-900 text-slate-300 text-[9px] font-mono leading-tight rounded-lg shadow-xl hidden group-hover:block z-[100] border border-slate-700">
+              <div class="text-indigo-400 font-bold mb-1 uppercase tracking-widest text-[8px] font-sans">Raw METAR</div>
               ${weatherData.rawOb || 'N/A'}
-              <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-800"></div>
           </div>
       </div>
     `;
