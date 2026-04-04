@@ -1697,6 +1697,37 @@ async function triggerPrintView_FlightsTab() {
 }
 
 /**
+ * 🚀 NEU: Trigger-Funktion für den direkten Reise-Druck
+ */
+window.printTripPDF = async function(tripId, tripName) {
+    if (currentUserSubscription === "free") {
+        openPremiumModal("print");
+        return;
+    }
+
+    // Flüge laden und filtern
+    const allFlights = typeof isDemoMode !== 'undefined' && isDemoMode && typeof flights !== 'undefined' ? flights : await getFlights();
+    const tripFlights = allFlights.filter(f => f.trip_id == tripId);
+
+    if (!tripFlights || tripFlights.length === 0) {
+        showMessage(getTranslation("toast.infoTitle") || "Info", getTranslation("print.noFlights") || "Keine Flüge für das Buch vorhanden.", "info");
+        return;
+    }
+
+    // Chronologisch sortieren
+    tripFlights.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    // Titel generieren
+    let title = getTranslation("print.filteredTitle") || "Mein Flugbuch";
+    if (tripName) {
+        title += ` - ${tripName}`;
+    }
+
+    // Drucken auslösen
+    await buildAndPrintHtml(tripFlights, title);
+};
+
+/**
  * NEU: Füllt den Hilfe-Tab mit übersetzbarem Inhalt.
  */
 function renderHelpContent() {
@@ -2402,21 +2433,24 @@ window.switchTimelineView = function(view) {
     const mapDetails = document.getElementById('last-flight-map-details');
     const mapButtons = document.getElementById('timeline-map-buttons-container');
     const chronicleControls = document.getElementById('chronicle-controls-container');
+    
+    // 🚀 NEU: Den Container des großen PDF-Buttons identifizieren
+    const printBtnContainer = document.getElementById('print-book-btn')?.parentElement;
 
     if (!btnFlights || !btnTrips) return;
 
     if (view === 'flights') {
-        // Buttons stylen (Einzelflüge aktiv)
+        // Einzelflüge aktiv
         btnFlights.className = 'flex-1 sm:flex-none px-6 py-2.5 text-sm font-bold rounded-xl transition-all bg-surface-container-lowest dark:bg-slate-700 text-on-surface dark:text-white shadow-sm flex items-center justify-center gap-2';
         btnTrips.className = 'flex-1 sm:flex-none px-6 py-2.5 text-sm font-bold rounded-xl transition-all text-on-surface/60 hover:text-on-surface dark:text-slate-400 dark:hover:text-white hover:bg-surface-container-lowest dark:hover:bg-slate-700 flex items-center justify-center gap-2';
         
-        // Listen umschalten
         containerFlights.classList.remove('hidden');
         containerTrips.classList.add('hidden');
         
-        // Karten-Elemente wieder einblenden
+        // Elemente wieder einblenden
         if (mapDetails) mapDetails.classList.remove('hidden');
         if (mapButtons) mapButtons.classList.remove('hidden');
+        if (printBtnContainer) printBtnContainer.classList.remove('hidden'); // Großen Button wieder zeigen
         
         if (chronicleControls && window.isAllRoutesViewActive) {
              chronicleControls.classList.remove('hidden');
@@ -2427,28 +2461,25 @@ window.switchTimelineView = function(view) {
         }, 50);
 
     } else {
-        // Buttons stylen (Reisen aktiv)
+        // Reisen aktiv
         btnTrips.className = 'flex-1 sm:flex-none px-6 py-2.5 text-sm font-bold rounded-xl transition-all bg-surface-container-lowest dark:bg-slate-700 text-on-surface dark:text-white shadow-sm flex items-center justify-center gap-2';
         btnFlights.className = 'flex-1 sm:flex-none px-6 py-2.5 text-sm font-bold rounded-xl transition-all text-on-surface/60 hover:text-on-surface dark:text-slate-400 dark:hover:text-white hover:bg-surface-container-lowest dark:hover:bg-slate-700 flex items-center justify-center gap-2';
         
-        // Listen umschalten
         containerFlights.classList.add('hidden');
         containerTrips.classList.remove('hidden');
         
-        // Karten-Elemente komplett verstecken!
+        // Elemente verstecken!
         if (mapDetails) mapDetails.classList.add('hidden');
         if (mapButtons) mapButtons.classList.add('hidden');
+        if (printBtnContainer) printBtnContainer.classList.add('hidden'); // Großen Button ausblenden
         if (chronicleControls) chronicleControls.classList.add('hidden');
         
         if (window.animationState === "running" || window.animationState === "paused") {
             if (typeof stopChronicle === 'function') stopChronicle();
         }
 
-        // 🚀 BUGHUNT FIX: Die richtige Funktion aus der app.js aufrufen!
         if (typeof renderTripManager === 'function') {
             renderTripManager();
-        } else {
-            console.warn("AvioSphere: Konnte 'renderTripManager' nicht finden.");
         }
     }
 };

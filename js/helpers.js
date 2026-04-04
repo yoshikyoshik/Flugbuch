@@ -637,3 +637,107 @@ window.normalizeAircraftCode = function(rawCode) {
 
     return aircraftMap[cleanCode] || cleanCode;
 };
+
+// ==========================================
+// 🌤️ PILOTEN-WETTER (METAR / TAF) LOGIK
+// ==========================================
+
+window.fetchAviationWeather = async function(airportCode) {
+    if (!airportCode) return null;
+    
+    let icaoCode = airportCode.toUpperCase();
+    
+    // 1. IATA zu ICAO wandeln (NOAA API braucht ICAO)
+    if (icaoCode.length === 3) {
+        // Zuerst im lokalen Cache prüfen
+        if (typeof airportData !== 'undefined' && airportData[icaoCode] && airportData[icaoCode].icao) {
+            icaoCode = airportData[icaoCode].icao;
+        } else {
+             // Fallback: Über unsere bestehende Airport-API den ICAO-Code auflösen
+             try {
+                 const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : 'https://aesthetic-strudel-ecfe50.netlify.app';
+                 const res = await fetch(`${baseUrl}/.netlify/functions/fetch-airport-details?code=${icaoCode}`);
+                 const json = await res.json();
+                 if (json && json.data && json.data.length > 0 && json.data[0].icao) {
+                     icaoCode = json.data[0].icao;
+                 } else {
+                     return null; // Kein ICAO gefunden
+                 }
+             } catch(e) {
+                 return null;
+             }
+        }
+    }
+    
+    // 2. Wetterdaten direkt von der FAA/NOAA abrufen (Kostenlos & Ohne Limit)
+    try {
+        const res = await fetch(`https://aviationweather.gov/api/data/metar?ids=${icaoCode}&format=json`);
+        if (!res.ok) return null;
+        const data = await res.json();
+        
+        if (data && data.length > 0) {
+            return data[0]; // Das aktuellste METAR-Objekt
+        }
+    } catch(e) {
+        console.warn("Fehler beim Wetter-Abruf:", e);
+    }
+    
+    return null;
+};
+
+window.buildWeatherWidgetHtml = function(weatherData, title) {
+    if (!weatherData) return "";
+    
+    // 1. Flugregeln (Flight Rules) zu Farben zuordnen
+    let dotColor = "bg-gray-500";
+    let textColor = "text-gray-700 dark:text-gray-300";
+    let catText = weatherData.fltcat || "UNK";
+    
+    if (catText === "VFR") { dotColor = "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"; textColor = "text-green-700 dark:text-green-400"; }
+    else if (catText === "MVFR") { dotColor = "bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)]"; textColor = "text-blue-700 dark:text-blue-400"; }
+    else if (catText === "IFR") { dotColor = "bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]"; textColor = "text-red-700 dark:text-red-400"; }
+    else if (catText === "LIFR") { dotColor = "bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.6)]"; textColor = "text-purple-700 dark:text-purple-400"; }
+
+    // 2. Daten decodieren
+    const windDir = weatherData.wdir ? `${weatherData.wdir}°` : "VRB";
+    const windSpd = weatherData.wspd ? `${weatherData.wspd}kt` : "0kt";
+    const temp = weatherData.temp ? `${weatherData.temp}°C` : "";
+    
+    // Optional: Sichtweite
+    let vis = "";
+    if (weatherData.visib) {
+        vis = weatherData.visib === "10+" ? ">10km" : `${weatherData.visib}sm`;
+    }
+
+    return `
+      <div class="flex flex-col bg-surface-container-low dark:bg-slate-900/80 p-3 rounded-2xl border border-outline-variant/10 dark:border-slate-700/50 relative group cursor-help transition-all hover:bg-surface-container dark:hover:bg-slate-800">
+          
+          <div class="flex justify-between items-center mb-2">
+              <span class="text-[10px] font-bold uppercase tracking-widest text-on-surface/50 dark:text-slate-400">${title}</span>
+              <div class="flex items-center gap-1.5 bg-surface-container-lowest dark:bg-slate-950/50 px-2 py-0.5 rounded-full border border-outline-variant/5 dark:border-slate-700/50">
+                  <span class="w-2 h-2 rounded-full ${dotColor} animate-pulse"></span>
+                  <span class="text-[9px] font-black ${textColor}">${catText}</span>
+              </div>
+          </div>
+          
+          <div class="flex items-center justify-between gap-2">
+              <span class="text-xs font-bold text-on-surface dark:text-slate-200 flex items-center gap-1" title="Wind">
+                  <span class="material-symbols-outlined text-[14px] text-primary/70">air</span> ${windDir} @ ${windSpd}
+              </span>
+              ${vis ? `
+              <span class="text-xs font-bold text-on-surface dark:text-slate-200 flex items-center gap-1" title="Sichtweite">
+                  <span class="material-symbols-outlined text-[14px] text-blue-500/70">visibility</span> ${vis}
+              </span>` : ''}
+              <span class="text-xs font-bold text-on-surface dark:text-slate-200 flex items-center gap-1" title="Temperatur">
+                  <span class="material-symbols-outlined text-[14px] text-orange-500/70">thermostat</span> ${temp}
+              </span>
+          </div>
+
+          <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-[280px] p-3 bg-slate-800 text-slate-200 text-[10px] font-mono leading-relaxed rounded-xl shadow-2xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 border border-slate-700">
+              <div class="text-indigo-400 font-bold mb-1 uppercase tracking-widest text-[8px] font-sans">Raw METAR Data</div>
+              ${weatherData.rawOb}
+              <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-800"></div>
+          </div>
+      </div>
+    `;
+};

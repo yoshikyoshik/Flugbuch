@@ -3335,6 +3335,10 @@ window.renderTripManager = async function() {
       const currency = tripFlights.find(f => f.currency)?.currency || "";
 
       // HTML für die High-End Deep Space Karte
+      // Wir müssen den Namen für das HTML "escapen", falls ein Apostroph im Reisename vorkommt (z.B. "Oma's Geburtstag")
+      const safeTripName = trip.name.replace(/'/g, "\\'");
+
+      // HTML für die High-End Deep Space Karte
       htmlContent += `
         <div onclick="viewTripDetails('${trip.id}')" class="bg-surface-container-lowest dark:bg-slate-800 p-6 md:p-8 rounded-[2.5rem] shadow-sm border border-outline-variant/20 dark:border-slate-700 cursor-pointer hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group flex flex-col h-full relative overflow-hidden">
             
@@ -3347,9 +3351,15 @@ window.renderTripManager = async function() {
                     </div>
                     <h3 class="text-xl font-display font-bold text-on-surface dark:text-white group-hover:text-primary dark:group-hover:text-indigo-400 transition-colors leading-tight pr-2">${trip.name}</h3>
                 </div>
-                <div class="flex items-center gap-1.5 bg-surface-container-low dark:bg-slate-900 px-3 py-1.5 rounded-xl border border-outline-variant/10 dark:border-slate-700/50 shrink-0">
-                    <span class="text-[10px] uppercase tracking-widest font-bold text-on-surface/60 dark:text-slate-400">${tripFlights.length} <span data-i18n="stats.flights">${getTranslation("stats.flights") || "Flüge"}</span></span>
-                    <span class="material-symbols-outlined text-[16px] text-on-surface/40 group-hover:text-primary transition-colors">chevron_right</span>
+                
+                <div class="flex items-center gap-2 shrink-0">
+                    <button onclick="event.stopPropagation(); printTripPDF('${trip.id}', '${safeTripName}')" class="flex items-center justify-center w-8 h-8 rounded-xl bg-surface-container-low hover:bg-primary/10 dark:bg-slate-900 dark:hover:bg-indigo-900/30 text-on-surface/40 hover:text-primary dark:text-slate-400 dark:hover:text-indigo-400 border border-outline-variant/10 dark:border-slate-700/50 transition-colors" title="${getTranslation('print.createBookForGroup') || 'PDF erstellen'}">
+                        <span class="material-symbols-outlined text-[16px]">menu_book</span>
+                    </button>
+                    <div class="flex items-center gap-1.5 bg-surface-container-low dark:bg-slate-900 px-3 py-1.5 rounded-xl border border-outline-variant/10 dark:border-slate-700/50 shrink-0">
+                        <span class="text-[10px] uppercase tracking-widest font-bold text-on-surface/60 dark:text-slate-400">${tripFlights.length} <span data-i18n="stats.flights">${getTranslation("stats.flights") || "Flüge"}</span></span>
+                        <span class="material-symbols-outlined text-[16px] text-on-surface/40 group-hover:text-primary transition-colors">chevron_right</span>
+                    </div>
                 </div>
             </div>
             
@@ -5363,6 +5373,34 @@ window.refreshLiveFlightData = async function() {
                 }
             }
         }
+
+        // ================================================================
+        // 🌤️ SCHRITT 2: HIER KOMMT DER NEUE WETTER-CODE HIN!
+        // ================================================================
+        try {
+            const depWeather = await window.fetchAviationWeather(window.currentLiveFlight.departure);
+            const arrWeather = await window.fetchAviationWeather(window.currentLiveFlight.arrival);
+            
+            const depHtml = window.buildWeatherWidgetHtml(depWeather, "Abflug");
+            const arrHtml = window.buildWeatherWidgetHtml(arrWeather, "Ankunft");
+            
+            if (depHtml || arrHtml) {
+                let weatherContainer = document.getElementById('live-weather-container');
+                if (!weatherContainer) {
+                    weatherContainer = document.createElement('div');
+                    weatherContainer.id = 'live-weather-container';
+                    weatherContainer.className = 'grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-outline-variant/10 dark:border-slate-700/50';
+                    
+                    const widgetContainer = document.getElementById('live-flight-widget');
+                    widgetContainer.appendChild(weatherContainer); // Einfach ans Ende hängen
+                }
+                weatherContainer.innerHTML = (depHtml || "") + (arrHtml || "");
+            }
+        } catch(we) {
+            console.warn("Wetter konnte nicht geladen werden:", we);
+        }
+        // ================================================================
+        // ENDE WETTER-CODE
         
     } catch(e) {
         console.error("Live API Fehler:", e);
@@ -5575,16 +5613,37 @@ window.initUpcomingWidget = async function() {
                         <div class="text-lg font-black text-primary">${flightNumStr}</div>
                     </div>
                 </div>
+                
+                <div id="upcoming-weather-${flight.id || flight.flight_id}" class="relative z-10 mt-3"></div>
+
             </div>
             `;
         });
 
         container.innerHTML = html;
         
-        // 🚀 NEU: Lade jetzt die asynchronen Details (Zeiten und Airline) im Hintergrund nach!
+        // 🚀 Lade jetzt die asynchronen Details UND WETTER im Hintergrund nach!
         upcomingFlights.forEach(flight => {
+            const flightId = flight.id || flight.flight_id;
+            
             if (typeof updateUpcomingFlightDetails === 'function') {
                 updateUpcomingFlightDetails(flight);
+            }
+            
+            // --- 🌤️ NEU: METAR WETTER ABRUF ---
+            const weatherDiv = document.getElementById(`upcoming-weather-${flightId}`);
+            if (weatherDiv) {
+                Promise.all([
+                    window.fetchAviationWeather(flight.departure),
+                    window.fetchAviationWeather(flight.arrival)
+                ]).then(([depWeather, arrWeather]) => {
+                    const depHtml = window.buildWeatherWidgetHtml(depWeather, "Abflug");
+                    const arrHtml = window.buildWeatherWidgetHtml(arrWeather, "Ankunft");
+                    
+                    if (depHtml || arrHtml) {
+                        weatherDiv.innerHTML = `<div class="grid grid-cols-2 gap-3 border-t border-outline-variant/10 dark:border-slate-700/50 pt-3">${depHtml || ""}${arrHtml || ""}</div>`;
+                    }
+                }).catch(e => console.warn("Wetter-Fehler bei Upcoming Flight:", e));
             }
         });
 
