@@ -642,56 +642,62 @@ window.normalizeAircraftCode = function(rawCode) {
 // 🌤️ PILOTEN-WETTER (METAR / TAF) LOGIK
 // ==========================================
 
+// 🚀 NEU: Ein Kurzzeitgedächtnis für ICAO-Codes, um API-Limits zu schonen!
+window.icaoCache = window.icaoCache || {};
+
 window.fetchAviationWeather = async function(airportCode) {
-    console.log(`🌤️ WETTER-CHECK: Gestartet für Code "${airportCode}"`);
     if (!airportCode) return null;
-    
     let icaoCode = airportCode.toUpperCase();
     
     // 1. IATA zu ICAO wandeln
     if (icaoCode.length === 3) {
-        console.log(`🌤️ WETTER-CHECK: "${icaoCode}" ist IATA. Suche ICAO...`);
-        if (typeof airportData !== 'undefined' && airportData[icaoCode] && airportData[icaoCode].icao) {
+        
+        // A) Zuerst im neuen Cache schauen!
+        if (window.icaoCache[icaoCode]) {
+            icaoCode = window.icaoCache[icaoCode];
+            // B) Dann in der lokalen Datenbank schauen
+        } else if (typeof airportData !== 'undefined' && airportData[icaoCode] && airportData[icaoCode].icao) {
             icaoCode = airportData[icaoCode].icao;
-            console.log(`🌤️ WETTER-CHECK: ICAO im lokalen Cache gefunden: "${icaoCode}"`);
+            window.icaoCache[airportCode.toUpperCase()] = icaoCode; // Im Cache merken
         } else {
+             // C) Nur wenn A und B fehlschlagen: Netlify API fragen
              try {
-                 const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : 'https://aesthetic-strudel-ecfe50.netlify.app';
-                 console.log(`🌤️ WETTER-CHECK: Frage Netlify API nach ICAO für "${icaoCode}"...`);
+                 const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : '';
                  const res = await fetch(`${baseUrl}/.netlify/functions/fetch-airport-details?code=${icaoCode}`);
+                 
+                 // 🚀 BUGHUNT FIX: Erst prüfen, ob die API uns blockiert, BEVOR wir JSON parsen!
+                 if (!res.ok) {
+                     console.warn(`🌤️ Wetter: Netlify API Limit (429) erreicht für IATA ${icaoCode}. Überspringe.`);
+                     return null; 
+                 }
+
                  const json = await res.json();
                  if (json && json.data && json.data.length > 0 && json.data[0].icao) {
                      icaoCode = json.data[0].icao;
-                     console.log(`🌤️ WETTER-CHECK: ICAO von API erhalten: "${icaoCode}"`);
+                     // 🚀 BUGHUNT FIX: Den teuer erkauften Code sofort im Cache speichern!
+                     window.icaoCache[airportCode.toUpperCase()] = icaoCode;
                  } else {
-                     console.warn(`🌤️ WETTER-CHECK FEHLGESCHLAGEN: Konnte keinen ICAO für "${airportCode}" finden.`);
                      return null; 
                  }
              } catch(e) {
-                 console.error(`🌤️ WETTER-CHECK FEHLER bei API-Abruf:`, e);
-                 return null;
+                 console.warn(`🌤️ Wetter: Fehler bei ICAO Auflösung für ${icaoCode}:`, e);
+                 return null; // Sanft abbrechen statt abzustürzen
              }
         }
     }
     
-    // 2. Wetterdaten abrufen
+    // 2. Wetterdaten von NOAA abrufen
     try {
-        console.log(`🌤️ WETTER-CHECK: Rufe NOAA API für "${icaoCode}" auf...`);
         const res = await fetch(`https://aviationweather.gov/api/data/metar?ids=${icaoCode}&format=json`);
-        if (!res.ok) {
-            console.error(`🌤️ WETTER-CHECK FEHLER: NOAA antwortet mit Status ${res.status}`);
-            return null;
-        }
-        const data = await res.json();
         
+        if (!res.ok) return null;
+        
+        const data = await res.json();
         if (data && data.length > 0) {
-            console.log(`🌤️ WETTER-CHECK ERFOLG: Daten für "${icaoCode}" erhalten!`, data[0]);
             return data[0]; 
-        } else {
-            console.warn(`🌤️ WETTER-CHECK LEER: NOAA hat keine Daten für "${icaoCode}" geschickt.`);
         }
     } catch(e) {
-        console.error("🌤️ WETTER-CHECK EXCEPTION:", e);
+        console.warn("🌤️ NOAA Wetter-API nicht erreichbar:", e);
     }
     
     return null;
