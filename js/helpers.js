@@ -642,7 +642,7 @@ window.normalizeAircraftCode = function(rawCode) {
 // 🌤️ PILOTEN-WETTER (METAR / TAF) LOGIK
 // ==========================================
 
-// 🚀 NEU: Zwei Caches. Einer für fertige Ergebnisse, einer für aktuell laufende Anfragen!
+// 🚀 NEU: Zwei Caches (für fertige Ergebnisse und laufende Anfragen)
 window.icaoCache = window.icaoCache || {};
 window.icaoPromiseCache = window.icaoPromiseCache || {};
 
@@ -653,69 +653,75 @@ window.fetchAviationWeather = async function(airportCode) {
     // 1. IATA zu ICAO wandeln
     if (icaoCode.length === 3) {
         
-        // A) Zuerst im fertigen Cache schauen!
+        // A) Zuerst im fertigen Cache schauen
         if (window.icaoCache[icaoCode]) {
             icaoCode = window.icaoCache[icaoCode];
             
-        // B) Dann in der lokalen Datenbank schauen
+        // B) Lokale Datenbank (airportData)
         } else if (typeof airportData !== 'undefined' && airportData[icaoCode] && airportData[icaoCode].icao) {
             icaoCode = airportData[icaoCode].icao;
             window.icaoCache[airportCode.toUpperCase()] = icaoCode;
             
-        // C) Netlify API fragen
+        // C) Netlify API fragen (mit Anti-DDoS-Schutz!)
         } else {
              try {
-                 // 🚀 BUGHUNT FIX: Läuft gerade schon eine Anfrage für diesen IATA-Code? 
-                 // Dann feuere nicht noch eine ab, sondern warte auf die Antwort der ersten!
                  if (window.icaoPromiseCache[icaoCode]) {
                      icaoCode = await window.icaoPromiseCache[icaoCode];
                  } else {
                      const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : '';
                      
-                     // Wir erstellen die Anfrage, merken sie uns aber sofort im "Warte-Zimmer" (PromiseCache)
-                     const fetchPromise = fetch(`${baseUrl}/.netlify/functions/fetch-airport-details?code=${icaoCode}`)
-                         .then(res => {
-                             if (!res.ok) {
-                                 console.warn(`🌤️ Wetter: Netlify API Limit (429) erreicht für IATA ${icaoCode}.`);
-                                 return null;
-                             }
-                             return res.json();
-                         })
-                         .then(json => {
-                             if (json && json.data && json.data.length > 0 && json.data[0].icao) {
-                                 const foundIcao = json.data[0].icao;
-                                 window.icaoCache[icaoCode] = foundIcao; // Im finalen Cache speichern
-                                 return foundIcao;
-                             }
-                             return null;
-                         });
+                     // Die Anfrage als Promise verpacken
+                     const fetchPromise = (async () => {
+                         // 🚀 BUGHUNT FIX: Zufällige kleine Pause (200-700ms), damit API Ninjas nicht wegen "Too Many Requests" blockiert!
+                         await new Promise(resolve => setTimeout(resolve, Math.random() * 500 + 200));
                          
-                     // Die laufende Anfrage für andere parallele Aufrufe hinterlegen
-                     window.icaoPromiseCache[icaoCode] = fetchPromise;
+                         const res = await fetch(`${baseUrl}/.netlify/functions/fetch-airport-details?code=${icaoCode}`);
+                         if (!res.ok) {
+                             console.warn(`🌤️ Wetter: Netlify API blockiert (429) für ${icaoCode}.`);
+                             return null;
+                         }
+                         const json = await res.json();
+                         if (json && json.data && json.data.length > 0 && json.data[0].icao) {
+                             const foundIcao = json.data[0].icao;
+                             window.icaoCache[icaoCode] = foundIcao;
+                             return foundIcao;
+                         }
+                         return null;
+                     })();
                      
-                     // Jetzt selbst auf das Ergebnis warten
+                     window.icaoPromiseCache[icaoCode] = fetchPromise;
                      icaoCode = await fetchPromise;
+                     
+                     // 🚀 WICHTIG: Wenn es fehlschlug, den Cache löschen, damit es beim Neuladen der App wieder frisch versucht wird!
+                     if (!icaoCode) {
+                         delete window.icaoPromiseCache[airportCode.toUpperCase()];
+                     }
                  }
                  
-                 // Wenn nach all dem Warten immer noch kein Code da ist -> Abbruch
                  if (!icaoCode) return null;
                  
              } catch(e) {
                  console.warn(`🌤️ Wetter: Fehler bei ICAO Auflösung für ${icaoCode}:`, e);
+                 delete window.icaoPromiseCache[airportCode.toUpperCase()];
                  return null; 
              }
         }
     }
     
-    // 2. Wetterdaten von NOAA abrufen
+    // 2. Wetterdaten von NOAA abrufen (Braucht 4-stelligen ICAO Code)
     try {
-        const res = await fetch(`https://aviationweather.gov/api/data/metar?ids=${icaoCode}&format=json`);
-        
+        // 🚀 BUGHUNT FIX: Wir MÜSSEN einen CORS-Proxy nutzen, da NOAA direkte Browser-Anfragen blockiert!
+        const noaaUrl = `https://aviationweather.gov/api/data/metar?ids=${icaoCode}&format=json`;
+        const proxiedUrl = `https://corsproxy.io/?url=${encodeURIComponent(noaaUrl)}`;
+
+        const res = await fetch(proxiedUrl);
         if (!res.ok) return null;
         
         const data = await res.json();
         if (data && data.length > 0) {
             return data[0]; 
+        } else {
+            console.warn(`🌤️ Wetter: NOAA hat leider kein Wetter für den Flughafen "${icaoCode}" gemeldet.`);
         }
     } catch(e) {
         console.warn("🌤️ NOAA Wetter-API nicht erreichbar:", e);
