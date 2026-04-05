@@ -5128,18 +5128,21 @@ window.initLiveWidget = async function() {
     const today = new Date();
     const todayStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
 
-    // 🚀 BUGHUNT FIX: Versteckte IDs laden
-    const hiddenList = JSON.parse(localStorage.getItem('hiddenLiveFlightsList') || '[]');
-    const hiddenIds = hiddenList.map(h => h.id);
-
-    window.todaysLiveFlights = allFlights
-        // 🚀 BUGHUNT FIX: Filtern nach Datum UND prüfen, ob der Flug NICHT auf der versteckten Liste steht
-        .filter(f => f.date === todayStr && !hiddenIds.includes(f.id || f.flight_id))
+    // 1. 🚀 FIX: Meister-Backup ALLER heutigen Flüge anlegen (unzerstörbar, wird nur sortiert)
+    window.originalTodaysLiveFlights = allFlights
+        .filter(f => f.date === todayStr)
         .sort((a, b) => {
             const idA = a.flightLogNumber || a.flight_id || a.id || 0;
             const idB = b.flightLogNumber || b.flight_id || b.id || 0;
             return idA - idB; 
         });
+
+    // 2. Versteckte IDs laden
+    const hiddenList = JSON.parse(localStorage.getItem('hiddenLiveFlightsList') || '[]');
+    const hiddenIds = hiddenList.map(h => h.id);
+
+    // 3. 🚀 FIX: Die saubere Arbeitskopie für das Widget filtern (auf Basis des Backups!)
+    window.todaysLiveFlights = window.originalTodaysLiveFlights.filter(f => !hiddenIds.includes(f.id || f.flight_id));
         
     const widget = document.getElementById('live-flight-widget');
 
@@ -5541,104 +5544,109 @@ window.refreshLiveFlightData = async function() {
 // ==========================================
 
 window.hideLiveWidget = function(event) {
-    if (event) event.stopPropagation(); // Verhindert, dass ein Klick die Bordkarte öffnet
+    if (event) event.stopPropagation();
 
     if (!window.todaysLiveFlights || window.todaysLiveFlights.length === 0) return;
 
-    // 1. Welchen Flug blenden wir gerade aus?
+    // 1. ID des aktuellen Flugs holen
     const flightToHide = window.todaysLiveFlights[window.currentLiveFlightIndex];
     const flightId = flightToHide.id || flightToHide.flight_id;
 
-    // 2. Zustand im LocalStorage speichern (als Array, weil es mehrere sein können!)
+    // 2. In LocalStorage speichern
     if (flightId) {
         const todayStr = new Date().toISOString().split('T')[0];
-        // Wir nutzen jetzt 'hiddenLiveFlightsList' als Array
         let hiddenFlights = JSON.parse(localStorage.getItem('hiddenLiveFlightsList') || '[]');
-        
-        // Nur hinzufügen, wenn die ID noch nicht drin ist
         if (!hiddenFlights.some(f => f.id === flightId)) {
             hiddenFlights.push({ id: flightId, date: todayStr });
             localStorage.setItem('hiddenLiveFlightsList', JSON.stringify(hiddenFlights));
         }
     }
 
-    // 3. Den aktuellen Flug aus unserer Live-Liste löschen
-    window.todaysLiveFlights.splice(window.currentLiveFlightIndex, 1);
+    // 3. 🚀 BUGHUNT FIX: Die Arbeitskopie sauber aus dem Meister-Backup neu aufbauen! (Nie wieder .splice!)
+    const hiddenList = JSON.parse(localStorage.getItem('hiddenLiveFlightsList') || '[]');
+    const hiddenIds = hiddenList.map(h => h.id);
+    window.todaysLiveFlights = window.originalTodaysLiveFlights.filter(f => !hiddenIds.includes(f.id || f.flight_id));
 
-    // 4. Entscheiden: Nur den nächsten zeigen, oder GANZ ausblenden?
+    // 4. Den Ghost-Button updaten (damit er auftaucht, auch wenn noch andere Flüge sichtbar sind)
+    window.showGhostButton();
+
+    // 5. Was passiert mit dem UI?
     if (window.todaysLiveFlights.length > 0) {
-        // Fall A: Es gibt noch andere Flüge!
-        // Falls wir den allerletzten der Liste gelöscht haben, müssen wir den Index um 1 reduzieren
-        if (window.currentLiveFlightIndex >= window.todaysLiveFlights.length) {
-            window.currentLiveFlightIndex = window.todaysLiveFlights.length - 1;
-        }
-        
-        // Widget mit dem "nächsten" Flug neu zeichnen
+        // Fall A: Es sind noch andere Flüge da -> Zeige den nächsten (Index 0)
+        window.currentLiveFlightIndex = 0;
         if (typeof window.renderCurrentLiveFlight === 'function') {
             window.renderCurrentLiveFlight();
         }
     } else {
-        // Fall B: Das war der letzte Flug. Jetzt wird das ganze Widget versteckt!
+        // Fall B: Das war der absolut letzte Flug -> Widget komplett verstecken
         const widget = document.getElementById('live-flight-widget');
         if (widget) {
             widget.classList.add('hidden');
             widget.classList.remove('flex');
             widget.style.setProperty('display', 'none', 'important');
         }
-        
-        // Auto-Refresh stoppen, um API-Calls zu sparen
+        // Auto-Refresh stoppen
         if (typeof window.liveFlightInterval !== 'undefined' && window.liveFlightInterval) {
             clearInterval(window.liveFlightInterval);
             window.liveFlightInterval = null;
-            console.log("🛑 Live-Widget ausgeblendet: Auto-Refresh gestoppt.");
         }
-        
-        // Ghost-Button anzeigen & Empty State prüfen
-        window.showGhostButton();
         if (typeof checkRadarEmptyState === 'function') checkRadarEmptyState();
     }
 };
 
 window.showGhostButton = function() {
-    let ghostBtn = document.getElementById('restore-live-widget-btn');
+    const hiddenList = JSON.parse(localStorage.getItem('hiddenLiveFlightsList') || '[]');
     
-    // Wenn er noch nicht existiert, bauen wir ihn direkt hinter das Widget
+    let ghostBtn = document.getElementById('restore-live-widget-btn');
     if (!ghostBtn) {
         ghostBtn = document.createElement('button');
         ghostBtn.id = 'restore-live-widget-btn';
         ghostBtn.className = 'mx-auto mt-4 mb-8 flex items-center justify-center gap-2 px-4 py-2 bg-surface-container hover:bg-surface-container-high dark:bg-slate-800 dark:hover:bg-slate-700 text-on-surface/60 dark:text-slate-400 rounded-full text-xs font-bold transition-all border border-outline-variant/20 shadow-sm';
-        ghostBtn.innerHTML = `<span class="material-symbols-outlined text-[16px]">visibility</span> <span data-i18n="live.restoreFlights">Ausgeblendete Live-Flüge anzeigen</span>`;
         ghostBtn.onclick = function(e) { 
             if (e) e.stopPropagation();
             window.restoreLiveWidget(); 
         };
         
+        // Hängt den Button sicher unter das Widget
         const liveWidget = document.getElementById('live-flight-widget');
         if (liveWidget && liveWidget.parentNode) {
             liveWidget.parentNode.insertBefore(ghostBtn, liveWidget.nextSibling);
         }
     }
-    ghostBtn.classList.remove('hidden');
+    
+    // 🚀 BUGHUNT FIX: Button nur anzeigen, wenn auch wirklich was versteckt wurde
+    if (hiddenList.length > 0) {
+        ghostBtn.classList.remove('hidden');
+        // Zeigt sogar dynamisch an, WIE VIELE Flüge versteckt sind!
+        ghostBtn.innerHTML = `<span class="material-symbols-outlined text-[16px]">visibility</span> ${hiddenList.length} ausgeblendete Live-Flüge anzeigen`;
+    } else {
+        ghostBtn.classList.add('hidden');
+    }
 };
 
 window.restoreLiveWidget = function() {
-    // 1. Sperren aus LocalStorage komplett löschen
-    localStorage.removeItem('hiddenLiveFlight'); // Dein altes Feld (zur Sicherheit löschen)
-    localStorage.removeItem('hiddenLiveFlightsList'); // Das neue Array-Feld
+    // 1. Sperren komplett löschen
+    localStorage.removeItem('hiddenLiveFlight');
+    localStorage.removeItem('hiddenLiveFlightsList');
     
-    // 2. Ghost-Button verstecken
+    // 2. 🚀 BUGHUNT FIX: Die Arbeitskopie zu 100% aus dem Meister-Backup wiederherstellen!
+    if (window.originalTodaysLiveFlights) {
+        window.todaysLiveFlights = [...window.originalTodaysLiveFlights];
+    }
+    window.currentLiveFlightIndex = 0; // Zurück zum ersten Flug
+    
+    // 3. Ghost-Button verstecken
     const ghostBtn = document.getElementById('restore-live-widget-btn');
     if (ghostBtn) ghostBtn.classList.add('hidden');
     
-    // 3. Widget Container wieder sichtbar machen (wird dann durch Refresh gefüllt)
+    // 4. Widget wieder einblenden und neu zeichnen
     const widget = document.getElementById('live-flight-widget');
-    if (widget) {
+    if (widget && window.todaysLiveFlights && window.todaysLiveFlights.length > 0) {
         widget.classList.remove('hidden');
         widget.style.removeProperty('display');
-
-        if (typeof refreshLiveFlightData === 'function') {
-            console.log("🔄 Live-Widget wiederhergestellt: Starte vollen Refresh...");
-            refreshLiveFlightData();
+        
+        if (typeof window.renderCurrentLiveFlight === 'function') {
+            window.renderCurrentLiveFlight();
         }
     }
     
