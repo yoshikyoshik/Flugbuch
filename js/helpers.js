@@ -733,7 +733,9 @@ window.buildWeatherWidgetHtml = function(weatherData, title) {
     }
 
     return `
-      <div class="w-full flex flex-col bg-surface-container-lowest dark:bg-slate-950 p-2.5 rounded-xl border border-outline-variant/10 dark:border-slate-800 relative group cursor-help transition-all hover:bg-surface-container dark:hover:bg-slate-900">
+      <div onclick="event.stopPropagation(); const tt = this.querySelector('.metar-tooltip'); tt.classList.toggle('hidden'); tt.classList.toggle('block');" 
+           onmouseleave="const tt = this.querySelector('.metar-tooltip'); tt.classList.add('hidden'); tt.classList.remove('block');"
+           class="w-full flex flex-col bg-surface-container-lowest dark:bg-slate-950 p-2.5 rounded-xl border border-outline-variant/10 dark:border-slate-800 relative group cursor-pointer transition-all hover:bg-surface-container dark:hover:bg-slate-900">
           
           <div class="flex justify-between items-center mb-1.5">
               <span class="text-[9px] font-black uppercase tracking-widest text-on-surface/50 dark:text-slate-500">${title}</span>
@@ -756,7 +758,7 @@ window.buildWeatherWidgetHtml = function(weatherData, title) {
               </span>
           </div>
 
-          <div class="absolute bottom-full left-0 mb-2 w-48 p-2.5 bg-slate-900 text-slate-300 text-[9px] font-mono leading-tight rounded-lg shadow-xl hidden group-hover:block z-[100] border border-slate-700">
+          <div class="metar-tooltip absolute bottom-full left-0 mb-2 w-48 p-2.5 bg-slate-900 text-slate-300 text-[9px] font-mono leading-tight rounded-lg shadow-xl hidden lg:group-hover:block z-[100] border border-slate-700 pointer-events-none">
               <div class="text-indigo-400 font-bold mb-1 uppercase tracking-widest text-[8px] font-sans">Raw METAR</div>
               ${weatherData.rawOb || 'N/A'}
           </div>

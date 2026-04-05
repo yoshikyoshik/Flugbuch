@@ -5388,15 +5388,16 @@ window.refreshLiveFlightData = async function() {
             let oldWeather = document.getElementById('live-weather-container');
             if (oldWeather) oldWeather.remove();
 
+            // 🚀 BUGHUNT FIX: Wir nutzen den sicheren Platzhalter in der HTML, statt den Slider-Code zu sprengen!
             if (depHtml || arrHtml) {
-                const weatherContainer = document.createElement('div');
-                weatherContainer.id = 'live-weather-container';
-                // 🚀 FIX: w-full zwingt das Grid auf 100% Breite
-                weatherContainer.className = 'w-full grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-outline-variant/10 dark:border-slate-700/50';
-                weatherContainer.innerHTML = (depHtml || "") + (arrHtml || "");
-                
-                const widgetContainer = document.getElementById('live-flight-widget');
-                widgetContainer.appendChild(weatherContainer); 
+                const placeholder = document.getElementById('live-weather-placeholder');
+                if (placeholder) {
+                    placeholder.innerHTML = `<div class="w-full grid grid-cols-2 gap-2 border-t border-outline-variant/10 dark:border-slate-700/50 pt-4 mt-4">${depHtml || ""}${arrHtml || ""}</div>`;
+                }
+            } else {
+                // Falls es für diesen Flug kein Wetter gibt, leeren wir den Platzhalter
+                const placeholder = document.getElementById('live-weather-placeholder');
+                if (placeholder) placeholder.innerHTML = "";
             }
         } catch(we) {
             console.warn("Wetter konnte nicht geladen werden:", we);
