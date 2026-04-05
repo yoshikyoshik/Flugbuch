@@ -684,7 +684,7 @@ window.fetchAviationWeather = async function(airportCode) {
                                  .from('icao_cache')
                                  .select('icao_code')
                                  .eq('iata_code', icaoCode)
-                                 .single();
+                                 .maybeSingle(); // 🚀 FIX: Verhindert den 406 Fehler, wenn noch nichts da ist!
 
                              if (sbData && sbData.icao_code) {
                                  console.log(`🧠 ICAO aus Supabase-Schwarmwissen geladen: ${icaoCode} -> ${sbData.icao_code}`);
