@@ -5377,42 +5377,34 @@ window.refreshLiveFlightData = async function() {
         // ================================================================
         // 🌤️ SCHRITT 2: HIER KOMMT DER NEUE WETTER-CODE HIN!
         // ================================================================
-        try {
-            const depWeather = await window.fetchAviationWeather(window.currentLiveFlight.departure);
-            const arrWeather = await window.fetchAviationWeather(window.currentLiveFlight.arrival);
-            
-            const depHtml = window.buildWeatherWidgetHtml(depWeather, "Abflug");
-            const arrHtml = window.buildWeatherWidgetHtml(arrWeather, "Ankunft");
-            
-            // 🚀 BUGHUNT FIX: Vorheriges Wetter rigoros löschen, damit nichts übereinander klebt!
+        // 🚀 BUGHUNT FIX: Wir ignorieren den manuellen Platzhalter im HTML!
+            // Wir injizieren das Wetter programmatisch auf der Hauptebene, 
+            // um 100% Breite zu garantieren (wie beim Upcoming-Widget).
             let oldWeather = document.getElementById('live-weather-container');
             if (oldWeather) oldWeather.remove();
 
-            // 🚀 BUGHUNT FIX: Wir erzwingen die volle Breite und nutzen flex-1, 
-            // damit die Boxen sich unter allen Umständen komplett ausstrecken!
             if (depHtml || arrHtml) {
-                const placeholder = document.getElementById('live-weather-placeholder');
-                if (placeholder) {
-                    // 1. Zwingt den Platzhalter selbst auf 100% Breite
-                    placeholder.style.width = "100%";
-                    placeholder.classList.add("w-full", "block");
-
-                    // 2. Nutzt flex-1 Wrapper für perfekte 50/50 Aufteilung
-                    placeholder.innerHTML = `
-                        <div class="w-full flex flex-row gap-2 border-t border-outline-variant/10 dark:border-slate-700/50 pt-4 mt-4">
-                            ${depHtml ? `<div class="flex-1 min-w-0">${depHtml}</div>` : ''}
-                            ${arrHtml ? `<div class="flex-1 min-w-0">${arrHtml}</div>` : ''}
-                        </div>
-                    `;
+                const weatherContainer = document.createElement('div');
+                weatherContainer.id = 'live-weather-container';
+                // Exakt gleiches Grid-Layout wie im Upcoming-Widget!
+                weatherContainer.className = 'w-full grid grid-cols-2 gap-3 mt-5 pt-4 border-t border-outline-variant/10 dark:border-slate-700/50';
+                weatherContainer.innerHTML = (depHtml || "") + (arrHtml || "");
+                
+                const widgetContainer = document.getElementById('live-flight-widget');
+                const navContainer = document.getElementById('live-flight-nav');
+                const hideBtnContainer = document.getElementById('live-hide-btn-container');
+                
+                // Wir schieben es punktgenau VOR die Previous/Next-Buttons oder ans Ende
+                if (widgetContainer) {
+                    if (navContainer && navContainer.parentNode === widgetContainer) {
+                        widgetContainer.insertBefore(weatherContainer, navContainer);
+                    } else if (hideBtnContainer && hideBtnContainer.parentNode === widgetContainer) {
+                        widgetContainer.insertBefore(weatherContainer, hideBtnContainer);
+                    } else {
+                        widgetContainer.appendChild(weatherContainer);
+                    }
                 }
-            } else {
-                // Falls es für diesen Flug kein Wetter gibt, leeren wir den Platzhalter
-                const placeholder = document.getElementById('live-weather-placeholder');
-                if (placeholder) placeholder.innerHTML = "";
             }
-        } catch(we) {
-            console.warn("Wetter konnte nicht geladen werden:", we);
-        }
         // ================================================================
         // ENDE WETTER-CODE
         
