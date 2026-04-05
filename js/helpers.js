@@ -649,8 +649,7 @@ window.fetchAviationWeather = async function(airportCode) {
     if (!airportCode) return null;
     let icaoCode = airportCode.toString().trim().toUpperCase();
 
-    // 🚀 BUGHUNT FIX 1: VIP-Flughäfen! 
-    // Diese umgehen das API Ninjas Rate-Limit sofort.
+    // 🚀 1. VIP-Flughäfen (Fest verdrahtet)
     const commonAirports = {
         "FRA": "EDDF", "MUC": "EDDM", "BER": "EDDB", "DUS": "EDDL", "HAM": "EDDH",
         "STR": "EDDS", "CGN": "EDDK", "HAJ": "EDDV", "BRE": "EDDW", "DRS": "EDDC",
@@ -661,7 +660,6 @@ window.fetchAviationWeather = async function(airportCode) {
         "ACE": "GCRR", "LIS": "LPPT", "GRU": "SBGR", "GIG": "SBGL", "EWR": "KEWR"
     };
 
-    // 1. IATA zu ICAO wandeln
     if (icaoCode.length === 3) {
         if (commonAirports[icaoCode]) {
             icaoCode = commonAirports[icaoCode];
@@ -675,16 +673,55 @@ window.fetchAviationWeather = async function(airportCode) {
                  if (window.icaoPromiseCache[icaoCode]) {
                      icaoCode = await window.icaoPromiseCache[icaoCode];
                  } else {
-                     const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : '';
                      const fetchPromise = (async () => {
-                         // Etwas längere Pause, um das API Ninjas Limit (429) nicht zu triggern
+                         
+                         // ==========================================
+                         // 🧠 SCHRITT A: In Supabase nachfragen
+                         // ==========================================
+                         try {
+                             const { data: sbData, error: sbError } = await supabase
+                                 .from('icao_cache')
+                                 .select('icao_code')
+                                 .eq('iata_code', icaoCode)
+                                 .single();
+
+                             if (sbData && sbData.icao_code) {
+                                 console.log(`🧠 ICAO aus Supabase-Schwarmwissen geladen: ${icaoCode} -> ${sbData.icao_code}`);
+                                 window.icaoCache[icaoCode] = sbData.icao_code;
+                                 return sbData.icao_code;
+                             }
+                         } catch (err) {
+                             console.warn("Supabase Cache Abfrage fehlgeschlagen:", err);
+                         }
+
+                         // ==========================================
+                         // 🌍 SCHRITT B: Wenn unbekannt -> API fragen
+                         // ==========================================
+                         console.log(`🌍 ICAO noch völlig unbekannt. Frage API für: ${icaoCode}`);
+                         const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : '';
                          await new Promise(resolve => setTimeout(resolve, Math.random() * 1000 + 400));
+                         
                          const res = await fetch(`${baseUrl}/.netlify/functions/fetch-airport-details?code=${icaoCode}`);
                          if (!res.ok) return null;
                          const json = await res.json();
+                         
                          if (json && json.data && json.data.length > 0 && json.data[0].icao_code) {
                              const foundIcao = json.data[0].icao_code;
                              window.icaoCache[icaoCode] = foundIcao;
+                             
+                             // ==========================================
+                             // 💾 SCHRITT C: Neues Wissen in Supabase speichern!
+                             // ==========================================
+                             try {
+                                 await supabase
+                                     .from('icao_cache')
+                                     .insert([{ iata_code: icaoCode, icao_code: foundIcao }]);
+                                 console.log(`💾 Neues Wissen für alle Nutzer gespeichert: ${icaoCode} -> ${foundIcao}`);
+                             } catch (dbErr) {
+                                 // Wenn 2 Nutzer gleichzeitig speichern, wirft es evtl. einen Fehler. Ignorieren wir elegant.
+                                 console.warn("Konnte ICAO nicht in Supabase speichern:", dbErr);
+                             }
+
                              return foundIcao;
                          }
                          return null;
@@ -706,9 +743,8 @@ window.fetchAviationWeather = async function(airportCode) {
         }
     }
     
-    // 2. Wetterdaten abrufen (Mit doppeltem Sicherheitsnetz!)
+    // 2. Wetterdaten abrufen (Netlify -> Fallback)
     try {
-        // Versuch 1: Unsere Netlify Brücke
         const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : '';
         const res = await fetch(`${baseUrl}/.netlify/functions/fetch-weather?icao=${icaoCode}`);
         
@@ -717,9 +753,6 @@ window.fetchAviationWeather = async function(airportCode) {
             if (data && data.length > 0) return data[0]; 
         }
 
-        // 🚀 BUGHUNT FIX 2: Versuch 2 (Plan B)
-        // Falls Netlify blockiert wird oder ein leeres Array [] schickt, 
-        // versuchen wir es über CorsProxy direkt aus deinem Browser heraus!
         console.warn(`🌤️ Netlify lieferte kein Wetter für ${icaoCode}. Nutze Fallback...`);
         const fallbackUrl = `https://corsproxy.io/?url=${encodeURIComponent(`https://aviationweather.gov/api/data/metar?ids=${icaoCode}&format=json`)}`;
         const fallbackRes = await fetch(fallbackUrl);
