@@ -5124,9 +5124,10 @@ window.renderCurrentLiveFlight = function() {
         baggageVal.textContent = getTranslation("live.baggageTBD") || "Wird noch ermittelt...";
     }
 
-    // 🚀 FIX 4: Status Badge mit i18n Unterstützung
+    // 🚀 FIX 4: Status Badge dynamisch für Hell/Dunkel machen!
     document.getElementById('live-status-badge').innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-gray-500"></span> <span data-i18n="live.statusLoading">${getTranslation("live.statusLoading") || "LADE..."}</span>`;
-    document.getElementById('live-status-badge').className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-gray-200 text-gray-700 shadow-sm animate-pulse";
+    // BUGHUNT FIX: Die Klassen für das graue "Laden..." Label unterstützen jetzt Hell und Dunkel
+    document.getElementById('live-status-badge').className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-surface-container dark:bg-slate-800 text-on-surface dark:text-slate-300 shadow-sm animate-pulse";
     
     // Navigation ein/ausblenden, wenn > 1 Flug
     const nav = document.getElementById('live-flight-nav');
@@ -5156,7 +5157,9 @@ window.renderCurrentLiveFlight = function() {
     }
 
     // API sofort anfeuern
-    refreshLiveFlightData();
+    if (typeof refreshLiveFlightData === 'function') {
+        refreshLiveFlightData();
+    }
 };
 
 window.nextLiveFlight = function() {

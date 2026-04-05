@@ -2396,6 +2396,16 @@ window.switchAnalyticsView = function(view) {
 window.switchProfileView = function(view) {
     const views = ['badges', 'community', 'settings'];
     
+    // 🚀 BUGHUNT FIX: Wir trennen Layout-Klassen von Farb-Klassen!
+    // Basis-Layout (Das "Gummi"-Layout, das niemals überschrieben werden darf)
+    const baseClasses = 'flex-auto px-3 py-2 sm:py-2.5 text-[12px] sm:text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 whitespace-nowrap';
+    
+    // Farben für den gerade aktiven Tab
+    const activeClasses = 'bg-surface-container-lowest dark:bg-slate-700 text-on-surface dark:text-white shadow-sm';
+    
+    // Farben für die inaktiven Tabs
+    const inactiveClasses = 'text-on-surface/60 hover:text-on-surface dark:text-slate-400 dark:hover:text-white hover:bg-surface-container-lowest dark:hover:bg-slate-700';
+    
     views.forEach(v => {
         const btn = document.getElementById(`profil-view-${v}`);
         const container = document.getElementById(`profile-${v}-content`);
@@ -2403,12 +2413,12 @@ window.switchProfileView = function(view) {
         if (!btn || !container) return;
 
         if (v === view) {
-            // 🚀 BUGHUNT FIX: Die neuen schmalen Klassen (px-4 sm:px-6) verwenden
-            btn.className = 'flex-shrink-0 px-4 sm:px-6 py-2.5 text-sm font-bold rounded-xl transition-all bg-surface-container-lowest dark:bg-slate-700 text-on-surface dark:text-white shadow-sm flex items-center justify-center gap-2';
+            // Kombiniere Basis-Layout + Aktive Farben
+            btn.className = `${baseClasses} ${activeClasses}`;
             container.classList.remove('hidden');
         } else {
-            // 🚀 BUGHUNT FIX: Die neuen schmalen Klassen (px-4 sm:px-6) verwenden
-            btn.className = 'flex-shrink-0 px-4 sm:px-6 py-2.5 text-sm font-bold rounded-xl transition-all text-on-surface/60 hover:text-on-surface dark:text-slate-400 dark:hover:text-white hover:bg-surface-container-lowest dark:hover:bg-slate-700 flex items-center justify-center gap-2';
+            // Kombiniere Basis-Layout + Inaktive Farben
+            btn.className = `${baseClasses} ${inactiveClasses}`;
             container.classList.add('hidden');
         }
     });
