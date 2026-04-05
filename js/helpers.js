@@ -679,7 +679,8 @@ window.fetchAviationWeather = async function(airportCode) {
                          // 🧠 SCHRITT A: In Supabase nachfragen
                          // ==========================================
                          try {
-                             const { data: sbData, error: sbError } = await supabase
+                             // 🚀 FIX: Hier nutzen wir jetzt 'supabaseClient' anstatt 'supabase'!
+                             const { data: sbData, error: sbError } = await supabaseClient
                                  .from('icao_cache')
                                  .select('icao_code')
                                  .eq('iata_code', icaoCode)
@@ -713,12 +714,12 @@ window.fetchAviationWeather = async function(airportCode) {
                              // 💾 SCHRITT C: Neues Wissen in Supabase speichern!
                              // ==========================================
                              try {
-                                 await supabase
+                                 // 🚀 FIX: Auch hier 'supabaseClient' statt 'supabase'
+                                 await supabaseClient
                                      .from('icao_cache')
                                      .insert([{ iata_code: icaoCode, icao_code: foundIcao }]);
                                  console.log(`💾 Neues Wissen für alle Nutzer gespeichert: ${icaoCode} -> ${foundIcao}`);
                              } catch (dbErr) {
-                                 // Wenn 2 Nutzer gleichzeitig speichern, wirft es evtl. einen Fehler. Ignorieren wir elegant.
                                  console.warn("Konnte ICAO nicht in Supabase speichern:", dbErr);
                              }
 
