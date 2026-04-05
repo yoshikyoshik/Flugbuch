@@ -1095,6 +1095,9 @@
     "title": "No Upcoming Flights",
     "desc": "Time for your next adventure!",
     "flightPlan": "Plan Flight"
-  }
+  },
+
+  "weather.departure": "Departure",
+  "weather.arrival": "Arrival"
 
 }

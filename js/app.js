@@ -5382,9 +5382,11 @@ window.refreshLiveFlightData = async function() {
             const depWeather = await window.fetchAviationWeather(window.currentLiveFlight.departure);
             const arrWeather = await window.fetchAviationWeather(window.currentLiveFlight.arrival);
             
-            // 2. HTML generieren
-            const depHtml = window.buildWeatherWidgetHtml(depWeather, "Abflug");
-            const arrHtml = window.buildWeatherWidgetHtml(arrWeather, "Ankunft");
+            // 2. HTML generieren mit Übersetzungen
+            const depTitle = getTranslation("weather.departure") || "Abflug";
+            const arrTitle = getTranslation("weather.arrival") || "Ankunft";
+            const depHtml = window.buildWeatherWidgetHtml(depWeather, depTitle);
+            const arrHtml = window.buildWeatherWidgetHtml(arrWeather, arrTitle);
 
             // 3. 🚀 BUGHUNT FIX: Altes Wetter löschen und neues auf Hauptebene (100% Breite) einfügen
             let oldWeather = document.getElementById('live-weather-container');
@@ -5653,8 +5655,10 @@ window.initUpcomingWidget = async function() {
                     window.fetchAviationWeather(flight.departure),
                     window.fetchAviationWeather(flight.arrival)
                 ]).then(([depWeather, arrWeather]) => {
-                    const depHtml = window.buildWeatherWidgetHtml(depWeather, "Abflug");
-                    const arrHtml = window.buildWeatherWidgetHtml(arrWeather, "Ankunft");
+                    const depTitle = getTranslation("weather.departure") || "Abflug";
+                    const arrTitle = getTranslation("weather.arrival") || "Ankunft";
+                    const depHtml = window.buildWeatherWidgetHtml(depWeather, depTitle);
+                    const arrHtml = window.buildWeatherWidgetHtml(arrWeather, arrTitle);
                     
                     if (depHtml || arrHtml) {
                         weatherDiv.innerHTML = `<div class="grid grid-cols-2 gap-3 border-t border-outline-variant/10 dark:border-slate-700/50 pt-3">${depHtml || ""}${arrHtml || ""}</div>`;

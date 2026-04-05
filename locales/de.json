@@ -1096,6 +1096,9 @@
     "title": "Keine anstehenden Flüge",
     "desc": "Zeit für dein nächstes Abenteuer!",
     "flightPlan": "Flug planen"
-  }
+  },
+
+  "weather.departure": "Abflug",
+  "weather.arrival": "Ankunft"
 
 }

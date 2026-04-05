@@ -1091,6 +1091,9 @@
     "title": "Sin vuelos próximos",
     "desc": "¡Hora de tu próxima aventura!",
     "flightPlan": "Planear Vuelo"
-  }
+  },
+
+  "weather.departure": "Salida",
+  "weather.arrival": "Llegada"
 
 }

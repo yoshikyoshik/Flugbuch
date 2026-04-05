@@ -1091,6 +1091,9 @@
     "title": "没有即将到来的航班",
     "desc": "是时候开启下一次冒险了！",
     "flightPlan": "计划航班"
-  }
+  },
+
+  "weather.departure": "出发",
+  "weather.arrival": "到达"
 
 }

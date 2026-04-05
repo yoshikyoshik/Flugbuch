@@ -735,8 +735,8 @@ window.buildWeatherWidgetHtml = function(weatherData, title) {
     return `
       <div onclick="event.stopPropagation(); const tt = this.querySelector('.metar-tooltip'); tt.classList.toggle('hidden'); tt.classList.toggle('block');" 
            onmouseleave="const tt = this.querySelector('.metar-tooltip'); tt.classList.add('hidden'); tt.classList.remove('block');"
-           class="w-full flex flex-col bg-surface-container-lowest dark:bg-slate-950 p-2.5 rounded-xl border border-outline-variant/10 dark:border-slate-800 relative group cursor-pointer transition-all hover:bg-surface-container dark:hover:bg-slate-900">
-          
+           class="w-full flex flex-col bg-black/5 dark:bg-black/20 p-2.5 rounded-xl border border-black/5 dark:border-white/5 relative group cursor-pointer transition-all hover:bg-black/10 dark:hover:bg-black/40 shadow-sm">
+                     
           <div class="flex justify-between items-center mb-1.5">
               <span class="text-[9px] font-black uppercase tracking-widest text-on-surface/50 dark:text-slate-500">${title}</span>
               <div class="flex items-center gap-1">
