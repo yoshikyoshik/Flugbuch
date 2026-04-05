@@ -917,6 +917,21 @@ window.logFlight = async function () {
   if (regValueForPhoto && !currentPlanespottersData) {
       currentPlanespottersData = await fetchAircraftPhoto(regValueForPhoto);
   }
+
+  // =========================================================
+  // 🌤️ SCHRITT 1: WETTER FÜR NEUEN FLUG LADEN UND SPEICHERN
+  // =========================================================
+  let depWeather = null;
+  let arrWeather = null;
+  if (navigator.onLine) {
+      try {
+          depWeather = await window.fetchAviationWeather(departureAirport.code);
+          arrWeather = await window.fetchAviationWeather(arrivalAirport.code);
+      } catch (we) {
+          console.warn("Wetter konnte beim Speichern nicht geladen werden:", we);
+      }
+  }
+  // =========================================================
   
   const newFlightForSupabase = {
     flight_id: newFlightId,
@@ -953,7 +968,11 @@ window.logFlight = async function () {
     registration:
       document.getElementById("registration").value.trim().toUpperCase() ||
       null,
-    // 📸 NEU: Planespotters Daten speichern
+    
+    weather_dep: depWeather, // 🌤️ NEU: Abflug-Wetter speichern
+    weather_arr: arrWeather, // 🌤️ NEU: Ankunft-Wetter speichern
+
+      // 📸 NEU: Planespotters Daten speichern
     planespotters_url: currentPlanespottersData ? currentPlanespottersData.url : null,
     planespotters_photographer: currentPlanespottersData ? currentPlanespottersData.photographer : null,
   };
@@ -1207,6 +1226,27 @@ async function updateFlight() {
       currentPlanespottersData = await fetchAircraftPhoto(regValueForPhoto);
   }
 
+  // =========================================================
+  // 🌤️ SCHRITT 2: WETTER BEIM UPDATE INTELLIGENT LADEN
+  // =========================================================
+  let finalDepWeather = currentlyEditingFlightData.weather_dep || null;
+  let finalArrWeather = currentlyEditingFlightData.weather_arr || null;
+
+  if (navigator.onLine) {
+      try {
+          // Nur Wetter holen, wenn sich der Flughafen geändert hat oder noch gar keins da war!
+          if (!finalDepWeather || departureAirport.code !== currentlyEditingFlightData.departure) {
+              finalDepWeather = await window.fetchAviationWeather(departureAirport.code);
+          }
+          if (!finalArrWeather || arrivalAirport.code !== currentlyEditingFlightData.arrival) {
+              finalArrWeather = await window.fetchAviationWeather(arrivalAirport.code);
+          }
+      } catch (we) {
+          console.warn("Wetter konnte beim Update nicht geladen werden:", we);
+      }
+  }
+  // =========================================================
+
   const updatedFlightForSupabase = {
     date: document.getElementById("flightDate").value,
     departure: departureAirport.code,
@@ -1238,6 +1278,10 @@ async function updateFlight() {
     registration:
       document.getElementById("registration").value.trim().toUpperCase() ||
       null,
+    
+    weather_dep: finalDepWeather, // 🌤️ NEU: Abflug-Wetter sichern
+    weather_arr: finalArrWeather, // 🌤️ NEU: Ankunft-Wetter sichern
+    
     // 📸 NEU: Planespotters updaten (oder das alte behalten, falls nicht neu gesucht wurde)
     planespotters_url: currentPlanespottersData ? currentPlanespottersData.url : (currentlyEditingFlightData.planespotters_url || null),
     planespotters_photographer: currentPlanespottersData ? currentPlanespottersData.photographer : (currentlyEditingFlightData.planespotters_photographer || null),
@@ -3759,6 +3803,39 @@ window.viewFlightDetails = async function(id, isSwitching = false, customScope =
     } else {
         userPhotosContainer.classList.add('hidden');
     }
+
+    // =========================================================
+    // 🌤️ SCHRITT 3: WETTER IN DER FLUGKARTE (MODAL) ANZEIGEN
+    // =========================================================
+    let weatherContainer = document.getElementById('fd-weather-container');
+    if (!weatherContainer) {
+        weatherContainer = document.createElement('div');
+        weatherContainer.id = 'fd-weather-container';
+        // Wir hängen das Wetter punktgenau ÜBER den Notizen ein
+        const notesContainer = document.getElementById('fd-notes-container');
+        if (notesContainer && notesContainer.parentNode) {
+            notesContainer.parentNode.insertBefore(weatherContainer, notesContainer);
+        }
+    }
+    
+    // Nur rendern, wenn mindestens ein Wetter-Datensatz in der DB liegt
+    if (flight.weather_dep || flight.weather_arr) {
+        const depTitle = (typeof getTranslation === 'function' ? getTranslation("weather.departure") : null) || "Abflug";
+        const arrTitle = (typeof getTranslation === 'function' ? getTranslation("weather.arrival") : null) || "Ankunft";
+        
+        // Wir recyceln unsere exzellente Zeichen-Funktion aus der helpers.js!
+        const depHtml = flight.weather_dep ? window.buildWeatherWidgetHtml(flight.weather_dep, depTitle) : "";
+        const arrHtml = flight.weather_arr ? window.buildWeatherWidgetHtml(flight.weather_arr, arrTitle) : "";
+        
+        // Responsive Grid: Am PC nebeneinander, am Handy untereinander
+        weatherContainer.className = 'w-full grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6';
+        weatherContainer.innerHTML = (depHtml || "") + (arrHtml || "");
+        weatherContainer.style.display = ''; // Sichtbar machen
+    } else {
+        weatherContainer.innerHTML = '';
+        weatherContainer.style.display = 'none'; // Verstecken, falls kein Wetter da ist
+    }
+    // =========================================================
 
     // 7. Button Logik (Bearbeiten & Löschen)
     const editBtn = document.getElementById('fd-edit-btn');
