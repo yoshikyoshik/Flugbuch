@@ -5377,9 +5377,16 @@ window.refreshLiveFlightData = async function() {
         // ================================================================
         // 🌤️ SCHRITT 2: HIER KOMMT DER NEUE WETTER-CODE HIN!
         // ================================================================
-        // 🚀 BUGHUNT FIX: Wir ignorieren den manuellen Platzhalter im HTML!
-            // Wir injizieren das Wetter programmatisch auf der Hauptebene, 
-            // um 100% Breite zu garantieren (wie beim Upcoming-Widget).
+        try {
+            // 1. Wetterdaten abrufen
+            const depWeather = await window.fetchAviationWeather(window.currentLiveFlight.departure);
+            const arrWeather = await window.fetchAviationWeather(window.currentLiveFlight.arrival);
+            
+            // 2. HTML generieren
+            const depHtml = window.buildWeatherWidgetHtml(depWeather, "Abflug");
+            const arrHtml = window.buildWeatherWidgetHtml(arrWeather, "Ankunft");
+
+            // 3. 🚀 BUGHUNT FIX: Altes Wetter löschen und neues auf Hauptebene (100% Breite) einfügen
             let oldWeather = document.getElementById('live-weather-container');
             if (oldWeather) oldWeather.remove();
 
@@ -5405,6 +5412,9 @@ window.refreshLiveFlightData = async function() {
                     }
                 }
             }
+        } catch(we) {
+            console.warn("Wetter konnte nicht geladen werden:", we);
+        }
         // ================================================================
         // ENDE WETTER-CODE
         
