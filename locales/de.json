@@ -1098,7 +1098,9 @@
     "flightPlan": "Flug planen"
   },
 
-  "weather.departure": "Abflug",
-  "weather.arrival": "Ankunft"
+  "weather": {
+    "departure": "Abflug",
+    "arrival": "Ankunft"
+  }
 
 }

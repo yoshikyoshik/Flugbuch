@@ -1093,7 +1093,9 @@
     "flightPlan": "Planear Vuelo"
   },
 
-  "weather.departure": "Salida",
-  "weather.arrival": "Llegada"
+ "weather": {
+    "departure": "Salida",
+    "arrival": "Llegada"
+ }
 
 }

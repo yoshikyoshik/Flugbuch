@@ -1093,7 +1093,9 @@
     "flightPlan": "Планировать рейс"
   },
 
-  "weather.departure": "Вылет",
-  "weather.arrival": "Прибытие"
+  "weather": {
+    "departure": "Вылет",
+    "arrival": "Прибытие"
+  }
 
 }

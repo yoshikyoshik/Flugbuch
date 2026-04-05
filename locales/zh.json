@@ -1093,7 +1093,9 @@
     "flightPlan": "计划航班"
   },
 
-  "weather.departure": "出发",
-  "weather.arrival": "到达"
+  "weather": {
+    "departure": "出发",
+    "arrival": "到达"
+  }
 
 }
