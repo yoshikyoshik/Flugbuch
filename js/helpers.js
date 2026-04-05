@@ -647,12 +647,25 @@ window.icaoPromiseCache = window.icaoPromiseCache || {};
 
 window.fetchAviationWeather = async function(airportCode) {
     if (!airportCode) return null;
-    // 🚀 BUGHUNT FIX: .trim() entfernt unsichtbare Leerzeichen!
     let icaoCode = airportCode.toString().trim().toUpperCase();
-    
+
+    // 🚀 BUGHUNT FIX 1: VIP-Flughäfen! 
+    // Diese umgehen das API Ninjas Rate-Limit sofort.
+    const commonAirports = {
+        "FRA": "EDDF", "MUC": "EDDM", "BER": "EDDB", "DUS": "EDDL", "HAM": "EDDH",
+        "STR": "EDDS", "CGN": "EDDK", "HAJ": "EDDV", "BRE": "EDDW", "DRS": "EDDC",
+        "LEJ": "EDDP", "NUE": "EDDN", "JFK": "KJFK", "LHR": "EGLL", "CDG": "LFPG",
+        "AMS": "EHAM", "MAD": "LEMD", "BCN": "LEBL", "FCO": "LIRF", "DXB": "OMDB",
+        "SIN": "WSSS", "LAX": "KLAX", "ORD": "KORD", "ATL": "KATL", "ZRH": "LSZH",
+        "VIE": "LOWW", "PMI": "LEPA", "LPA": "GCLP", "TFS": "GCTS", "FUE": "GCFV",
+        "ACE": "GCRR", "LIS": "LPPT", "GRU": "SBGR", "GIG": "SBGL", "EWR": "KEWR"
+    };
+
     // 1. IATA zu ICAO wandeln
     if (icaoCode.length === 3) {
-        if (window.icaoCache[icaoCode]) {
+        if (commonAirports[icaoCode]) {
+            icaoCode = commonAirports[icaoCode];
+        } else if (window.icaoCache[icaoCode]) {
             icaoCode = window.icaoCache[icaoCode];
         } else if (typeof airportData !== 'undefined' && airportData[icaoCode] && airportData[icaoCode].icao) {
             icaoCode = airportData[icaoCode].icao;
@@ -664,11 +677,11 @@ window.fetchAviationWeather = async function(airportCode) {
                  } else {
                      const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : '';
                      const fetchPromise = (async () => {
-                         await new Promise(resolve => setTimeout(resolve, Math.random() * 500 + 100)); // Anti-DDoS
+                         // Etwas längere Pause, um das API Ninjas Limit (429) nicht zu triggern
+                         await new Promise(resolve => setTimeout(resolve, Math.random() * 1000 + 400));
                          const res = await fetch(`${baseUrl}/.netlify/functions/fetch-airport-details?code=${icaoCode}`);
                          if (!res.ok) return null;
                          const json = await res.json();
-                         // 🚀 BUGHUNT FIX: Die API nutzt icao_code statt icao!
                          if (json && json.data && json.data.length > 0 && json.data[0].icao_code) {
                              const foundIcao = json.data[0].icao_code;
                              window.icaoCache[icaoCode] = foundIcao;
@@ -676,12 +689,12 @@ window.fetchAviationWeather = async function(airportCode) {
                          }
                          return null;
                      })();
-                     
+
                      window.icaoPromiseCache[icaoCode] = fetchPromise;
                      icaoCode = await fetchPromise;
                      if (!icaoCode) delete window.icaoPromiseCache[airportCode.toString().trim().toUpperCase()];
                  }
-                 
+
                  if (!icaoCode) {
                      console.warn(`🌤️ Wetter abgebrochen: Konnte keinen ICAO für ${airportCode} finden.`);
                      return null;
@@ -693,19 +706,30 @@ window.fetchAviationWeather = async function(airportCode) {
         }
     }
     
-    // 2. Wetterdaten über eigene Netlify-Brücke abrufen
+    // 2. Wetterdaten abrufen (Mit doppeltem Sicherheitsnetz!)
     try {
+        // Versuch 1: Unsere Netlify Brücke
         const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : '';
         const res = await fetch(`${baseUrl}/.netlify/functions/fetch-weather?icao=${icaoCode}`);
         
-        if (!res.ok) return null;
+        if (res.ok) {
+            const data = await res.json();
+            if (data && data.length > 0) return data[0]; 
+        }
+
+        // 🚀 BUGHUNT FIX 2: Versuch 2 (Plan B)
+        // Falls Netlify blockiert wird oder ein leeres Array [] schickt, 
+        // versuchen wir es über CorsProxy direkt aus deinem Browser heraus!
+        console.warn(`🌤️ Netlify lieferte kein Wetter für ${icaoCode}. Nutze Fallback...`);
+        const fallbackUrl = `https://corsproxy.io/?url=${encodeURIComponent(`https://aviationweather.gov/api/data/metar?ids=${icaoCode}&format=json`)}`;
+        const fallbackRes = await fetch(fallbackUrl);
         
-        const data = await res.json();
-        if (data && data.length > 0) {
-            return data[0]; 
+        if (fallbackRes.ok) {
+            const fallbackData = await fallbackRes.json();
+            if (fallbackData && fallbackData.length > 0) return fallbackData[0];
         }
     } catch(e) {
-        console.warn("🌤️ Wetter-Brücke nicht erreichbar:", e);
+        console.warn(`🌤️ Wetter-Fehler für ${icaoCode}:`, e);
     }
     
     return null;
@@ -736,7 +760,7 @@ window.buildWeatherWidgetHtml = function(weatherData, title) {
       <div onclick="event.stopPropagation(); const tt = this.querySelector('.metar-tooltip'); tt.classList.toggle('hidden'); tt.classList.toggle('block');" 
            onmouseleave="const tt = this.querySelector('.metar-tooltip'); tt.classList.add('hidden'); tt.classList.remove('block');"
            class="w-full flex flex-col bg-black/5 dark:bg-black/20 p-2.5 rounded-xl border border-black/5 dark:border-white/5 relative group cursor-pointer transition-all hover:bg-black/10 dark:hover:bg-black/40 shadow-sm">
-                     
+
           <div class="flex justify-between items-center mb-1.5">
               <span class="text-[9px] font-black uppercase tracking-widest text-on-surface/50 dark:text-slate-500">${title}</span>
               <div class="flex items-center gap-1">
