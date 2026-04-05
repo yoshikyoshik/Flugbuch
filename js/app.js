@@ -5393,23 +5393,23 @@ window.refreshLiveFlightData = async function() {
             if (depHtml || arrHtml) {
                 const weatherContainer = document.createElement('div');
                 weatherContainer.id = 'live-weather-container';
-                // Exakt gleiches Grid-Layout wie im Upcoming-Widget!
-                weatherContainer.className = 'w-full grid grid-cols-2 gap-3 mt-5 pt-4 border-t border-outline-variant/10 dark:border-slate-700/50';
+                
+                // 🚀 BUGHUNT FIX: Wir geben dem Container inneres Padding (px-5 pb-6) 
+                // und schieben ihn optisch etwas hoch, damit er perfekt über dem Rand schwebt.
+                weatherContainer.className = 'w-full grid grid-cols-2 gap-3 px-5 pb-6 mt-2';
                 weatherContainer.innerHTML = (depHtml || "") + (arrHtml || "");
                 
                 const widgetContainer = document.getElementById('live-flight-widget');
                 const navContainer = document.getElementById('live-flight-nav');
                 const hideBtnContainer = document.getElementById('live-hide-btn-container');
                 
-                // Wir schieben es punktgenau VOR die Previous/Next-Buttons oder ans Ende
-                if (widgetContainer) {
-                    if (navContainer && navContainer.parentNode === widgetContainer) {
-                        widgetContainer.insertBefore(weatherContainer, navContainer);
-                    } else if (hideBtnContainer && hideBtnContainer.parentNode === widgetContainer) {
-                        widgetContainer.insertBefore(weatherContainer, hideBtnContainer);
-                    } else {
-                        widgetContainer.appendChild(weatherContainer);
-                    }
+                // 🚀 BUGHUNT FIX: Sichere Insert-Methode, egal wie tief das Element verschachtelt ist!
+                if (navContainer && navContainer.parentNode) {
+                    navContainer.parentNode.insertBefore(weatherContainer, navContainer);
+                } else if (hideBtnContainer && hideBtnContainer.parentNode) {
+                    hideBtnContainer.parentNode.insertBefore(weatherContainer, hideBtnContainer);
+                } else if (widgetContainer) {
+                    widgetContainer.appendChild(weatherContainer);
                 }
             }
         } catch(we) {

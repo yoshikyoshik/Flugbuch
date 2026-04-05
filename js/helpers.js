@@ -745,7 +745,7 @@ window.buildWeatherWidgetHtml = function(weatherData, title) {
               </div>
           </div>
           
-          <div class="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+          <div class="flex flex-wrap items-center gap-3">
               <span class="text-[10px] font-bold text-on-surface dark:text-slate-300 flex items-center gap-1">
                   <span class="material-symbols-outlined text-[12px] text-primary/70">air</span> ${windDir} @ ${windSpd}
               </span>
