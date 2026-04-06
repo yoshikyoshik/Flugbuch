@@ -660,7 +660,8 @@
     "email": "Email",
     "newPassword": "Новый пароль (мин. 6 символов)",
     "password": "Пароль",
-    "nickname": "Псевдоним"
+    "nickname": "Псевдоним",
+    "searchFlights": "Поиск рейсов"
   },
   "premium": {
     "alreadyPremiumDesc": "У вас есть активная веб-подписка. Пожалуйста, управляйте ей на веб-сайте.",
@@ -994,7 +995,9 @@
     "statusScheduled": "ПО РАСПИСАНИЮ",
     "statusOffline": "ОФФЛАЙН",
     "unknownAirline": "Неизвестная авиакомпания",
-    "refresh": "Обновить данные"
+    "refresh": "Обновить данные",
+    "hideFlight": "Скрыть текущий рейс",
+    "restoreFlights": "Показать {count} скрытых текущих рейсов"
   },
 
 "sync": {

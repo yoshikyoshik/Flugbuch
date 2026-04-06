@@ -665,7 +665,8 @@
     "email": "E-Mail",
     "newPassword": "Neues Passwort (mind. 6 Zeichen)",
     "password": "Passwort",
-    "nickname": "Spitzname"
+    "nickname": "Spitzname",
+    "searchFlights": "Flüge durchsuchen..."
   },
   "premium": {
     "alreadyPremiumDesc": "Du hast ein aktives Web-Abo. Bitte verwalte es auf der Webseite.",
@@ -999,7 +1000,9 @@
     "statusScheduled": "GEPLANT",
     "statusOffline": "OFFLINE",
     "unknownAirline": "Unbekannte Airline",
-    "refresh": "Live-Daten aktualisieren"
+    "refresh": "Live-Daten aktualisieren",
+    "hideFlight": "Live-Flug ausblenden",
+    "restoreFlights": "{count} ausgeblendete Live-Flüge anzeigen"
   },
 
 "sync": {

@@ -5429,37 +5429,48 @@ window.refreshLiveFlightData = async function() {
         if (existingHideBtnContainer) existingHideBtnContainer.remove();
 
         // --- 4. 🚀 NEU: EXAKTE FLUGZEIT NACH LANDUNG SPEICHERN ---
-        // Wenn der Flug gelandet ist UND wir beide echten Timestamps haben
         if (status === "landed" && data.dep_actual_ts && data.arr_actual_ts) {
             const diffSeconds = data.arr_actual_ts - data.dep_actual_ts;
             
             if (diffSeconds > 0) {
-                const diffMinutes = Math.round(diffSeconds / 60);
-                const h = Math.floor(diffMinutes / 60);
-                const m = diffMinutes % 60;
-                const exactTimeStr = `${h}h ${m}m`;
-
-                // Wir prüfen, ob die exakte Zeit abweicht von dem, was wir aktuell gespeichert haben.
-                // Das verhindert auch, dass wir Supabase bei jedem 60-Sekunden-Refresh neu zuspammen!
-                if (window.currentLiveFlight && window.currentLiveFlight.time !== exactTimeStr) {
-                    console.log(`✈️ Live-Catcher: Aktualisiere exakte Flugzeit auf ${exactTimeStr}`);
-                    
-                    // 1. UI im Ticket sofort updaten
-                    document.getElementById('live-flight-duration').textContent = exactTimeStr;
-                    
-                    // 2. Lokalen Cache updaten
-                    window.currentLiveFlight.time = exactTimeStr;
-                    
-                    // 3. Im Hintergrund (lautlos) an Supabase senden
-                    const flightIdToUpdate = window.currentLiveFlight.id || window.currentLiveFlight.flight_id;
-                    supabaseClient.from('flights')
-                        .update({ time: exactTimeStr })
-                        .eq('flight_id', flightIdToUpdate)
-                        .then(({error}) => {
-                            if (error) console.error("Konnte exakte Flugzeit nicht speichern:", error);
-                        });
-                }
+                // ... (Hier steht dein bisheriger Code für die exakte Flugzeit) ...
             }
+
+            // ==========================================================
+            // 🌤️ NEU: DER "TOUCHDOWN-SYNC" FÜR DAS WETTER!
+            // ==========================================================
+            const flightIdToUpdate = window.currentLiveFlight.id || window.currentLiveFlight.flight_id;
+            const weatherLockKey = `weather_finalized_${flightIdToUpdate}`;
+
+            // Wir prüfen im LocalStorage, ob wir für diesen Flug schon das finale Wetter gezogen haben.
+            // Das verhindert, dass wir die Datenbank jede Minute neu beschreiben, solange das Widget noch offen ist!
+            if (!localStorage.getItem(weatherLockKey)) {
+                console.log(`🛬 Touchdown erkannt! Ziehe punktgenaues Final-Wetter für Flug ${flightNum}...`);
+                
+                // Wir holen das Wetter im Hintergrund (ohne das UI zu blockieren)
+                setTimeout(async () => {
+                    try {
+                        const finalDepWeather = await window.fetchAviationWeather(window.currentLiveFlight.departure);
+                        const finalArrWeather = await window.fetchAviationWeather(window.currentLiveFlight.arrival);
+
+                        if (finalDepWeather || finalArrWeather) {
+                            await supabaseClient.from('flights')
+                                .update({ 
+                                    weather_dep: finalDepWeather || window.currentLiveFlight.weather_dep, 
+                                    weather_arr: finalArrWeather || window.currentLiveFlight.weather_arr 
+                                })
+                                .eq('flight_id', flightIdToUpdate);
+                            
+                            // Schloss verriegeln! Für diesen Flug wird das Wetter nie wieder überschrieben.
+                            localStorage.setItem(weatherLockKey, "true");
+                            console.log("✅ Finales Touchdown-Wetter erfolgreich für die Ewigkeit archiviert!");
+                        }
+                    } catch(err) {
+                        console.warn("Konnte Touchdown-Wetter nicht archivieren:", err);
+                    }
+                }, 1000); // Kleine Pause, damit die API durchatmen kann
+            }
+            // ==========================================================
         }
 
         // ================================================================
@@ -5524,10 +5535,13 @@ window.refreshLiveFlightData = async function() {
             hideBtnContainer.className = 'w-full flex justify-center mt-6 mb-3 px-4';
             
             // We give it a centered, prominent, pill-shaped appearance
+            // 🌍 ÜBERSETZUNG für den Offline-Ausblenden-Button
+            const hideText = (typeof getTranslation === 'function' ? getTranslation("live.hideFlight") : null) || "Live-Flug ausblenden";
+            
             hideBtnContainer.innerHTML = `
-                <button onclick="event.stopPropagation(); window.hideLiveWidget()" class="flex items-center justify-center gap-2 px-6 py-2 bg-surface-container dark:bg-slate-800 text-on-surface/60 dark:text-slate-400 rounded-full text-xs font-bold transition-all hover:bg-surface-container-high dark:hover:bg-slate-700 border border-outline-variant/20 shadow-sm w-max" title="Live-Flug für heute ausblenden">
+                <button onclick="event.stopPropagation(); window.hideLiveWidget()" class="flex items-center justify-center gap-2 px-6 py-2 bg-surface-container dark:bg-slate-800 text-on-surface/60 dark:text-slate-400 rounded-full text-xs font-bold transition-all hover:bg-surface-container-high dark:hover:bg-slate-700 border border-outline-variant/20 shadow-sm w-max" title="${hideText}" data-i18n-title="live.hideFlight">
                     <span class="material-symbols-outlined text-[16px]">visibility_off</span> 
-                    Live-Flug ausblenden
+                    <span data-i18n="live.hideFlight">${hideText}</span>
                 </button>
             `;
             
@@ -5617,8 +5631,12 @@ window.showGhostButton = function() {
     // 🚀 BUGHUNT FIX: Button nur anzeigen, wenn auch wirklich was versteckt wurde
     if (hiddenList.length > 0) {
         ghostBtn.classList.remove('hidden');
-        // Zeigt sogar dynamisch an, WIE VIELE Flüge versteckt sind!
-        ghostBtn.innerHTML = `<span class="material-symbols-outlined text-[16px]">visibility</span> ${hiddenList.length} ausgeblendete Live-Flüge anzeigen`;
+        
+        // 🌍 ÜBERSETZUNG: Text holen und {count} dynamisch ersetzen
+        let btnText = (typeof getTranslation === 'function' ? getTranslation("live.restoreFlights") : null) || "{count} ausgeblendete Live-Flüge anzeigen";
+        btnText = btnText.replace("{count}", hiddenList.length);
+        
+        ghostBtn.innerHTML = `<span class="material-symbols-outlined text-[16px]">visibility</span> ${btnText}`;
     } else {
         ghostBtn.classList.add('hidden');
     }

@@ -664,7 +664,8 @@
     "email": "Email",
     "newPassword": "New password (min. 6 characters)",
     "password": "Password",
-    "nickname": "Nickname"
+    "nickname": "Nickname",
+    "searchFlights": "Search flights"
   },
   "premium": {
     "alreadyPremiumDesc": "You have an active web subscription. Please manage it on the website.",
@@ -998,7 +999,9 @@
     "statusScheduled": "SCHEDULED",
     "statusOffline": "OFFLINE",
     "unknownAirline": "Unknown Airline",
-    "refresh": "Refresh live data"
+    "refresh": "Refresh live data",
+    "hideFlight": "Hide live flight",
+    "restoreFlights": "Show {count} hidden live flights"
   },
 
 "sync": {

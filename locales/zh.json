@@ -660,7 +660,8 @@
     "email": "电子邮件",
     "newPassword": "新密码 (至少6个字符)",
     "password": "密码",
-    "nickname": "昵称"
+    "nickname": "昵称",
+    "searchFlights": "搜索航班"
   },
   "premium": {
     "alreadyPremiumDesc": "您有一个有效的网络订阅。请在网站上进行管理。",
@@ -994,7 +995,9 @@
     "statusScheduled": "已计划",
     "statusOffline": "离线",
     "unknownAirline": "未知航空公司",
-    "refresh": "刷新实时数据"
+    "refresh": "刷新实时数据",
+    "hideFlight": "隐藏实时航班",
+    "restoreFlights": "显示 {count} 个隐藏的实时航班"
   },
 
 "sync": {

@@ -660,7 +660,8 @@
     "email": "Correo electrónico",
     "newPassword": "Nueva contraseña (mín. 6 caracteres)",
     "password": "Contraseña",
-    "nickname": "Apodo"
+    "nickname": "Apodo",
+    "searchFlights": "Buscar vuelos"
   },
   "premium": {
     "alreadyPremiumDesc": "Tienes una suscripción web activa. Por favor, gestiónala en el sitio web.",
@@ -994,7 +995,9 @@
     "statusScheduled": "PROGRAMADO",
     "statusOffline": "DESCONECTADO",
     "unknownAirline": "Aerolínea desconocida",
-    "refresh": "Actualizar datos en vivo"
+    "refresh": "Actualizar datos en vivo",
+    "hideFlight": "Ocultar vuelo en vivo",
+    "restoreFlights": "Mostrar {count} vuelos en vivo ocultos"
   },
 
 "sync": {
