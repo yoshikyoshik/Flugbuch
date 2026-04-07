@@ -997,7 +997,9 @@
     "unknownAirline": "Неизвестная авиакомпания",
     "refresh": "Обновить данные",
     "hideFlight": "Скрыть текущий рейс",
-    "restoreFlights": "Показать {count} скрытых текущих рейсов"
+    "restoreFlights": "Показать {count} скрытых текущих рейсов",
+    "statusArchived": "ЗАВЕРШЕН",
+    "statusStandby": "ОЖИДАНИЕ"
   },
 
 "sync": {

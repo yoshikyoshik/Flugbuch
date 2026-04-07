@@ -1002,7 +1002,9 @@
     "unknownAirline": "Unbekannte Airline",
     "refresh": "Live-Daten aktualisieren",
     "hideFlight": "Live-Flug ausblenden",
-    "restoreFlights": "{count} ausgeblendete Live-Flüge anzeigen"
+    "restoreFlights": "{count} ausgeblendete Live-Flüge anzeigen",
+    "statusArchived": "BEENDET",
+    "statusStandby": "STANDBY"
   },
 
 "sync": {

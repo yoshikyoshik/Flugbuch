@@ -5535,32 +5535,74 @@ window.refreshLiveFlightData = async function() {
         const flightIdToUpdate = window.currentLiveFlight.id || window.currentLiveFlight.flight_id;
         const hasLandedLock = localStorage.getItem(`weather_finalized_${flightIdToUpdate}`);
 
+        // 🌍 Übersetzungen sicher abrufen
+        const textArchived = (typeof getTranslation === 'function' ? getTranslation("live.statusArchived") : null) || "BEENDET";
+        const textStandby = (typeof getTranslation === 'function' ? getTranslation("live.statusStandby") : null) || "STANDBY";
+        const textOffline = (typeof getTranslation === 'function' ? getTranslation("live.statusOffline") : null) || "OFFLINE";
+
         if (hasLandedLock) {
-            // Szenario 2: Flug ist gelandet (wir haben das Touchdown-Wetter gezogen) und die API hat ihn aus dem Live-Radar gelöscht
-            statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-slate-900"></span> <span data-i18n="live.statusArchived">BEENDET</span>`;
+            // Szenario 2: Flug ist final beendet
+            statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-slate-900"></span> <span data-i18n="live.statusArchived">${textArchived}</span>`;
             statusEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-slate-300 text-slate-800 shadow-sm";
         } 
         else if (errorMsg.includes("noch nicht aktiv")) {
-            // Szenario 1: Der Flug startet erst später heute und ist noch nicht im Live-System
-            statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-purple-900 animate-pulse"></span> <span data-i18n="live.statusStandby">STANDBY</span>`;
+            // Szenario 1: STANDBY (Flug startet später)
+            statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-purple-900 animate-pulse"></span> <span data-i18n="live.statusStandby">${textStandby}</span>`;
             statusEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-purple-200 text-purple-900 shadow-sm";
         } 
         else {
-            // Genereller Fallback (z.B. API Key abgelaufen oder Flugnummer existiert gar nicht)
-            statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-gray-600"></span> <span data-i18n="live.statusOffline">OFFLINE</span>`;
+            // Szenario 3: Echter Fehler
+            statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-gray-600"></span> <span data-i18n="live.statusOffline">${textOffline}</span>`;
             statusEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-gray-200 text-gray-700 shadow-sm";
         }
-        // 🚀 UX FIX: Create a proper space for the Hide button at the bottom!
+
+        // ================================================================
+        // 🌤️ NEU: WETTER TROTZ STANDBY/BEENDET ANZEIGEN!
+        // ================================================================
+        if (hasLandedLock || errorMsg.includes("noch nicht aktiv")) {
+            try {
+                const depWeather = await window.fetchAviationWeather(window.currentLiveFlight.departure);
+                const arrWeather = await window.fetchAviationWeather(window.currentLiveFlight.arrival);
+                
+                const depTitle = (typeof getTranslation === 'function' ? getTranslation("weather.departure") : null) || "Abflug";
+                const arrTitle = (typeof getTranslation === 'function' ? getTranslation("weather.arrival") : null) || "Ankunft";
+                
+                const depHtml = window.buildWeatherWidgetHtml(depWeather, depTitle);
+                const arrHtml = window.buildWeatherWidgetHtml(arrWeather, arrTitle);
+
+                let oldWeather = document.getElementById('live-weather-container');
+                if (oldWeather) oldWeather.remove();
+
+                if (depHtml || arrHtml) {
+                    const weatherContainer = document.createElement('div');
+                    weatherContainer.id = 'live-weather-container';
+                    weatherContainer.className = 'w-full grid grid-cols-2 gap-3 px-5 pb-6 mt-2';
+                    weatherContainer.innerHTML = (depHtml || "") + (arrHtml || "");
+                    
+                    const widgetContainer = document.getElementById('live-flight-widget');
+                    const hideBtnContainer = document.getElementById('live-hide-btn-container');
+                    
+                    if (hideBtnContainer && hideBtnContainer.parentNode) {
+                        hideBtnContainer.parentNode.insertBefore(weatherContainer, hideBtnContainer);
+                    } else if (widgetContainer) {
+                        widgetContainer.appendChild(weatherContainer);
+                    }
+                }
+            } catch(we) {
+                console.warn("Wetter im Standby-Modus konnte nicht geladen werden:", we);
+            }
+        }
+        // ================================================================
+        // ENDE WETTER-CODE IM FALLBACK
+        // ================================================================
+
+        // 🚀 UX FIX: Hide-Button Container generieren (falls noch nicht da)
         const widgetContainer = document.getElementById('live-flight-widget');
         if (widgetContainer && !document.getElementById('live-hide-btn-container')) {
             const hideBtnContainer = document.createElement('div');
             hideBtnContainer.id = 'live-hide-btn-container';
-            
-            // This centers the button with margins at the bottom of the widget
             hideBtnContainer.className = 'w-full flex justify-center mt-6 mb-3 px-4';
             
-            // We give it a centered, prominent, pill-shaped appearance
-            // 🌍 ÜBERSETZUNG für den Offline-Ausblenden-Button
             const hideText = (typeof getTranslation === 'function' ? getTranslation("live.hideFlight") : null) || "Live-Flug ausblenden";
             
             hideBtnContainer.innerHTML = `
@@ -5569,11 +5611,10 @@ window.refreshLiveFlightData = async function() {
                     <span data-i18n="live.hideFlight">${hideText}</span>
                 </button>
             `;
-            
-            // By appending it, it will appear naturally *after* all the meta-data (Gates, Terminals, etc.)
             widgetContainer.appendChild(hideBtnContainer);
         }
     } finally {
+        const icon = document.getElementById('live-refresh-icon');
         if (icon) icon.classList.remove('animate-spin');
     }
 };

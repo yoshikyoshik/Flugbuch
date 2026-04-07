@@ -997,7 +997,9 @@
     "unknownAirline": "Aerolínea desconocida",
     "refresh": "Actualizar datos en vivo",
     "hideFlight": "Ocultar vuelo en vivo",
-    "restoreFlights": "Mostrar {count} vuelos en vivo ocultos"
+    "restoreFlights": "Mostrar {count} vuelos en vivo ocultos",
+    "statusArchived": "FINALIZADO",
+    "statusStandby": "EN ESPERA"
   },
 
 "sync": {

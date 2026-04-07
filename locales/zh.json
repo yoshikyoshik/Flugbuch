@@ -997,7 +997,9 @@
     "unknownAirline": "未知航空公司",
     "refresh": "刷新实时数据",
     "hideFlight": "隐藏实时航班",
-    "restoreFlights": "显示 {count} 个隐藏的实时航班"
+    "restoreFlights": "显示 {count} 个隐藏的实时航班",
+    "statusArchived": "已结束",
+    "statusStandby": "待机"
   },
 
 "sync": {

@@ -1001,7 +1001,9 @@
     "unknownAirline": "Unknown Airline",
     "refresh": "Refresh live data",
     "hideFlight": "Hide live flight",
-    "restoreFlights": "Show {count} hidden live flights"
+    "restoreFlights": "Show {count} hidden live flights",
+    "statusArchived": "COMPLETED",
+    "statusStandby": "STANDBY"
   },
 
 "sync": {
