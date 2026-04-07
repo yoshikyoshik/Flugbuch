@@ -5293,10 +5293,16 @@ window.refreshLiveFlightData = async function() {
 
         console.log(`✈️ Starte Live-Abruf für Flug ${flightNum} ab ${depIata} für den ${flightDate}...`);
         
-        // 🚀 BUGHUNT FIX: Das Datum an unsere Netlify-Funktion übergeben!
-        const response = await fetch(`${API_BASE_URL}/.netlify/functions/fetch-live-flight?dep_iata=${depIata}&flight_iata=${flightNum}&date=${flightDate}`);        
+        // Netlify Funktion aufrufen
+        const response = await fetch(`${API_BASE_URL}/.netlify/functions/fetch-live-flight?dep_iata=${depIata}&flight_iata=${flightNum}&date=${flightDate}`);
+        
         if (!response.ok) {
-            throw new Error("API Limit erreicht oder Flug nicht gefunden");
+            let errMsg = "Flug nicht gefunden";
+            try {
+                const errData = await response.json();
+                errMsg = errData.error || errMsg;
+            } catch(e) {}
+            throw new Error(errMsg); // Wirft exakt den Text aus Netlify!
         }
 
         const data = await response.json();
@@ -5523,9 +5529,27 @@ window.refreshLiveFlightData = async function() {
     } catch(e) {
         console.error("Live API Fehler:", e);
         const statusEl = document.getElementById('live-status-badge');
-        statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-gray-600"></span> <span data-i18n="live.statusOffline">${getTranslation("live.statusOffline") || "OFFLINE"}</span>`;
-        statusEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-gray-200 text-gray-700 shadow-sm";
+        const errorMsg = e.message;
 
+        // 🕵️‍♂️ BUGHUNT FIX: Den Status intelligent analysieren!
+        const flightIdToUpdate = window.currentLiveFlight.id || window.currentLiveFlight.flight_id;
+        const hasLandedLock = localStorage.getItem(`weather_finalized_${flightIdToUpdate}`);
+
+        if (hasLandedLock) {
+            // Szenario 2: Flug ist gelandet (wir haben das Touchdown-Wetter gezogen) und die API hat ihn aus dem Live-Radar gelöscht
+            statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-slate-900"></span> <span data-i18n="live.statusArchived">BEENDET</span>`;
+            statusEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-slate-300 text-slate-800 shadow-sm";
+        } 
+        else if (errorMsg.includes("noch nicht aktiv")) {
+            // Szenario 1: Der Flug startet erst später heute und ist noch nicht im Live-System
+            statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-purple-900 animate-pulse"></span> <span data-i18n="live.statusStandby">STANDBY</span>`;
+            statusEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-purple-200 text-purple-900 shadow-sm";
+        } 
+        else {
+            // Genereller Fallback (z.B. API Key abgelaufen oder Flugnummer existiert gar nicht)
+            statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-gray-600"></span> <span data-i18n="live.statusOffline">OFFLINE</span>`;
+            statusEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-gray-200 text-gray-700 shadow-sm";
+        }
         // 🚀 UX FIX: Create a proper space for the Hide button at the bottom!
         const widgetContainer = document.getElementById('live-flight-widget');
         if (widgetContainer && !document.getElementById('live-hide-btn-container')) {
