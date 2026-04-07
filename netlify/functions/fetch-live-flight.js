@@ -1,20 +1,19 @@
 exports.handler = async function(event, context) {
-    // 🛡️ NEU: CORS-Header für native Smartphone-Apps!
+    // 🛡️ CORS-Header für native Smartphone-Apps!
     const headers = {
-        "Access-Control-Allow-Origin": "*", // Erlaubt JEDER App (auch localhost auf dem Handy) den Zugriff
+        "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Headers": "Content-Type",
         "Content-Type": "application/json"
     };
 
-    // Erlaube sogenannte "Preflight"-Anfragen (die Browser vor dem echten Request machen)
     if (event.httpMethod === "OPTIONS") {
         return { statusCode: 200, headers, body: "OK" };
     }
 
-    const { dep_iata, flight_iata } = event.queryStringParameters;
+    // 1. Alle Parameter auslesen (inkl. unseres eigenen 'date' Parameters aus der app.js)
+    const { dep_iata, flight_iata, date } = event.queryStringParameters;
 
-    // 🕵️‍♂️ NEU: Monitoring! Das taucht ab jetzt in deinem Netlify-Log auf!
-    console.log(`[API REQUEST] Starte Abfrage für Flug ${flight_iata} ab ${dep_iata}`);
+    console.log(`[API REQUEST] Starte Abfrage für Flug ${flight_iata} ab ${dep_iata} für Datum: ${date || 'HEUTE'}`);
 
     if (!dep_iata || !flight_iata) {
         console.warn("[API ERROR] Parameter fehlen!");
@@ -27,6 +26,7 @@ exports.handler = async function(event, context) {
         return { statusCode: 500, headers, body: JSON.stringify({ error: "API Key fehlt!" }) };
     }
     
+    // 2. Offizielle Parameter nutzen (KEIN &date= in der URL, da nicht unterstützt!)
     const url = `https://www.goflightlabs.com/advanced-flights-schedules?access_key=${API_KEY}&iataCode=${dep_iata}&type=departure&flight_iata=${flight_iata}`;
 
     try {
@@ -49,11 +49,31 @@ exports.handler = async function(event, context) {
         const flightArray = Array.isArray(data.data) ? data.data : (Array.isArray(data) ? data : []);
 
         if (flightArray.length > 0) {
-            console.log(`[API SUCCESS] Daten für ${flight_iata} gefunden und an App gesendet!`);
+            let matchedFlight = null;
+
+            // 3. 🚀 BUGHUNT FIX: Jetzt filtern WIR manuell nach dem Datum, weil die API es nicht kann!
+            if (date) {
+                matchedFlight = flightArray.find(flight => {
+                    // Die API liefert verschiedene Zeitstempel. Wir isolieren YYYY-MM-DD (die ersten 10 Zeichen)
+                    const apiDate1 = flight.flight_date; 
+                    const apiDate2 = flight.dep_time ? flight.dep_time.substring(0, 10) : null;
+                    const apiDate3 = flight.dep_estimated ? flight.dep_estimated.substring(0, 10) : null;
+
+                    return apiDate1 === date || apiDate2 === date || apiDate3 === date;
+                });
+            }
+
+            // Fallback: Falls wir keinen Match haben, nehmen wir einfach das erste Element
+            if (!matchedFlight) {
+                console.log(`[API INFO] Kein exakter Match für Datum ${date} gefunden. Nutze Fallback (Index 0).`);
+                matchedFlight = flightArray[0];
+            }
+
+            console.log(`[API SUCCESS] Daten für ${flight_iata} (Match für ${date}) gefunden und gesendet!`);
             return {
                 statusCode: 200,
-                headers: headers, // 🚀 WICHTIG: Hier stecken die Erlaubnis-Header drin!
-                body: JSON.stringify(flightArray[0])
+                headers: headers,
+                body: JSON.stringify(matchedFlight)
             };
         } else {
             console.log(`[API INFO] Flug ${flight_iata} war nicht in der Liste.`);

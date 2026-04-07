@@ -5286,14 +5286,15 @@ window.refreshLiveFlightData = async function() {
     try {
         const flightNum = window.currentLiveFlight.flightNumber || window.currentLiveFlight.flightLogNumber;
         const depIata = window.currentLiveFlight.departure;
+        // 🚀 BUGHUNT FIX: Datum des aktuell geladenen Flugs auslesen!
+        const flightDate = window.currentLiveFlight.date; 
         
-        if (!flightNum || !depIata) throw new Error("Flugnummer oder Abflugort fehlt");
+        if (!flightNum || !depIata || !flightDate) throw new Error("Flugnummer, Abflugort oder Datum fehlt");
 
-        console.log(`✈️ Starte Live-Abruf für Flug ${flightNum} ab ${depIata}...`);
+        console.log(`✈️ Starte Live-Abruf für Flug ${flightNum} ab ${depIata} für den ${flightDate}...`);
         
-        // Netlify Funktion aufrufen
-        const response = await fetch(`${API_BASE_URL}/.netlify/functions/fetch-live-flight?dep_iata=${depIata}&flight_iata=${flightNum}`);
-        
+        // 🚀 BUGHUNT FIX: Das Datum an unsere Netlify-Funktion übergeben!
+        const response = await fetch(`${API_BASE_URL}/.netlify/functions/fetch-live-flight?dep_iata=${depIata}&flight_iata=${flightNum}&date=${flightDate}`);        
         if (!response.ok) {
             throw new Error("API Limit erreicht oder Flug nicht gefunden");
         }
