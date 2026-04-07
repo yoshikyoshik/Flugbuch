@@ -5284,7 +5284,10 @@ window.refreshLiveFlightData = async function() {
     if (icon) icon.classList.add('animate-spin');
 
     try {
-        const flightNum = window.currentLiveFlight.flightNumber || window.currentLiveFlight.flightLogNumber;
+        // 🚀 BUGHUNT FIX: Alle möglichen Datenbank-Feldnamen für die Flugnummer abklappern!
+        const flightNum = window.currentLiveFlight.flight_iata 
+                    || window.currentLiveFlight.flight_number 
+                    || window.currentLiveFlight.flightNumber;
         const depIata = window.currentLiveFlight.departure;
         // 🚀 BUGHUNT FIX: Datum des aktuell geladenen Flugs auslesen!
         const flightDate = window.currentLiveFlight.date; 
