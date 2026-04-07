@@ -395,6 +395,15 @@ async function setLanguage(lang) {
     // 1. Alle Texte übersetzen
     translatePage();
 
+    // ================================================================
+    // 🚀 BUGHUNT FIX: Das HTML-Dropdown-Menü visuell synchronisieren!
+    // ================================================================
+    const langSelect = document.getElementById("language-select"); // ⚠️ WICHTIG: Ersetze "language-select" durch die ECHTE ID deines <select> im HTML!
+    if (langSelect) {
+        langSelect.value = lang;
+    }
+    // ================================================================
+
     // --- ✅ KUGELSICHERE LINK-UMSCHALTUNG (Ohne IDs) ---
     const isEn = (lang === 'en');
     
