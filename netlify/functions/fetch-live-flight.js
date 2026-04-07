@@ -63,10 +63,14 @@ exports.handler = async function(event, context) {
                 });
             }
 
-            // Fallback: Falls wir keinen Match haben, nehmen wir einfach das erste Element
             if (!matchedFlight) {
-                console.log(`[API INFO] Kein exakter Match für Datum ${date} gefunden. Nutze Fallback (Index 0).`);
-                matchedFlight = flightArray[0];
+                if (date) {
+                    // 🚀 BUGHUNT FIX: Fallback deaktiviert! Wir lassen uns keinen falschen Tag unterjubeln!
+                    console.log(`[API INFO] Flug für ${date} noch nicht im Live-System der API. Verhindere Geisterflug.`);
+                    return { statusCode: 404, headers, body: JSON.stringify({ error: `Flug für dieses Datum noch nicht aktiv.` }) };
+                } else {
+                    matchedFlight = flightArray[0]; // Nur Fallback, wenn gar kein Datum gesendet wurde
+                }
             }
 
             console.log(`[API SUCCESS] Daten für ${flight_iata} (Match für ${date}) gefunden und gesendet!`);
