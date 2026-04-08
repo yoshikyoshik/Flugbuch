@@ -92,7 +92,6 @@ exports.handler = async function(event, context) {
 };
 */
 
-
 exports.handler = async function(event, context) {
     // 🛡️ CORS-Header für native Smartphone-Apps!
     const headers = {
@@ -114,7 +113,7 @@ exports.handler = async function(event, context) {
 
     const API_KEY = process.env.GOFLIGHTLABS_API_KEY; 
     if (!API_KEY) return { statusCode: 500, headers, body: JSON.stringify({ error: "API Key fehlt" }) };
-    
+
     // ====================================================================
     // SCHRITT 1: Im LIVE-System (schedules) suchen (für echte Live-Daten)
     // ====================================================================
@@ -150,14 +149,14 @@ exports.handler = async function(event, context) {
         // ====================================================================
         if (date) {
             console.log(`[API INFO] Flug noch nicht im Live-System. Suche im FUTURE-Flugplan für ${date}...`);
-            
+
             const futureUrl = `https://www.goflightlabs.com/advanced-future-flights?access_key=${API_KEY}&type=departure&iataCode=${dep_iata}&date=${date}`;
-            
+
             const futureRes = await fetch(futureUrl);
             const futureData = await futureRes.json();
-            
+
             const futureArray = Array.isArray(futureData.data) ? futureData.data : (Array.isArray(futureData) ? futureData : []);
-            
+
             // Future-Endpunkt filtert nach Flugnummer:
             const futureMatch = futureArray.find(f => {
                 const searchIata = flight_iata.replace(/\s/g, '').toUpperCase();
@@ -167,10 +166,23 @@ exports.handler = async function(event, context) {
             });
 
             if (futureMatch) {
+                // ================================================================
+                // 🚀 BUGHUNT FIX: Die "Stuck on SCHEDULED" Sperre!
+                // ================================================================
+                const nowSeconds = Math.floor(Date.now() / 1000);
+                
+                // Liegt die geplante Abflugzeit (mit 2 Stunden Kulanz-Puffer für kleine Verspätungen) in der Vergangenheit?
+                // Wenn ja, ist der Flug längst vorbei und wir blockieren den "Scheduled"-Status!
+                if (futureMatch.dep_time_ts && (futureMatch.dep_time_ts + 7200) < nowSeconds) {
+                    console.log(`[API INFO] Future-Match gefunden, aber Abflug war schon. Status: BEENDET.`);
+                    return { statusCode: 404, headers, body: JSON.stringify({ error: `Flug bereits beendet.` }) };
+                }
+                // ================================================================
+
                 console.log(`[API SUCCESS] Daten für ${flight_iata} im FUTURE-System gefunden!`);
                 return { statusCode: 200, headers, body: JSON.stringify(futureMatch) };
             }
-            
+
             // Wenn er auch da nicht ist, dann ist er WIRKLICH noch nicht aktiv (STANDBY)
             console.log(`[API INFO] Flug existiert auch im Future-Plan nicht.`);
             return { statusCode: 404, headers, body: JSON.stringify({ error: `Flug für dieses Datum noch nicht aktiv.` }) };

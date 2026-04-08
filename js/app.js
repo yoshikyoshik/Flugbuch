@@ -5128,9 +5128,22 @@ window.initLiveWidget = async function() {
     const today = new Date();
     const todayStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
 
-    // 1. 🚀 FIX: Meister-Backup ALLER heutigen Flüge anlegen (unzerstörbar, wird nur sortiert)
+    // 🚀 BUGHUNT FIX: Auch das gestrige Datum berechnen!
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.getFullYear() + '-' + String(yesterday.getMonth() + 1).padStart(2, '0') + '-' + String(yesterday.getDate()).padStart(2, '0');
+
+    // 1. 🚀 FIX: Meister-Backup ALLER heutigen UND aktiven gestrigen Flüge anlegen
     window.originalTodaysLiveFlights = allFlights
-        .filter(f => f.date === todayStr)
+        .filter(f => {
+            const flightId = f.id || f.flight_id;
+            const isToday = f.date === todayStr;
+            const isYesterday = f.date === yesterdayStr;
+            const hasLandedLock = localStorage.getItem(`weather_finalized_${flightId}`);
+
+            // Behalte den Flug, wenn er HEUTE ist, ODER wenn er GESTERN war, aber noch NICHT gelandet ist!
+            return isToday || (isYesterday && !hasLandedLock);
+        })
         .sort((a, b) => {
             const idA = a.flightLogNumber || a.flight_id || a.id || 0;
             const idB = b.flightLogNumber || b.flight_id || b.id || 0;
