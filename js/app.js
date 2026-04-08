@@ -5310,18 +5310,43 @@ window.refreshLiveFlightData = async function() {
         console.log(`✈️ Starte Live-Abruf für Flug ${flightNum} ab ${depIata} für den ${flightDate}...`);
         
         // Netlify Funktion aufrufen
-        const response = await fetch(`${API_BASE_URL}/.netlify/functions/fetch-live-flight?dep_iata=${depIata}&flight_iata=${flightNum}&date=${flightDate}`);
+        // Netlify Funktion aufrufen
+        const fetchUrl = `${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-live-flight?dep_iata=${depIata}&flight_iata=${flightNum}&date=${flightDate}`;
+        const response = await fetch(fetchUrl);
         
-        if (!response.ok) {
-            let errMsg = "Flug nicht gefunden";
-            try {
-                const errData = await response.json();
-                errMsg = errData.error || errMsg;
-            } catch(e) {}
-            throw new Error(errMsg); // Wirft exakt den Text aus Netlify!
-        }
+        let data; // Globale Variable für die Antwort
 
-        const data = await response.json();
+        if (!response.ok) {
+            let errorData = {};
+            try {
+                errorData = await response.json();
+            } catch(e) {}
+
+            // 🚀 BUGHUNT FIX: Graceful Fallback für alte Flüge!
+            const todayDate = new Date();
+            const todayStr = todayDate.getFullYear() + '-' + String(todayDate.getMonth() + 1).padStart(2, '0') + '-' + String(todayDate.getDate()).padStart(2, '0');
+            
+            // Wenn der Flug nicht gefunden wurde (404) UND das Datum in der Vergangenheit liegt
+            if (response.status === 404 && flightDate < todayStr) {
+                console.log("[Live Widget] Flug von gestern nicht mehr in API. Markiere künstlich als BEENDET.");
+                
+                // Wir werfen keinen Fehler, sondern täuschen der App vor, der Flug sei erfolgreich gelandet!
+                data = {
+                    status: "landed",
+                    dep_iata: depIata,
+                    flight_iata: flightNum,
+                    // Fake Timestamps in der Vergangenheit, damit die Touchdown-Logik weiter unten anspringt!
+                    dep_actual_ts: Math.floor(Date.now() / 1000) - 7200,
+                    arr_actual_ts: Math.floor(Date.now() / 1000) - 3600
+                };
+            } else {
+                // Echter Fehler (z.B. für heutige Flüge)
+                throw new Error(errorData.error || "Flug nicht gefunden");
+            }
+        } else {
+            // Normaler JSON Parse, da response ok ist
+            data = await response.json();
+        }
         
         // --- 0. 🚀 NEU: AIRLINE UPDATE (Falls "Unbekannt") ---
         const isUnknownAirline = !window.currentLiveFlight.airline || window.currentLiveFlight.airline.toLowerCase().includes('unbekannt') || window.currentLiveFlight.airline.toLowerCase().includes('unknown');
