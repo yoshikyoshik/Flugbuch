@@ -5494,13 +5494,12 @@ window.refreshLiveFlightData = async function() {
             }
 
             // ==========================================================
-            // 🌤️ NEU: DER "TOUCHDOWN-SYNC" FÜR DAS WETTER!
+            // 🌤️ NEU: DER "TOUCHDOWN-SYNC" FÜR WETTER & REG!
             // ==========================================================
             const flightIdToUpdate = window.currentLiveFlight.id || window.currentLiveFlight.flight_id;
             const weatherLockKey = `weather_finalized_${flightIdToUpdate}`;
 
             // Wir prüfen im LocalStorage, ob wir für diesen Flug schon das finale Wetter gezogen haben.
-            // Das verhindert, dass wir die Datenbank jede Minute neu beschreiben, solange das Widget noch offen ist!
             if (!localStorage.getItem(weatherLockKey)) {
                 console.log(`🛬 Touchdown erkannt! Ziehe punktgenaues Final-Wetter für Flug ${flightNum}...`);
                 
@@ -5511,16 +5510,31 @@ window.refreshLiveFlightData = async function() {
                         const finalArrWeather = await window.fetchAviationWeather(window.currentLiveFlight.arrival);
 
                         if (finalDepWeather || finalArrWeather) {
+                            
+                            // 1. Das sichere Update-Paket schnüren (nur Wetter)
+                            const updatePayload = { 
+                                weather_dep: finalDepWeather || window.currentLiveFlight.weather_dep, 
+                                weather_arr: finalArrWeather || window.currentLiveFlight.weather_arr 
+                            };
+
+                            // 2. 🚀 BUGHUNT FIX: REG & Aircraft Type nur updaten, wenn die API sie auch WIRKLICH liefert!
+                            // Wenn nicht, wird das Feld hier nicht hinzugefügt und deine manuellen Einträge in der DB bleiben unberührt.
+                            if (data.aircraft_registration && data.aircraft_registration.trim() !== "") {
+                                updatePayload.registration = data.aircraft_registration;
+                                console.log(`✈️ Finale REG erkannt: ${data.aircraft_registration}`);
+                            }
+                            if (data.aircraft_icao && data.aircraft_icao.trim() !== "") {
+                                updatePayload.aircraft_type = data.aircraft_icao;
+                            }
+
+                            // 3. Ab in die Datenbank damit!
                             await supabaseClient.from('flights')
-                                .update({ 
-                                    weather_dep: finalDepWeather || window.currentLiveFlight.weather_dep, 
-                                    weather_arr: finalArrWeather || window.currentLiveFlight.weather_arr 
-                                })
+                                .update(updatePayload)
                                 .eq('flight_id', flightIdToUpdate);
                             
-                            // Schloss verriegeln! Für diesen Flug wird das Wetter nie wieder überschrieben.
+                            // 4. Schloss verriegeln! Für diesen Flug wird das Wetter/REG nie wieder überschrieben.
                             localStorage.setItem(weatherLockKey, "true");
-                            console.log("✅ Finales Touchdown-Wetter erfolgreich für die Ewigkeit archiviert!");
+                            console.log("✅ Finales Touchdown-Wetter (und ggf. REG) erfolgreich für die Ewigkeit archiviert!");
                         }
                     } catch(err) {
                         console.warn("Konnte Touchdown-Wetter nicht archivieren:", err);
