@@ -5254,6 +5254,10 @@ window.renderCurrentLiveFlight = function() {
         widgetContainer.classList.add('cursor-pointer'); 
     }
 
+    // 🚀 NEU: Abschließen-Button standardmäßig verstecken, bis die API "Gelandet" meldet
+    const finishBtn = document.getElementById('finish-flight-btn');
+    if (finishBtn) finishBtn.classList.add('hidden');
+
     // API sofort anfeuern
     if (typeof refreshLiveFlightData === 'function') {
         refreshLiveFlightData();
@@ -5464,6 +5468,11 @@ window.refreshLiveFlightData = async function() {
         } else if (status === "landed") {
             statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-green-900"></span> <span data-i18n="live.statusLanded">${getTranslation("live.statusLanded") || "GELANDET"}</span>`;
             statusEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-green-400 text-green-950 shadow-sm";
+            
+            // 🚀 NEU: Button einblenden, da Flug gelandet ist!
+            const finishBtn = document.getElementById('finish-flight-btn');
+            if (finishBtn) finishBtn.classList.remove('hidden');
+            
         } else if (status === "cancelled") {
             statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-red-900"></span> <span data-i18n="live.statusCancelled">${getTranslation("live.statusCancelled") || "STORNIERT"}</span>`;
             statusEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-red-400 text-red-950 shadow-sm";
@@ -5585,7 +5594,11 @@ window.refreshLiveFlightData = async function() {
             // Szenario 2: Flug ist final beendet
             statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-slate-900"></span> <span data-i18n="live.statusArchived">${textArchived}</span>`;
             statusEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-slate-300 text-slate-800 shadow-sm";
-        } 
+            
+            // 🚀 NEU: Button auch hier einblenden, damit der User aufräumen kann!
+            const finishBtn = document.getElementById('finish-flight-btn');
+            if (finishBtn) finishBtn.classList.remove('hidden');
+        }
         else if (errorMsg.includes("noch nicht aktiv")) {
             // Szenario 1: STANDBY (Flug startet später)
             statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-purple-900 animate-pulse"></span> <span data-i18n="live.statusStandby">${textStandby}</span>`;
@@ -5776,6 +5789,28 @@ window.restoreLiveWidget = function() {
     }
     
     if (typeof checkRadarEmptyState === 'function') checkRadarEmptyState();
+};
+
+window.finishLiveFlight = function() {
+    if (!window.currentLiveFlight) return;
+    
+    const flightId = window.currentLiveFlight.id || window.currentLiveFlight.flight_id;
+    
+    // 1. In die Hidden-Liste eintragen (damit er heute sofort aus dem Widget verschwindet)
+    const hiddenList = JSON.parse(localStorage.getItem('hiddenLiveFlightsList') || '[]');
+    if (!hiddenList.some(h => h.id === flightId)) {
+        hiddenList.push({ id: flightId });
+        localStorage.setItem('hiddenLiveFlightsList', JSON.stringify(hiddenList));
+    }
+    
+    // 2. Zur Sicherheit den "Wetter-Lock" setzen (damit er auch morgen früh definitiv gefiltert wird)
+    localStorage.setItem(`weather_finalized_${flightId}`, 'true');
+
+    // 3. Optional: Einen kleinen Konfetti-Effekt oder Alert, bevor das Widget neu lädt!
+    alert("Flug erfolgreich ins Logbuch verschoben! 📖");
+
+    // 4. Widget neu initialisieren (Dadurch wird der Flug sofort ausgeblendet und der nächste angezeigt!)
+    window.initLiveWidget();
 };
 
 // =================================================================
