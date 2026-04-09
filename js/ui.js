@@ -162,41 +162,42 @@ function closePremiumModal() {
 async function showAirportDetails(iataCode, silentCache = false) {
   const contentContainer = document.getElementById("info-modal-content");
 
-  // ✅ NEU: Schutzabfrage für ICAO-Codes
-  if (iataCode.length === 4) {
-    if (!silentCache) {
-      openInfoModal();
-      document.getElementById("info-modal-title").textContent = getTranslation(
-        "modalDetails.airportTitle"
-      ).replace("{key}", iataCode);
+  // Sicherstellen, dass der Cache existiert
+  if (!window.airportData) window.airportData = {};
+  const cachedAirport = window.airportData[iataCode];
 
-      const cachedAirport = airportData[iataCode];
-      if (cachedAirport) {
-        // Zeige die Infos an, die wir aus dem Cache (von API-Ninjas) haben
-        contentContainer.innerHTML = `
-                        <p><strong>${getTranslation("modalDetails.airportName")}</strong> ${cachedAirport.name}</p>
-                        <p><strong>${getTranslation("modalDetails.airportLocation")}</strong> ${cachedAirport.city || "N/A"}, ${cachedAirport.country_code || "N/A"}</p>
-                        <p><strong>${getTranslation("modalDetails.airportCoords")}</strong> Lat: ${cachedAirport.lat}, Lng: ${cachedAirport.lon}</p>
-                        <hr class="my-2 dark:border-gray-600">
-                        <p class="text-xs italic">${getTranslation("logbook.icaoInfoNote")}</p>
-                    `;
-      } else {
-        contentContainer.innerHTML = `<p>${getTranslation("modalDetails.airportNoDetails")}</p>`;
+  // 🚀 BUGHUNT FIX: Cache-Check für ALLE Codes (IATA & ICAO)
+  if (cachedAirport && cachedAirport.country_code) {
+      if (!silentCache) {
+          openInfoModal();
+          document.getElementById("info-modal-title").textContent = getTranslation("modalDetails.airportTitle").replace("{key}", iataCode);
+          
+          let content = `
+              <p><strong>${getTranslation("modalDetails.airportName")}</strong> ${cachedAirport.name || "N/A"}</p>
+              <p><strong>${getTranslation("modalDetails.airportLocation")}</strong> ${cachedAirport.city || "N/A"}, ${cachedAirport.country_code || "N/A"}</p>
+              <p><strong>${getTranslation("modalDetails.airportCoords")}</strong> Lat: ${cachedAirport.lat || "N/A"}, Lng: ${cachedAirport.lon || "N/A"}</p>
+          `;
+
+          // Wenn wir eine Website haben, direkt mit anzeigen!
+          if (cachedAirport.website) {
+              content += `<p class="mt-2"><a href="${cachedAirport.website}" target="_blank" class="text-indigo-500 hover:underline">${getTranslation("modalDetails.airportWebsite") || "Webseite öffnen"}</a></p>`;
+          }
+
+          if (iataCode.length === 4) {
+              content += `<hr class="my-2 dark:border-gray-600"><p class="text-xs italic">${getTranslation("logbook.icaoInfoNote")}</p>`;
+          }
+
+          contentContainer.innerHTML = content;
+          console.log(`ℹ️ Lade Daten für ${iataCode} aus dem blitzschnellen Cache! Keine API-Anfrage nötig.`);
       }
-    }
-    return; // Beende die Funktion HIER, bevor 'fetch' aufgerufen wird.
+      return; // 🚀 HIER BEENDEN WIR, BEVOR DIE API GERUFEN WIRD!
   }
-  // ✅ ENDE NEU
 
+  // Ab hier geht es normal weiter, falls der Cache leer war...
   if (!silentCache) {
     openInfoModal();
-    document.getElementById("info-modal-title").textContent = getTranslation(
-      "modalDetails.airportTitle"
-    ).replace("{key}", iataCode);
-    const contentContainer = document.getElementById("info-modal-content");
-    contentContainer.innerHTML = `<p>${getTranslation(
-      "modalDetails.loading"
-    )}</p>`;
+    document.getElementById("info-modal-title").textContent = getTranslation("modalDetails.airportTitle").replace("{key}", iataCode);
+    contentContainer.innerHTML = `<p>${getTranslation("modalDetails.loading")}</p>`;
   }
 
   try {

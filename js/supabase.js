@@ -60,49 +60,50 @@ async function uploadFlightPhotos(filesToUpload) {
   return photoUrls;
 }
 
-const cacheAndSaveAirport = async (airport) => {
+window.cacheAndSaveAirport = async (airport) => {
   if (!airport || !airport.code) return;
 
-  // 🚀 BUGHUNT FIX: Der smarte Türsteher!
-  // Update speichern wenn:
-  // 1. Der Flughafen völlig neu ist
-  // 2. ODER der country_code fehlt
-  // 3. ODER wir lokal noch keine Website haben, die API uns aber gerade eine anbietet!
+  // Sicherstellen, dass das globale Objekt existiert
+  if (!window.airportData) window.airportData = {};
+
+  const cached = window.airportData[airport.code];
+
+  // Der smarte Türsteher
   const isNewOrIncomplete = 
-      !airportData[airport.code] || 
-      !airportData[airport.code].country_code || 
-      (!airportData[airport.code].website && airport.website);
+      !cached || 
+      !cached.country_code || 
+      (!cached.website && airport.website);
 
   if (isNewOrIncomplete) {
-    
-    // 1. Lokalen Cache updaten (falls noch nicht existent, erstellen wir ihn sicherheitshalber)
-    if (!airportData[airport.code]) airportData[airport.code] = {};
-    
-    airportData[airport.code] = {
-      name: airport.name || airportData[airport.code].name,
-      lat: airport.lat || airportData[airport.code].lat,
-      lon: airport.lon || airportData[airport.code].lon,
-      city: airport.city || airportData[airport.code].city,
-      country_code: airport.country_code || airportData[airport.code].country_code,
-      website: airport.website || airportData[airport.code].website || null
+    // 1. Lokalen Cache updaten
+    window.airportData[airport.code] = {
+      name: airport.name || (cached ? cached.name : null),
+      lat: airport.lat || (cached ? cached.lat : null),
+      lon: airport.lon || (cached ? cached.lon : null),
+      city: airport.city || (cached ? cached.city : null),
+      country_code: airport.country_code || (cached ? cached.country_code : null),
+      website: airport.website || (cached ? cached.website : null)
     };
 
     // 2. Supabase updaten (Upsert)
     const { error } = await supabaseClient.from("airports").upsert({
       iata: airport.code,
-      name: airportData[airport.code].name,
-      lat: airportData[airport.code].lat,
-      lon: airportData[airport.code].lon,
-      city: airportData[airport.code].city,
-      country_code: airportData[airport.code].country_code,
-      website: airportData[airport.code].website // Nimmt jetzt den aktuellsten Stand aus dem Cache!
+      name: window.airportData[airport.code].name,
+      lat: window.airportData[airport.code].lat,
+      lon: window.airportData[airport.code].lon,
+      city: window.airportData[airport.code].city,
+      country_code: window.airportData[airport.code].country_code,
+      website: window.airportData[airport.code].website
     });
 
     if (error) {
         console.error("Fehler beim Speichern des Flughafens in Supabase:", error);
     } else {
-        console.log(`✅ Supabase Update erfolgreich: ${airport.code} (Daten aktualisiert)`);
+        console.log(`✅ Supabase Update erfolgreich: ${airport.code}`);
     }
+  } else {
+    // 🚀 NEU: So siehst du in der Konsole, dass er NICHTS unnötig speichert!
+    console.log(`ℹ️ Supabase Update übersprungen: ${airport.code} ist lokal bereits aktuell.`);
   }
 };
 
