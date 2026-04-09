@@ -5929,7 +5929,8 @@ window.openAirportWebsite = async function(iataCode, event) {
         
         // Wir zwingen hier einen klaren Text rein, damit der User die Frage versteht!
         // Du kannst diesen String natürlich gerne in deine Übersetzungsdatei aufnehmen.
-        const msg = (typeof getTranslation === 'function' ? getTranslation("live.askGoogleFallback") : null) || `Keine offizielle Webseite für ${iataCode} in der Datenbank gefunden.\n\nMöchtest du stattdessen auf Google danach suchen?`;
+        let msg = typeof getTranslation === 'function' ? getTranslation("live.askGoogleFallback") : null;
+msg = msg ? msg.replace("{iata}", iataCode) : `Keine offizielle Webseite für ${iataCode} in der Datenbank gefunden.\n\nMöchtest du stattdessen auf Google danach suchen?`;
         
         if (confirm(msg)) {
             window.open(`https://www.google.com/search?q=${searchQuery}`, '_blank');
