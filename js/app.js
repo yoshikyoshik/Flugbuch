@@ -5849,7 +5849,7 @@ window.finishLiveFlight = function() {
 // 🚀 UX FEATURE: Flughafen-Website direkt öffnen
 // ==========================================
 window.openAirportWebsite = async function(iataCode, event) {
-    if (event) event.stopPropagation(); // Verhindert, dass das Ticket-Modal aufpoppt!
+    if (event) event.stopPropagation(); 
 
     // 1. Haben wir die Website schon im lokalen Cache?
     if (window.airportData && window.airportData[iataCode] && window.airportData[iataCode].website) {
@@ -5857,11 +5857,10 @@ window.openAirportWebsite = async function(iataCode, event) {
         return;
     }
 
-    // Lade-Indikator (Mauszeiger) zeigen
     document.body.style.cursor = 'wait';
 
     try {
-        // 2. Wenn nicht im Cache: Schnell von der API holen!
+        // 2. Wenn nicht: Schnell von der API holen!
         const url = `${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-airport-details?code=${iataCode}`;
         const response = await fetch(url);
         const result = await response.json();
@@ -5869,16 +5868,32 @@ window.openAirportWebsite = async function(iataCode, event) {
         if (result.data && result.data.length > 0) {
             const airport = result.data[0];
 
-            // Cache lokal updaten (damit der 2. Klick sofort geht)
+            // Cache lokal updaten 
             if (!window.airportData) window.airportData = {};
             if (!window.airportData[iataCode]) window.airportData[iataCode] = {};
             window.airportData[iataCode].website = airport.website;
+
+            // 🚀 BUGHUNT FIX: Jetzt speichern wir es AUCH in Supabase, wenn es hier neu geladen wird!
+            if (typeof cacheAndSaveAirport === 'function') {
+                cacheAndSaveAirport({
+                    code: iataCode,
+                    name: airport.name,
+                    lat: airport.lat,
+                    lon: airport.lng,
+                    city: airport.city,
+                    country_code: airport.country_code,
+                    website: airport.website
+                });
+            }
 
             if (airport.website) {
                 window.open(airport.website, '_blank');
             } else {
                 alert((typeof getTranslation === 'function' ? getTranslation("modalDetails.airportNoDetails") : null) || "Leider keine Webseite für diesen Flughafen gefunden.");
             }
+        } else {
+            // Falls die API wieder 502 schickt, fangen wir das hier optisch ab
+            console.warn("API lieferte keine brauchbaren Daten.");
         }
     } catch (e) {
         console.warn("Konnte Airport-Webseite nicht laden:", e);
