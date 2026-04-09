@@ -5868,31 +5868,33 @@ window.openAirportWebsite = async function(iataCode, event) {
         if (result.data && result.data.length > 0) {
             const airport = result.data[0];
 
-            // Cache lokal updaten 
-            if (!window.airportData) window.airportData = {};
-            if (!window.airportData[iataCode]) window.airportData[iataCode] = {};
-            window.airportData[iataCode].website = airport.website;
+            // 🚀 BUGHUNT FIX: Den manuellen Cache-Eintrag entfernt!
+            // Wir übergeben das Paket einfach an unseren smarten Motor. 
+            // Dieser schreibt es in den Cache UND in Supabase.
+            const payload = {
+                code: iataCode,
+                name: airport.name,
+                lat: airport.lat,
+                lon: airport.lng, // Die API liefert "lng", unsere DB braucht "lon"
+                city: airport.city,
+                country_code: airport.country_code,
+                website: airport.website
+            };
 
-            // 🚀 BUGHUNT FIX: Jetzt speichern wir es AUCH in Supabase, wenn es hier neu geladen wird!
+            // Sicherstellen, dass die Funktion gefunden wird (je nach Scope in deiner App)
             if (typeof cacheAndSaveAirport === 'function') {
-                cacheAndSaveAirport({
-                    code: iataCode,
-                    name: airport.name,
-                    lat: airport.lat,
-                    lon: airport.lng,
-                    city: airport.city,
-                    country_code: airport.country_code,
-                    website: airport.website
-                });
+                await cacheAndSaveAirport(payload);
+            } else if (typeof window.cacheAndSaveAirport === 'function') {
+                await window.cacheAndSaveAirport(payload);
             }
 
+            // Anschließend die Website öffnen
             if (airport.website) {
                 window.open(airport.website, '_blank');
             } else {
                 alert((typeof getTranslation === 'function' ? getTranslation("modalDetails.airportNoDetails") : null) || "Leider keine Webseite für diesen Flughafen gefunden.");
             }
         } else {
-            // Falls die API wieder 502 schickt, fangen wir das hier optisch ab
             console.warn("API lieferte keine brauchbaren Daten.");
         }
     } catch (e) {
