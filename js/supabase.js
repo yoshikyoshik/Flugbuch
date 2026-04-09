@@ -61,28 +61,48 @@ async function uploadFlightPhotos(filesToUpload) {
 }
 
 const cacheAndSaveAirport = async (airport) => {
-  if (
-    airport &&
-    (!airportData[airport.code] || !airportData[airport.code].country_code)
-  ) {
+  if (!airport || !airport.code) return;
+
+  // 🚀 BUGHUNT FIX: Der smarte Türsteher!
+  // Update speichern wenn:
+  // 1. Der Flughafen völlig neu ist
+  // 2. ODER der country_code fehlt
+  // 3. ODER wir lokal noch keine Website haben, die API uns aber gerade eine anbietet!
+  const isNewOrIncomplete = 
+      !airportData[airport.code] || 
+      !airportData[airport.code].country_code || 
+      (!airportData[airport.code].website && airport.website);
+
+  if (isNewOrIncomplete) {
+    
+    // 1. Lokalen Cache updaten (falls noch nicht existent, erstellen wir ihn sicherheitshalber)
+    if (!airportData[airport.code]) airportData[airport.code] = {};
+    
     airportData[airport.code] = {
-      name: airport.name,
-      lat: airport.lat,
-      lon: airport.lon,
-      city: airport.city,
-      country_code: airport.country_code,
-      website: airport.website
+      name: airport.name || airportData[airport.code].name,
+      lat: airport.lat || airportData[airport.code].lat,
+      lon: airport.lon || airportData[airport.code].lon,
+      city: airport.city || airportData[airport.code].city,
+      country_code: airport.country_code || airportData[airport.code].country_code,
+      website: airport.website || airportData[airport.code].website || null
     };
+
+    // 2. Supabase updaten (Upsert)
     const { error } = await supabaseClient.from("airports").upsert({
       iata: airport.code,
-      name: airport.name,
-      lat: airport.lat,
-      lon: airport.lon,
-      city: airport.city,
-      country_code: airport.country_code,
-      website: airport.website
+      name: airportData[airport.code].name,
+      lat: airportData[airport.code].lat,
+      lon: airportData[airport.code].lon,
+      city: airportData[airport.code].city,
+      country_code: airportData[airport.code].country_code,
+      website: airportData[airport.code].website // Nimmt jetzt den aktuellsten Stand aus dem Cache!
     });
-    if (error) console.error("Fehler beim Speichern des Flughafens:", error);
+
+    if (error) {
+        console.error("Fehler beim Speichern des Flughafens in Supabase:", error);
+    } else {
+        console.log(`✅ Supabase Update erfolgreich: ${airport.code} (Daten aktualisiert)`);
+    }
   }
 };
 
