@@ -5846,21 +5846,34 @@ window.finishLiveFlight = function() {
 };
 
 // ==========================================
-// 🚀 UX FEATURE: Flughafen-Website direkt öffnen
+// 🚀 UX FEATURE: Flughafen-Website direkt öffnen (mit Google-Fallback)
 // ==========================================
 window.openAirportWebsite = async function(iataCode, event) {
     if (event) event.stopPropagation(); 
 
-    // 1. Haben wir die Website schon im lokalen Cache?
-    if (window.airportData && window.airportData[iataCode] && window.airportData[iataCode].website) {
-        window.open(window.airportData[iataCode].website, '_blank');
-        return;
+    if (!window.airportData) window.airportData = {};
+    const cached = window.airportData[iataCode];
+
+    // ==========================================
+    // 1. BLITZSCHNELLER CACHE-CHECK
+    // ==========================================
+    if (cached) {
+        if (cached.website) {
+            window.open(cached.website, '_blank');
+            return;
+        } else if (cached.api_checked) {
+            // Wir wissen schon, dass die API nichts hat -> Direkt Google Fallback!
+            triggerGoogleFallback(cached.name || iataCode);
+            return;
+        }
     }
 
     document.body.style.cursor = 'wait';
 
     try {
-        // 2. Wenn nicht: Schnell von der API holen!
+        // ==========================================
+        // 2. API-ABRUF (Nur wenn wir noch nicht gesucht haben)
+        // ==========================================
         const url = `${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-airport-details?code=${iataCode}`;
         const response = await fetch(url);
         const result = await response.json();
@@ -5868,52 +5881,59 @@ window.openAirportWebsite = async function(iataCode, event) {
         if (result.data && result.data.length > 0) {
             const airport = result.data[0];
 
-            // 🚀 BUGHUNT FIX: Den manuellen Cache-Eintrag entfernt!
-            // Wir übergeben das Paket einfach an unseren smarten Motor. 
-            // Dieser schreibt es in den Cache UND in Supabase.
             const payload = {
                 code: iataCode,
                 name: airport.name,
                 lat: airport.lat,
-                lon: airport.lng, // Die API liefert "lng", unsere DB braucht "lon"
+                lon: airport.lng,
                 city: airport.city,
                 country_code: airport.country_code,
                 website: airport.website
             };
 
-            // Sicherstellen, dass die Funktion gefunden wird (je nach Scope in deiner App)
+            // Daten in DB & Cache speichern
             if (typeof cacheAndSaveAirport === 'function') {
                 await cacheAndSaveAirport(payload);
             } else if (typeof window.cacheAndSaveAirport === 'function') {
                 await window.cacheAndSaveAirport(payload);
             }
 
-            // 🚀 NEU: Wir merken uns im Cache, dass die API uns enttäuscht hat,
-            // damit wir sie beim nächsten Klick nicht nochmal sinnlos fragen!
-            if (window.airportData[iataCode]) {
-                window.airportData[iataCode].api_checked = true;
-            }
+            // Wir merken uns: API wurde gefragt!
+            if (!window.airportData[iataCode]) window.airportData[iataCode] = {};
+            window.airportData[iataCode].api_checked = true;
 
-            // 🌐 Das smarte Google-Fallback!
             if (airport.website) {
                 window.open(airport.website, '_blank');
             } else {
-                const searchName = airport.name || iataCode;
-                const searchQuery = encodeURIComponent(`${searchName} Airport official website`);
-                const confirmMsg = (typeof getTranslation === 'function' ? getTranslation("modalDetails.airportNoDetails") : null) || "Die API hat leider keine Webseite hinterlegt. Auf Google danach suchen?";
-                
-                // Wir fragen den User höflich, ob wir googeln sollen
-                if (confirm(confirmMsg)) {
-                    window.open(`https://www.google.com/search?q=${searchQuery}`, '_blank');
-                }
+                triggerGoogleFallback(airport.name || iataCode);
             }
         } else {
-            console.warn("API lieferte keine brauchbaren Daten.");
+            // API liefert gar nichts (z.B. kleiner Provinzflughafen)
+            if (!window.airportData[iataCode]) window.airportData[iataCode] = {};
+            window.airportData[iataCode].api_checked = true; // Trotzdem merken, um Tokens zu sparen!
+            triggerGoogleFallback(iataCode);
         }
     } catch (e) {
         console.warn("Konnte Airport-Webseite nicht laden:", e);
+        // Selbst bei einem API-Crash bieten wir Google an!
+        triggerGoogleFallback(iataCode); 
     } finally {
         document.body.style.cursor = 'default';
+    }
+
+    // ==========================================
+    // 3. HELFER-FUNKTION: Das smarte Google-Fallback
+    // ==========================================
+    function triggerGoogleFallback(searchName) {
+        const searchQuery = encodeURIComponent(`${searchName} Airport official website`);
+        
+        // Wir zwingen hier einen klaren Text rein, damit der User die Frage versteht!
+        // Du kannst diesen String natürlich gerne in deine Übersetzungsdatei aufnehmen.
+        const msg = (typeof getTranslation === 'function' ? getTranslation("live.askGoogleFallback") : null) || `Keine offizielle Webseite für ${iataCode} in der Datenbank gefunden.\n\nMöchtest du stattdessen auf Google danach suchen?`;
+        
+        if (confirm(msg)) {
+            window.open(`https://www.google.com/search?q=${searchQuery}`, '_blank');
+        }
     }
 };
 
