@@ -5990,12 +5990,22 @@ window.initUpcomingWidget = async function() {
                             <span id="upc-airline-${flight.id || flight.flight_id}" class="font-bold text-sm text-on-surface/60 dark:text-slate-400">${airlineStr}</span>
                         </div>
                         <div class="text-xl sm:text-2xl font-black text-on-surface dark:text-white group-hover:text-primary transition-colors flex items-center gap-2">
-                            <span class="flex items-baseline gap-1.5">
-                                ${flight.departure} <span id="upc-dep-time-${flight.id || flight.flight_id}" class="text-xs font-bold text-on-surface/40 dark:text-slate-500"></span>
+                            <span class="flex items-baseline gap-1.5 relative cursor-pointer hover:text-primary dark:hover:text-cyan-accent transition-colors duration-200"
+                                  onclick="openAirportWebsite('${flight.departure}', event)" 
+                                  title="Flughafen-Webseite öffnen">
+                                ${flight.departure}
+                                <span class="material-symbols-outlined text-sm opacity-40 hover:opacity-100 ml-0.5 mt-0.5">language</span>
+                                <span id="upc-dep-time-${flight.id || flight.flight_id}" class="text-xs font-bold text-on-surface/40 dark:text-slate-500 ml-1 cursor-default" onclick="event.stopPropagation()"></span>
                             </span>
-                            <span class="text-primary/50 mx-1">➔</span> 
-                            <span class="flex items-baseline gap-1.5">
-                                ${flight.arrival} <span id="upc-arr-time-${flight.id || flight.flight_id}" class="text-xs font-bold text-on-surface/40 dark:text-slate-500"></span>
+                            
+                            <span class="text-primary/50 mx-1 cursor-default">➔</span> 
+                            
+                            <span class="flex items-baseline gap-1.5 relative cursor-pointer hover:text-primary dark:hover:text-cyan-accent transition-colors duration-200"
+                                  onclick="openAirportWebsite('${flight.arrival}', event)" 
+                                  title="Flughafen-Webseite öffnen">
+                                ${flight.arrival}
+                                <span class="material-symbols-outlined text-sm opacity-40 hover:opacity-100 ml-0.5 mt-0.5">language</span>
+                                <span id="upc-arr-time-${flight.id || flight.flight_id}" class="text-xs font-bold text-on-surface/40 dark:text-slate-500 ml-1 cursor-default" onclick="event.stopPropagation()"></span>
                             </span>
                         </div>
                     </div>
