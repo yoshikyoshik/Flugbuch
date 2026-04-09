@@ -5223,14 +5223,18 @@ window.renderCurrentLiveFlight = function() {
     }
 
     // Felder optisch resetten
+    // Felder mit Supabase-Daten füllen (🚀 SUPABASE TURBO!)
+    // Anstatt stur "-" zu zeigen, nutzen wir die Vorarbeit unseres Agenten!
     document.getElementById('live-dep-sched').textContent = "--:--";
     document.getElementById('live-dep-est').textContent = "--:--";
     document.getElementById('live-arr-sched').textContent = "--:--";
     document.getElementById('live-arr-est').textContent = "--:--";
-    document.getElementById('live-dep-terminal').textContent = "-";
-    document.getElementById('live-dep-gate').textContent = "-";
-    document.getElementById('live-arr-terminal').textContent = "-";
-    document.getElementById('live-arr-gate').textContent = "-";
+    
+    // Die Magie: Gates & Terminals sind in Millisekunden da!
+    document.getElementById('live-dep-terminal').textContent = flight.dep_terminal || "-";
+    document.getElementById('live-dep-gate').textContent = flight.dep_gate || "-";
+    document.getElementById('live-arr-terminal').textContent = flight.arr_terminal || "-";
+    document.getElementById('live-arr-gate').textContent = flight.arr_gate || "-";
     
     // 🚀 FIX 3: Gepäckband optisch resetten (mit i18n Unterstützung)
     const baggageVal = document.getElementById('live-baggage-val');
@@ -6004,6 +6008,23 @@ window.initUpcomingWidget = async function() {
             const airlineStr = flight.airline || getTranslation("unknownAirline") || "Unbekannte Airline";
             const logoHtml = flight.airline_logo ? `<img src="${flight.airline_logo}" class="w-6 h-6 object-contain">` : `✈️`;
 
+            // 🚀 SUPABASE TURBO: Gate und Terminal prüfen!
+            let depInfoHtml = "";
+            if (flight.dep_gate || flight.dep_terminal) {
+                const termText = flight.dep_terminal ? `Terminal ${flight.dep_terminal}` : "";
+                const gateText = flight.dep_gate ? `Gate ${flight.dep_gate}` : "";
+                // Verbinden mit einem Punkt, falls beides da ist
+                const combinedText = [termText, gateText].filter(Boolean).join(" • ");
+                
+                // Wir bauen ein elegantes, halbdurchsichtiges Badge!
+                depInfoHtml = `
+                    <div class="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface-container-high dark:bg-slate-700/50 text-xs font-bold text-on-surface/80 dark:text-slate-300 border border-outline-variant/10 cursor-default" onclick="event.stopPropagation()">
+                        <span class="material-symbols-outlined text-[14px] text-primary/70">sensor_door</span>
+                        ${combinedText}
+                    </div>
+                `;
+            }
+
             html += `
             <div class="relative overflow-hidden bg-surface-container-lowest dark:bg-slate-800 p-5 rounded-[2rem] shadow-sm border border-outline-variant/20 dark:border-slate-700 hover:shadow-md transition-shadow cursor-pointer group" onclick="viewFlightDetails('${flight.id || flight.flight_id}')">
                 <div class="absolute -right-8 -top-8 text-9xl opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none transform -rotate-12">⏳</div>
@@ -6042,6 +6063,9 @@ window.initUpcomingWidget = async function() {
                                 <span id="upc-arr-time-${flight.id || flight.flight_id}" class="text-xs font-bold text-on-surface/40 dark:text-slate-500 ml-1 cursor-default" onclick="event.stopPropagation()"></span>
                             </span>
                         </div>
+
+                        ${depInfoHtml}
+                        
                     </div>
                     <div class="text-right">
                         <div class="text-[10px] uppercase font-bold text-on-surface/40 dark:text-slate-500 mb-1">${getTranslation("upcoming.flightNumber") || "Flug"}</div>
