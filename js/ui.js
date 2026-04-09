@@ -180,11 +180,15 @@ async function showAirportDetails(iataCode, silentCache = false) {
               <p><strong>${getTranslation("modalDetails.airportCoords")}</strong> Lat: ${cachedAirport.lat || "N/A"}, Lng: ${cachedAirport.lon || "N/A"}</p>
           `;
 
-          // Wenn wir eine Website haben, direkt mit anzeigen!
+          // 🌐 Website oder Google-Fallback rendern
           if (cachedAirport.website) {
-              content += `<p class="mt-2"><a href="${cachedAirport.website}" target="_blank" class="text-indigo-500 hover:underline">${getTranslation("modalDetails.airportWebsite") || "Webseite öffnen"}</a></p>`;
+              content += `<p class="mt-2"><a href="${cachedAirport.website}" target="_blank" class="text-indigo-500 font-bold hover:underline">${getTranslation("modalDetails.airportWebsite") || "🌐 Webseite öffnen"}</a></p>`;
+          } else if (cachedAirport.api_checked) {
+              // Wenn wir wissen, dass die API nichts hat, zeigen wir den Google-Link
+              const searchName = cachedAirport.name || iataCode;
+              const searchQuery = encodeURIComponent(`${searchName} Airport official website`);
+              content += `<p class="mt-2 text-xs text-on-surface/60 italic">Keine offizielle URL in Datenbank. <br><a href="https://www.google.com/search?q=${searchQuery}" target="_blank" class="text-indigo-500 hover:underline">🔍 Auf Google suchen</a></p>`;
           }
-
           if (iataCode.length === 4) {
               content += `<hr class="my-2 dark:border-gray-600"><p class="text-xs italic">${getTranslation("logbook.icaoInfoNote")}</p>`;
           }
@@ -250,7 +254,11 @@ async function showAirportDetails(iataCode, silentCache = false) {
               `;
               
               if (updatedCache.website) {
-                  newContent += `<p class="mt-2"><a href="${updatedCache.website}" target="_blank" class="text-indigo-500 hover:underline">${getTranslation("modalDetails.airportWebsite") || "Webseite öffnen"}</a></p>`;
+                  newContent += `<p class="mt-2"><a href="${updatedCache.website}" target="_blank" class="text-indigo-500 font-bold hover:underline">${getTranslation("modalDetails.airportWebsite") || "🌐 Webseite öffnen"}</a></p>`;
+              } else {
+                  const searchName = updatedCache.name || iataCode;
+                  const searchQuery = encodeURIComponent(`${searchName} Airport official website`);
+                  newContent += `<p class="mt-2 text-xs text-on-surface/60 italic">Keine offizielle URL in Datenbank. <br><a href="https://www.google.com/search?q=${searchQuery}" target="_blank" class="text-indigo-500 hover:underline">🔍 Auf Google suchen</a></p>`;
               }
               
               document.getElementById("info-modal-content").innerHTML = newContent;

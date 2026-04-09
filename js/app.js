@@ -5888,11 +5888,24 @@ window.openAirportWebsite = async function(iataCode, event) {
                 await window.cacheAndSaveAirport(payload);
             }
 
-            // Anschließend die Website öffnen
+            // 🚀 NEU: Wir merken uns im Cache, dass die API uns enttäuscht hat,
+            // damit wir sie beim nächsten Klick nicht nochmal sinnlos fragen!
+            if (window.airportData[iataCode]) {
+                window.airportData[iataCode].api_checked = true;
+            }
+
+            // 🌐 Das smarte Google-Fallback!
             if (airport.website) {
                 window.open(airport.website, '_blank');
             } else {
-                alert((typeof getTranslation === 'function' ? getTranslation("modalDetails.airportNoDetails") : null) || "Leider keine Webseite für diesen Flughafen gefunden.");
+                const searchName = airport.name || iataCode;
+                const searchQuery = encodeURIComponent(`${searchName} Airport official website`);
+                const confirmMsg = (typeof getTranslation === 'function' ? getTranslation("modalDetails.airportNoDetails") : null) || "Die API hat leider keine Webseite hinterlegt. Auf Google danach suchen?";
+                
+                // Wir fragen den User höflich, ob wir googeln sollen
+                if (confirm(confirmMsg)) {
+                    window.open(`https://www.google.com/search?q=${searchQuery}`, '_blank');
+                }
             }
         } else {
             console.warn("API lieferte keine brauchbaren Daten.");
