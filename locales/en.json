@@ -1003,7 +1003,9 @@
     "hideFlight": "Hide live flight",
     "restoreFlights": "Show {count} hidden live flights",
     "statusArchived": "COMPLETED",
-    "statusStandby": "STANDBY"
+    "statusStandby": "STANDBY",
+    "finishFlight": "Archive flight in logbook",
+    "flightArchivedSuccess": "Flight successfully moved to logbook! 📖"
   },
 
 "sync": {

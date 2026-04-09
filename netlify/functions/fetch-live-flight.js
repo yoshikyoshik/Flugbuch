@@ -90,7 +90,7 @@ exports.handler = async function(event, context) {
         return { statusCode: 500, headers, body: JSON.stringify({ error: "Server-Crash: " + error.message }) };
     }
 };
-*/
+
 
 exports.handler = async function(event, context) {
     // 🛡️ CORS-Header für native Smartphone-Apps!
@@ -186,6 +186,131 @@ exports.handler = async function(event, context) {
             // Wenn er auch da nicht ist, dann ist er WIRKLICH noch nicht aktiv (STANDBY)
             console.log(`[API INFO] Flug existiert auch im Future-Plan nicht.`);
             return { statusCode: 404, headers, body: JSON.stringify({ error: `Flug für dieses Datum noch nicht aktiv.` }) };
+        } else {
+            return { statusCode: 404, headers, body: JSON.stringify({ error: `Flug nicht gefunden.` }) };
+        }
+
+    } catch (error) {
+        console.error(`[API CRASH] Server Fehler: ${error.message}`);
+        return { statusCode: 500, headers, body: JSON.stringify({ error: "Server-Crash: " + error.message }) };
+    }
+};
+
+*/
+
+exports.handler = async function(event, context) {
+    // 🛡️ CORS-Header für native Smartphone-Apps und Browser
+    const headers = {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers": "Content-Type",
+        "Content-Type": "application/json"
+    };
+
+    if (event.httpMethod === "OPTIONS") {
+        return { statusCode: 200, headers, body: "OK" };
+    }
+
+    const { dep_iata, flight_iata, date } = event.queryStringParameters;
+    console.log(`[API REQUEST] Starte Abfrage für ${flight_iata} ab ${dep_iata} für Datum: ${date || 'HEUTE'}`);
+
+    if (!dep_iata || !flight_iata) {
+        return { statusCode: 400, headers, body: JSON.stringify({ error: "Fehlende Parameter" }) };
+    }
+
+    const API_KEY = process.env.GOFLIGHTLABS_API_KEY; 
+    if (!API_KEY) return { statusCode: 500, headers, body: JSON.stringify({ error: "API Key fehlt" }) };
+
+    // ====================================================================
+    // SCHRITT 1: Im LIVE-System suchen
+    // ====================================================================
+    const liveUrl = `https://www.goflightlabs.com/advanced-flights-schedules?access_key=${API_KEY}&iataCode=${dep_iata}&type=departure&flight_iata=${flight_iata}`;
+
+    try {
+        const liveRes = await fetch(liveUrl);
+        const liveText = await liveRes.text(); 
+        
+        let liveData;
+        try {
+            liveData = JSON.parse(liveText);
+        } catch(e) {
+            console.error("[API ERROR] GoFlightLabs LIVE gab HTML statt JSON zurück (Server Down oder API Limit).");
+            liveData = { data: [] }; // 🚀 FIX: Abfangen, damit Netlify nicht abstürzt!
+        }
+
+        const liveArray = Array.isArray(liveData.data) ? liveData.data : (Array.isArray(liveData) ? liveData : []);
+
+        if (liveArray.length > 0) {
+            let matchedFlight = null;
+            if (date) {
+                matchedFlight = liveArray.find(flight => {
+                    const apiDate1 = flight.flight_date; 
+                    const apiDate2 = flight.dep_time ? flight.dep_time.substring(0, 10) : null;
+                    const apiDate3 = flight.dep_estimated ? flight.dep_estimated.substring(0, 10) : null;
+                    return apiDate1 === date || apiDate2 === date || apiDate3 === date;
+                });
+            }
+
+            if (matchedFlight) {
+                console.log(`[API SUCCESS] Daten für ${flight_iata} im LIVE-System gefunden!`);
+                return { statusCode: 200, headers, body: JSON.stringify(matchedFlight) };
+            }
+        }
+
+        // ====================================================================
+        // SCHRITT 2: FUTURE-Fallback!
+        // ====================================================================
+        if (date) {
+            console.log(`[API INFO] Flug noch nicht im Live-System. Suche im FUTURE-Flugplan für ${date}...`);
+            const futureUrl = `https://www.goflightlabs.com/advanced-future-flights?access_key=${API_KEY}&type=departure&iataCode=${dep_iata}&date=${date}`;
+
+            const futureRes = await fetch(futureUrl);
+            const futureText = await futureRes.text(); // 🚀 BUGHUNT FIX: Erst als Text laden!
+            
+            let futureData;
+            try {
+                futureData = JSON.parse(futureText); // Versuchen, es in JSON zu verwandeln
+            } catch(e) {
+                console.error("[API ERROR] GoFlightLabs FUTURE gab HTML statt JSON zurück (Server Down oder API Limit).");
+                futureData = { data: [] }; // 🚀 FIX: Fallback, damit Netlify nicht abstürzt!
+            }
+
+            const futureArray = Array.isArray(futureData.data) ? futureData.data : (Array.isArray(futureData) ? futureData : []);
+
+            const futureMatch = futureArray.find(f => {
+                const searchIata = flight_iata.replace(/\s/g, '').toUpperCase();
+                const targetIata = f.flight_iata ? f.flight_iata.replace(/\s/g, '').toUpperCase() : "";
+                const targetIcao = f.flight_icao ? f.flight_icao.replace(/\s/g, '').toUpperCase() : "";
+                return targetIata === searchIata || targetIcao === searchIata;
+            });
+
+            if (futureMatch) {
+                // ================================================================
+                // 🚀 BUGHUNT FIX: Die Langstrecken-Sicherung (Ocean-Fix)!
+                // ================================================================
+                const nowSeconds = Math.floor(Date.now() / 1000);
+                
+                // Wir checken primär die ANKUNFTSZEIT (+ 2h Puffer für Verspätungen).
+                // Hat die API keine Ankunftszeit, geben wir dem Flug pauschal 24 Stunden Lebenszeit ab Abflug!
+                let flightEndTs = futureMatch.dep_time_ts ? (futureMatch.dep_time_ts + 86400) : null; 
+                
+                if (futureMatch.arr_estimated_ts) {
+                    flightEndTs = futureMatch.arr_estimated_ts + 7200;
+                } else if (futureMatch.arr_time_ts) {
+                    flightEndTs = futureMatch.arr_time_ts + 7200;
+                }
+
+                if (flightEndTs && flightEndTs < nowSeconds) {
+                    console.log(`[API INFO] Future-Match gefunden, aber Ankunft war schon. Status: BEENDET.`);
+                    return { statusCode: 404, headers, body: JSON.stringify({ error: `Flug bereits beendet.` }) };
+                }
+                // ================================================================
+
+                console.log(`[API SUCCESS] Daten für ${flight_iata} im FUTURE-System gefunden!`);
+                return { statusCode: 200, headers, body: JSON.stringify(futureMatch) };
+            }
+
+            // Wenn wir hier sind, lag es entweder daran, dass der Flug nicht existiert, oder die API down ist.
+            return { statusCode: 404, headers, body: JSON.stringify({ error: `Flug für dieses Datum noch nicht aktiv oder API überlastet.` }) };
         } else {
             return { statusCode: 404, headers, body: JSON.stringify({ error: `Flug nicht gefunden.` }) };
         }

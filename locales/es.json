@@ -999,7 +999,9 @@
     "hideFlight": "Ocultar vuelo en vivo",
     "restoreFlights": "Mostrar {count} vuelos en vivo ocultos",
     "statusArchived": "FINALIZADO",
-    "statusStandby": "EN ESPERA"
+    "statusStandby": "EN ESPERA",
+    "finishFlight": "Archivar vuelo en el diario",
+    "flightArchivedSuccess": "¡Vuelo movido exitosamente al diario! 📖"
   },
 
 "sync": {

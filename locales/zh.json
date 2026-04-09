@@ -999,7 +999,9 @@
     "hideFlight": "隐藏实时航班",
     "restoreFlights": "显示 {count} 个隐藏的实时航班",
     "statusArchived": "已结束",
-    "statusStandby": "待机"
+    "statusStandby": "待机",
+    "finishFlight": "在飞行日志中归档航班",
+    "flightArchivedSuccess": "航班已成功移至飞行日志！📖"
   },
 
 "sync": {

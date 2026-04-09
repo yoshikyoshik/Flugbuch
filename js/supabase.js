@@ -71,6 +71,7 @@ const cacheAndSaveAirport = async (airport) => {
       lon: airport.lon,
       city: airport.city,
       country_code: airport.country_code,
+      website: airport.website
     };
     const { error } = await supabaseClient.from("airports").upsert({
       iata: airport.code,
@@ -79,6 +80,7 @@ const cacheAndSaveAirport = async (airport) => {
       lon: airport.lon,
       city: airport.city,
       country_code: airport.country_code,
+      website: airport.website
     });
     if (error) console.error("Fehler beim Speichern des Flughafens:", error);
   }

@@ -999,7 +999,9 @@
     "hideFlight": "Скрыть текущий рейс",
     "restoreFlights": "Показать {count} скрытых текущих рейсов",
     "statusArchived": "ЗАВЕРШЕН",
-    "statusStandby": "ОЖИДАНИЕ"
+    "statusStandby": "ОЖИДАНИЕ",
+    "finishFlight": "Добавить рейс в журнал",
+    "flightArchivedSuccess": "Рейс успешно добавлен в журнал! 📖"
   },
 
 "sync": {

@@ -212,7 +212,7 @@ async function showAirportDetails(iataCode, silentCache = false) {
     if (result.data && result.data.length > 0) {
       const airport = result.data[0];
 
-      // Speichere die Infos (inkl. country_code) in DB & Cache
+      // Speichere die Infos in DB & Cache
       await cacheAndSaveAirport({
         code: iataCode,
         name: airport.name,
@@ -220,6 +220,7 @@ async function showAirportDetails(iataCode, silentCache = false) {
         lon: airport.lng,
         city: airport.city,
         country_code: airport.country_code,
+        website: airport.website
       });
 
       if (!silentCache) {

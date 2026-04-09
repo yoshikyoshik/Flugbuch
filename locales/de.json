@@ -1004,7 +1004,9 @@
     "hideFlight": "Live-Flug ausblenden",
     "restoreFlights": "{count} ausgeblendete Live-Flüge anzeigen",
     "statusArchived": "BEENDET",
-    "statusStandby": "STANDBY"
+    "statusStandby": "STANDBY",
+    "finishFlight:": "Flug im Logbuch archivieren",
+    "flightArchivedSuccess:": "Flug erfolgreich ins Logbuch verschoben! 📖"
   },
 
 "sync": {

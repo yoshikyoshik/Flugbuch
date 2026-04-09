@@ -5178,8 +5178,25 @@ window.renderCurrentLiveFlight = function() {
     window.currentLiveFlight = flight; 
 
     // Basis-Daten eintragen
-    document.getElementById('live-dep-iata').textContent = flight.departure || "???";
-    document.getElementById('live-arr-iata').textContent = flight.arrival || "???";
+    // Basis-Daten eintragen (🚀 NEU: Interaktiv mit Website-Link & Globus-Icon)
+    const depIata = flight.departure || "???";
+    const arrIata = flight.arrival || "???";
+
+    const makeInteractiveIata = (iata) => {
+        if (iata === "???") return iata;
+        return `
+            <span class="cursor-pointer hover:text-primary dark:hover:text-cyan-accent transition-colors duration-200 inline-flex items-start" 
+                  onclick="openAirportWebsite('${iata}', event)" 
+                  title="Flughafen-Webseite öffnen">
+                ${iata}
+                <span class="material-symbols-outlined text-lg md:text-2xl opacity-40 hover:opacity-100 ml-1 mt-1">language</span>
+            </span>
+        `;
+    };
+
+    // Wir nutzen innerHTML statt textContent, damit das Icon gerendert wird
+    document.getElementById('live-dep-iata').innerHTML = makeInteractiveIata(depIata);
+    document.getElementById('live-arr-iata').innerHTML = makeInteractiveIata(arrIata);
     document.getElementById('live-flight-number').textContent = flight.flightNumber || flight.flightLogNumber || "Unbekannt";
     
     // 🚀 FIX 1: Unbekannte Airline übersetzen (mit Live-Update Support)
@@ -5821,10 +5838,53 @@ window.finishLiveFlight = function() {
     localStorage.setItem(`weather_finalized_${flightId}`, 'true');
 
     // 3. Optional: Einen kleinen Konfetti-Effekt oder Alert, bevor das Widget neu lädt!
-    alert("Flug erfolgreich ins Logbuch verschoben! 📖");
+    const successMsg = (typeof getTranslation === 'function' ? getTranslation("live.flightArchivedSuccess") : null) || "Flug erfolgreich ins Logbuch verschoben! 📖";
+    alert(successMsg);
 
     // 4. Widget neu initialisieren (Dadurch wird der Flug sofort ausgeblendet und der nächste angezeigt!)
     window.initLiveWidget();
+};
+
+// ==========================================
+// 🚀 UX FEATURE: Flughafen-Website direkt öffnen
+// ==========================================
+window.openAirportWebsite = async function(iataCode, event) {
+    if (event) event.stopPropagation(); // Verhindert, dass das Ticket-Modal aufpoppt!
+
+    // 1. Haben wir die Website schon im lokalen Cache?
+    if (window.airportData && window.airportData[iataCode] && window.airportData[iataCode].website) {
+        window.open(window.airportData[iataCode].website, '_blank');
+        return;
+    }
+
+    // Lade-Indikator (Mauszeiger) zeigen
+    document.body.style.cursor = 'wait';
+
+    try {
+        // 2. Wenn nicht im Cache: Schnell von der API holen!
+        const url = `${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-airport-details?code=${iataCode}`;
+        const response = await fetch(url);
+        const result = await response.json();
+
+        if (result.data && result.data.length > 0) {
+            const airport = result.data[0];
+
+            // Cache lokal updaten (damit der 2. Klick sofort geht)
+            if (!window.airportData) window.airportData = {};
+            if (!window.airportData[iataCode]) window.airportData[iataCode] = {};
+            window.airportData[iataCode].website = airport.website;
+
+            if (airport.website) {
+                window.open(airport.website, '_blank');
+            } else {
+                alert((typeof getTranslation === 'function' ? getTranslation("modalDetails.airportNoDetails") : null) || "Leider keine Webseite für diesen Flughafen gefunden.");
+            }
+        }
+    } catch (e) {
+        console.warn("Konnte Airport-Webseite nicht laden:", e);
+    } finally {
+        document.body.style.cursor = 'default';
+    }
 };
 
 // =================================================================
