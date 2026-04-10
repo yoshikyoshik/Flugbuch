@@ -54,6 +54,14 @@ export default async function handler(request, context) {
     let processedCount = 0;
 
     for (const flight of flights) {
+        // 🚀 BUGHUNT FIX: Den echten Spaltennamen aus Supabase nutzen!
+        const flightNum = flight.flightNumber || flight.flight_iata || flight.flight_number;
+        
+        if (!flightNum) {
+            console.warn(`⚠️ Flug mit ID ${flight.id} hat keine Flugnummer. Überspringe...`);
+            continue;
+        }
+
         // ====================================================================
         // 🛡️ DAS SMARTE FILTER-SYSTEM:
         // ====================================================================
@@ -64,24 +72,26 @@ export default async function handler(request, context) {
                 continue; 
             }
         } else {
-            console.log(`🔍 [DISCOVERY] Flug ${flight.flight_iata} hat noch keinen Timestamp in DB. API-Abruf erzwungen...`);
+            console.log(`🔍 [DISCOVERY] Flug ${flightNum} hat noch keinen Timestamp in DB. API-Abruf erzwungen...`);
         }
 
-        console.log(`✈️ Bereite Flug ${flight.flight_iata} vor...`);
+        console.log(`✈️ Bereite Flug ${flightNum} vor...`);
         processedCount++;
 
         try {
-            const liveUrl = `https://www.goflightlabs.com/advanced-flights-schedules?access_key=${API_KEY}&iataCode=${flight.departure}&type=departure&flight_iata=${flight.flight_iata}`;
+            // 🚀 BUGHUNT FIX: flightNum statt flight.flight_iata in der URL nutzen!
+            const liveUrl = `https://www.goflightlabs.com/advanced-flights-schedules?access_key=${API_KEY}&iataCode=${flight.departure}&type=departure&flight_iata=${flightNum}`;
             const liveRes = await fetch(liveUrl);
             const liveData = await liveRes.json();
             const liveArray = Array.isArray(liveData.data) ? liveData.data : [];
             
-            const matchedFlight = liveArray.find(f => f.flight_date === flight.date || f.flight_iata === flight.flight_iata);
+            // 🚀 BUGHUNT FIX: Auch hier flightNum nutzen!
+            const matchedFlight = liveArray.find(f => f.flight_date === flight.date || f.flight_iata === flightNum);
 
             if (matchedFlight) {
                 const updatePayload = {};
 
-                // 🚀 TIMESTAMPS SPEICHERN (Löst das Henne-Ei-Problem für die Zukunft!)
+                // 🚀 TIMESTAMPS SPEICHERN
                 if (matchedFlight.dep_time_ts) updatePayload.dep_time_ts = matchedFlight.dep_time_ts;
                 if (matchedFlight.arr_time_ts) updatePayload.arr_time_ts = matchedFlight.arr_time_ts;
                 if (matchedFlight.dep_estimated_ts) updatePayload.dep_estimated_ts = matchedFlight.dep_estimated_ts;
@@ -98,12 +108,16 @@ export default async function handler(request, context) {
                 if (matchedFlight.aircraft_icao) updatePayload.aircraft_type = matchedFlight.aircraft_icao;
 
                 if (Object.keys(updatePayload).length > 0) {
-                    console.log(`✅ Frische Daten (Timestamps/Gates) für ${flight.flight_iata} gefunden! Update in Supabase...`);
+                    console.log(`✅ Frische Daten (Timestamps/Gates) für ${flightNum} gefunden! Update in Supabase...`);
                     await supabase.from('flights').update(updatePayload).eq('id', flight.id);
+                } else {
+                    console.log(`ℹ️ Die API hat leider noch keine frischen Live-Daten für ${flightNum} geliefert.`);
                 }
+            } else {
+                 console.log(`❌ Flug ${flightNum} an diesem Datum nicht in der GoFlightLabs Live-Abfrage gefunden.`);
             }
         } catch (err) {
-            console.error(`Fehler bei der Vorbereitung von Flug ${flight.flight_iata}:`, err.message);
+            console.error(`Fehler bei der Vorbereitung von Flug ${flightNum}:`, err.message);
         }
     }
 

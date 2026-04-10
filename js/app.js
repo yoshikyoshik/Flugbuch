@@ -936,6 +936,7 @@ window.logFlight = async function () {
   const newFlightForSupabase = {
     flight_id: newFlightId,
     user_id: user.id,
+    status: "scheduled", // 🚀 BUGHUNT FIX: Status explizit setzen!
     date:
       document.getElementById("flightDate").value ||
       new Date().toISOString().slice(0, 10),
