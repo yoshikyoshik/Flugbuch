@@ -1005,8 +1005,9 @@
     "restoreFlights": "{count} ausgeblendete Live-Flüge anzeigen",
     "statusArchived": "BEENDET",
     "statusStandby": "STANDBY",
-    "finishFlight:": "Flug im Logbuch archivieren",
-    "flightArchivedSuccess:": "Flug erfolgreich ins Logbuch verschoben! 📖"
+    "finishFlight": "Flug im Logbuch archivieren",
+    "flightArchivedSuccess": "Flug erfolgreich ins Logbuch verschoben! 📖",
+    "askGoogleFallback": "Keine offizielle Webseite für {iata} in der Datenbank gefunden.\n\nMöchtest du stattdessen auf Google danach suchen?"
   },
 
 "sync": {

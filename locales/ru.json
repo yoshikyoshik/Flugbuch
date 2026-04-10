@@ -1001,7 +1001,8 @@
     "statusArchived": "ЗАВЕРШЕН",
     "statusStandby": "ОЖИДАНИЕ",
     "finishFlight": "Добавить рейс в журнал",
-    "flightArchivedSuccess": "Рейс успешно добавлен в журнал! 📖"
+    "flightArchivedSuccess": "Рейс успешно добавлен в журнал! 📖",
+    "askGoogleFallback": "Официальный веб-сайт для {iata} не найден в базе данных.\n\nХотите поискать его в Google вместо этого?"
   },
 
 "sync": {

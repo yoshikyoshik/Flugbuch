@@ -1005,7 +1005,8 @@
     "statusArchived": "COMPLETED",
     "statusStandby": "STANDBY",
     "finishFlight": "Archive flight in logbook",
-    "flightArchivedSuccess": "Flight successfully moved to logbook! 📖"
+    "flightArchivedSuccess": "Flight successfully moved to logbook! 📖",
+    "askGoogleFallback": "No official website found for {iata} in the database.\n\nWould you like to search for it on Google instead?"
   },
 
 "sync": {

@@ -1001,7 +1001,8 @@
     "statusArchived": "已结束",
     "statusStandby": "待机",
     "finishFlight": "在飞行日志中归档航班",
-    "flightArchivedSuccess": "航班已成功移至飞行日志！📖"
+    "flightArchivedSuccess": "航班已成功移至飞行日志！📖",
+    "askGoogleFallback": "在数据库中未找到 {iata} 的官方网站。\n\n您想在 Google 上搜索吗？"
   },
 
 "sync": {

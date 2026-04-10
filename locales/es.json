@@ -1001,7 +1001,8 @@
     "statusArchived": "FINALIZADO",
     "statusStandby": "EN ESPERA",
     "finishFlight": "Archivar vuelo en el diario",
-    "flightArchivedSuccess": "¡Vuelo movido exitosamente al diario! 📖"
+    "flightArchivedSuccess": "¡Vuelo movido exitosamente al diario! 📖",
+    "askGoogleFallback": "No se encontró un sitio web oficial para {iata} en la base de datos.\n\n¿Te gustaría buscarlo en Google?"
   },
 
 "sync": {

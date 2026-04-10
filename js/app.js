@@ -5136,6 +5136,9 @@ window.initLiveWidget = async function() {
     // 1. 🚀 FIX: Meister-Backup ALLER heutigen UND aktiven gestrigen Flüge anlegen
     window.originalTodaysLiveFlights = allFlights
         .filter(f => {
+            // 🚀 BUGHUNT FIX: Zombies blockieren! 
+            if (f.status === 'archived') return false; 
+
             const flightId = f.id || f.flight_id;
             const isToday = f.date === todayStr;
             const isYesterday = f.date === yesterdayStr;
@@ -5279,9 +5282,9 @@ window.renderCurrentLiveFlight = function() {
     const finishBtn = document.getElementById('finish-flight-btn');
     if (finishBtn) finishBtn.classList.add('hidden');
 
-    // API sofort anfeuern
+    // API sofort anfeuern (aber nur, wenn Cooldown abgelaufen ist!)
     if (typeof refreshLiveFlightData === 'function') {
-        refreshLiveFlightData();
+        refreshLiveFlightData(false); // 🚀 NEU: false = Nutze den Cache-Schild
     }
 };
 
@@ -5299,7 +5302,7 @@ window.prevLiveFlight = function() {
     }
 };
 
-window.refreshLiveFlightData = async function() {
+window.refreshLiveFlightData = async function(force = true) { // 🚀 NEU: force Parameter
     if (!window.currentLiveFlight) return;
 
     // 🚀 BUGHUNT FIX: Prüfen, ob der User diesen Flug heute schon ausgeblendet hat (Neue Array-Logik!)
@@ -5332,46 +5335,64 @@ window.refreshLiveFlightData = async function() {
         
         if (!flightNum || !depIata || !flightDate) throw new Error("Flugnummer, Abflugort oder Datum fehlt");
 
-        console.log(`✈️ Starte Live-Abruf für Flug ${flightNum} ab ${depIata} für den ${flightDate}...`);
-        
-        // Netlify Funktion aufrufen
-        // Netlify Funktion aufrufen
-        const fetchUrl = `${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-live-flight?dep_iata=${depIata}&flight_iata=${flightNum}&date=${flightDate}`;
-        const response = await fetch(fetchUrl);
-        
         let data; // Globale Variable für die Antwort
 
-        if (!response.ok) {
-            let errorData = {};
-            try {
-                errorData = await response.json();
-            } catch(e) {}
+        // ================================================================
+        // 🛡️ 🚀 BUGHUNT FIX: DER 5-MINUTEN API SCHUTZSCHILD!
+        // ================================================================
+        const flight = window.currentLiveFlight;
+        const now = Date.now();
+        const cooldownMinutes = 5;
 
-            // 🚀 BUGHUNT FIX: Graceful Fallback für alte Flüge!
-            const todayDate = new Date();
-            const todayStr = todayDate.getFullYear() + '-' + String(todayDate.getMonth() + 1).padStart(2, '0') + '-' + String(todayDate.getDate()).padStart(2, '0');
-            
-            // Wenn der Flug nicht gefunden wurde (404) UND das Datum in der Vergangenheit liegt
-            if (response.status === 404 && flightDate < todayStr) {
-                console.log("[Live Widget] Flug von gestern nicht mehr in API. Markiere künstlich als BEENDET.");
-                
-                // Wir werfen keinen Fehler, sondern täuschen der App vor, der Flug sei erfolgreich gelandet!
-                data = {
-                    status: "landed",
-                    dep_iata: depIata,
-                    flight_iata: flightNum,
-                    // Fake Timestamps in der Vergangenheit, damit die Touchdown-Logik weiter unten anspringt!
-                    dep_actual_ts: Math.floor(Date.now() / 1000) - 7200,
-                    arr_actual_ts: Math.floor(Date.now() / 1000) - 3600
-                };
-            } else {
-                // Echter Fehler (z.B. für heutige Flüge)
-                throw new Error(errorData.error || "Flug nicht gefunden");
-            }
+        // Prüfen, ob wir OHNE Force abfragen UND gültige Daten im Cache haben
+        if (!force && flight.lastApiData && flight.lastApiFetch && (now - flight.lastApiFetch < cooldownMinutes * 60 * 1000)) {
+            const secondsLeft = Math.round((cooldownMinutes * 60 * 1000 - (now - flight.lastApiFetch)) / 1000);
+            console.log(`⏳ API Schild aktiv: Nutze Live-Daten aus dem Cache für ${flightNum} (Nächster Request frühestens in ${secondsLeft}s)`);
+            data = flight.lastApiData; // Wir laden das fertige Paket aus dem Cache!
         } else {
-            // Normaler JSON Parse, da response ok ist
-            data = await response.json();
+            // Wenn der User den Button klickt ODER die 5 Minuten rum sind -> Echter Abruf!
+            console.log(`✈️ Starte ECHTEN Live-Abruf für Flug ${flightNum} ab ${depIata} für den ${flightDate}...`);
+            
+            const fetchUrl = `${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-live-flight?dep_iata=${depIata}&flight_iata=${flightNum}&date=${flightDate}`;
+            const response = await fetch(fetchUrl);
+            
+            if (!response.ok) {
+                let errorData = {};
+                try {
+                    errorData = await response.json();
+                } catch(e) {}
+
+                // 🚀 BUGHUNT FIX: Graceful Fallback für alte Flüge!
+                const todayDate = new Date();
+                const todayStr = todayDate.getFullYear() + '-' + String(todayDate.getMonth() + 1).padStart(2, '0') + '-' + String(todayDate.getDate()).padStart(2, '0');
+                
+                // Wenn der Flug nicht gefunden wurde (404) UND das Datum in der Vergangenheit liegt
+                if (response.status === 404 && flightDate < todayStr) {
+                    console.log("[Live Widget] Flug von gestern nicht mehr in API. Markiere künstlich als BEENDET.");
+                    
+                    // Wir werfen keinen Fehler, sondern täuschen der App vor, der Flug sei erfolgreich gelandet!
+                    data = {
+                        status: "landed",
+                        dep_iata: depIata,
+                        flight_iata: flightNum,
+                        // Fake Timestamps in der Vergangenheit, damit die Touchdown-Logik weiter unten anspringt!
+                        dep_actual_ts: Math.floor(Date.now() / 1000) - 7200,
+                        arr_actual_ts: Math.floor(Date.now() / 1000) - 3600
+                    };
+                } else {
+                    // Echter Fehler (z.B. für heutige Flüge)
+                    throw new Error(errorData.error || "Flug nicht gefunden");
+                }
+            } else {
+                // Normaler JSON Parse, da response ok ist
+                data = await response.json();
+            }
+
+            // 🚀 Caching: Wir speichern die frisch geholten Daten direkt am Flug-Objekt ab!
+            flight.lastApiData = data;
+            flight.lastApiFetch = now;
         }
+        // ================================================================
         
         // --- 0. 🚀 NEU: AIRLINE UPDATE (Falls "Unbekannt") ---
         const isUnknownAirline = !window.currentLiveFlight.airline || window.currentLiveFlight.airline.toLowerCase().includes('unbekannt') || window.currentLiveFlight.airline.toLowerCase().includes('unknown');
@@ -5826,26 +5847,34 @@ window.restoreLiveWidget = function() {
     if (typeof checkRadarEmptyState === 'function') checkRadarEmptyState();
 };
 
-window.finishLiveFlight = function() {
+window.finishLiveFlight = async function() {
     if (!window.currentLiveFlight) return;
     
     const flightId = window.currentLiveFlight.id || window.currentLiveFlight.flight_id;
     
-    // 1. In die Hidden-Liste eintragen (damit er heute sofort aus dem Widget verschwindet)
+    // 1. Visuell sofort ausblenden (für diese Sitzung)
     const hiddenList = JSON.parse(localStorage.getItem('hiddenLiveFlightsList') || '[]');
     if (!hiddenList.some(h => h.id === flightId)) {
         hiddenList.push({ id: flightId });
         localStorage.setItem('hiddenLiveFlightsList', JSON.stringify(hiddenList));
     }
     
-    // 2. Zur Sicherheit den "Wetter-Lock" setzen (damit er auch morgen früh definitiv gefiltert wird)
+    // 2. Wetter-Lock setzen
     localStorage.setItem(`weather_finalized_${flightId}`, 'true');
 
-    // 3. Optional: Einen kleinen Konfetti-Effekt oder Alert, bevor das Widget neu lädt!
+    // 3. 🚀 DER ZOMBIE-KILLER: Flug in Supabase für immer ins Archiv schieben!
+    try {
+        await supabaseClient.from('flights')
+            .update({ status: 'archived' })
+            .eq('flight_id', flightId);
+    } catch (e) {
+        console.warn("Konnte Status nicht auf archived setzen", e);
+    }
+
     const successMsg = (typeof getTranslation === 'function' ? getTranslation("live.flightArchivedSuccess") : null) || "Flug erfolgreich ins Logbuch verschoben! 📖";
     alert(successMsg);
 
-    // 4. Widget neu initialisieren (Dadurch wird der Flug sofort ausgeblendet und der nächste angezeigt!)
+    // 4. Widget neu initialisieren
     window.initLiveWidget();
 };
 
