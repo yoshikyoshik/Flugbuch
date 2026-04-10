@@ -5569,15 +5569,20 @@ window.refreshLiveFlightData = async function(force = true) { // 🚀 NEU: force
                                 updatePayload.aircraft_type = data.aircraft_icao;
                             }
 
-                            // 3. Ab in die Datenbank damit!
-                            await supabaseClient.from('flights')
+                            // 3. Ab in die Datenbank damit (mit strenger Fehlerprüfung!)
+                            const { error: sbError } = await supabaseClient.from('flights')
                                 .update(updatePayload)
                                 .eq('flight_id', flightIdToUpdate);
                             
-                            // 4. Schloss verriegeln! Für diesen Flug wird das Wetter/REG nie wieder überschrieben.
-                            localStorage.setItem(weatherLockKey, "true");
-                            console.log("✅ Finales Touchdown-Wetter (und ggf. REG) erfolgreich für die Ewigkeit archiviert!");
-                        }
+                            if (sbError) {
+                                console.error("❌ Supabase hat das Touchdown-Update abgelehnt:", sbError.message);
+                                // Wir verriegeln das Schloss NICHT! 
+                                // So probiert die App es beim nächsten Öffnen nochmal, bis der Fehler behoben ist.
+                            } else {
+                                // 4. Erst WENN es wirklich geklappt hat, verriegeln wir das Schloss!
+                                localStorage.setItem(weatherLockKey, "true");
+                                console.log("✅ Finales Touchdown-Wetter (und ggf. REG) erfolgreich für die Ewigkeit archiviert!");
+                            }                        }
                     } catch(err) {
                         console.warn("Konnte Touchdown-Wetter nicht archivieren:", err);
                     }
