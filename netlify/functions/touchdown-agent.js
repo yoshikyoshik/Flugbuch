@@ -12,7 +12,7 @@ export default async function handler(request, context) {
 
     const API_KEY = process.env.GOFLIGHTLABS_API_KEY;
     const SUPABASE_URL = process.env.SUPABASE_URL;
-    const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY; // 🚀 FIX: Dein korrekter Variablen-Name!
+    const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY; 
 
     if (!API_KEY || !SUPABASE_URL || !SUPABASE_KEY) {
         console.error("FEHLER: Umgebungsvariablen fehlen!");
@@ -28,22 +28,21 @@ export default async function handler(request, context) {
         console.log("Ping an GoFlightLabs...");
         const pingRes = await fetch(`https://www.goflightlabs.com/airports-by-filter?access_key=${API_KEY}&iata_code=FRA`);
         const pingText = await pingRes.text();
-        JSON.parse(pingText); // Wenn das crasht, ist die API down (502 HTML)
+        JSON.parse(pingText); 
     } catch (e) {
-        console.error("🛑 [AGENT ABBRUCH] GoFlightLabs API ist down (HTML/502). Agent geht wieder schlafen, um Tokens zu sparen.");
+        console.error("🛑 [AGENT ABBRUCH] GoFlightLabs API ist down (HTML/502). Agent geht wieder schlafen.");
         return new Response("API Down", { status: 502 });
     }
 
     // ====================================================================
     // 🎯 REGEL 1: Supabase First (Der Laser-Fokus)
     // ====================================================================
-    // Wir holen nur Flüge, die NICHT 'landed' oder 'manual_review' sind
-    // UND die weniger als 5 Fehlversuche haben.
+    // 🚀 BUGHUNT FIX: Greife NUR Flüge an, die wirklich noch laufen oder geplant sind!
+    // Lasse 'archived', 'landed', 'cancelled' und 'manual_review' komplett in Ruhe.
     const { data: flights, error } = await supabase
         .from('flights')
         .select('*')
-        .neq('status', 'landed')
-        .neq('status', 'manual_review')
+        .in('status', ['scheduled', 'active', 'en-route'])
         .lt('api_sync_attempts', 5);
 
     if (error || !flights || flights.length === 0) {
@@ -55,11 +54,23 @@ export default async function handler(request, context) {
     let processedCount = 0;
 
     for (const flight of flights) {
+        // 🚀 BUGHUNT FIX: Echte Flugnummer nutzen!
+        const flightNum = flight.flightNumber || flight.flight_iata || flight.flight_number;
+        
+        if (!flightNum) {
+            console.warn(`⚠️ Flug mit ID ${flight.id} hat keine Flugnummer. Überspringe...`);
+            continue;
+        }
+
         // ====================================================================
         // ⏳ REGEL 4: Puffer-Zeiten nutzen (Grace Period)
         // ====================================================================
-        // Wir nehmen die geplante Landezeit (oder Abflug + Dauer) und packen 30 Minuten Puffer drauf.
-        const estimatedTouchdownTs = (flight.arr_time_ts) || (flight.dep_time_ts + 7200); // 7200 = Fallback 2h Flug
+        // 🚀 BUGHUNT FIX: Absicherung, falls Timestamps noch fehlen!
+        let estimatedTouchdownTs = flight.arr_time_ts;
+        if (!estimatedTouchdownTs) {
+            estimatedTouchdownTs = flight.dep_time_ts ? (flight.dep_time_ts + 7200) : (nowSeconds + 999999); // Ignore if totally unknown
+        }
+        
         const gracePeriodTs = estimatedTouchdownTs + 1800; // + 30 Minuten (1800 Sekunden)
 
         if (nowSeconds < gracePeriodTs) {
@@ -67,21 +78,22 @@ export default async function handler(request, context) {
             continue; 
         }
 
-        console.log(`✈️ Prüfe Flug ${flight.flight_iata} (ID: ${flight.id}) - Landung sollte erfolgt sein.`);
+        console.log(`✈️ Prüfe Flug ${flightNum} (ID: ${flight.id}) - Landung sollte erfolgt sein.`);
         processedCount++;
 
         try {
-            // API nach LIVE-Status abfragen
-            const liveUrl = `https://www.goflightlabs.com/advanced-flights-schedules?access_key=${API_KEY}&iataCode=${flight.departure}&type=departure&flight_iata=${flight.flight_iata}`;
+            // 🚀 BUGHUNT FIX: flightNum in URL einsetzen!
+            const liveUrl = `https://www.goflightlabs.com/advanced-flights-schedules?access_key=${API_KEY}&iataCode=${flight.departure}&type=departure&flight_iata=${flightNum}`;
             const liveRes = await fetch(liveUrl);
             const liveData = await liveRes.json();
             const liveArray = Array.isArray(liveData.data) ? liveData.data : [];
             
-            const matchedFlight = liveArray.find(f => f.flight_date === flight.date || f.flight_iata === flight.flight_iata);
+            // 🚀 BUGHUNT FIX: Auch hier flightNum nutzen!
+            const matchedFlight = liveArray.find(f => f.flight_date === flight.date || f.flight_iata === flightNum);
 
             if (matchedFlight && matchedFlight.status === 'landed') {
                 // 🛬 TOUCHDOWN ERFOLGREICH BESTÄTIGT!
-                console.log(`✅ Touchdown für ${flight.flight_iata} bestätigt! Speichere in Supabase...`);
+                console.log(`✅ Touchdown für ${flightNum} bestätigt! Speichere in Supabase...`);
                 
                 const updatePayload = {
                     status: 'landed',
@@ -92,9 +104,6 @@ export default async function handler(request, context) {
                 if (matchedFlight.aircraft_registration) updatePayload.registration = matchedFlight.aircraft_registration;
                 if (matchedFlight.aircraft_icao) updatePayload.aircraft_type = matchedFlight.aircraft_icao;
 
-                // (Optional: Hier könntest du noch eine Wetter-API Funktion einbauen, 
-                // ähnlich wie window.fetchAviationWeather in deinem Frontend, falls der Agent das Wetter laden soll).
-
                 await supabase.from('flights').update(updatePayload).eq('id', flight.id);
 
             } else {
@@ -102,11 +111,11 @@ export default async function handler(request, context) {
                 // 🛡️ REGEL 2: Die "Max Retries" Sicherung
                 // ====================================================================
                 const newAttempts = (flight.api_sync_attempts || 0) + 1;
-                console.log(`⚠️ Flug ${flight.flight_iata} nicht als 'landed' gefunden. Versuch ${newAttempts}/5.`);
+                console.log(`⚠️ Flug ${flightNum} nicht als 'landed' gefunden (Status in API: ${matchedFlight ? matchedFlight.status : 'Nicht gefunden'}). Versuch ${newAttempts}/5.`);
                 
                 const fallbackPayload = { api_sync_attempts: newAttempts };
                 if (newAttempts >= 5) {
-                    console.log(`🚨 Max Retries erreicht für ${flight.flight_iata}. Markiere als 'manual_review'.`);
+                    console.log(`🚨 Max Retries erreicht für ${flightNum}. Markiere als 'manual_review'.`);
                     fallbackPayload.status = 'manual_review';
                 }
 
@@ -114,7 +123,7 @@ export default async function handler(request, context) {
             }
 
         } catch (err) {
-            console.error(`Fehler bei der Verarbeitung von Flug ${flight.flight_iata}:`, err.message);
+            console.error(`Fehler bei der Verarbeitung von Flug ${flightNum}:`, err.message);
         }
     }
 
