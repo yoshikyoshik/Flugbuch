@@ -916,7 +916,8 @@
     "darkMode": "Dark Mode",
     "language": "Language",
     "changePassword": "Change Password",
-    "logout": "Logout"
+    "logout": "Logout",
+    "appTour": "App Tour & Features"
   },
 
   "leaderboard": {
@@ -1108,6 +1109,48 @@
   "weather": {
     "departure": "Departure",
     "arrival": "Arrival"
-  }
+  },
+
+"tour": {
+    "title": "Discover AvioSphere",
+    "header": "Your Journey",
+    "subheader": "Click on the stations to discover all features of your app.",
+    "step1": {
+        "title": "1. Log Flights",
+        "desc": "Simply search for departure and arrival airports. We'll find your flight automatically!",
+        "b1_strong": "Offline Mode:",
+        "b1_text": "Log flights even above the clouds without internet.",
+        "b2_strong": "Airport Info:",
+        "b2_text": "Click the globe to open the airport's website."
+    },
+    "step2": {
+        "title": "2. Before Departure",
+        "desc": "Your app works in the background while you pack.",
+        "b1_strong": "Smart Countdown:",
+        "b1_text": "Shows you exactly when it's time to go.",
+        "b2_strong": "Auto-Gates:",
+        "b2_text": "We automatically fetch terminal and gate for you before you arrive at the airport!"
+    },
+    "step3": {
+        "title": "3. At the Airport (Live)",
+        "desc": "Your ultimate companion on travel day with real-time updates.",
+        "b1_strong": "Delay Alert:",
+        "b1_text": "Delays instantly blink red.",
+        "b2_strong": "Baggage Claim:",
+        "b2_text": "We show you where your suitcase will arrive.",
+        "b3_strong": "Offline Shield:",
+        "b3_text": "The widget buffers data to save your battery and data allowance."
+    },
+    "step4": {
+        "title": "4. Archive & Stats",
+        "desc": "Welcome to your destination! Your data is safe with us.",
+        "b1_strong": "Touchdown Weather:",
+        "b1_text": "We archive the exact landing weather at the airport for you.",
+        "b2_strong": "Auto-Clean:",
+        "b2_text": "Old flights automatically move to the archive.",
+        "b3_strong": "Your Profile:",
+        "b3_text": "Track your carbon footprint and discover your rank."
+    }
+}
 
 }

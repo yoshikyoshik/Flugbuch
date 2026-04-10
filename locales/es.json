@@ -912,7 +912,8 @@
     "darkMode": "Modo oscuro",
     "language": "Idioma",
     "changePassword": "Cambiar contraseña",
-    "logout": "Cerrar sesión"
+    "logout": "Cerrar sesión",
+    "appTour": "Tour de la App y Funciones"
   },
 
   "leaderboard": {
@@ -1104,6 +1105,48 @@
  "weather": {
     "departure": "Salida",
     "arrival": "Llegada"
- }
+ },
+
+ "tour": {
+    "title": "Descubre AvioSphere",
+    "header": "Tu Viaje",
+    "subheader": "Haz clic en las estaciones para descubrir todas las funciones de tu app.",
+    "step1": {
+        "title": "1. Registrar Vuelos",
+        "desc": "Simplemente busca los aeropuertos de salida y llegada. ¡Encontraremos tu vuelo automáticamente!",
+        "b1_strong": "Modo Offline:",
+        "b1_text": "Registra vuelos incluso sobre las nubes sin internet.",
+        "b2_strong": "Info del Aeropuerto:",
+        "b2_text": "Haz clic en el globo para abrir el sitio web del aeropuerto."
+    },
+    "step2": {
+        "title": "2. Antes de la Salida",
+        "desc": "Tu app trabaja en segundo plano mientras haces la maleta.",
+        "b1_strong": "Cuenta Regresiva Inteligente:",
+        "b1_text": "Te muestra exactamente cuándo es hora de irse.",
+        "b2_strong": "Auto-Puertas:",
+        "b2_text": "¡Obtenemos automáticamente la terminal y la puerta por ti antes de que llegues al aeropuerto!"
+    },
+    "step3": {
+        "title": "3. En el Aeropuerto (En Vivo)",
+        "desc": "Tu compañero definitivo el día del viaje con actualizaciones en tiempo real.",
+        "b1_strong": "Alerta de Retraso:",
+        "b1_text": "Los retrasos parpadean en rojo al instante.",
+        "b2_strong": "Reclamo de Equipaje:",
+        "b2_text": "Te mostramos dónde llegará tu maleta.",
+        "b3_strong": "Escudo Offline:",
+        "b3_text": "El widget almacena datos para ahorrar tu batería y plan de datos."
+    },
+    "step4": {
+        "title": "4. Archivo y Estadísticas",
+        "desc": "¡Bienvenido a tu destino! Tus datos están seguros con nosotros.",
+        "b1_strong": "Clima de Aterrizaje:",
+        "b1_text": "Archivamos el clima exacto del aterrizaje en el aeropuerto para ti.",
+        "b2_strong": "Auto-Limpieza:",
+        "b2_text": "Los vuelos antiguos se mueven automáticamente al archivo.",
+        "b3_strong": "Tu Perfil:",
+        "b3_text": "Haz un seguimiento de tu huella de carbono y descubre tu rango."
+    }
+}
 
 }

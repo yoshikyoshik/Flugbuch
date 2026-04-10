@@ -856,6 +856,14 @@
                           </div>
                       </label>
 
+                      <button onclick="document.getElementById('tour-modal-overlay').classList.remove('hidden')" class="w-full flex items-center justify-between p-4 border-b border-outline-variant/10 dark:border-slate-700/50 hover:bg-surface-container-low dark:hover:bg-slate-700/50 transition-colors text-left group">
+                          <div class="flex items-center gap-3">
+                              <span class="material-symbols-outlined text-indigo-500 dark:text-indigo-400 group-hover:scale-110 transition-transform">explore</span>
+                              <span class="font-bold text-sm text-on-surface dark:text-white" data-i18n="profile.appTour">App-Tour & Features</span>
+                          </div>
+                          <span class="material-symbols-outlined text-on-surface/30 dark:text-slate-500 text-sm">chevron_right</span>
+                      </button>
+
                       <button onclick="renderHelpContent(); document.getElementById('help-modal-overlay').classList.remove('hidden');" class="w-full flex items-center justify-between p-4 border-b border-outline-variant/10 dark:border-slate-700/50 hover:bg-surface-container-low dark:hover:bg-slate-700/50 transition-colors text-left">
                           <div class="flex items-center gap-3">
                               <span class="material-symbols-outlined text-on-surface/60 dark:text-slate-400">support_agent</span>
@@ -1959,7 +1967,125 @@
         </div>
       </div> </div>
 
-    <div id="help-modal-overlay" class="fixed inset-0 z-[200] hidden items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md">
+    <div id="tour-modal-overlay" class="fixed inset-0 z-[200] hidden items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md transition-opacity">
+        <div class="bg-surface-container-lowest dark:bg-slate-900 rounded-[2.5rem] w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden border border-outline-variant/20 dark:border-slate-700 transform transition-all">
+            
+            <div class="flex justify-between items-center p-6 border-b border-outline-variant/10 dark:border-slate-700/50 bg-surface-container-low dark:bg-slate-800 shrink-0">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-indigo-500">explore</span>
+                    <h3 class="text-xl font-display font-extrabold text-on-surface dark:text-white" data-i18n="tour.title">Entdecke AvioSphere</h3>
+                </div>
+                <button onclick="document.getElementById('tour-modal-overlay').classList.add('hidden')" class="w-8 h-8 flex items-center justify-center bg-slate-200 dark:bg-slate-700 rounded-full text-on-surface/60 dark:text-slate-200 hover:text-primary dark:hover:text-white transition-colors">
+                    <span class="material-symbols-outlined text-sm font-bold">close</span>
+                </button>
+            </div>
+
+            <div class="p-6 md:p-8 overflow-y-auto custom-scrollbar flex-1 bg-surface-container-lowest dark:bg-slate-900">
+                
+                <div class="text-center mb-8">
+                    <h2 class="text-2xl font-black text-on-surface dark:text-white mb-2" data-i18n="tour.header">Deine Journey</h2>
+                    <p class="text-sm font-medium text-slate-500 dark:text-slate-400" data-i18n="tour.subheader">Klicke auf die Stationen, um alle Features deiner App zu entdecken.</p>
+                </div>
+
+                <div class="relative pt-2 pb-4 max-w-lg mx-auto">
+                    <div class="absolute left-[28px] top-[40px] bottom-0 w-0.5 bg-gradient-to-b from-primary/50 via-cyan-500/50 to-emerald-500/50 z-0"></div>
+
+                    <div class="group relative z-10 bg-surface-container-low dark:bg-slate-800/80 border border-outline-variant/20 dark:border-slate-700 rounded-2xl p-4 mb-4 transition-all hover:border-primary cursor-pointer overflow-hidden" onclick="toggleFeatureCard(this)">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 shrink-0 rounded-full bg-primary/10 dark:bg-primary/20 flex items-center justify-center transition-transform group-[.active]:scale-110">
+                                <span class="material-symbols-outlined text-primary text-[20px]">book</span>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-base font-bold text-on-surface dark:text-white" data-i18n="tour.step1.title">1. Flüge eintragen</h3>
+                            </div>
+                            <span class="material-symbols-outlined text-slate-400 transition-transform duration-300 transform group-[.active]:rotate-180">expand_more</span>
+                        </div>
+                        
+                        <div class="max-h-0 opacity-0 overflow-hidden transition-all duration-300 ease-in-out group-[.active]:max-h-[300px] group-[.active]:opacity-100 group-[.active]:mt-4">
+                            <div class="pl-14 pr-2 pb-2 text-sm text-slate-600 dark:text-slate-300">
+                                <p class="mb-2" data-i18n="tour.step1.desc">Such einfach nach Start- und Zielflughafen. Wir finden deinen Flug automatisch!</p>
+                                <ul class="list-disc pl-4 space-y-1 text-xs text-slate-500 dark:text-slate-400 marker:text-primary">
+                                    <li><strong data-i18n="tour.step1.b1_strong">Offline-Modus:</strong> <span data-i18n="tour.step1.b1_text">Trag Flüge auch über den Wolken ohne Internet ein.</span></li>
+                                    <li><strong data-i18n="tour.step1.b2_strong">Flughafen-Infos:</strong> <span data-i18n="tour.step1.b2_text">Klicke auf den Globus, um die Website des Flughafens zu öffnen.</span></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="group relative z-10 bg-surface-container-low dark:bg-slate-800/80 border border-outline-variant/20 dark:border-slate-700 rounded-2xl p-4 mb-4 transition-all hover:border-cyan-500 cursor-pointer overflow-hidden" onclick="toggleFeatureCard(this)">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 shrink-0 rounded-full bg-cyan-500/10 dark:bg-cyan-500/20 flex items-center justify-center transition-transform group-[.active]:scale-110">
+                                <span class="material-symbols-outlined text-cyan-500 dark:text-cyan-400 text-[20px]">schedule</span>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-base font-bold text-on-surface dark:text-white" data-i18n="tour.step2.title">2. Vor dem Abflug</h3>
+                            </div>
+                            <span class="material-symbols-outlined text-slate-400 transition-transform duration-300 transform group-[.active]:rotate-180">expand_more</span>
+                        </div>
+                        
+                        <div class="max-h-0 opacity-0 overflow-hidden transition-all duration-300 ease-in-out group-[.active]:max-h-[300px] group-[.active]:opacity-100 group-[.active]:mt-4">
+                            <div class="pl-14 pr-2 pb-2 text-sm text-slate-600 dark:text-slate-300">
+                                <p class="mb-2" data-i18n="tour.step2.desc">Deine App arbeitet im Hintergrund für dich, während du packst.</p>
+                                <ul class="list-disc pl-4 space-y-1 text-xs text-slate-500 dark:text-slate-400 marker:text-cyan-500">
+                                    <li><strong data-i18n="tour.step2.b1_strong">Smarter Countdown:</strong> <span data-i18n="tour.step2.b1_text">Zeigt dir genau an, wann es losgeht.</span></li>
+                                    <li><strong data-i18n="tour.step2.b2_strong">Auto-Gates:</strong> <span data-i18n="tour.step2.b2_text">Wir holen automatisch Terminal und Gate für dich, bevor du am Flughafen ankommst!</span></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="group relative z-10 bg-surface-container-low dark:bg-slate-800/80 border border-outline-variant/20 dark:border-slate-700 rounded-2xl p-4 mb-4 transition-all hover:border-amber-500 cursor-pointer overflow-hidden" onclick="toggleFeatureCard(this)">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 shrink-0 rounded-full bg-amber-500/10 dark:bg-amber-500/20 flex items-center justify-center transition-transform group-[.active]:scale-110">
+                                <span class="material-symbols-outlined text-amber-500 dark:text-amber-400 text-[20px]">radar</span>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-base font-bold text-on-surface dark:text-white" data-i18n="tour.step3.title">3. Am Flughafen (Live)</h3>
+                            </div>
+                            <span class="material-symbols-outlined text-slate-400 transition-transform duration-300 transform group-[.active]:rotate-180">expand_more</span>
+                        </div>
+                        
+                        <div class="max-h-0 opacity-0 overflow-hidden transition-all duration-300 ease-in-out group-[.active]:max-h-[300px] group-[.active]:opacity-100 group-[.active]:mt-4">
+                            <div class="pl-14 pr-2 pb-2 text-sm text-slate-600 dark:text-slate-300">
+                                <p class="mb-2" data-i18n="tour.step3.desc">Dein ultimativer Begleiter am Reisetag mit Echtzeit-Updates.</p>
+                                <ul class="list-disc pl-4 space-y-1 text-xs text-slate-500 dark:text-slate-400 marker:text-amber-500">
+                                    <li><strong data-i18n="tour.step3.b1_strong">Verspätungs-Alarm:</strong> <span data-i18n="tour.step3.b1_text">Verzögerungen blinken sofort rot auf.</span></li>
+                                    <li><strong data-i18n="tour.step3.b2_strong">Gepäckband:</strong> <span data-i18n="tour.step3.b2_text">Wir zeigen dir, wo dein Koffer ankommt.</span></li>
+                                    <li><strong data-i18n="tour.step3.b3_strong">Offline-Schild:</strong> <span data-i18n="tour.step3.b3_text">Das Widget puffert Daten, um deinen Akku und Datenvolumen zu schonen.</span></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="group relative z-10 bg-surface-container-low dark:bg-slate-800/80 border border-outline-variant/20 dark:border-slate-700 rounded-2xl p-4 transition-all hover:border-emerald-500 cursor-pointer overflow-hidden" onclick="toggleFeatureCard(this)">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 shrink-0 rounded-full bg-emerald-500/10 dark:bg-emerald-500/20 flex items-center justify-center transition-transform group-[.active]:scale-110">
+                                <span class="material-symbols-outlined text-emerald-500 dark:text-emerald-400 text-[20px]">verified</span>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-base font-bold text-on-surface dark:text-white" data-i18n="tour.step4.title">4. Archiv & Statistiken</h3>
+                            </div>
+                            <span class="material-symbols-outlined text-slate-400 transition-transform duration-300 transform group-[.active]:rotate-180">expand_more</span>
+                        </div>
+                        
+                        <div class="max-h-0 opacity-0 overflow-hidden transition-all duration-300 ease-in-out group-[.active]:max-h-[300px] group-[.active]:opacity-100 group-[.active]:mt-4">
+                            <div class="pl-14 pr-2 pb-2 text-sm text-slate-600 dark:text-slate-300">
+                                <p class="mb-2" data-i18n="tour.step4.desc">Willkommen am Ziel! Deine Daten sind bei uns sicher.</p>
+                                <ul class="list-disc pl-4 space-y-1 text-xs text-slate-500 dark:text-slate-400 marker:text-emerald-500">
+                                    <li><strong data-i18n="tour.step4.b1_strong">Touchdown-Wetter:</strong> <span data-i18n="tour.step4.b1_text">Wir archivieren das exakte Landewetter am Flughafen für dich.</span></li>
+                                    <li><strong data-i18n="tour.step4.b2_strong">Auto-Clean:</strong> <span data-i18n="tour.step4.b2_text">Alte Flüge räumen sich von selbst ins Archiv auf.</span></li>
+                                    <li><strong data-i18n="tour.step4.b3_strong">Dein Profil:</strong> <span data-i18n="tour.step4.b3_text">Verfolge deine CO2-Bilanz und entdecke deinen Rang.</span></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+      <div id="help-modal-overlay" class="fixed inset-0 z-[200] hidden items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md">
         <div class="bg-surface-container-lowest dark:bg-slate-900 rounded-[2.5rem] w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden border border-outline-variant/20 dark:border-slate-700">
             <div class="flex justify-between items-center p-6 border-b border-outline-variant/10 dark:border-slate-700/50 bg-surface-container-low dark:bg-slate-800">
                 <h3 class="text-xl font-display font-extrabold dark:text-white" data-i18n="help.title">Hilfe & FAQ</h3>

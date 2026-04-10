@@ -917,7 +917,8 @@
     "darkMode": "Dark Mode",
     "language": "Sprache",
     "changePassword": "Passwort ändern",
-    "logout": "Abmelden"
+    "logout": "Abmelden",
+    "appTour": "App-Tour & Features"
   },
 
   "leaderboard": {
@@ -1109,6 +1110,48 @@
   "weather": {
     "departure": "Abflug",
     "arrival": "Ankunft"
-  }
+  },
+
+"tour": {
+    "title": "Entdecke AvioSphere",
+    "header": "Deine Journey",
+    "subheader": "Klicke auf die Stationen, um alle Features deiner App zu entdecken.",
+    "step1": {
+        "title": "1. Flüge eintragen",
+        "desc": "Such einfach nach Start- und Zielflughafen. Wir finden deinen Flug automatisch!",
+        "b1_strong": "Offline-Modus:",
+        "b1_text": "Trag Flüge auch über den Wolken ohne Internet ein.",
+        "b2_strong": "Flughafen-Infos:",
+        "b2_text": "Klicke auf den Globus, um die Website des Flughafens zu öffnen."
+    },
+    "step2": {
+        "title": "2. Vor dem Abflug",
+        "desc": "Deine App arbeitet im Hintergrund für dich, während du packst.",
+        "b1_strong": "Smarter Countdown:",
+        "b1_text": "Zeigt dir genau an, wann es losgeht.",
+        "b2_strong": "Auto-Gates:",
+        "b2_text": "Wir holen automatisch Terminal und Gate für dich, bevor du am Flughafen ankommst!"
+    },
+    "step3": {
+        "title": "3. Am Flughafen (Live)",
+        "desc": "Dein ultimativer Begleiter am Reisetag mit Echtzeit-Updates.",
+        "b1_strong": "Verspätungs-Alarm:",
+        "b1_text": "Verzögerungen blinken sofort rot auf.",
+        "b2_strong": "Gepäckband:",
+        "b2_text": "Wir zeigen dir, wo dein Koffer ankommt.",
+        "b3_strong": "Offline-Schild:",
+        "b3_text": "Das Widget puffert Daten, um deinen Akku und Datenvolumen zu schonen."
+    },
+    "step4": {
+        "title": "4. Archiv & Statistiken",
+        "desc": "Willkommen am Ziel! Deine Daten sind bei uns sicher.",
+        "b1_strong": "Touchdown-Wetter:",
+        "b1_text": "Wir archivieren das exakte Landewetter am Flughafen für dich.",
+        "b2_strong": "Auto-Clean:",
+        "b2_text": "Alte Flüge räumen sich von selbst ins Archiv auf.",
+        "b3_strong": "Dein Profil:",
+        "b3_text": "Verfolge deine CO2-Bilanz und entdecke deinen Rang."
+    }
+}
 
 }

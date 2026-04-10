@@ -2731,3 +2731,15 @@ window.closeRankInfoModal = function() {
         modal.classList.remove('flex');
     }, 300);
 };
+
+
+// Ein winziges Script für den schönen Aufklapp-Effekt
+function toggleFeatureCard(element) {
+    // Option A: Andere Karten schließen (Akkordeon)
+    document.querySelectorAll('.group').forEach(card => {
+        if (card !== element) card.classList.remove('active');
+    });
+    
+    // Diese Karte umschalten
+    element.classList.toggle('active');
+}
