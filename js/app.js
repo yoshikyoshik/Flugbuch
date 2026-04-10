@@ -1010,17 +1010,17 @@ window.logFlight = async function () {
   } else {
     showMessage(getTranslation("toast.successTitle"), getTranslation("toast.flightSaved"), "success");
     resetForm();
-	
-	// ID in Supabase Metadaten speichern
-	supabaseClient.auth.updateUser({
-		data: { last_flight_id: newFlightId }
-	}).then(() => {
-		globalLastFlightId = newFlightId; 
-		console.log("Last Flight ID gespeichert:", newFlightId);
-	});
+    
+    // ID in Supabase Metadaten speichern
+    supabaseClient.auth.updateUser({
+        data: { last_flight_id: newFlightId }
+    }).then(() => {
+        globalLastFlightId = newFlightId; 
+        console.log("Last Flight ID gespeichert:", newFlightId);
+    });
 
     if (typeof closeAddFlightModal === 'function') closeAddFlightModal();
-    // 🚀 NEU: Smartes Routing nach dem Speichern!
+    
     const flightDateStr = newFlightForSupabase.date;
     const todayStr = new Date().toISOString().slice(0, 10);
     
@@ -1029,7 +1029,7 @@ window.logFlight = async function () {
     } else {
         showTab("timeline"); // In die Vergangenheit springen
     }
-	
+    
     renderFlights(null, newFlightId);
     initLiveWidget(); 
     initUpcomingWidget(); 
@@ -1037,7 +1037,55 @@ window.logFlight = async function () {
     getFlights().then(flights => {
         checkAndAskForReview(flights.length);
     });
+
+    // ================================================================
+    // 🚀 NEU: "FIRE & FORGET" INSTANT-SYNC (Der Lückenschließer für den Agenten!)
+    // ================================================================
+    setTimeout(async () => {
+        const tomorrowObj = new Date(Date.now() + 86400000);
+        const tomorrowStr = tomorrowObj.toISOString().split('T')[0];
+
+        // Wir feuern den Sync NUR ab, wenn der Flug heute oder morgen ist!
+        if (flightDateStr === todayStr || flightDateStr === tomorrowStr) {
+            console.log(`🚀 Starte lautlosen Instant-Sync für neuen Flug ${newFlightForSupabase.flightNumber}...`);
+            try {
+                const fetchUrl = `${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-live-flight?dep_iata=${newFlightForSupabase.departure}&flight_iata=${newFlightForSupabase.flightNumber}&date=${flightDateStr}`;
+                const syncRes = await fetch(fetchUrl);
+                
+                if (syncRes.ok) {
+                    const data = await syncRes.json();
+                    const updatePayload = {};
+
+                    // Die rettenden Timestamps für den Agenten eintragen!
+                    if (data.dep_time_ts) updatePayload.dep_time_ts = data.dep_time_ts;
+                    if (data.arr_time_ts) updatePayload.arr_time_ts = data.arr_time_ts;
+                    if (data.dep_estimated_ts) updatePayload.dep_estimated_ts = data.dep_estimated_ts;
+                    if (data.arr_estimated_ts) updatePayload.arr_estimated_ts = data.arr_estimated_ts;
+
+                    // Gates und Terminals sofort ins UI schieben!
+                    if (data.dep_terminal) updatePayload.dep_terminal = data.dep_terminal;
+                    if (data.dep_gate) updatePayload.dep_gate = data.dep_gate;
+                    if (data.arr_terminal) updatePayload.arr_terminal = data.arr_terminal;
+                    if (data.arr_gate) updatePayload.arr_gate = data.arr_gate;
+                    if (data.aircraft_registration) updatePayload.registration = data.aircraft_registration;
+
+                    if (Object.keys(updatePayload).length > 0) {
+                        await supabaseClient.from('flights').update(updatePayload).eq('flight_id', newFlightId);
+                        console.log(`✅ Instant-Sync erfolgreich! Flug ${newFlightForSupabase.flightNumber} hat sofort Gates/Timestamps erhalten.`);
+                        
+                        // Heimlich die Widgets aktualisieren, damit das neue Gate direkt aufploppt!
+                        if (flightDateStr === todayStr && typeof initLiveWidget === 'function') initLiveWidget();
+                        if (typeof initUpcomingWidget === 'function') initUpcomingWidget();
+                    }
+                }
+            } catch (err) {
+                console.warn("Instant-Sync übersprungen. (Agent übernimmt das später!)", err);
+            }
+        }
+    }, 1000); // 1 Sekunde Verzögerung, damit die UI flüssig bleibt!
+    // ================================================================
   }
+
   logButton.textContent = getTranslation("form.buttonLogFlight") || "Log Flight";
   logButton.disabled = true;
 };
