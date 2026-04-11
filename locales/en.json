@@ -1150,6 +1150,14 @@
         "b2_text": "Old flights automatically move to the archive.",
         "b3_strong": "Your Profile:",
         "b3_text": "Track your carbon footprint and discover your rank."
+    },
+    "step5": {
+        "title": "5. 3D Globe & Story",
+        "desc": "Experience your travels in a whole new way on an interactive 3D globe.",
+        "b1_strong": "Interactive:",
+        "b1_text": "Spin and zoom through your personal flight network.",
+        "b2_strong": "Story Mode:",
+        "b2_text": "Sit back and enjoy a cinematic replay of your journeys."
     }
 }
 

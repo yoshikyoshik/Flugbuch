@@ -1146,6 +1146,14 @@
         "b2_text": "Los vuelos antiguos se mueven automáticamente al archivo.",
         "b3_strong": "Tu Perfil:",
         "b3_text": "Haz un seguimiento de tu huella de carbono y descubre tu rango."
+    },
+    "step5": {
+        "title": "5. Globo 3D e Historia",
+        "desc": "Experimenta tus viajes de una manera completamente nueva en un globo 3D interactivo.",
+        "b1_strong": "Interactivo:",
+        "b1_text": "Gira y haz zoom en tu red personal de vuelos.",
+        "b2_strong": "Modo Historia:",
+        "b2_text": "Ponte cómodo y disfruta de una repetición cinematográfica de tus viajes."
     }
 }
 

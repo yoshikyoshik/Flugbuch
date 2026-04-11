@@ -1114,7 +1114,7 @@
 
 "tour": {
     "title": "Entdecke AvioSphere",
-    "header": "Deine Journey",
+    "header": "Deine Reise",
     "subheader": "Klicke auf die Stationen, um alle Features deiner App zu entdecken.",
     "step1": {
         "title": "1. Flüge eintragen",
@@ -1151,6 +1151,14 @@
         "b2_text": "Alte Flüge räumen sich von selbst ins Archiv auf.",
         "b3_strong": "Dein Profil:",
         "b3_text": "Verfolge deine CO2-Bilanz und entdecke deinen Rang."
+    },
+    "step5": {
+        "title": "5. 3D Globus & Story",
+        "desc": "Erlebe deine Reisen völlig neu auf einer interaktiven 3D-Weltkugel.",
+        "b1_strong": "Interaktiv:",
+        "b1_text": "Drehe und zoome durch dein persönliches Flugnetzwerk.",
+        "b2_strong": "Story-Modus:",
+        "b2_text": "Lehn dich zurück und genieße ein filmisches Replay deiner Reisen."
     }
 }
 
