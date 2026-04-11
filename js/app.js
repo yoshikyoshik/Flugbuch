@@ -5230,7 +5230,6 @@ window.renderCurrentLiveFlight = function() {
     window.currentLiveFlight = flight; 
 
     // Basis-Daten eintragen
-    // Basis-Daten eintragen (🚀 NEU: Interaktiv mit Website-Link & Globus-Icon)
     const depIata = flight.departure || "???";
     const arrIata = flight.arrival || "???";
 
@@ -5246,22 +5245,21 @@ window.renderCurrentLiveFlight = function() {
         `;
     };
 
-    // Wir nutzen innerHTML statt textContent, damit das Icon gerendert wird
     document.getElementById('live-dep-iata').innerHTML = makeInteractiveIata(depIata);
     document.getElementById('live-arr-iata').innerHTML = makeInteractiveIata(arrIata);
     document.getElementById('live-flight-number').textContent = flight.flightNumber || flight.flightLogNumber || "Unbekannt";
     
-    // 🚀 FIX 1: Unbekannte Airline übersetzen (mit Live-Update Support)
+    // Airline Update
     const airlineEl = document.getElementById('live-airline-name');
     if (flight.airline && flight.airline.trim() !== "") {
-        airlineEl.removeAttribute('data-i18n'); // Echter Airline-Name -> nicht übersetzen!
+        airlineEl.removeAttribute('data-i18n');
         airlineEl.textContent = flight.airline;
     } else {
-        airlineEl.setAttribute('data-i18n', 'live.unknownAirline'); // Markierung für den Sprachwechsler setzen!
+        airlineEl.setAttribute('data-i18n', 'live.unknownAirline');
         airlineEl.textContent = getTranslation("live.unknownAirline") || "Unbekannte Airline";
     }
 
-    // 🚀 FIX 2: Flugdauer formatieren (Universal 'h' und 'm')
+    // Flugdauer formatieren
     let durationStr = flight.time || "-";
     durationStr = durationStr.replace(/Std\.?/g, 'h').replace(/Min\.?/g, 'm').replace(/\s+/g, ' ');
     document.getElementById('live-flight-duration').textContent = durationStr;
@@ -5274,33 +5272,79 @@ window.renderCurrentLiveFlight = function() {
         logoEl.parentElement.classList.add('hidden');
     }
 
-    // Felder optisch resetten
-    // Felder mit Supabase-Daten füllen (🚀 SUPABASE TURBO!)
-    // Anstatt stur "-" zu zeigen, nutzen wir die Vorarbeit unseres Agenten!
-    document.getElementById('live-dep-sched').textContent = "--:--";
-    document.getElementById('live-dep-est').textContent = "--:--";
-    document.getElementById('live-arr-sched').textContent = "--:--";
-    document.getElementById('live-arr-est').textContent = "--:--";
+    // ================================================================
+    // 🚀 DER "STALE-WHILE-REVALIDATE" TURBO
+    // ================================================================
     
-    // Die Magie: Gates & Terminals sind in Millisekunden da!
+    // Hilfsfunktion: UNIX-Timestamp (Sekunden) in lokales HH:MM Format umwandeln
+    const formatTs = (ts) => {
+        if (!ts) return null;
+        const d = new Date(ts * 1000);
+        return d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0');
+    };
+
+    // 1. Zeiten SOFORT aus Supabase laden!
+    const depTimeStr = formatTs(flight.dep_time_ts) || "--:--";
+    const arrTimeStr = formatTs(flight.arr_time_ts) || "--:--";
+    const depEstStr = formatTs(flight.dep_estimated_ts) || depTimeStr;
+    const arrEstStr = formatTs(flight.arr_estimated_ts) || arrTimeStr;
+
+    document.getElementById('live-dep-sched').textContent = depTimeStr;
+    document.getElementById('live-arr-sched').textContent = arrTimeStr;
+    
+    const depEstEl = document.getElementById('live-dep-est');
+    const arrEstEl = document.getElementById('live-arr-est');
+    depEstEl.textContent = depEstStr;
+    arrEstEl.textContent = arrEstStr;
+
+    // Standard-Farben setzen
+    depEstEl.className = "font-black text-indigo-600 dark:text-indigo-400";
+    arrEstEl.className = "font-black text-indigo-600 dark:text-indigo-400";
+
+    // 🚨 Verspätung SOFORT blinken lassen, wenn sie schon in Supabase steht
+    if (flight.dep_estimated_ts && flight.dep_time_ts && flight.dep_estimated_ts > flight.dep_time_ts + 300) {
+        depEstEl.className = "font-black text-red-600 dark:text-red-500 animate-pulse";
+    }
+    if (flight.arr_estimated_ts && flight.arr_time_ts && flight.arr_estimated_ts > flight.arr_time_ts + 300) {
+        arrEstEl.className = "font-black text-red-600 dark:text-red-500 animate-pulse";
+    }
+
+    // 2. Gates & Terminals SOFORT anzeigen
     document.getElementById('live-dep-terminal').textContent = flight.dep_terminal || "-";
     document.getElementById('live-dep-gate').textContent = flight.dep_gate || "-";
     document.getElementById('live-arr-terminal').textContent = flight.arr_terminal || "-";
     document.getElementById('live-arr-gate').textContent = flight.arr_gate || "-";
     
-    // 🚀 FIX 3: Gepäckband optisch resetten (mit i18n Unterstützung)
     const baggageVal = document.getElementById('live-baggage-val');
     if (baggageVal) {
         baggageVal.setAttribute('data-i18n', 'live.baggageTBD');
         baggageVal.textContent = getTranslation("live.baggageTBD") || "Wird noch ermittelt...";
     }
 
-    // 🚀 FIX 4: Status Badge dynamisch für Hell/Dunkel machen!
-    document.getElementById('live-status-badge').innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-gray-500"></span> <span data-i18n="live.statusLoading">${getTranslation("live.statusLoading") || "LADE..."}</span>`;
-    // BUGHUNT FIX: Die Klassen für das graue "Laden..." Label unterstützen jetzt Hell und Dunkel
-    document.getElementById('live-status-badge').className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-surface-container dark:bg-slate-800 text-on-surface dark:text-slate-300 shadow-sm animate-pulse";
+    // 3. Status Badge SOFORT aus Supabase anzeigen (Kein "LADE..." mehr!)
+    const statusEl = document.getElementById('live-status-badge');
+    const status = flight.status || "scheduled";
     
-    // Navigation ein/ausblenden, wenn > 1 Flug
+    if (status === "active" || status === "en-route") {
+        statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-blue-900"></span> <span data-i18n="live.statusAir">${getTranslation("live.statusAir") || "IN DER LUFT"}</span>`;
+        statusEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-400 text-blue-950 shadow-sm animate-pulse";
+    } else if (status === "landed") {
+        statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-green-900"></span> <span data-i18n="live.statusLanded">${getTranslation("live.statusLanded") || "GELANDET"}</span>`;
+        statusEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-green-400 text-green-950 shadow-sm";
+    } else if (status === "cancelled") {
+        statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-red-900"></span> <span data-i18n="live.statusCancelled">${getTranslation("live.statusCancelled") || "STORNIERT"}</span>`;
+        statusEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-red-400 text-red-950 shadow-sm";
+    } else if (status === "archived") {
+        statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-slate-900"></span> <span data-i18n="live.statusArchived">${getTranslation("live.statusArchived") || "BEENDET"}</span>`;
+        statusEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-slate-300 text-slate-800 shadow-sm";
+    } else {
+        statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-yellow-900"></span> <span data-i18n="live.statusScheduled">${getTranslation("live.statusScheduled") || "GEPLANT"}</span>`;
+        statusEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-yellow-400 text-yellow-950 shadow-sm";
+    }
+
+    // ================================================================
+    
+    // Navigation ein/ausblenden
     const nav = document.getElementById('live-flight-nav');
     if (window.todaysLiveFlights.length > 1) {
         nav.classList.remove('hidden');
@@ -5311,29 +5355,32 @@ window.renderCurrentLiveFlight = function() {
         nav.classList.remove('flex');
     }
 
-    // 🚀 NEU: Klick-Event für die Live-Karte setzen!
+    // Klick-Event für die Live-Karte setzen
     const widgetContainer = document.getElementById('live-flight-widget');
     if (widgetContainer) {
         widgetContainer.onclick = function(e) {
-            // Verhindern, dass Klicks auf die Pfeil-Buttons die Ticket-Ansicht öffnen
             if (e.target.closest('button')) return;
-            
-            // Ticket-Ansicht öffnen und die heutigen Flüge als "Swipe-Scope" übergeben
             if (typeof viewFlightDetails === 'function') {
                 viewFlightDetails(flight.id || flight.flight_id, false, window.todaysLiveFlights);
             }
         };
-        // Macht den Mauszeiger zum klickbaren "Finger"
         widgetContainer.classList.add('cursor-pointer'); 
     }
 
-    // 🚀 NEU: Abschließen-Button standardmäßig verstecken, bis die API "Gelandet" meldet
+    // Abschließen-Button standardmäßig verstecken, es sei denn Status ist schon landed
     const finishBtn = document.getElementById('finish-flight-btn');
-    if (finishBtn) finishBtn.classList.add('hidden');
+    if (finishBtn) {
+        if (status === "landed" || status === "archived") {
+            finishBtn.classList.remove('hidden');
+        } else {
+            finishBtn.classList.add('hidden');
+        }
+    }
 
-    // API sofort anfeuern (aber nur, wenn Cooldown abgelaufen ist!)
+    // 🚀 API im Hintergrund lautlos anfeuern
     if (typeof refreshLiveFlightData === 'function') {
-        refreshLiveFlightData(false); // 🚀 NEU: false = Nutze den Cache-Schild
+        // false = Nutze Cache-Schild. Das Lade-Icon dreht sich kurz unauffällig oben rechts!
+        refreshLiveFlightData(false); 
     }
 };
 
