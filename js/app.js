@@ -5440,6 +5440,9 @@ window.refreshLiveFlightData = async function(force = true) { // 🚀 NEU: force
         const now = Date.now();
         const cooldownMinutes = 5;
 
+        // 🚀 NEU: Marker, ob wir wirklich die API gefragt haben
+        let didFetchFreshData = false;
+
         // Prüfen, ob wir OHNE Force abfragen UND gültige Daten im Cache haben
         if (!force && flight.lastApiData && flight.lastApiFetch && (now - flight.lastApiFetch < cooldownMinutes * 60 * 1000)) {
             const secondsLeft = Math.round((cooldownMinutes * 60 * 1000 - (now - flight.lastApiFetch)) / 1000);
@@ -5487,58 +5490,57 @@ window.refreshLiveFlightData = async function(force = true) { // 🚀 NEU: force
             // 🚀 Caching: Wir speichern die frisch geholten Daten direkt am Flug-Objekt ab!
             flight.lastApiData = data;
             flight.lastApiFetch = now;
+            didFetchFreshData = true; // <--- WICHTIG: Wir haben frisch geladen!
+        }
 
-            // ================================================================
-            // 🔄 🚀 BUGHUNT FIX: WRITE-BACK ZU SUPABASE!
-            // ================================================================
-            // Wenn wir ECHTE Live-Daten von der API geholt haben, speichern wir sie 
-            // sofort in Supabase, damit der Blitz-Start beim nächsten Mal stimmt!
-            if (!(!force && flight.lastApiData && flight.lastApiFetch && (now - flight.lastApiFetch < cooldownMinutes * 60 * 1000))) {
-                setTimeout(async () => {
-                    try {
-                        const flightIdToSync = window.currentLiveFlight.id || window.currentLiveFlight.flight_id;
-                        const syncPayload = {};
+        // ================================================================
+        // 🔄 🚀 BUGHUNT FIX: WRITE-BACK ZU SUPABASE!
+        // ================================================================
+        // Wenn wir ECHTE Live-Daten von der API geholt haben, speichern wir sie 
+        // sofort in Supabase, damit der Blitz-Start beim nächsten Mal stimmt!
+        if (didFetchFreshData) {
+            setTimeout(async () => {
+                try {
+                    const flightIdToSync = window.currentLiveFlight.id || window.currentLiveFlight.flight_id;
+                    const syncPayload = {};
 
-                        // Timestamps
-                        if (data.dep_time_ts) syncPayload.dep_time_ts = data.dep_time_ts;
-                        if (data.arr_time_ts) syncPayload.arr_time_ts = data.arr_time_ts;
-                        if (data.dep_estimated_ts) syncPayload.dep_estimated_ts = data.dep_estimated_ts;
-                        if (data.arr_estimated_ts) syncPayload.arr_estimated_ts = data.arr_estimated_ts;
+                    // Timestamps
+                    if (data.dep_time_ts) syncPayload.dep_time_ts = data.dep_time_ts;
+                    if (data.arr_time_ts) syncPayload.arr_time_ts = data.arr_time_ts;
+                    if (data.dep_estimated_ts) syncPayload.dep_estimated_ts = data.dep_estimated_ts;
+                    if (data.arr_estimated_ts) syncPayload.arr_estimated_ts = data.arr_estimated_ts;
 
-                        // Gates & Terminals
-                        if (data.dep_terminal) syncPayload.dep_terminal = data.dep_terminal;
-                        if (data.dep_gate) syncPayload.dep_gate = data.dep_gate;
-                        if (data.arr_terminal) syncPayload.arr_terminal = data.arr_terminal;
-                        if (data.arr_gate) syncPayload.arr_gate = data.arr_gate;
-                        
-                        // Status & Info
-                        // Wir erzwingen den Status-Sync, egal ob er direkt aus der API oder der Widget-Logik kommt
-                        const currentUIStatus = data.status || window.currentLiveFlight.status;
-                        if (currentUIStatus) {
-                            syncPayload.status = currentUIStatus;
-                        }
-                        if (data.aircraft_registration) syncPayload.registration = data.aircraft_registration;
-
-                        if (Object.keys(syncPayload).length > 0) {
-                            await supabaseClient.from('flights')
-                                .update(syncPayload)
-                                .eq('flight_id', flightIdToSync);
-                            
-                            // Wichtig: Wir updaten auch unser lokales Objekt im RAM, 
-                            // damit die UI nicht durcheinander kommt!
-                            Object.assign(window.currentLiveFlight, syncPayload);
-                            console.log("🔄 Supabase erfolgreich mit frischen Live-Daten (Gates/Verspätung) synchronisiert!");
-                        }
-                    } catch (syncErr) {
-                        console.warn("Konnte Supabase Cache nicht synchronisieren:", syncErr);
+                    // Gates & Terminals
+                    if (data.dep_terminal) syncPayload.dep_terminal = data.dep_terminal;
+                    if (data.dep_gate) syncPayload.dep_gate = data.dep_gate;
+                    if (data.arr_terminal) syncPayload.arr_terminal = data.arr_terminal;
+                    if (data.arr_gate) syncPayload.arr_gate = data.arr_gate;
+                    
+                    // Status & Info
+                    // Wir erzwingen den Status-Sync, egal ob er direkt aus der API oder der Widget-Logik kommt
+                    const currentUIStatus = data.status || window.currentLiveFlight.status;
+                    if (currentUIStatus) {
+                        syncPayload.status = currentUIStatus;
                     }
-                }, 500); // Eine halbe Sekunde warten, damit das UI Vorrang beim Rendern hat!
-            }
-            // ================================================================
+                    if (data.aircraft_registration) syncPayload.registration = data.aircraft_registration;
 
+                    if (Object.keys(syncPayload).length > 0) {
+                        await supabaseClient.from('flights')
+                            .update(syncPayload)
+                            .eq('flight_id', flightIdToSync);
+                        
+                        // Wichtig: Wir updaten auch unser lokales Objekt im RAM, 
+                        // damit die UI nicht durcheinander kommt!
+                        Object.assign(window.currentLiveFlight, syncPayload);
+                        console.log("🔄 Supabase erfolgreich mit frischen Live-Daten (Gates/Verspätung/Status) synchronisiert!");
+                    }
+                } catch (syncErr) {
+                    console.warn("Konnte Supabase Cache nicht synchronisieren:", syncErr);
+                }
+            }, 500); // Eine halbe Sekunde warten, damit das UI Vorrang beim Rendern hat!
         }
         // ================================================================
-        
+
         // --- 0. 🚀 NEU: AIRLINE UPDATE (Falls "Unbekannt") ---
         const isUnknownAirline = !window.currentLiveFlight.airline || window.currentLiveFlight.airline.toLowerCase().includes('unbekannt') || window.currentLiveFlight.airline.toLowerCase().includes('unknown');
         if (isUnknownAirline && (data.airline_iata || data.airline_icao)) {
