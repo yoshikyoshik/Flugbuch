@@ -5487,6 +5487,51 @@ window.refreshLiveFlightData = async function(force = true) { // 🚀 NEU: force
             // 🚀 Caching: Wir speichern die frisch geholten Daten direkt am Flug-Objekt ab!
             flight.lastApiData = data;
             flight.lastApiFetch = now;
+
+            // ================================================================
+            // 🔄 🚀 BUGHUNT FIX: WRITE-BACK ZU SUPABASE!
+            // ================================================================
+            // Wenn wir ECHTE Live-Daten von der API geholt haben, speichern wir sie 
+            // sofort in Supabase, damit der Blitz-Start beim nächsten Mal stimmt!
+            if (!(!force && flight.lastApiData && flight.lastApiFetch && (now - flight.lastApiFetch < cooldownMinutes * 60 * 1000))) {
+                setTimeout(async () => {
+                    try {
+                        const flightIdToSync = window.currentLiveFlight.id || window.currentLiveFlight.flight_id;
+                        const syncPayload = {};
+
+                        // Timestamps
+                        if (data.dep_time_ts) syncPayload.dep_time_ts = data.dep_time_ts;
+                        if (data.arr_time_ts) syncPayload.arr_time_ts = data.arr_time_ts;
+                        if (data.dep_estimated_ts) syncPayload.dep_estimated_ts = data.dep_estimated_ts;
+                        if (data.arr_estimated_ts) syncPayload.arr_estimated_ts = data.arr_estimated_ts;
+
+                        // Gates & Terminals
+                        if (data.dep_terminal) syncPayload.dep_terminal = data.dep_terminal;
+                        if (data.dep_gate) syncPayload.dep_gate = data.dep_gate;
+                        if (data.arr_terminal) syncPayload.arr_terminal = data.arr_terminal;
+                        if (data.arr_gate) syncPayload.arr_gate = data.arr_gate;
+                        
+                        // Status & Info
+                        if (data.status) syncPayload.status = data.status;
+                        if (data.aircraft_registration) syncPayload.registration = data.aircraft_registration;
+
+                        if (Object.keys(syncPayload).length > 0) {
+                            await supabaseClient.from('flights')
+                                .update(syncPayload)
+                                .eq('flight_id', flightIdToSync);
+                            
+                            // Wichtig: Wir updaten auch unser lokales Objekt im RAM, 
+                            // damit die UI nicht durcheinander kommt!
+                            Object.assign(window.currentLiveFlight, syncPayload);
+                            console.log("🔄 Supabase erfolgreich mit frischen Live-Daten (Gates/Verspätung) synchronisiert!");
+                        }
+                    } catch (syncErr) {
+                        console.warn("Konnte Supabase Cache nicht synchronisieren:", syncErr);
+                    }
+                }, 500); // Eine halbe Sekunde warten, damit das UI Vorrang beim Rendern hat!
+            }
+            // ================================================================
+
         }
         // ================================================================
         
