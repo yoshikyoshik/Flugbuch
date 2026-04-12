@@ -1,9 +1,7 @@
 // netlify/functions/touchdown-agent.js
 import { createClient } from '@supabase/supabase-js';
 
-export const config = {
-    schedule: "*/30 * * * *"
-};
+
 
 export default async function handler(request, context) {
     console.log("🤖 [AGENT START] Touchdown & Deep Sweep Agent erwacht...");

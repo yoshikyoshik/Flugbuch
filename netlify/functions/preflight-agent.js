@@ -1,9 +1,7 @@
 // netlify/functions/preflight-agent.js
 import { createClient } from '@supabase/supabase-js';
 
-export const config = {
-    schedule: "0 */2 * * *"
-};
+
 
 export default async function handler(request, context) {
     console.log("🛫 [AGENT START] Pre-Flight Prep Agent erwacht...");
