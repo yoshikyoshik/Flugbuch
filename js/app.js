@@ -5434,20 +5434,29 @@ window.refreshLiveFlightData = async function(force = true) { // 🚀 NEU: force
         let data; // Globale Variable für die Antwort
 
         // ================================================================
-        // 🛡️ 🚀 BUGHUNT FIX: DER 5-MINUTEN API SCHUTZSCHILD!
+        // 🛡️ 🚀 BUGHUNT FIX: DER GLOBALE SESSION-SCHUTZSCHILD!
         // ================================================================
         const flight = window.currentLiveFlight;
+        const flightIdToCache = flight.id || flight.flight_id; // Die eindeutige ID für unser Post-it
         const now = Date.now();
         const cooldownMinutes = 5;
+        const cacheKey = `live_api_cache_${flightIdToCache}`; // Name des Post-its im SessionStorage
 
         // 🚀 NEU: Marker, ob wir wirklich die API gefragt haben
         let didFetchFreshData = false;
+        
+        // 🚀 NEU: Vorhandenen Cache aus dem SessionStorage laden
+        let cachedData = null;
+        try {
+            const stored = sessionStorage.getItem(cacheKey);
+            if (stored) cachedData = JSON.parse(stored);
+        } catch(e) {}
 
-        // Prüfen, ob wir OHNE Force abfragen UND gültige Daten im Cache haben
-        if (!force && flight.lastApiData && flight.lastApiFetch && (now - flight.lastApiFetch < cooldownMinutes * 60 * 1000)) {
-            const secondsLeft = Math.round((cooldownMinutes * 60 * 1000 - (now - flight.lastApiFetch)) / 1000);
-            console.log(`⏳ API Schild aktiv: Nutze Live-Daten aus dem Cache für ${flightNum} (Nächster Request frühestens in ${secondsLeft}s)`);
-            data = flight.lastApiData; // Wir laden das fertige Paket aus dem Cache!
+        // Prüfen, ob wir OHNE Force abfragen UND gültige Daten im Session-Cache haben
+        if (!force && cachedData && cachedData.lastApiFetch && (now - cachedData.lastApiFetch < cooldownMinutes * 60 * 1000)) {
+            const secondsLeft = Math.round((cooldownMinutes * 60 * 1000 - (now - cachedData.lastApiFetch)) / 1000);
+            console.log(`⏳ Globaler API Schild aktiv: Nutze Session-Cache für ${flightNum} (Nächster Request in ${secondsLeft}s)`);
+            data = cachedData.lastApiData; // Wir laden das fertige Paket aus dem globalen Cache!
         } else {
             // Wenn der User den Button klickt ODER die 5 Minuten rum sind -> Echter Abruf!
             console.log(`✈️ Starte ECHTEN Live-Abruf für Flug ${flightNum} ab ${depIata} für den ${flightDate}...`);
@@ -5469,27 +5478,28 @@ window.refreshLiveFlightData = async function(force = true) { // 🚀 NEU: force
                 if (response.status === 404 && flightDate < todayStr) {
                     console.log("[Live Widget] Flug von gestern nicht mehr in API. Markiere künstlich als BEENDET.");
                     
-                    // Wir werfen keinen Fehler, sondern täuschen der App vor, der Flug sei erfolgreich gelandet!
                     data = {
                         status: "landed",
                         dep_iata: depIata,
                         flight_iata: flightNum,
-                        // Fake Timestamps in der Vergangenheit, damit die Touchdown-Logik weiter unten anspringt!
                         dep_actual_ts: Math.floor(Date.now() / 1000) - 7200,
                         arr_actual_ts: Math.floor(Date.now() / 1000) - 3600
                     };
                 } else {
-                    // Echter Fehler (z.B. für heutige Flüge)
                     throw new Error(errorData.error || "Flug nicht gefunden");
                 }
             } else {
-                // Normaler JSON Parse, da response ok ist
                 data = await response.json();
             }
 
-            // 🚀 Caching: Wir speichern die frisch geholten Daten direkt am Flug-Objekt ab!
-            flight.lastApiData = data;
-            flight.lastApiFetch = now;
+            // 🚀 Caching: Wir speichern die frisch geholten Daten global im SessionStorage!
+            try {
+                sessionStorage.setItem(cacheKey, JSON.stringify({
+                    lastApiData: data,
+                    lastApiFetch: now
+                }));
+            } catch(e) {}
+            
             didFetchFreshData = true; // <--- WICHTIG: Wir haben frisch geladen!
         }
 
