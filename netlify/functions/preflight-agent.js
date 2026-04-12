@@ -84,7 +84,10 @@ export default async function handler(request, context) {
             const liveArray = Array.isArray(liveData.data) ? liveData.data : [];
             
             // 🚀 BUGHUNT FIX: Auch hier flightNum nutzen!
-            const matchedFlight = liveArray.find(f => f.flight_date === flight.date || f.flight_iata === flightNum);
+            const matchedFlight = liveArray.find(f => 
+                (f.flight_iata === flightNum || f.flight_icao === flightNum) && 
+                f.flight_date === flight.date
+            );
 
             if (matchedFlight) {
                 const updatePayload = {};

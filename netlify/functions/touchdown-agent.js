@@ -85,7 +85,10 @@ export default async function handler(request, context) {
             const liveData = await liveRes.json();
             const liveArray = Array.isArray(liveData.data) ? liveData.data : [];
             
-            const matchedFlight = liveArray.find(f => f.flight_date === flight.date || f.flight_iata === flightNum);
+            const matchedFlight = liveArray.find(f => 
+                (f.flight_iata === flightNum || f.flight_icao === flightNum) && 
+                f.flight_date === flight.date
+            );
 
             if (matchedFlight && matchedFlight.status === 'landed') {
                 console.log(`✅ Touchdown für ${flightNum} bestätigt!`);

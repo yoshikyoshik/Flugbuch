@@ -5512,7 +5512,11 @@ window.refreshLiveFlightData = async function(force = true) { // 🚀 NEU: force
                         if (data.arr_gate) syncPayload.arr_gate = data.arr_gate;
                         
                         // Status & Info
-                        if (data.status) syncPayload.status = data.status;
+                        // Wir erzwingen den Status-Sync, egal ob er direkt aus der API oder der Widget-Logik kommt
+                        const currentUIStatus = data.status || window.currentLiveFlight.status;
+                        if (currentUIStatus) {
+                            syncPayload.status = currentUIStatus;
+                        }
                         if (data.aircraft_registration) syncPayload.registration = data.aircraft_registration;
 
                         if (Object.keys(syncPayload).length > 0) {
