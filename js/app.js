@@ -5886,8 +5886,11 @@ window.refreshLiveFlightData = async function(force = true) { // 🚀 NEU: force
         // ================================================================
 
         // 🚀 UX FIX: Hide-Button Container generieren (falls noch nicht da)
+        // 🚀 BUGHUNT FIX: Den Button NICHT für Standby-Flüge generieren!
+        const isStandby = errorMsg.includes("noch nicht aktiv");
         const widgetContainer = document.getElementById('live-flight-widget');
-        if (widgetContainer && !document.getElementById('live-hide-btn-container')) {
+        
+        if (widgetContainer && !document.getElementById('live-hide-btn-container') && !isStandby) {
             const hideBtnContainer = document.createElement('div');
             hideBtnContainer.id = 'live-hide-btn-container';
             hideBtnContainer.className = 'w-full flex justify-center mt-6 mb-3 px-4';
@@ -5966,6 +5969,13 @@ window.hideLiveWidget = function(event) {
 window.showGhostButton = function() {
     const hiddenList = JSON.parse(localStorage.getItem('hiddenLiveFlightsList') || '[]');
     
+    // 🚀 BUGHUNT FIX: Zähle NUR die ausgeblendeten Flüge, die HEUTE auch wirklich im Radar sind!
+    // (Ignoriert Datenmüll von alten, ausgeblendeten Flügen der letzten Tage)
+    const relevantHiddenCount = hiddenList.filter(h => 
+        window.originalTodaysLiveFlights && 
+        window.originalTodaysLiveFlights.some(f => (f.id || f.flight_id) === h.id)
+    ).length;
+    
     let ghostBtn = document.getElementById('restore-live-widget-btn');
     if (!ghostBtn) {
         ghostBtn = document.createElement('button');
@@ -5983,13 +5993,13 @@ window.showGhostButton = function() {
         }
     }
     
-    // 🚀 BUGHUNT FIX: Button nur anzeigen, wenn auch wirklich was versteckt wurde
-    if (hiddenList.length > 0) {
+    // 🚀 BUGHUNT FIX: Button nur anzeigen, wenn HEUTE wirklich etwas ausgeblendet wurde
+    if (relevantHiddenCount > 0) {
         ghostBtn.classList.remove('hidden');
         
         // 🌍 ÜBERSETZUNG: Text holen und {count} dynamisch ersetzen
         let btnText = (typeof getTranslation === 'function' ? getTranslation("live.restoreFlights") : null) || "{count} ausgeblendete Live-Flüge anzeigen";
-        btnText = btnText.replace("{count}", hiddenList.length);
+        btnText = btnText.replace("{count}", relevantHiddenCount);
         
         ghostBtn.innerHTML = `<span class="material-symbols-outlined text-[16px]">visibility</span> ${btnText}`;
     } else {
