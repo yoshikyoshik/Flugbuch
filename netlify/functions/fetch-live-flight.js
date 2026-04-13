@@ -196,8 +196,6 @@ exports.handler = async function(event, context) {
     }
 };
 
-*/
-
 exports.handler = async function(event, context) {
     // 🛡️ CORS-Header für native Smartphone-Apps und Browser
     const headers = {
@@ -314,6 +312,81 @@ exports.handler = async function(event, context) {
         } else {
             return { statusCode: 404, headers, body: JSON.stringify({ error: `Flug nicht gefunden.` }) };
         }
+
+    } catch (error) {
+        console.error(`[API CRASH] Server Fehler: ${error.message}`);
+        return { statusCode: 500, headers, body: JSON.stringify({ error: "Server-Crash: " + error.message }) };
+    }
+};
+*/
+
+// netlify/functions/fetch-live-flight.js
+
+exports.handler = async function(event, context) {
+    // 🛡️ CORS-Header für native Smartphone-Apps und Browser
+    const headers = {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers": "Content-Type",
+        "Content-Type": "application/json"
+    };
+
+    if (event.httpMethod === "OPTIONS") {
+        return { statusCode: 200, headers, body: "OK" };
+    }
+
+    const { dep_iata, flight_iata, date } = event.queryStringParameters;
+    console.log(`[API REQUEST] STRICT-LIVE Abfrage für ${flight_iata} ab ${dep_iata} für Datum: ${date || 'HEUTE'}`);
+
+    if (!dep_iata || !flight_iata) {
+        return { statusCode: 400, headers, body: JSON.stringify({ error: "Fehlende Parameter" }) };
+    }
+
+    const API_KEY = process.env.GOFLIGHTLABS_API_KEY; 
+    if (!API_KEY) return { statusCode: 500, headers, body: JSON.stringify({ error: "API Key fehlt" }) };
+
+    // ====================================================================
+    // NUR NOCH SCHRITT 1: Im LIVE-System suchen (Kein Fallback mehr hier!)
+    // ====================================================================
+    const liveUrl = `https://www.goflightlabs.com/advanced-flights-schedules?access_key=${API_KEY}&iataCode=${dep_iata}&type=departure&flight_iata=${flight_iata}`;
+
+    try {
+        const liveRes = await fetch(liveUrl);
+        const liveText = await liveRes.text(); 
+        
+        let liveData;
+        try {
+            liveData = JSON.parse(liveText);
+        } catch(e) {
+            console.error("[API ERROR] GoFlightLabs LIVE gab HTML statt JSON zurück (Server Down oder API Limit).");
+            return { statusCode: 500, headers, body: JSON.stringify({ error: "API Limit erreicht oder API Down" }) };
+        }
+
+        const liveArray = Array.isArray(liveData.data) ? liveData.data : (Array.isArray(liveData) ? liveData : []);
+
+        if (liveArray.length > 0) {
+            let matchedFlight = null;
+            if (date) {
+                matchedFlight = liveArray.find(flight => {
+                    const apiDate1 = flight.flight_date; 
+                    const apiDate2 = flight.dep_time ? flight.dep_time.substring(0, 10) : null;
+                    const apiDate3 = flight.dep_estimated ? flight.dep_estimated.substring(0, 10) : null;
+                    return apiDate1 === date || apiDate2 === date || apiDate3 === date;
+                });
+            } else {
+                matchedFlight = liveArray[0];
+            }
+
+            if (matchedFlight) {
+                console.log(`[API SUCCESS] Daten für ${flight_iata} im LIVE-System gefunden!`);
+                return { statusCode: 200, headers, body: JSON.stringify(matchedFlight) };
+            }
+        }
+
+        // ====================================================================
+        // SOFORTIGER ABBRUCH: Flug nicht im Live-Radar. 
+        // ====================================================================
+        console.log(`[API INFO] Flug ${flight_iata} für Datum ${date} nicht im Live-System gefunden. Sende 404...`);
+        return { statusCode: 404, headers, body: JSON.stringify({ error: `Flug für dieses Datum noch nicht aktiv.` }) };
 
     } catch (error) {
         console.error(`[API CRASH] Server Fehler: ${error.message}`);

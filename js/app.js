@@ -6444,20 +6444,47 @@ async function searchFlightByRoute() {
             <p class="font-bold">${getTranslation('flightSearch.loading') || 'Suche Flüge...'}</p>
         </div>`;
 
-    // --- API AUFRUF ENTSCHEIDEN ---
-    let fetchUrl = isFuture 
-        ? `${API_BASE_URL}/.netlify/functions/fetch-future-schedules?dep=${dep}&arr=${arr}&date=${targetDate}`
-        : `${API_BASE_URL}/.netlify/functions/fetch-route-schedules?dep=${dep}&arr=${arr}`;
-
+    // ================================================================
+    // 🚀 BUGHUNT FIX: DAS INTELLIGENTE API-FALLBACK-SYSTEM
+    // ================================================================
     try {
-        const response = await fetch(fetchUrl);
-        const flights = await response.json();
+        let flights = [];
+        let usedFutureApiFormat = isFuture; // Merker, welches JSON-Format wir am Ende parsen müssen
 
-        if(flights.length === 0) {
+        // 1. Primäre URL festlegen
+        const primaryUrl = isFuture 
+            ? `${API_BASE_URL}/.netlify/functions/fetch-future-schedules?dep=${dep}&arr=${arr}&date=${targetDate}`
+            : `${API_BASE_URL}/.netlify/functions/fetch-route-schedules?dep=${dep}&arr=${arr}`;
+
+        // 2. Erster API-Aufruf
+        const response = await fetch(primaryUrl);
+        flights = await response.json();
+
+        // 3. 🛡️ DAS SICHERHEITSNETZ (Fallback für späte heutige Flüge)
+        // Wenn es für HEUTE gesucht wurde UND die Live-API nichts (oder einen Fehler) zurückgibt:
+        if (!isFuture && (!Array.isArray(flights) || flights.length === 0)) {
+            console.log("⚠️ Live-API fand für HEUTE keine aktiven Flüge. Spanne Sicherheitsnetz auf (Future-API)...");
+            
+            const fallbackUrl = `${API_BASE_URL}/.netlify/functions/fetch-future-schedules?dep=${dep}&arr=${arr}&date=${targetDate}`;
+            const fallbackResponse = await fetch(fallbackUrl);
+            const fallbackData = await fallbackResponse.json();
+
+            // Wenn das Sicherheitsnetz greift und Flüge findet:
+            if (Array.isArray(fallbackData) && fallbackData.length > 0) {
+                console.log("✅ Fallback erfolgreich! Flug für heute Abend in der Future-API gefunden.");
+                flights = fallbackData;
+                usedFutureApiFormat = true; // Wichtig: Die Daten haben jetzt das Format der Future-API!
+            }
+        }
+        // ================================================================
+
+        // 4. Wenn selbst das Sicherheitsnetz leer ist:
+        if(!Array.isArray(flights) || flights.length === 0) {
             list.innerHTML = `<div class="text-center p-8 text-slate-500 font-bold">${getTranslation('flightSearch.noResults') || 'Keine direkten Flüge für dieses Datum gefunden.'}</div>`;
             return;
         }
 
+        // 5. Liste rendern
         list.innerHTML = flights.map(f => {
             const unknownText = getTranslation('flightSearch.unknown') || 'Unbekannt';
             const unknownAirlineText = getTranslation('flightSearch.unknownAirline') || 'Unbekannte Airline';
@@ -6467,15 +6494,17 @@ async function searchFlightByRoute() {
             let airlineName = unknownAirlineText;
             let timeStr = '--:--';
 
-            if (isFuture) {
-                // Datenstruktur für ZUKUNFT (laut deiner neuen JSON Struktur)
+            // 🚀 WICHTIG: Hier prüfen wir jetzt auf "usedFutureApiFormat", 
+            // denn auch "heutige" Flüge können jetzt durch den Fallback dieses Format haben!
+            if (usedFutureApiFormat) {
+                // Datenstruktur für ZUKUNFT (oder heuriger Fallback)
                 flightNum = f.carrier ? `${f.carrier.fs}${f.carrier.flightNumber}` : unknownText;
                 airlineName = f.carrier ? f.carrier.name : unknownAirlineText;
                 if (f.departureTime && f.departureTime.time24) {
                     timeStr = f.departureTime.time24;
                 }
             } else {
-                // Datenstruktur für HEUTE (flache GoFlightLabs Struktur)
+                // Datenstruktur für HEUTE (flache Live-Struktur)
                 flightNum = f.flight_iata || f.flight_number || unknownText;
                 airlineName = f.airline_iata || unknownAirlineText;
                 if (f.dep_time) {
