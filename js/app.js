@@ -5842,31 +5842,33 @@ window.refreshLiveFlightData = async function(force = true) { // 🚀 NEU: force
         const statusEl = document.getElementById('live-status-badge');
         const errorMsg = e.message;
 
-        // 🚀 BUGHUNT FIX: Wir cachen auch den STANDBY/OFFLINE Status für 5 Minuten!
-        try {
-            const flightIdToCache = window.currentLiveFlight.id || window.currentLiveFlight.flight_id;
-            sessionStorage.setItem(`live_api_cache_${flightIdToCache}`, JSON.stringify({
-                isError: true,
-                errorMessage: errorMsg,
-                lastApiFetch: Date.now()
-            }));
-        } catch(cacheErr) {}
-
         // 🕵️‍♂️ BUGHUNT FIX: Den Status intelligent analysieren!
         const flightIdToUpdate = window.currentLiveFlight.id || window.currentLiveFlight.flight_id;
         const hasLandedLock = localStorage.getItem(`weather_finalized_${flightIdToUpdate}`);
+        
+        // 🚀 NEU: Wir prüfen auch, was die Datenbank aktuell sagt!
+        const dbStatus = window.currentLiveFlight.status;
 
         // 🌍 Übersetzungen sicher abrufen
         const textArchived = (typeof getTranslation === 'function' ? getTranslation("live.statusArchived") : null) || "BEENDET";
         const textStandby = (typeof getTranslation === 'function' ? getTranslation("live.statusStandby") : null) || "STANDBY";
         const textOffline = (typeof getTranslation === 'function' ? getTranslation("live.statusOffline") : null) || "OFFLINE";
+        const textManualReview = "ZUR PRÜFUNG"; // Kannst du gerne noch in deine i18n JSON aufnehmen!
 
-        if (hasLandedLock) {
-            // Szenario 2: Flug ist final beendet
-            statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-slate-900"></span> <span data-i18n="live.statusArchived">${textArchived}</span>`;
-            statusEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-slate-300 text-slate-800 shadow-sm";
+        // 🚀 BUGHUNT FIX: Wenn die DB 'manual_review' sagt, oder wir das Schloss haben, oder er in DB 'landed' ist
+        if (hasLandedLock || dbStatus === "landed" || dbStatus === "manual_review") {
             
-            // 🚀 NEU: Button auch hier einblenden, damit der User aufräumen kann!
+            if (dbStatus === "manual_review") {
+                // Ein spezieller gelber/oranger Badge, damit du weißt: Hier hat der Agent aufgegeben!
+                statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-orange-900 animate-pulse"></span> <span data-i18n="live.statusReview">${textManualReview}</span>`;
+                statusEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-orange-200 text-orange-900 shadow-sm";
+            } else {
+                // Normales BEENDET Szenario
+                statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-slate-900"></span> <span data-i18n="live.statusArchived">${textArchived}</span>`;
+                statusEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-slate-300 text-slate-800 shadow-sm";
+            }
+            
+            // 🚀 NEU: Button IMMER einblenden, damit der User manuell aufräumen kann!
             const finishBtn = document.getElementById('finish-flight-btn');
             if (finishBtn) finishBtn.classList.remove('hidden');
         }
@@ -5876,7 +5878,7 @@ window.refreshLiveFlightData = async function(force = true) { // 🚀 NEU: force
             statusEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-purple-200 text-purple-900 shadow-sm";
         } 
         else {
-            // Szenario 3: Echter Fehler
+            // Szenario 3: Echter Fehler (OFFLINE)
             statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-gray-600"></span> <span data-i18n="live.statusOffline">${textOffline}</span>`;
             statusEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-gray-200 text-gray-700 shadow-sm";
         }
