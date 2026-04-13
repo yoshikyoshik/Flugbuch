@@ -978,6 +978,24 @@ window.logFlight = async function () {
     planespotters_photographer: currentPlanespottersData ? currentPlanespottersData.photographer : null,
   };
 
+  // ================================================================
+  // 🚀 BUGHUNT FIX: ZEITSTEMPEL AUS DER SUCHE ÜBERNEHMEN
+  // ================================================================
+  if (window.tempSelectedFlightData) {
+      if (window.tempSelectedFlightData.dep_time_ts) {
+          newFlightForSupabase.dep_time_ts = window.tempSelectedFlightData.dep_time_ts;
+      }
+      if (window.tempSelectedFlightData.arr_time_ts) {
+          newFlightForSupabase.arr_time_ts = window.tempSelectedFlightData.arr_time_ts;
+      }
+      
+      // Nach dem Übernehmen leeren wir den Speicher, 
+      // damit der nächste manuell eingetippte Flug nicht versehentlich diese Zeiten bekommt!
+      window.tempSelectedFlightData = null; 
+      console.log("⏱️ Zeitstempel aus Suche erfolgreich an Supabase-Payload angehängt!");
+  }
+  // ================================================================
+
   // --- OFFLINE CHECK & SAVE ---
   if (!navigator.onLine) {
       // 1. Warnung bzgl. Fotos (da Supabase Storage offline nicht geht)
@@ -1335,6 +1353,24 @@ async function updateFlight() {
     planespotters_url: currentPlanespottersData ? currentPlanespottersData.url : (currentlyEditingFlightData.planespotters_url || null),
     planespotters_photographer: currentPlanespottersData ? currentPlanespottersData.photographer : (currentlyEditingFlightData.planespotters_photographer || null),
   };
+
+  // ================================================================
+  // 🚀 BUGHUNT FIX: ZEITSTEMPEL AUS DER SUCHE ÜBERNEHMEN
+  // ================================================================
+  if (window.tempSelectedFlightData) {
+      if (window.tempSelectedFlightData.dep_time_ts) {
+          newFlightForSupabase.dep_time_ts = window.tempSelectedFlightData.dep_time_ts;
+      }
+      if (window.tempSelectedFlightData.arr_time_ts) {
+          newFlightForSupabase.arr_time_ts = window.tempSelectedFlightData.arr_time_ts;
+      }
+      
+      // Nach dem Übernehmen leeren wir den Speicher, 
+      // damit der nächste manuell eingetippte Flug nicht versehentlich diese Zeiten bekommt!
+      window.tempSelectedFlightData = null; 
+      console.log("⏱️ Zeitstempel aus Suche erfolgreich an Supabase-Payload angehängt!");
+  }
+  // ================================================================
 
   const { error } = await supabaseClient
     .from("flights")
@@ -6513,8 +6549,12 @@ async function searchFlightByRoute() {
                 }
             }
 
-            return `
-            <button onclick="selectFoundFlight('${flightNum}')" class="w-full text-left p-4 rounded-xl bg-surface-container-low dark:bg-slate-800 hover:bg-primary/10 transition border border-transparent hover:border-primary/30 flex justify-between items-center group">
+           // Wir machen das Objekt sicher für HTML-Attribute
+                const flightDataAttr = btoa(JSON.stringify(f)); 
+
+                return `
+                <button onclick="selectFoundFlight('${flightNum}', '${flightDataAttr}', ${usedFutureApiFormat})" 
+                class="w-full text-left p-4 rounded-xl bg-surface-container-low dark:bg-slate-800 hover:bg-primary/10 transition border border-transparent hover:border-primary/30 flex justify-between items-center group">
                 <div>
                     <div class="font-black text-lg text-on-surface dark:text-white group-hover:text-primary transition-colors">${flightNum}</div>
                     <div class="text-xs font-bold text-slate-500 dark:text-slate-400">${airlineName}</div>
@@ -6533,19 +6573,53 @@ async function searchFlightByRoute() {
     }
 }
 
-// Wird aufgerufen, wenn man auf einen Flug in der Liste tippt
-function selectFoundFlight(flightNumber) {
-    // Trägt die Flugnummer ins Formular ein (Passe die ID an dein Formular an!)
-    document.getElementById('flightNumber').value = flightNumber;
-    closeFlightSelector();
-    
-    // Optional: Direkt eine visuelle Bestätigung zeigen
-    showMessage(
-        getTranslation("flightSearch.successTitle") || "Gefunden!", 
-        `Flug ${flightNumber} ${getTranslation("flightSearch.successMsg") || "wurde eingetragen."}`, 
-        "success"
-    );
-}
+window.selectFoundFlight = function(flightNum, encodedData, isFutureFormat) {
+    try {
+        // 1. Flugnummer ins Formular eintragen
+        const flightInput = document.getElementById('flightNumber');
+        if (flightInput) flightInput.value = flightNum;
+
+        // 2. Daten auspacken und Zeiten extrahieren
+        let depTs = null;
+        let arrTs = null;
+
+        if (encodedData) {
+            const rawData = JSON.parse(atob(encodedData));
+            if (isFutureFormat) {
+                if (rawData.sortTime) {
+                    depTs = Math.floor(new Date(rawData.sortTime).getTime() / 1000);
+                }
+            } else {
+                depTs = rawData.dep_time_ts || null;
+                arrTs = rawData.arr_time_ts || null;
+            }
+        }
+
+        // 3. 🚀 WICHTIG: Zeiten global zwischenspeichern, damit deine Speicher-Funktion sie gleich abrufen kann!
+        window.tempSelectedFlightData = {
+            dep_time_ts: depTs,
+            arr_time_ts: arrTs
+        };
+        console.log("Temporäre Flugdaten für das spätere Speichern gemerkt:", window.tempSelectedFlightData);
+
+        // 4. Modal schließen (Deine alte Funktion)
+        if (typeof closeFlightSelector === 'function') {
+            closeFlightSelector();
+        } else if (typeof closeFlightSelectorModal === 'function') {
+            closeFlightSelectorModal(); // Fallback
+        }
+
+        // 5. Visuelle Bestätigung zeigen
+        showMessage(
+            (typeof getTranslation === 'function' ? getTranslation("flightSearch.successTitle") : null) || "Gefunden!", 
+            `Flug ${flightNum} wurde eingetragen.`, 
+            "success"
+        );
+
+    } catch (e) {
+        console.error("Fehler beim Übernehmen der Flugdaten:", e);
+    }
+};
 
 // Modal schließen
 function closeFlightSelector() {
