@@ -5456,6 +5456,13 @@ window.refreshLiveFlightData = async function(force = true) { // 🚀 NEU: force
         if (!force && cachedData && cachedData.lastApiFetch && (now - cachedData.lastApiFetch < cooldownMinutes * 60 * 1000)) {
             const secondsLeft = Math.round((cooldownMinutes * 60 * 1000 - (now - cachedData.lastApiFetch)) / 1000);
             console.log(`⏳ Globaler API Schild aktiv: Nutze Session-Cache für ${flightNum} (Nächster Request in ${secondsLeft}s)`);
+            
+            // 🚀 BUGHUNT FIX: War die letzte Abfrage ein STANDBY-Fehler?
+            if (cachedData.isError) {
+                // Wir werfen den gespeicherten Fehler erneut, um sofort in den STANDBY-Renderblock zu springen!
+                throw new Error(cachedData.errorMessage); 
+            }
+
             data = cachedData.lastApiData; // Wir laden das fertige Paket aus dem globalen Cache!
         } else {
             // Wenn der User den Button klickt ODER die 5 Minuten rum sind -> Echter Abruf!
@@ -5798,6 +5805,16 @@ window.refreshLiveFlightData = async function(force = true) { // 🚀 NEU: force
         console.error("Live API Fehler:", e);
         const statusEl = document.getElementById('live-status-badge');
         const errorMsg = e.message;
+
+        // 🚀 BUGHUNT FIX: Wir cachen auch den STANDBY/OFFLINE Status für 5 Minuten!
+        try {
+            const flightIdToCache = window.currentLiveFlight.id || window.currentLiveFlight.flight_id;
+            sessionStorage.setItem(`live_api_cache_${flightIdToCache}`, JSON.stringify({
+                isError: true,
+                errorMessage: errorMsg,
+                lastApiFetch: Date.now()
+            }));
+        } catch(cacheErr) {}
 
         // 🕵️‍♂️ BUGHUNT FIX: Den Status intelligent analysieren!
         const flightIdToUpdate = window.currentLiveFlight.id || window.currentLiveFlight.flight_id;
