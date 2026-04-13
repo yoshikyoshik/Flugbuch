@@ -6585,28 +6585,54 @@ window.selectFoundFlight = function(flightNum, encodedData, isFutureFormat) {
 
         if (encodedData) {
             const rawData = JSON.parse(atob(encodedData));
+            
             if (isFutureFormat) {
+                // =========================================================
+                // 🚀 BUGHUNT FIX: FUTURE API START- & LANDEZEIT BERECHNEN
+                // =========================================================
                 if (rawData.sortTime) {
-                    depTs = Math.floor(new Date(rawData.sortTime).getTime() / 1000);
+                    const depDate = new Date(rawData.sortTime);
+                    depTs = Math.floor(depDate.getTime() / 1000);
+
+                    // Ankunftszeit aus dem String ("16:15") extrahieren
+                    if (rawData.arrivalTime && rawData.arrivalTime.time24) {
+                        const arrParts = rawData.arrivalTime.time24.split(':');
+                        if (arrParts.length === 2) {
+                            // Wir erstellen ein Ankunfts-Datum basierend auf dem Abflug-Datum
+                            let arrDate = new Date(rawData.sortTime);
+                            arrDate.setHours(parseInt(arrParts[0], 10));
+                            arrDate.setMinutes(parseInt(arrParts[1], 10));
+                            arrDate.setSeconds(0);
+
+                            arrTs = Math.floor(arrDate.getTime() / 1000);
+
+                            // Geht der Flug über Mitternacht? (Lande-Uhrzeit < Start-Uhrzeit)
+                            if (arrTs < depTs) {
+                                arrTs += 86400; // Genau 1 Tag in Sekunden addieren!
+                            }
+                        }
+                    }
                 }
+                // =========================================================
             } else {
+                // Live-API Format (Hat die Timestamps glücklicherweise schon fertig)
                 depTs = rawData.dep_time_ts || null;
                 arrTs = rawData.arr_time_ts || null;
             }
         }
 
-        // 3. 🚀 WICHTIG: Zeiten global zwischenspeichern, damit deine Speicher-Funktion sie gleich abrufen kann!
+        // 3. Zeiten global zwischenspeichern für den Speichern-Button
         window.tempSelectedFlightData = {
             dep_time_ts: depTs,
             arr_time_ts: arrTs
         };
-        console.log("Temporäre Flugdaten für das spätere Speichern gemerkt:", window.tempSelectedFlightData);
+        console.log("⏱️ Temporäre Flugdaten für das spätere Speichern gemerkt:", window.tempSelectedFlightData);
 
-        // 4. Modal schließen (Deine alte Funktion)
+        // 4. Modal schließen
         if (typeof closeFlightSelector === 'function') {
             closeFlightSelector();
         } else if (typeof closeFlightSelectorModal === 'function') {
-            closeFlightSelectorModal(); // Fallback
+            closeFlightSelectorModal();
         }
 
         // 5. Visuelle Bestätigung zeigen
