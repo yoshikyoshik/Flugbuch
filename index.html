@@ -352,7 +352,7 @@
 
                     <button 
                         id="finish-flight-btn" 
-                        onclick="event.stopPropagation(); finishLiveFlight()" 
+                        onclick="event.stopPropagation(); window.prepareAndOpenFinishModal()" 
                         class="hidden w-full mb-4 bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition-all transform hover:scale-[1.02] flex items-center justify-center gap-2">
                         ✅ <span data-i18n="live.finishFlight">Flug im Logbuch archivieren</span>
                     </button>

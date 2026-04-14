@@ -5853,22 +5853,14 @@ window.refreshLiveFlightData = async function(force = true) { // 🚀 NEU: force
         const textArchived = (typeof getTranslation === 'function' ? getTranslation("live.statusArchived") : null) || "BEENDET";
         const textStandby = (typeof getTranslation === 'function' ? getTranslation("live.statusStandby") : null) || "STANDBY";
         const textOffline = (typeof getTranslation === 'function' ? getTranslation("live.statusOffline") : null) || "OFFLINE";
-        const textManualReview = "ZUR PRÜFUNG"; // Kannst du gerne noch in deine i18n JSON aufnehmen!
-
-        // 🚀 BUGHUNT FIX: Wenn die DB 'manual_review' sagt, oder wir das Schloss haben, oder er in DB 'landed' ist
+        // 🚀 BUGHUNT FIX: Egal ob 'landed', 'manual_review' oder Lock vorhanden -> Optisch ist es BEENDET!
         if (hasLandedLock || dbStatus === "landed" || dbStatus === "manual_review") {
             
-            if (dbStatus === "manual_review") {
-                // Ein spezieller gelber/oranger Badge, damit du weißt: Hier hat der Agent aufgegeben!
-                statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-orange-900 animate-pulse"></span> <span data-i18n="live.statusReview">${textManualReview}</span>`;
-                statusEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-orange-200 text-orange-900 shadow-sm";
-            } else {
-                // Normales BEENDET Szenario
-                statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-slate-900"></span> <span data-i18n="live.statusArchived">${textArchived}</span>`;
-                statusEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-slate-300 text-slate-800 shadow-sm";
-            }
+            // IMMER den normalen "BEENDET" (Archived) Status anzeigen
+            statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-slate-900"></span> <span data-i18n="live.statusArchived">${textArchived}</span>`;
+            statusEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-slate-300 text-slate-800 shadow-sm";
             
-            // 🚀 NEU: Button IMMER einblenden, damit der User manuell aufräumen kann!
+            // Button IMMER einblenden
             const finishBtn = document.getElementById('finish-flight-btn');
             if (finishBtn) finishBtn.classList.remove('hidden');
         }
@@ -5946,6 +5938,51 @@ window.refreshLiveFlightData = async function(force = true) { // 🚀 NEU: force
     } finally {
         const icon = document.getElementById('live-refresh-icon');
         if (icon) icon.classList.remove('animate-spin');
+    }
+};
+
+window.prepareAndOpenFinishModal = async function() {
+    const btn = document.getElementById('finish-flight-btn');
+    const originalText = btn.innerHTML;
+
+    try {
+        // 1. Button in einen Lade-Zustand versetzen
+        if (btn) {
+            btn.innerHTML = `<span class="material-symbols-outlined animate-spin text-[16px]">sync</span> <span data-i18n="live.fetchingWeather">Wetter laden...</span>`;
+            btn.disabled = true;
+            btn.classList.add('opacity-70', 'cursor-not-allowed');
+        }
+
+        // 2. Ziel-Flughafen auslesen
+        const arrIata = window.currentLiveFlight.arrival;
+        
+        if (arrIata) {
+            console.log(`🌤️ 'Flug beenden' geklickt. Hole finales Landewetter für ${arrIata}...`);
+            // Wir ziehen das frische Wetter
+            const freshWeather = await window.fetchAviationWeather(arrIata);
+            
+            if (freshWeather) {
+                // Wir speichern das frische Wetter direkt am aktuellen Flug
+                window.currentLiveFlight.weather_arr = freshWeather;
+                console.log("✅ Wetter erfolgreich nachgeladen!");
+            }
+        }
+    } catch (e) {
+        console.warn("Wetter konnte beim Klick auf 'Flug beenden' nicht geladen werden.", e);
+    } finally {
+        // 3. Button wiederherstellen
+        if (btn) {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            btn.classList.remove('opacity-70', 'cursor-not-allowed');
+        }
+
+        // 4. 🚀 DEINE ORIGINAL-FUNKTION AUFRUFEN!
+        if (typeof finishLiveFlight === 'function') {
+            finishLiveFlight(); 
+        } else if (typeof window.finishLiveFlight === 'function') {
+            window.finishLiveFlight();
+        }
     }
 };
 
