@@ -5434,6 +5434,26 @@ window.prevLiveFlight = function() {
     }
 };
 
+// Hilfsfunktion: Stellt sicher, dass der "Ausblenden"-Button existiert
+window.ensureHideButtonExists = function() {
+    const widgetContainer = document.getElementById('live-flight-widget');
+    if (widgetContainer && !document.getElementById('live-hide-btn-container')) {
+        const hideBtnContainer = document.createElement('div');
+        hideBtnContainer.id = 'live-hide-btn-container';
+        hideBtnContainer.className = 'w-full flex justify-center mt-6 mb-3 px-4';
+        
+        const hideText = (typeof getTranslation === 'function' ? getTranslation("live.hideFlight") : null) || "Live-Flug ausblenden";
+        
+        hideBtnContainer.innerHTML = `
+            <button onclick="event.stopPropagation(); window.hideLiveWidget()" class="flex items-center justify-center gap-2 px-6 py-2 bg-surface-container dark:bg-slate-800 text-on-surface/60 dark:text-slate-400 rounded-full text-xs font-bold transition-all hover:bg-surface-container-high dark:hover:bg-slate-700 border border-outline-variant/20 shadow-sm w-max" title="${hideText}" data-i18n-title="live.hideFlight">
+                <span class="material-symbols-outlined text-[16px]">visibility_off</span> 
+                <span data-i18n="live.hideFlight">${hideText}</span>
+            </button>
+        `;
+        widgetContainer.appendChild(hideBtnContainer);
+    }
+};
+
 window.refreshLiveFlightData = async function(force = true) { // 🚀 NEU: force Parameter
     if (!window.currentLiveFlight) return;
 
@@ -5723,9 +5743,14 @@ window.refreshLiveFlightData = async function(force = true) { // 🚀 NEU: force
             statusEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-yellow-400 text-yellow-950 shadow-sm";
         }
 
-        // 🚀 BUGHUNT FIX: Den Ausblenden-Button entfernen, da der Flug ONLINE ist
-        const existingHideBtnContainer = document.getElementById('live-hide-btn-container');
-        if (existingHideBtnContainer) existingHideBtnContainer.remove();
+        // 🚀 BUGHUNT FIX: Den Ausblenden-Button nur entfernen, wenn der Flug aktiv/geplant ist.
+        // Wenn er STORNIERT ist, soll der User ihn ausblenden können!
+        if (status === "cancelled") {
+            window.ensureHideButtonExists();
+        } else {
+            const existingHideBtnContainer = document.getElementById('live-hide-btn-container');
+            if (existingHideBtnContainer) existingHideBtnContainer.remove();
+        }
 
         // --- 4. 🚀 NEU: EXAKTE FLUGZEIT NACH LANDUNG SPEICHERN ---
         if (status === "landed" && data.dep_actual_ts && data.arr_actual_ts) {
@@ -5915,9 +5940,11 @@ window.refreshLiveFlightData = async function(force = true) { // 🚀 NEU: force
         // ENDE WETTER-CODE IM FALLBACK
         // ================================================================
 
-        // 🚀 UX FIX: Hide-Button Container generieren (falls noch nicht da)
-        // 🚀 BUGHUNT FIX: Den Button NICHT für Standby-Flüge generieren!
+        // 🚀 UX FIX: Hide-Button generieren, außer bei Standby
         const isStandby = errorMsg.includes("noch nicht aktiv");
+        if (!isStandby) {
+            window.ensureHideButtonExists();
+        }
         const widgetContainer = document.getElementById('live-flight-widget');
         
         if (widgetContainer && !document.getElementById('live-hide-btn-container') && !isStandby) {
