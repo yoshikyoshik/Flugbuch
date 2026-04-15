@@ -198,24 +198,8 @@ function switchPlan(plan) {
   const periodEl = document.getElementById("premium-price-period");
   
   if (amountEl) {
-    // === 🚀 DIE SCHLAUE GOOGLE-SCHUTZ-WEICHE ===
-    const isNativeApp = typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform();
-    
-    if (isNativeApp && !window.nativePricesLoaded) {
-        amountEl.textContent = "Lade Preis...";
-        
-        // ULTIMATIVER FALLBACK: Wenn nach 3 Sekunden immer noch keine Preise 
-        // von RevenueCat da sind, beenden wir das Laden automatisch!
-        setTimeout(() => {
-            if (!window.nativePricesLoaded && amountEl.textContent === "Lade Preis...") {
-                amountEl.textContent = "Im Store ansehen";
-            }
-        }, 3000);
-        
-    } else {
-        amountEl.textContent = config.amount;
-    }
-    // ===================================
+      // billing.js kümmert sich um Fallbacks, wir zeigen einfach nur an, was im config steht!
+      amountEl.textContent = config.amount || (plan === 'monthly' ? "2,99 €" : "17,99 €");
   }
 
   if (periodEl) {
