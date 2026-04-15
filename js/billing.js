@@ -48,19 +48,21 @@ async function initializeBilling(userId) {
                 } else {
                     // FEHLER 1: RevenueCat liefert null (z.B. Offerings nicht richtig konfiguriert)
                     console.warn("Offerings sind null. Testumgebung oder RevenueCat nicht konfiguriert?");
-                    pricingConfig.monthly.amount = "Im Store ansehen";
-                    pricingConfig.yearly.amount = "Im Store ansehen";
+                    // 🚨 GOOGLE COMPLIANCE: Hier MUSS ein Preis stehen, kein Text!
+                    pricingConfig.monthly.amount = "2,99 €";
+                    pricingConfig.yearly.amount = "17,99 €";
                 }
             } catch (pricingError) {
                 // FEHLER 2: Netzwerkfehler oder Google Play Dienste nicht erreichbar
                 console.warn("Konnte native Google-Preise nicht laden:", pricingError);
-                pricingConfig.monthly.amount = "Preis im Store prüfen";
-                pricingConfig.yearly.amount = "Preis im Store prüfen";
+                // 🚨 GOOGLE COMPLIANCE: Hier MUSS ein Preis stehen, kein Text!
+                pricingConfig.monthly.amount = "2,99 €";
+                pricingConfig.yearly.amount = "17,99 €";
             } finally {
                 // 2. EGAL was passiert ist: Wir schalten das UI frei!
                 window.nativePricesLoaded = true;
                 
-                // 3. UI aktualisieren (Das "Lade Preis..." verschwindet garantiert!)
+                // 3. UI aktualisieren
                 if (typeof switchPlan === 'function' && typeof selectedPlan !== 'undefined') {
                     switchPlan(selectedPlan);
                 }
