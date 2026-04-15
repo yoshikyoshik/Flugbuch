@@ -474,11 +474,3 @@ input:focus, select:focus, textarea:focus {
           filter: drop-shadow(0 0 8px currentColor); /* 🚀 DAS erzeugt das Leuchten! */
       }
       /* ==================================== */
-
-@media (max-height: 750px) {
-    #premium-modal .flex.items-end.justify-center {
-        align-items: flex-start !important;
-        padding-top: 5vh;
-        padding-bottom: 5vh;
-    }
-}

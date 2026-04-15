@@ -699,7 +699,8 @@
     "titleGlobe": "Descubre el Globo 3D 🌍",
     "titlePrint": "Crea tu Bitácora como PDF 📚",
     "tryAgain": "Por favor, inténtalo de nuevo.",
-    "yearly": "Anual"
+    "yearly": "Anual",
+    "legalDisclaimer": "La suscripción se renueva automáticamente. El pago se cargará a tu cuenta de Google Play. Puedes cancelar la suscripción en cualquier momento en los ajustes de la Play Store. Para más detalles, consulta nuestros <a href='https://aviosphere.com/terms_en' class='underline text-indigo-500'>Términos de servicio</a> y la <a href='https://aviosphere.com/privacy_en' class='underline text-indigo-500'>Política de privacidad</a>."
   },
   "print": {
     "coverSubtitle": "Una exportación de tus vuelos registrados",

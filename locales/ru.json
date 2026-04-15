@@ -699,7 +699,8 @@
     "titleGlobe": "Откройте для себя 3D-Глобус 🌍",
     "titlePrint": "Создайте свой Журнал в PDF 📚",
     "tryAgain": "Пожалуйста, попробуйте снова.",
-    "yearly": "Ежегодно"
+    "yearly": "Ежегодно",
+    "legalDisclaimer": "Подписка продлевается автоматически. Оплата будет списана с вашего аккаунта Google Play. Вы можете отменить подписку в любое время в настройках Play Store. Для получения подробной информации ознакомьтесь с нашими <a href='https://aviosphere.com/terms_en' class='underline text-indigo-500'>Условиями использования</a> и <a href='https://aviosphere.com/privacy_en' class='underline text-indigo-500'>Политикой конфиденциальности</a>."
   },
   "print": {
     "coverSubtitle": "Экспорт ваших добавленных рейсов",

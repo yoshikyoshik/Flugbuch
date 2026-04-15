@@ -703,7 +703,8 @@
     "titleGlobe": "Discover the 3D Globe 🌍",
     "titlePrint": "Create your Logbook as PDF 📚",
     "tryAgain": "Please try again.",
-    "yearly": "Yearly"
+    "yearly": "Yearly",
+    "legalDisclaimer": "The subscription renews automatically. Payment will be charged to your Google Play account. You can cancel your subscription at any time in your Play Store settings. For more details, please see our <a href='https://aviosphere.com/terms_en' class='underline text-indigo-500'>Terms of Service</a> and <a href='https://aviosphere.com/privacy_en' class='underline text-indigo-500'>Privacy Policy</a>."
   },
   "print": {
     "coverSubtitle": "An export of your logged flights",

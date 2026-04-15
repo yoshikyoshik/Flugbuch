@@ -704,7 +704,8 @@
     "titleGlobe": "Entdecke den 3D Globus 🌍",
     "titlePrint": "Erstelle dein Logbuch als PDF 📚",
     "tryAgain": "Bitte erneut versuchen.",
-    "yearly": "Jährlich"
+    "yearly": "Jährlich",
+    "legalDisclaimer": "Das Abonnement verlängert sich automatisch. Die Zahlung wird über dein Google Play-Konto abgewickelt. Du kannst das Abo jederzeit in deinen Play Store-Einstellungen kündigen. Weitere Details findest du in unseren <a href='https://aviosphere.com/terms' class='underline text-indigo-500'>Nutzungsbedingungen</a> und der <a href='https://aviosphere.com/privacy' class='underline text-indigo-500'>Datenschutzerklärung</a>."
   },
   "print": {
     "coverSubtitle": "Ein Export deiner geloggten Flüge",

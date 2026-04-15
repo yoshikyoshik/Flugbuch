@@ -547,6 +547,9 @@ function translatePage() {
       if (translation) {
         if (element.tagName === "INPUT" || element.tagName === "TEXTAREA") {
           element.placeholder = translation;
+        } else if (element.id === "google-compliance-text") {
+          // 🚀 BUGHUNT FIX: Erlaube HTML (Links) NUR für den Google-Disclaimer!
+          element.innerHTML = translation; 
         } else {
           element.textContent = translation;
         }

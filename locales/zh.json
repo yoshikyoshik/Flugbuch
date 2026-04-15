@@ -699,7 +699,8 @@
     "titleGlobe": "探索3D地球仪 🌍",
     "titlePrint": "将您的日志创建为PDF 📚",
     "tryAgain": "请重试。",
-    "yearly": "包年"
+    "yearly": "包年",
+    "legalDisclaimer": "订阅将自动续期。费用将通过您的 Google Play 帐户扣除。您随时可以在 Play 商店设置中取消订阅。有关更多详细信息，请参阅我们的<a href='https://aviosphere.com/terms_en' class='underline text-indigo-500'>服务条款</a>和<a href='https://aviosphere.com/privacy_en' class='underline text-indigo-500'>隐私政策</a>。"
   },
   "print": {
     "coverSubtitle": "您已记录航班的导出",
