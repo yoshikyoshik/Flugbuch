@@ -5455,20 +5455,17 @@ window.ensureHideButtonExists = function() {
     }
 };
 
-window.refreshLiveFlightData = async function(force = true) { // 🚀 NEU: force Parameter
+window.refreshLiveFlightData = async function(force = true) {
     if (!window.currentLiveFlight) return;
 
-    // 🚀 BUGHUNT FIX: Prüfen, ob der User diesen Flug heute schon ausgeblendet hat (Neue Array-Logik!)
     const hiddenListStr = localStorage.getItem('hiddenLiveFlightsList');
     if (hiddenListStr) {
         try {
             const hiddenList = JSON.parse(hiddenListStr);
             const flightId = window.currentLiveFlight.id || window.currentLiveFlight.flight_id;
-            
-            // Steht die ID dieses Fluges auf der Ignorier-Liste?
             if (hiddenList.some(h => h.id === flightId)) {
                 console.log("👁️ Dieser Live-Flug ist ausgeblendet. Breche Refresh ab.");
-                window.hideLiveWidget(); // Unsere neue smarte Funktion regelt den Rest (nächsten Flug zeigen)!
+                window.hideLiveWidget(); 
                 return; 
             }
         } catch(e) {}
@@ -5478,264 +5475,126 @@ window.refreshLiveFlightData = async function(force = true) { // 🚀 NEU: force
     if (icon) icon.classList.add('animate-spin');
 
     try {
-        // 🚀 BUGHUNT FIX: Alle möglichen Datenbank-Feldnamen für die Flugnummer abklappern!
-        const flightNum = window.currentLiveFlight.flight_iata 
-                    || window.currentLiveFlight.flight_number 
-                    || window.currentLiveFlight.flightNumber;
-        const depIata = window.currentLiveFlight.departure;
-        // 🚀 BUGHUNT FIX: Datum des aktuell geladenen Flugs auslesen!
+        const flightNum = window.currentLiveFlight.flight_iata || window.currentLiveFlight.flight_number || window.currentLiveFlight.flightNumber;
         const flightDate = window.currentLiveFlight.date; 
         
-        if (!flightNum || !depIata || !flightDate) throw new Error("Flugnummer, Abflugort oder Datum fehlt");
+        if (!flightNum || !flightDate) throw new Error("Flugnummer oder Datum fehlt");
 
-        let data; // Globale Variable für die Antwort
-
-        // ================================================================
-        // 🛡️ 🚀 BUGHUNT FIX: DER GLOBALE SESSION-SCHUTZSCHILD!
-        // ================================================================
+        let data; 
         const flight = window.currentLiveFlight;
-        const flightIdToCache = flight.id || flight.flight_id; // Die eindeutige ID für unser Post-it
+        const flightIdToCache = flight.id || flight.flight_id;
         const now = Date.now();
         const cooldownMinutes = 5;
-        const cacheKey = `live_api_cache_${flightIdToCache}`; // Name des Post-its im SessionStorage
-
-        // 🚀 NEU: Marker, ob wir wirklich die API gefragt haben
+        const cacheKey = `live_api_cache_${flightIdToCache}`;
         let didFetchFreshData = false;
-        
-        // 🚀 NEU: Vorhandenen Cache aus dem SessionStorage laden
         let cachedData = null;
+
         try {
             const stored = sessionStorage.getItem(cacheKey);
             if (stored) cachedData = JSON.parse(stored);
         } catch(e) {}
 
-        // Prüfen, ob wir OHNE Force abfragen UND gültige Daten im Session-Cache haben
         if (!force && cachedData && cachedData.lastApiFetch && (now - cachedData.lastApiFetch < cooldownMinutes * 60 * 1000)) {
-            const secondsLeft = Math.round((cooldownMinutes * 60 * 1000 - (now - cachedData.lastApiFetch)) / 1000);
-            console.log(`⏳ Globaler API Schild aktiv: Nutze Session-Cache für ${flightNum} (Nächster Request in ${secondsLeft}s)`);
-            
-            // 🚀 BUGHUNT FIX: War die letzte Abfrage ein STANDBY-Fehler?
-            if (cachedData.isError) {
-                // Wir werfen den gespeicherten Fehler erneut, um sofort in den STANDBY-Renderblock zu springen!
-                throw new Error(cachedData.errorMessage); 
-            }
-
-            data = cachedData.lastApiData; // Wir laden das fertige Paket aus dem globalen Cache!
+            if (cachedData.isError) throw new Error(cachedData.errorMessage); 
+            data = cachedData.lastApiData; 
         } else {
-            // Wenn der User den Button klickt ODER die 5 Minuten rum sind -> Echter Abruf!
-            console.log(`✈️ Starte ECHTEN Live-Abruf für Flug ${flightNum} ab ${depIata} für den ${flightDate}...`);
+            console.log(`✈️ Starte ECHTEN FlightAware Live-Abruf für Flug ${flightNum} am ${flightDate}...`);
             
-            const fetchUrl = `${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-live-flight?dep_iata=${depIata}&flight_iata=${flightNum}&date=${flightDate}`;
+            // 🚀 NEU: FLIGHTAWARE API ansteuern
+            const fetchUrl = `${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-fa-flight?flight_number=${flightNum}&date=${flightDate}`;
             const response = await fetch(fetchUrl);
             
-            if (!response.ok) {
-                let errorData = {};
-                try {
-                    errorData = await response.json();
-                } catch(e) {}
-
-                // 🚀 BUGHUNT FIX: Graceful Fallback für alte Flüge!
-                const todayDate = new Date();
-                const todayStr = todayDate.getFullYear() + '-' + String(todayDate.getMonth() + 1).padStart(2, '0') + '-' + String(todayDate.getDate()).padStart(2, '0');
-                
-                // Wenn der Flug nicht gefunden wurde (404) UND das Datum in der Vergangenheit liegt
-                if (response.status === 404 && flightDate < todayStr) {
-                    console.log("[Live Widget] Flug von gestern nicht mehr in API. Markiere künstlich als BEENDET.");
-                    
-                    data = {
-                        status: "landed",
-                        dep_iata: depIata,
-                        flight_iata: flightNum,
-                        dep_actual_ts: Math.floor(Date.now() / 1000) - 7200,
-                        arr_actual_ts: Math.floor(Date.now() / 1000) - 3600
-                    };
+            if (!response.ok) throw new Error("Flug nicht gefunden");
+            
+            const flightsArray = await response.json();
+            if (!flightsArray || flightsArray.length === 0) {
+                const todayStr = new Date().toISOString().split('T')[0];
+                if (flightDate < todayStr) {
+                    data = { status: "landed" }; // Vergangene Flüge künstlich als gelandet markieren
                 } else {
-                    throw new Error(errorData.error || "Flug nicht gefunden");
+                    throw new Error("Flug noch nicht aktiv");
                 }
             } else {
-                data = await response.json();
+                data = flightsArray[0];
             }
 
-            // 🚀 Caching: Wir speichern die frisch geholten Daten global im SessionStorage!
-            try {
-                sessionStorage.setItem(cacheKey, JSON.stringify({
-                    lastApiData: data,
-                    lastApiFetch: now
-                }));
-            } catch(e) {}
-            
-            didFetchFreshData = true; // <--- WICHTIG: Wir haben frisch geladen!
+            try { sessionStorage.setItem(cacheKey, JSON.stringify({ lastApiData: data, lastApiFetch: now })); } catch(e) {}
+            didFetchFreshData = true; 
         }
 
-        // ================================================================
-        // 🔄 🚀 BUGHUNT FIX: WRITE-BACK ZU SUPABASE!
-        // ================================================================
-        // Wenn wir ECHTE Live-Daten von der API geholt haben, speichern wir sie 
-        // sofort in Supabase, damit der Blitz-Start beim nächsten Mal stimmt!
-        if (didFetchFreshData) {
+        // 🔄 WRITE-BACK ZU SUPABASE
+        if (didFetchFreshData && data) {
             setTimeout(async () => {
                 try {
                     const flightIdToSync = window.currentLiveFlight.id || window.currentLiveFlight.flight_id;
                     const syncPayload = {};
 
-                    // Timestamps
                     if (data.dep_time_ts) syncPayload.dep_time_ts = data.dep_time_ts;
                     if (data.arr_time_ts) syncPayload.arr_time_ts = data.arr_time_ts;
-                    if (data.dep_estimated_ts) syncPayload.dep_estimated_ts = data.dep_estimated_ts;
-                    if (data.arr_estimated_ts) syncPayload.arr_estimated_ts = data.arr_estimated_ts;
-
-                    // Gates & Terminals
                     if (data.dep_terminal) syncPayload.dep_terminal = data.dep_terminal;
                     if (data.dep_gate) syncPayload.dep_gate = data.dep_gate;
                     if (data.arr_terminal) syncPayload.arr_terminal = data.arr_terminal;
                     if (data.arr_gate) syncPayload.arr_gate = data.arr_gate;
-                    
-                    // Status & Info
-                    // Wir erzwingen den Status-Sync, egal ob er direkt aus der API oder der Widget-Logik kommt
-                    const currentUIStatus = data.status || window.currentLiveFlight.status;
-                    if (currentUIStatus) {
-                        syncPayload.status = currentUIStatus;
-                    }
-                    if (data.aircraft_registration) syncPayload.registration = data.aircraft_registration;
+                    if (data.status) syncPayload.status = data.status;
+                    if (data.registration) syncPayload.registration = data.registration;
 
                     if (Object.keys(syncPayload).length > 0) {
-                        await supabaseClient.from('flights')
-                            .update(syncPayload)
-                            .eq('flight_id', flightIdToSync);
-                        
-                        // Wichtig: Wir updaten auch unser lokales Objekt im RAM, 
-                        // damit die UI nicht durcheinander kommt!
+                        await supabaseClient.from('flights').update(syncPayload).eq('flight_id', flightIdToSync);
                         Object.assign(window.currentLiveFlight, syncPayload);
-                        console.log("🔄 Supabase erfolgreich mit frischen Live-Daten (Gates/Verspätung/Status) synchronisiert!");
                     }
-                } catch (syncErr) {
-                    console.warn("Konnte Supabase Cache nicht synchronisieren:", syncErr);
-                }
-            }, 500); // Eine halbe Sekunde warten, damit das UI Vorrang beim Rendern hat!
+                } catch (syncErr) {}
+            }, 500); 
         }
-        // ================================================================
 
-        // --- 0. 🚀 NEU: AIRLINE UPDATE (Falls "Unbekannt") ---
-        const isUnknownAirline = !window.currentLiveFlight.airline || window.currentLiveFlight.airline.toLowerCase().includes('unbekannt') || window.currentLiveFlight.airline.toLowerCase().includes('unknown');
-        if (isUnknownAirline && (data.airline_iata || data.airline_icao)) {
-             try {
-                const codeToSearch = data.airline_iata || data.airline_icao;
-                const airlineUrl = `${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-airline-details?iata_code=${codeToSearch}`;
-                const airlineRes = await fetch(airlineUrl);
-                if (airlineRes.ok) {
-                    const airlineJson = await airlineRes.json();
-                    if (airlineJson && airlineJson.data && airlineJson.data.length > 0) {
-                        const ad = airlineJson.data[0];
-                        const newName = ad.name || codeToSearch;
-                        
-                        // UI Update
-                        const airEl = document.getElementById('live-airline-name');
-                        if (airEl) {
-                            airEl.removeAttribute('data-i18n');
-                            airEl.textContent = newName;
-                        }
-                        
-                        // Logo Update
-                        const newLogo = ad.logo_url || ad.brandmark_url || ad.tail_logo_url;
-                        if (newLogo) {
-                            const logoEl = document.getElementById('live-airline-logo');
-                            if (logoEl) {
-                                logoEl.src = newLogo;
-                                logoEl.parentElement.classList.remove('hidden');
-                            }
-                            window.currentLiveFlight.airline_logo = newLogo;
-                        }
-                        
-                        // DB lautlos im Hintergrund updaten
-                        const flightIdToUpdate = window.currentLiveFlight.id || window.currentLiveFlight.flight_id;
-                        supabaseClient.from('flights')
-                            .update({ airline: newName, airline_logo: newLogo })
-                            .eq('flight_id', flightIdToUpdate)
-                            .then();
-                            
-                        window.currentLiveFlight.airline = newName;
-                    }
-                }
-            } catch(e) {
-                console.warn("Konnte Airline für Live-Flight nicht auflösen", e);
-            }
-        }
-        
-        // --- 1. ZEITEN UPDATEN ---
-        const extractTime = (apiStr) => {
-            if (!apiStr) return null;
-            const match = apiStr.match(/\b(\d{2}:\d{2})\b/);
-            return match ? match[1] : null;
+        // --- UI UPDATES ---
+        const formatTime = (isoStr) => {
+            if (!isoStr) return null;
+            const d = new Date(isoStr);
+            return d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0');
         };
 
-        const depSched = extractTime(data.dep_time);
-        const depEst = extractTime(data.dep_estimated || data.dep_actual);
-        const arrSched = extractTime(data.arr_time);
-        const arrEst = extractTime(data.arr_estimated || data.arr_actual);
+        const timeStrDep = formatTime(data.dep_time_iso) || "--:--";
+        const timeStrArr = formatTime(data.arr_time_iso) || "--:--";
 
-        if (depSched) document.getElementById('live-dep-sched').textContent = depSched;
-        if (arrSched) document.getElementById('live-arr-sched').textContent = arrSched;
-
+        document.getElementById('live-dep-sched').textContent = timeStrDep;
+        document.getElementById('live-arr-sched').textContent = timeStrArr;
+        
         const depEstEl = document.getElementById('live-dep-est');
         const arrEstEl = document.getElementById('live-arr-est');
-
-        depEstEl.textContent = depEst || depSched || "--:--";
-        arrEstEl.textContent = arrEst || arrSched || "--:--";
-
-        // 🚀 UPGRADE 1: Verspätungen rot markieren!
-        // Zuerst Standardfarben (Indigo) setzen, falls es ein Refresh ist
+        depEstEl.textContent = timeStrDep;
+        arrEstEl.textContent = timeStrArr;
         depEstEl.className = "font-black text-indigo-600 dark:text-indigo-400";
         arrEstEl.className = "font-black text-indigo-600 dark:text-indigo-400";
 
-        // Wenn die API ein Delay von > 5 Min meldet ODER die Timestamp-Differenz > 300 Sek (5 Min) ist
-        if ((data.dep_delayed && data.dep_delayed > 5) || (data.dep_estimated_ts > data.dep_time_ts + 300)) {
-            depEstEl.className = "font-black text-red-600 dark:text-red-500 animate-pulse";
-        }
-        if ((data.arr_delayed && data.arr_delayed > 5) || (data.arr_estimated_ts > data.arr_time_ts + 300)) {
-            arrEstEl.className = "font-black text-red-600 dark:text-red-500 animate-pulse";
-        }
-
-        // 🚀 UPGRADE 2: Exakte Flugdauer aus der API nutzen (überschreibt die geschätzte Zeit)
-        if (data.duration && !isNaN(data.duration)) {
-            const h = Math.floor(data.duration / 60);
-            const m = data.duration % 60;
-            document.getElementById('live-flight-duration').textContent = `${h}h ${m}m`;
-        }
-
-        // --- 2. GATES & TERMINALS & GEPÄCK ---
+        // Gates & Terminals
         document.getElementById('live-dep-terminal').textContent = data.dep_terminal || "-";
         document.getElementById('live-dep-gate').textContent = data.dep_gate || "-";
         document.getElementById('live-arr-terminal').textContent = data.arr_terminal || "-";
         document.getElementById('live-arr-gate').textContent = data.arr_gate || "-";
         
-        // 🚀 FIX 3 (Fortsetzung): Gepäckband mit i18n Unterstützung updaten
         const baggageVal = document.getElementById('live-baggage-val');
         if (baggageVal) {
-            if(data.arr_baggage) {
-                baggageVal.removeAttribute('data-i18n'); // Attribut entfernen, damit das echte Gate nicht überschrieben wird
-                baggageVal.textContent = data.arr_baggage;
+            if(data.baggage_claim) {
+                baggageVal.removeAttribute('data-i18n'); 
+                baggageVal.textContent = data.baggage_claim;
             } else {
                 baggageVal.setAttribute('data-i18n', 'live.baggageTBD');
                 baggageVal.textContent = getTranslation("live.baggageTBD") || "Wird noch ermittelt...";
             }
         }
 
-        // --- 3. STATUS BADGE ---
+        // Status Badge
         const statusEl = document.getElementById('live-status-badge');
         const status = data.status || "scheduled";
         
-        // 🚀 FIX 4 (Fortsetzung): Status Badge mit eingefügten <span> für die Live-Übersetzung!
         if (status === "active" || status === "en-route") {
             statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-blue-900"></span> <span data-i18n="live.statusAir">${getTranslation("live.statusAir") || "IN DER LUFT"}</span>`;
             statusEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-400 text-blue-950 shadow-sm animate-pulse";
         } else if (status === "landed") {
             statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-green-900"></span> <span data-i18n="live.statusLanded">${getTranslation("live.statusLanded") || "GELANDET"}</span>`;
             statusEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-green-400 text-green-950 shadow-sm";
-            
-            // 🚀 NEU: Button einblenden, da Flug gelandet ist!
             const finishBtn = document.getElementById('finish-flight-btn');
             if (finishBtn) finishBtn.classList.remove('hidden');
-            
         } else if (status === "cancelled") {
             statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-red-900"></span> <span data-i18n="live.statusCancelled">${getTranslation("live.statusCancelled") || "STORNIERT"}</span>`;
             statusEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-red-400 text-red-950 shadow-sm";
@@ -5744,8 +5603,6 @@ window.refreshLiveFlightData = async function(force = true) { // 🚀 NEU: force
             statusEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-yellow-400 text-yellow-950 shadow-sm";
         }
 
-        // 🚀 BUGHUNT FIX: Den Ausblenden-Button nur entfernen, wenn der Flug aktiv/geplant ist.
-        // Wenn er STORNIERT ist, soll der User ihn ausblenden können!
         if (status === "cancelled") {
             window.ensureHideButtonExists();
         } else {
@@ -5753,215 +5610,64 @@ window.refreshLiveFlightData = async function(force = true) { // 🚀 NEU: force
             if (existingHideBtnContainer) existingHideBtnContainer.remove();
         }
 
-        // --- 4. 🚀 NEU: EXAKTE FLUGZEIT NACH LANDUNG SPEICHERN ---
-        if (status === "landed" && data.dep_actual_ts && data.arr_actual_ts) {
-            const diffSeconds = data.arr_actual_ts - data.dep_actual_ts;
-            
-            if (diffSeconds > 0) {
-                // ... (Hier steht dein bisheriger Code für die exakte Flugzeit) ...
-            }
-
-            // ==========================================================
-            // 🌤️ NEU: DER "TOUCHDOWN-SYNC" FÜR WETTER & REG!
-            // ==========================================================
+        // Touchdown-Sync (Wetter) bei Landung
+        if (status === "landed") {
             const flightIdToUpdate = window.currentLiveFlight.id || window.currentLiveFlight.flight_id;
             const weatherLockKey = `weather_finalized_${flightIdToUpdate}`;
-
-            // Wir prüfen im LocalStorage, ob wir für diesen Flug schon das finale Wetter gezogen haben.
             if (!localStorage.getItem(weatherLockKey)) {
-                console.log(`🛬 Touchdown erkannt! Ziehe punktgenaues Final-Wetter für Flug ${flightNum}...`);
-                
-                // Wir holen das Wetter im Hintergrund (ohne das UI zu blockieren)
                 setTimeout(async () => {
                     try {
                         const finalDepWeather = await window.fetchAviationWeather(window.currentLiveFlight.departure);
                         const finalArrWeather = await window.fetchAviationWeather(window.currentLiveFlight.arrival);
-
                         if (finalDepWeather || finalArrWeather) {
-                            
-                            // 1. Das sichere Update-Paket schnüren (nur Wetter)
-                            const updatePayload = { 
-                                weather_dep: finalDepWeather || window.currentLiveFlight.weather_dep, 
-                                weather_arr: finalArrWeather || window.currentLiveFlight.weather_arr 
-                            };
-
-                            // 2. 🚀 BUGHUNT FIX: REG & Aircraft Type nur updaten, wenn die API sie auch WIRKLICH liefert!
-                            // Wenn nicht, wird das Feld hier nicht hinzugefügt und deine manuellen Einträge in der DB bleiben unberührt.
-                            if (data.aircraft_registration && data.aircraft_registration.trim() !== "") {
-                                updatePayload.registration = data.aircraft_registration;
-                                console.log(`✈️ Finale REG erkannt: ${data.aircraft_registration}`);
-                            }
-                            if (data.aircraft_icao && data.aircraft_icao.trim() !== "") {
-                                updatePayload.aircraft_type = data.aircraft_icao;
-                            }
-
-                            // 3. Ab in die Datenbank damit (mit strenger Fehlerprüfung!)
-                            const { error: sbError } = await supabaseClient.from('flights')
-                                .update(updatePayload)
-                                .eq('flight_id', flightIdToUpdate);
-                            
-                            if (sbError) {
-                                console.error("❌ Supabase hat das Touchdown-Update abgelehnt:", sbError.message);
-                                // Wir verriegeln das Schloss NICHT! 
-                                // So probiert die App es beim nächsten Öffnen nochmal, bis der Fehler behoben ist.
-                            } else {
-                                // 4. Erst WENN es wirklich geklappt hat, verriegeln wir das Schloss!
-                                localStorage.setItem(weatherLockKey, "true");
-                                console.log("✅ Finales Touchdown-Wetter (und ggf. REG) erfolgreich für die Ewigkeit archiviert!");
-                            }                        }
-                    } catch(err) {
-                        console.warn("Konnte Touchdown-Wetter nicht archivieren:", err);
-                    }
-                }, 1000); // Kleine Pause, damit die API durchatmen kann
+                            const updatePayload = { weather_dep: finalDepWeather, weather_arr: finalArrWeather };
+                            const { error: sbError } = await supabaseClient.from('flights').update(updatePayload).eq('flight_id', flightIdToUpdate);
+                            if (!sbError) localStorage.setItem(weatherLockKey, "true");
+                        }
+                    } catch(err) {}
+                }, 1000);
             }
-            // ==========================================================
         }
 
-        // ================================================================
-        // 🌤️ SCHRITT 2: HIER KOMMT DER NEUE WETTER-CODE HIN!
-        // ================================================================
+        // Wetter ins UI laden
         try {
-            // 1. Wetterdaten abrufen
             const depWeather = await window.fetchAviationWeather(window.currentLiveFlight.departure);
             const arrWeather = await window.fetchAviationWeather(window.currentLiveFlight.arrival);
-            
-            // 2. HTML generieren mit Übersetzungen
-            const depTitle = getTranslation("weather.departure") || "Abflug";
-            const arrTitle = getTranslation("weather.arrival") || "Ankunft";
-            const depHtml = window.buildWeatherWidgetHtml(depWeather, depTitle);
-            const arrHtml = window.buildWeatherWidgetHtml(arrWeather, arrTitle);
+            const depHtml = window.buildWeatherWidgetHtml(depWeather, getTranslation("weather.departure") || "Abflug");
+            const arrHtml = window.buildWeatherWidgetHtml(arrWeather, getTranslation("weather.arrival") || "Ankunft");
 
-            // 3. 🚀 BUGHUNT FIX: Altes Wetter löschen und neues auf Hauptebene (100% Breite) einfügen
             let oldWeather = document.getElementById('live-weather-container');
             if (oldWeather) oldWeather.remove();
 
             if (depHtml || arrHtml) {
                 const weatherContainer = document.createElement('div');
                 weatherContainer.id = 'live-weather-container';
-                
-                // 🚀 BUGHUNT FIX: Wir geben dem Container inneres Padding (px-5 pb-6) 
-                // und schieben ihn optisch etwas hoch, damit er perfekt über dem Rand schwebt.
                 weatherContainer.className = 'w-full grid grid-cols-2 gap-3 px-5 pb-6 mt-2';
                 weatherContainer.innerHTML = (depHtml || "") + (arrHtml || "");
-                
                 const widgetContainer = document.getElementById('live-flight-widget');
                 const navContainer = document.getElementById('live-flight-nav');
                 const hideBtnContainer = document.getElementById('live-hide-btn-container');
                 
-                // 🚀 BUGHUNT FIX: Sichere Insert-Methode, egal wie tief das Element verschachtelt ist!
-                if (navContainer && navContainer.parentNode) {
-                    navContainer.parentNode.insertBefore(weatherContainer, navContainer);
-                } else if (hideBtnContainer && hideBtnContainer.parentNode) {
-                    hideBtnContainer.parentNode.insertBefore(weatherContainer, hideBtnContainer);
-                } else if (widgetContainer) {
-                    widgetContainer.appendChild(weatherContainer);
-                }
+                if (navContainer && navContainer.parentNode) navContainer.parentNode.insertBefore(weatherContainer, navContainer);
+                else if (hideBtnContainer && hideBtnContainer.parentNode) hideBtnContainer.parentNode.insertBefore(weatherContainer, hideBtnContainer);
+                else if (widgetContainer) widgetContainer.appendChild(weatherContainer);
             }
-        } catch(we) {
-            console.warn("Wetter konnte nicht geladen werden:", we);
-        }
-        // ================================================================
-        // ENDE WETTER-CODE
-        
+        } catch(we) {}
+
     } catch(e) {
         console.error("Live API Fehler:", e);
         const statusEl = document.getElementById('live-status-badge');
-        const errorMsg = e.message;
-
-        // 🕵️‍♂️ BUGHUNT FIX: Den Status intelligent analysieren!
-        const flightIdToUpdate = window.currentLiveFlight.id || window.currentLiveFlight.flight_id;
-        const hasLandedLock = localStorage.getItem(`weather_finalized_${flightIdToUpdate}`);
-        
-        // 🚀 NEU: Wir prüfen auch, was die Datenbank aktuell sagt!
         const dbStatus = window.currentLiveFlight.status;
-
-        // 🌍 Übersetzungen sicher abrufen
-        const textArchived = (typeof getTranslation === 'function' ? getTranslation("live.statusArchived") : null) || "BEENDET";
-        const textStandby = (typeof getTranslation === 'function' ? getTranslation("live.statusStandby") : null) || "STANDBY";
-        const textOffline = (typeof getTranslation === 'function' ? getTranslation("live.statusOffline") : null) || "OFFLINE";
-        // 🚀 BUGHUNT FIX: Egal ob 'landed', 'manual_review' oder Lock vorhanden -> Optisch ist es BEENDET!
+        const hasLandedLock = localStorage.getItem(`weather_finalized_${window.currentLiveFlight.id || window.currentLiveFlight.flight_id}`);
+        
         if (hasLandedLock || dbStatus === "landed" || dbStatus === "manual_review") {
-            
-            // IMMER den normalen "BEENDET" (Archived) Status anzeigen
-            statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-slate-900"></span> <span data-i18n="live.statusArchived">${textArchived}</span>`;
+            statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-slate-900"></span> <span data-i18n="live.statusArchived">BEENDET</span>`;
             statusEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-slate-300 text-slate-800 shadow-sm";
-            
-            // Button IMMER einblenden
             const finishBtn = document.getElementById('finish-flight-btn');
             if (finishBtn) finishBtn.classList.remove('hidden');
-        }
-        else if (errorMsg.includes("noch nicht aktiv")) {
-            // Szenario 1: STANDBY (Flug startet später)
-            statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-purple-900 animate-pulse"></span> <span data-i18n="live.statusStandby">${textStandby}</span>`;
+        } else {
+            statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-purple-900 animate-pulse"></span> <span data-i18n="live.statusStandby">STANDBY</span>`;
             statusEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-purple-200 text-purple-900 shadow-sm";
-        } 
-        else {
-            // Szenario 3: Echter Fehler (OFFLINE)
-            statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-gray-600"></span> <span data-i18n="live.statusOffline">${textOffline}</span>`;
-            statusEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-gray-200 text-gray-700 shadow-sm";
-        }
-
-        // ================================================================
-        // 🌤️ NEU: WETTER TROTZ STANDBY/BEENDET ANZEIGEN!
-        // ================================================================
-        if (hasLandedLock || errorMsg.includes("noch nicht aktiv")) {
-            try {
-                const depWeather = await window.fetchAviationWeather(window.currentLiveFlight.departure);
-                const arrWeather = await window.fetchAviationWeather(window.currentLiveFlight.arrival);
-                
-                const depTitle = (typeof getTranslation === 'function' ? getTranslation("weather.departure") : null) || "Abflug";
-                const arrTitle = (typeof getTranslation === 'function' ? getTranslation("weather.arrival") : null) || "Ankunft";
-                
-                const depHtml = window.buildWeatherWidgetHtml(depWeather, depTitle);
-                const arrHtml = window.buildWeatherWidgetHtml(arrWeather, arrTitle);
-
-                let oldWeather = document.getElementById('live-weather-container');
-                if (oldWeather) oldWeather.remove();
-
-                if (depHtml || arrHtml) {
-                    const weatherContainer = document.createElement('div');
-                    weatherContainer.id = 'live-weather-container';
-                    weatherContainer.className = 'w-full grid grid-cols-2 gap-3 px-5 pb-6 mt-2';
-                    weatherContainer.innerHTML = (depHtml || "") + (arrHtml || "");
-                    
-                    const widgetContainer = document.getElementById('live-flight-widget');
-                    const hideBtnContainer = document.getElementById('live-hide-btn-container');
-                    
-                    if (hideBtnContainer && hideBtnContainer.parentNode) {
-                        hideBtnContainer.parentNode.insertBefore(weatherContainer, hideBtnContainer);
-                    } else if (widgetContainer) {
-                        widgetContainer.appendChild(weatherContainer);
-                    }
-                }
-            } catch(we) {
-                console.warn("Wetter im Standby-Modus konnte nicht geladen werden:", we);
-            }
-        }
-        // ================================================================
-        // ENDE WETTER-CODE IM FALLBACK
-        // ================================================================
-
-        // 🚀 UX FIX: Hide-Button generieren, außer bei Standby
-        const isStandby = errorMsg.includes("noch nicht aktiv");
-        if (!isStandby) {
-            window.ensureHideButtonExists();
-        }
-        const widgetContainer = document.getElementById('live-flight-widget');
-        
-        if (widgetContainer && !document.getElementById('live-hide-btn-container') && !isStandby) {
-            const hideBtnContainer = document.createElement('div');
-            hideBtnContainer.id = 'live-hide-btn-container';
-            hideBtnContainer.className = 'w-full flex justify-center mt-6 mb-3 px-4';
-            
-            const hideText = (typeof getTranslation === 'function' ? getTranslation("live.hideFlight") : null) || "Live-Flug ausblenden";
-            
-            hideBtnContainer.innerHTML = `
-                <button onclick="event.stopPropagation(); window.hideLiveWidget()" class="flex items-center justify-center gap-2 px-6 py-2 bg-surface-container dark:bg-slate-800 text-on-surface/60 dark:text-slate-400 rounded-full text-xs font-bold transition-all hover:bg-surface-container-high dark:hover:bg-slate-700 border border-outline-variant/20 shadow-sm w-max" title="${hideText}" data-i18n-title="live.hideFlight">
-                    <span class="material-symbols-outlined text-[16px]">visibility_off</span> 
-                    <span data-i18n="live.hideFlight">${hideText}</span>
-                </button>
-            `;
-            widgetContainer.appendChild(hideBtnContainer);
         }
     } finally {
         const icon = document.getElementById('live-refresh-icon');
@@ -6443,48 +6149,46 @@ window.updateUpcomingFlightDetails = async function(flight) {
         const flightId = flight.id || flight.flight_id;
         const cleanFlightNum = (flight.flightNumber || "").replace(/\s+/g, '').toUpperCase();
         
-        // 1. Hole Live-Schedule für diesen Tag und diese Route aus unserer API
-        const url = `${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-future-schedules?dep=${flight.departure}&arr=${flight.arrival}&date=${flight.date}`;
+        // 🚀 Neue FlightAware-Route ansteuern
+        const url = `${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-fa-flight?flight_number=${cleanFlightNum}&date=${flight.date}`;
         const response = await fetch(url);
         if (!response.ok) return;
-        const schedules = await response.json();
-        
-        let match = null;
-        
-        // 2. Finde den exakten Flug
-        if (cleanFlightNum) {
-             match = schedules.find(s => {
-                 const sNum = s.carrier ? `${s.carrier.fs}${s.carrier.flightNumber}`.toUpperCase() : "";
-                 return sNum === cleanFlightNum || sNum.includes(cleanFlightNum) || cleanFlightNum.includes(sNum);
-             });
-        }
-        // Fallback: Wenn es an dem Tag nur einen einzigen Flug auf der Route gibt, nehmen wir den
-        if (!match && schedules.length === 1) {
-             match = schedules[0];
-        }
+        const flights = await response.json();
 
-        if (match) {
-             // Zeiten optisch eintragen
-             if (match.departureTime && match.departureTime.time24) {
+        if (flights && flights.length > 0) {
+             const match = flights[0]; // Erster Treffer für diesen Tag
+             
+             // Zeiten formatieren (FlightAware liefert ISO-Strings)
+             const formatTime = (isoString) => {
+                 if (!isoString) return null;
+                 const d = new Date(isoString);
+                 return d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0');
+             };
+
+             const depTimeStr = formatTime(match.dep_time_iso);
+             const arrTimeStr = formatTime(match.arr_time_iso);
+
+             if (depTimeStr) {
                  const depEl = document.getElementById(`upc-dep-time-${flightId}`);
-                 if (depEl) depEl.textContent = match.departureTime.time24;
+                 if (depEl) depEl.textContent = depTimeStr;
              }
-             if (match.arrivalTime && match.arrivalTime.time24) {
+             if (arrTimeStr) {
                  const arrEl = document.getElementById(`upc-arr-time-${flightId}`);
-                 if (arrEl) arrEl.textContent = match.arrivalTime.time24;
+                 if (arrEl) arrEl.textContent = arrTimeStr;
              }
              
-             // Airline updaten, falls sie noch "Unbekannt" war
+             // Airline updaten (falls noch "Unbekannt"), jetzt via CDN
              const isUnknownAirline = !flight.airline || flight.airline.toLowerCase().includes('unbekannt') || flight.airline.toLowerCase().includes('unknown');
-             if (isUnknownAirline && match.carrier && match.carrier.name) {
+             if (isUnknownAirline && match.airline_icao) {
+                 const logoCode = match.airline_icao.substring(0, 2);
+                 const airlineUrl = `https://images.kiwi.com/airlines/128x128/${logoCode}.png`;
                  const airEl = document.getElementById(`upc-airline-${flightId}`);
-                 if (airEl) {
-                     airEl.textContent = match.carrier.name;
-                 }
+                 if (airEl) airEl.textContent = match.airline_icao;
                  
-                 // Wir updaten die DB lautlos im Hintergrund, damit sie beim nächsten Mal direkt da ist!
-                 supabaseClient.from('flights').update({ airline: match.carrier.name }).eq('flight_id', flightId).then();
-                 flight.airline = match.carrier.name; 
+                 // DB lautlos im Hintergrund updaten
+                 supabaseClient.from('flights').update({ airline: match.airline_icao, airline_logo: airlineUrl }).eq('flight_id', flightId).then();
+                 flight.airline = match.airline_icao; 
+                 flight.airline_logo = airlineUrl;
              }
         }
     } catch(e) {
