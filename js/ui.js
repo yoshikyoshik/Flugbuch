@@ -158,7 +158,6 @@ function closePremiumModal() {
   }
 }
 
-// DETAILS
 async function showAirportDetails(iataCode, silentCache = false) {
   const contentContainer = document.getElementById("info-modal-content");
 
@@ -172,105 +171,80 @@ async function showAirportDetails(iataCode, silentCache = false) {
   if (cachedAirport && cachedAirport.country_code) {
       if (!silentCache) {
           openInfoModal();
-          document.getElementById("info-modal-title").textContent = getTranslation("modalDetails.airportTitle").replace("{key}", iataCode);
+          document.getElementById("info-modal-title").textContent = (getTranslation("modalDetails.airportTitle") || "Airport {key}").replace("{key}", iataCode);
           
           let content = `
-              <p><strong>${getTranslation("modalDetails.airportName")}</strong> ${cachedAirport.name || "N/A"}</p>
-              <p><strong>${getTranslation("modalDetails.airportLocation")}</strong> ${cachedAirport.city || "N/A"}, ${cachedAirport.country_code || "N/A"}</p>
-              <p><strong>${getTranslation("modalDetails.airportCoords")}</strong> Lat: ${cachedAirport.lat || "N/A"}, Lng: ${cachedAirport.lon || "N/A"}</p>
+              <p><strong>${getTranslation("modalDetails.airportName") || "Name:"}</strong> ${cachedAirport.name || "N/A"}</p>
+              <p><strong>${getTranslation("modalDetails.airportLocation") || "Ort:"}</strong> ${cachedAirport.city || "N/A"}, ${cachedAirport.country_code || "N/A"}</p>
+              <p><strong>${getTranslation("modalDetails.airportCoords") || "Koordinaten:"}</strong> Lat: ${cachedAirport.lat || "N/A"}, Lng: ${cachedAirport.lon || "N/A"}</p>
           `;
 
-          // 🌐 Website oder Google-Fallback rendern
-          if (cachedAirport.website) {
-              content += `<p class="mt-2"><a href="${cachedAirport.website}" target="_blank" class="text-indigo-500 font-bold hover:underline">${getTranslation("modalDetails.airportWebsite") || "🌐 Webseite öffnen"}</a></p>`;
-          } else if (cachedAirport.api_checked) {
-              // Wenn wir wissen, dass die API nichts hat, zeigen wir den Google-Link
-              const searchName = cachedAirport.name || iataCode;
-              const searchQuery = encodeURIComponent(`${searchName} Airport official website`);
-              content += `<p class="mt-2 text-xs text-on-surface/60 italic">Keine offizielle URL in Datenbank. <br><a href="https://www.google.com/search?q=${searchQuery}" target="_blank" class="text-indigo-500 hover:underline">🔍 Auf Google suchen</a></p>`;
-          }
+          const searchName = cachedAirport.name || iataCode;
+          const searchQuery = encodeURIComponent(`${searchName} Airport official website`);
+          content += `<p class="mt-2 text-xs text-on-surface/60 italic"><a href="https://www.google.com/search?q=${searchQuery}" target="_blank" class="text-indigo-500 hover:underline">🔍 Auf Google nach Webseite suchen</a></p>`;
+          
           if (iataCode.length === 4) {
-              content += `<hr class="my-2 dark:border-gray-600"><p class="text-xs italic">${getTranslation("logbook.icaoInfoNote")}</p>`;
+              content += `<hr class="my-2 dark:border-gray-600"><p class="text-xs italic">${getTranslation("logbook.icaoInfoNote") || "Dies ist ein ICAO Code."}</p>`;
           }
 
           contentContainer.innerHTML = content;
-          console.log(`ℹ️ Lade Basis-Daten für ${iataCode} aus dem blitzschnellen Cache!`);
       }
-
-      // 🚀 BUGHUNT FIX: Die "Altlasten"-Prüfung!
-      // Wenn der Cache schon eine Website hat ODER wir in dieser App-Sitzung schon die API gefragt haben, beenden wir.
-      if (cachedAirport.website || cachedAirport.api_checked || iataCode.length === 4) {
-          return; 
-      }
-      
-      // Ansonsten setzen wir den "Habe-API-gefragt"-Haken und lassen das Script unten weiterlaufen,
-      // um die Website im Hintergrund zu suchen!
-      cachedAirport.api_checked = true;
+      return; // Da wir die Daten haben, brechen wir hier ab!
   } else {
       // =========================================================
       // 2. LADEBILDSCHIRM (Wenn wir den Flughafen noch gar nicht kennen)
       // =========================================================
       if (!silentCache) {
           openInfoModal();
-          document.getElementById("info-modal-title").textContent = getTranslation("modalDetails.airportTitle").replace("{key}", iataCode);
-          contentContainer.innerHTML = `<p>${getTranslation("modalDetails.loading")}</p>`;
+          document.getElementById("info-modal-title").textContent = (getTranslation("modalDetails.airportTitle") || "Airport {key}").replace("{key}", iataCode);
+          contentContainer.innerHTML = `<p>${getTranslation("modalDetails.loading") || "Lade..."}</p>`;
       }
   }
 
   // =========================================================
-  // 3. API ABRUF (Für völlig Neue ODER für Alte ohne Webseite)
+  // 3. ABRUF ÜBER NEUE KIWI-API (Bye Bye GoFlightLabs)
   // =========================================================
   try {
-      // Dein normaler GFL Endpoint
-      const response = await fetch(`https://aesthetic-strudel-ecfe50.netlify.app/.netlify/functions/fetch-airport-details?code=${iataCode}`);
-      if (!response.ok) throw new Error("Netzwerk-Antwort war nicht OK");
-      
-      const result = await response.json();
+      // 🚀 NEU: Wir nutzen unsere neue, lokale Funktion, die auf Kiwi.com zugreift!
+      const results = await window.fetchExternalAirport(iataCode);
 
-      if (result.data && result.data.length > 0) {
-          const airport = result.data[0];
+      if (results && results.length > 0) {
+          const airport = results[0];
 
-          // Speichern & Cache aktualisieren (unser neuer Türsteher aus der supabase.js regelt das!)
+          // Speichern & Cache aktualisieren
           if (typeof cacheAndSaveAirport === 'function') {
               await cacheAndSaveAirport({
                   code: iataCode,
                   name: airport.name,
                   lat: airport.lat,
-                  lon: airport.lng,
+                  lon: airport.lon,
                   city: airport.city,
                   country_code: airport.country_code,
-                  website: airport.website
+                  website: null // Wird nicht mehr benötigt, das smarte Google-Fallback regelt das
               });
           }
 
-          // 🚀 Das "Pop-In" Update: 
-          // Wenn das Fenster noch offen ist, schieben wir die neue Webseite Live in die Ansicht!
           if (!silentCache) {
               const updatedCache = window.airportData[iataCode];
               let newContent = `
-                  <p><strong>${getTranslation("modalDetails.airportName")}</strong> ${updatedCache.name || "N/A"}</p>
-                  <p><strong>${getTranslation("modalDetails.airportLocation")}</strong> ${updatedCache.city || "N/A"}, ${updatedCache.country_code || "N/A"}</p>
-                  <p><strong>${getTranslation("modalDetails.airportCoords")}</strong> Lat: ${updatedCache.lat || "N/A"}, Lng: ${updatedCache.lon || "N/A"}</p>
+                  <p><strong>${getTranslation("modalDetails.airportName") || "Name:"}</strong> ${updatedCache.name || "N/A"}</p>
+                  <p><strong>${getTranslation("modalDetails.airportLocation") || "Ort:"}</strong> ${updatedCache.city || "N/A"}, ${updatedCache.country_code || "N/A"}</p>
+                  <p><strong>${getTranslation("modalDetails.airportCoords") || "Koordinaten:"}</strong> Lat: ${updatedCache.lat || "N/A"}, Lng: ${updatedCache.lon || "N/A"}</p>
               `;
               
-              if (updatedCache.website) {
-                  newContent += `<p class="mt-2"><a href="${updatedCache.website}" target="_blank" class="text-indigo-500 font-bold hover:underline">${getTranslation("modalDetails.airportWebsite") || "🌐 Webseite öffnen"}</a></p>`;
-              } else {
-                  const searchName = updatedCache.name || iataCode;
-                  const searchQuery = encodeURIComponent(`${searchName} Airport official website`);
-                  newContent += `<p class="mt-2 text-xs text-on-surface/60 italic">Keine offizielle URL in Datenbank. <br><a href="https://www.google.com/search?q=${searchQuery}" target="_blank" class="text-indigo-500 hover:underline">🔍 Auf Google suchen</a></p>`;
-              }
+              const searchName = updatedCache.name || iataCode;
+              const searchQuery = encodeURIComponent(`${searchName} Airport official website`);
+              newContent += `<p class="mt-2 text-xs text-on-surface/60 italic"><a href="https://www.google.com/search?q=${searchQuery}" target="_blank" class="text-indigo-500 hover:underline">🔍 Auf Google nach Webseite suchen</a></p>`;
               
               document.getElementById("info-modal-content").innerHTML = newContent;
           }
       } else if (!silentCache && !cachedAirport) {
-          // Nur meckern, wenn wir nicht schon Cache-Daten anzeigen
-          document.getElementById("info-modal-content").innerHTML = `<p>${getTranslation("modalDetails.airportNoDetails")}</p>`;
+          document.getElementById("info-modal-content").innerHTML = `<p>${getTranslation("modalDetails.airportNoDetails") || "Keine Details gefunden."}</p>`;
       }
   } catch (error) {
       console.error("Fehler beim Abrufen der Flughafen-Details:", error);
-      if (!silentCache && !cachedAirport) {
-         document.getElementById("info-modal-content").innerHTML = `<p>${getTranslation("modalDetails.airportError")}</p>`;
+      if (!silentCache) {
+         document.getElementById("info-modal-content").innerHTML = `<p>${getTranslation("modalDetails.airportError") || "Fehler beim Laden."}</p>`;
       }
   }
 }
