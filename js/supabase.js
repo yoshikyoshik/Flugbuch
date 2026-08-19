@@ -169,66 +169,50 @@ async function claimExistingFlights() {
   }
 }
 
+// ==========================================
+// 🚀 NEU: KOSTENLOSE FLUGHAFEN-SUCHE (Bye, API-Ninjas!)
+// ==========================================
 window.fetchExternalAirport = async function (input) {
   const normalizedInput = input.trim();
   if (normalizedInput.length < 3) return [];
   
-  /*const url = `https://aesthetic-strudel-ecfe50.netlify.app/.netlify/functions/fetch-airport?query=${encodeURIComponent(normalizedInput)}`;
-  */
-  
-  const url = `${API_BASE_URL}/.netlify/functions/fetch-airport?query=${encodeURIComponent(normalizedInput)}`;
-  
   try {
-    const response = await fetch(url);
+    // Wir nutzen die blitzschnelle und komplett kostenlose Travel-API von Kiwi.com
+    const response = await fetch(`https://api.skypicker.com/locations?term=${encodeURIComponent(normalizedInput)}&locale=de-DE&location_types=airport&limit=10`);
     if (!response.ok) return [];
-    const apiData = await response.json();
-    return apiData
-      .map((result) => {
-        if (!result.iata && !result.icao) return null;
-        return {
-          code: result.iata || result.icao,
-          name: result.name,
-          city: result.city || "",
-          lat: parseFloat(result.latitude),
-          lon: parseFloat(result.longitude),
-          country_code: result.country || null,
-        };
-      })
-      .filter((airport) => airport !== null);
+    
+    const data = await response.json();
+    if (!data.locations) return [];
+
+    return data.locations.map((result) => {
+      return {
+        code: result.code, // IATA Code
+        name: result.name,
+        city: result.city ? result.city.name : "",
+        lat: result.location.lat,
+        lon: result.location.lon,
+        country_code: result.city && result.city.country ? result.city.country.id : null,
+      };
+    });
   } catch (error) {
     console.error("Netzwerkfehler (Fetch Airport):", error);
     return [];
   }
 };
 
-// supabase.js
-
+// ==========================================
+// 🚀 NEU: AIRLINE LOGOS VIA CDN (Keine API nötig!)
+// ==========================================
 async function fetchAirlineName(iataCode) {
-  try {
-    const response = await fetch(
-      `${API_BASE_URL}/.netlify/functions/fetch-airline-details?iata_code=${iataCode}`
-    );
-    if (!response.ok) return { name: iataCode, logo: null };
-    
-    const json = await response.json();
-    const data = json.data; // Das Array aus deiner Netlify Function
-
-    if (data && data.length > 0) {
-      const airline = data[0];
-      
-      // ✅ ANPASSUNG FÜR API NINJAS:
-      // Wir suchen das beste Logo aus. Priorität: Volles Logo -> Brandmark -> Tail
-      const logo = airline.logo_url || airline.brandmark_url || airline.tail_logo_url || null;
-
-      // API Ninjas liefert den Namen einfach als "name"
-      return { 
-          name: airline.name || iataCode,
-          logo: logo
-      };
-    }
-    return { name: iataCode, logo: null };
-  } catch (error) {
-    console.error("Fehler beim Laden der Airline:", error);
-    return { name: iataCode, logo: null };
-  }
+  if (!iataCode) return { name: "", logo: null };
+  
+  const cleanCode = iataCode.trim().toUpperCase();
+  // Kiwi CDN nutzt die 2-stelligen IATA Codes. 
+  // Wenn wir ICAO (3-stellig) haben, nehmen wir auf Verdacht die ersten 2.
+  const logoCode = cleanCode.length >= 2 ? cleanCode.substring(0, 2) : cleanCode;
+  
+  return {
+      name: cleanCode, // Name kann der User später manuell anpassen
+      logo: `https://images.kiwi.com/airlines/128x128/${logoCode}.png` // Gestochen scharfes 128px Logo
+  };
 }
