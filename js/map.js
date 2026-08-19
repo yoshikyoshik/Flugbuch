@@ -51,7 +51,7 @@ window.buildMapTooltipHtml = function(flight, count) {
     }
 
     return `
-        <div style="background: rgba(17, 24, 39, 0.95); border: 1px solid #374151; border-radius: 10px; min-width: 170px; text-align: center; font-family: 'Inter', sans-serif; box-shadow: 0 10px 25px rgba(0,0,0,0.5); overflow: hidden; pointer-events: none;">
+        <div onpointerdown="event.stopPropagation()" style="background: rgba(17, 24, 39, 0.95); border: 1px solid #374151; border-radius: 10px; min-width: 170px; text-align: center; font-family: 'Inter', sans-serif; box-shadow: 0 10px 25px rgba(0,0,0,0.5); overflow: hidden; pointer-events: auto;">
             ${imgHtml}
             <div style="padding: 10px 12px 12px 12px; line-height: 1.3;">
                 <div style="font-weight: 900; color: white; font-size: 15px; letter-spacing: 0.5px;">${flight.departure} <span style="color: #6366f1;">➔</span> ${flight.arrival}</div>
