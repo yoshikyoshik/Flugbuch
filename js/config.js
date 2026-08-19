@@ -1166,6 +1166,14 @@ async function autofillFlightData() {
       document.getElementById("flightNumber").value = flight.flight_number || flightNumber;
       document.getElementById("airline").value = airlineName || "";
       document.getElementById("registration").value = registration || "";
+      document.getElementById("flightDate").value = flightDate;
+
+      // 🚀 HIER IST DER FIX: Die Zeiten für das spätere Speichern sichern!
+      window.tempSelectedFlightData = {
+          dep_time_ts: flight.dep_time_ts || null,
+          arr_time_ts: flight.arr_time_ts || null
+      };
+      console.log("⏱️ Timestamps für Autopilot gesichert:", window.tempSelectedFlightData);
 
       // 🚀 Foto direkt nach Autofill laden und Vorschau zeigen!
       if (registration && typeof fetchAircraftPhoto === 'function') {
