@@ -275,21 +275,22 @@ async function showAirportDetails(iataCode, silentCache = false) {
   }
 }
 
-async function showAirlineDetails(iataCode) {
+async function showAirlineDetails(airlineName, logoUrl) {
     openInfoModal();
-    document.getElementById("info-modal-title").textContent = getTranslation("modalDetails.airlineTitle").replace("{key}", iataCode);
+    document.getElementById("info-modal-title").textContent = (getTranslation("modalDetails.airlineTitle") || "Details für {key}").replace("{key}", airlineName);
     const contentContainer = document.getElementById("info-modal-content");
     
-    const cleanCode = iataCode.trim().toUpperCase();
-    const logoCode = cleanCode.length >= 2 ? cleanCode.substring(0, 2) : cleanCode;
-    const logoUrl = `https://images.kiwi.com/airlines/128x128/${logoCode}.png`;
-    const searchQuery = encodeURIComponent(`${cleanCode} airline`);
+    const cleanName = airlineName.trim();
+    const searchQuery = encodeURIComponent(`${cleanName} airline`);
+    
+    // 🚀 FIX: Wir nutzen das übergebene Logo oder lassen es leer, falls keins existiert.
+    const imgHtml = logoUrl ? `<img src="${logoUrl}" alt="${cleanName} Logo" class="h-20 md:h-24 object-contain bg-surface-container-lowest dark:bg-slate-800 rounded-xl p-2 shadow-md mx-auto mb-6" onerror="this.style.display='none'">` : '';
 
     // Wir bauen ein sauberes, schnelles Info-Fenster mit Wikipedia-Link!
     contentContainer.innerHTML = `
         <div class="text-center py-6">
-            <img src="${logoUrl}" alt="${cleanCode} Logo" class="h-20 md:h-24 object-contain bg-surface-container-lowest dark:bg-slate-800 rounded-xl p-2 shadow-md mx-auto mb-6" onerror="this.style.display='none'">
-            <p class="text-2xl font-black text-on-surface dark:text-white mb-2">${cleanCode}</p>
+            ${imgHtml}
+            <p class="text-2xl font-black text-on-surface dark:text-white mb-2">${cleanName}</p>
             <p class="text-sm font-medium text-on-surface/60 dark:text-slate-400 mb-8">Detaillierte Flotten-Daten sind im Offline-Modus nicht verfügbar.</p>
             
             <a href="https://de.wikipedia.org/w/index.php?search=${searchQuery}" target="_blank" class="inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-primary hover:bg-primary/90 text-white rounded-full text-sm font-bold transition shadow-md w-full sm:w-auto">
