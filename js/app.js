@@ -6491,7 +6491,7 @@ window.updateUpcomingFlightDetails = async function(flight) {
     }
 };
 
-// Sucht heutige Flüge basierend auf IATA-Codes
+// Sucht heutige und zukünftige Flüge basierend auf IATA-Codes via FlightAware
 async function searchFlightByRoute() {
     const dep = document.getElementById('departure').value.trim().toUpperCase();
     const arr = document.getElementById('arrival').value.trim().toUpperCase();
@@ -6501,7 +6501,6 @@ async function searchFlightByRoute() {
         return;
     }
 
-    // --- DATUMS-PRÜFUNG UND ROUTING ---
     const dateInput = document.getElementById('flightDate').value;
     const today = new Date();
     const yyyy = today.getFullYear();
@@ -6509,33 +6508,25 @@ async function searchFlightByRoute() {
     const dd = String(today.getDate()).padStart(2, '0');
     const todayStr = `${yyyy}-${mm}-${dd}`;
 
-    let targetDate = todayStr; // Standard ist heute
+    let targetDate = todayStr;
     let isFuture = false;
 
     if (dateInput) {
         if (dateInput < todayStr) {
-            // VERGANGENHEIT BLOCKEN
             showMessage(getTranslation("flightSearch.errorTitle") || "Fehler", getTranslation("flightSearch.errorWrongDate") || "Die Flugsuche funktioniert nur für das heutige oder zukünftige Datum.", "error");
             return; 
         } else if (dateInput > todayStr) {
-            // ZUKUNFT ERKANNT
             targetDate = dateInput;
             isFuture = true;
         }
     }
 
-    // Modal öffnen und laden
     const modal = document.getElementById('flight-selector-modal');
     const content = document.getElementById('fs-modal-content');
     const list = document.getElementById('flight-selector-list');
 
-    // --- NEU: Titel dynamisch anpassen ---
     const modalTitleEl = content.querySelector('h3');
-    if (isFuture) {
-        modalTitleEl.textContent = getTranslation('flightSearch.modalTitleFuture') || 'Zukünftige Flüge';
-    } else {
-        modalTitleEl.textContent = getTranslation('flightSearch.modalTitle') || 'Heutige Flüge';
-    }
+    modalTitleEl.textContent = isFuture ? (getTranslation('flightSearch.modalTitleFuture') || 'Zukünftige Flüge') : (getTranslation('flightSearch.modalTitle') || 'Heutige Flüge');
     
     modal.classList.remove('hidden');
     setTimeout(() => { modal.classList.remove('opacity-0'); content.classList.remove('scale-95'); }, 10);
@@ -6546,91 +6537,46 @@ async function searchFlightByRoute() {
             <p class="font-bold">${getTranslation('flightSearch.loading') || 'Suche Flüge...'}</p>
         </div>`;
 
-    // ================================================================
-    // 🚀 BUGHUNT FIX: DAS INTELLIGENTE API-FALLBACK-SYSTEM
-    // ================================================================
     try {
-        let flights = [];
-        let usedFutureApiFormat = isFuture; // Merker, welches JSON-Format wir am Ende parsen müssen
+        // 🚀 Nur noch ein einziger, sauberer Aufruf! Kein Fallback-Chaos mehr!
+        const url = `${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-fa-flight?dep=${dep}&arr=${arr}&date=${targetDate}`;
+        const response = await fetch(url);
+        const flights = await response.json();
 
-        // 1. Primäre URL festlegen
-        const primaryUrl = isFuture 
-            ? `${API_BASE_URL}/.netlify/functions/fetch-future-schedules?dep=${dep}&arr=${arr}&date=${targetDate}`
-            : `${API_BASE_URL}/.netlify/functions/fetch-route-schedules?dep=${dep}&arr=${arr}`;
-
-        // 2. Erster API-Aufruf
-        const response = await fetch(primaryUrl);
-        flights = await response.json();
-
-        // 3. 🛡️ DAS SICHERHEITSNETZ (Fallback für späte heutige Flüge)
-        // Wenn es für HEUTE gesucht wurde UND die Live-API nichts (oder einen Fehler) zurückgibt:
-        if (!isFuture && (!Array.isArray(flights) || flights.length === 0)) {
-            console.log("⚠️ Live-API fand für HEUTE keine aktiven Flüge. Spanne Sicherheitsnetz auf (Future-API)...");
-            
-            const fallbackUrl = `${API_BASE_URL}/.netlify/functions/fetch-future-schedules?dep=${dep}&arr=${arr}&date=${targetDate}`;
-            const fallbackResponse = await fetch(fallbackUrl);
-            const fallbackData = await fallbackResponse.json();
-
-            // Wenn das Sicherheitsnetz greift und Flüge findet:
-            if (Array.isArray(fallbackData) && fallbackData.length > 0) {
-                console.log("✅ Fallback erfolgreich! Flug für heute Abend in der Future-API gefunden.");
-                flights = fallbackData;
-                usedFutureApiFormat = true; // Wichtig: Die Daten haben jetzt das Format der Future-API!
-            }
-        }
-        // ================================================================
-
-        // 4. Wenn selbst das Sicherheitsnetz leer ist:
         if(!Array.isArray(flights) || flights.length === 0) {
             list.innerHTML = `<div class="text-center p-8 text-slate-500 font-bold">${getTranslation('flightSearch.noResults') || 'Keine direkten Flüge für dieses Datum gefunden.'}</div>`;
             return;
         }
 
-        // 5. Liste rendern
+        // Liste rendern
         list.innerHTML = flights.map(f => {
-            const unknownText = getTranslation('flightSearch.unknown') || 'Unbekannt';
-            const unknownAirlineText = getTranslation('flightSearch.unknownAirline') || 'Unbekannte Airline';
+            const flightNum = f.flight_number || 'Unbekannt';
+            const airlineName = f.airline_icao || 'Unbekannte Airline';
             const depText = getTranslation('flightSearch.departure') || 'Abflug';
             
-            let flightNum = unknownText;
-            let airlineName = unknownAirlineText;
+            // Zeit formatieren
             let timeStr = '--:--';
-
-            // 🚀 WICHTIG: Hier prüfen wir jetzt auf "usedFutureApiFormat", 
-            // denn auch "heutige" Flüge können jetzt durch den Fallback dieses Format haben!
-            if (usedFutureApiFormat) {
-                // Datenstruktur für ZUKUNFT (oder heuriger Fallback)
-                flightNum = f.carrier ? `${f.carrier.fs}${f.carrier.flightNumber}` : unknownText;
-                airlineName = f.carrier ? f.carrier.name : unknownAirlineText;
-                if (f.departureTime && f.departureTime.time24) {
-                    timeStr = f.departureTime.time24;
-                }
-            } else {
-                // Datenstruktur für HEUTE (flache Live-Struktur)
-                flightNum = f.flight_iata || f.flight_number || unknownText;
-                airlineName = f.airline_iata || unknownAirlineText;
-                if (f.dep_time) {
-                    const timeMatch = f.dep_time.match(/(\d{2}:\d{2})/);
-                    if (timeMatch) timeStr = timeMatch[1];
-                }
+            if (f.dep_time_iso) {
+                const dateObj = new Date(f.dep_time_iso);
+                timeStr = dateObj.getHours().toString().padStart(2, '0') + ':' + dateObj.getMinutes().toString().padStart(2, '0');
             }
 
-           // Wir machen das Objekt sicher für HTML-Attribute
-                const flightDataAttr = btoa(JSON.stringify(f)); 
+            // Wir machen das Objekt sicher für HTML-Attribute
+            const flightDataAttr = btoa(JSON.stringify(f)); 
 
-                return `
-                <button onclick="selectFoundFlight('${flightNum}', '${flightDataAttr}', ${usedFutureApiFormat})" 
-                class="w-full text-left p-4 rounded-xl bg-surface-container-low dark:bg-slate-800 hover:bg-primary/10 transition border border-transparent hover:border-primary/30 flex justify-between items-center group">
-                <div>
-                    <div class="font-black text-lg text-on-surface dark:text-white group-hover:text-primary transition-colors">${flightNum}</div>
-                    <div class="text-xs font-bold text-slate-500 dark:text-slate-400">${airlineName}</div>
-                </div>
-                <div class="text-right">
-                    <div class="font-black text-primary text-lg">${timeStr}</div>
-                    <div class="text-xs font-bold text-slate-500 dark:text-slate-400">${depText}</div>
-                </div>
-            </button>
-            `;
+            return `
+            <button onclick="selectFoundFlight('${flightNum}', '${flightDataAttr}')" 
+            class="w-full text-left p-4 rounded-xl bg-surface-container-low dark:bg-slate-800 hover:bg-primary/10 transition border border-transparent hover:border-primary/30 flex justify-between items-center group">
+            <div>
+                <div class="font-black text-lg text-on-surface dark:text-white group-hover:text-primary transition-colors">${flightNum}</div>
+                <div class="text-xs font-bold text-slate-500 dark:text-slate-400">${airlineName}</div>
+            </div>
+            <div class="text-right">
+                <div class="font-black text-primary text-lg">${timeStr}</div>
+                <div class="text-xs font-bold text-slate-500 dark:text-slate-400">${depText}</div>
+            </div>
+        </button>
+        `;
         }).join('');
 
     } catch (err) {
@@ -6639,85 +6585,48 @@ async function searchFlightByRoute() {
     }
 }
 
-window.selectFoundFlight = function(flightNum, encodedData, isFutureFormat) {
+window.selectFoundFlight = function(flightNum, encodedData) {
     try {
-        // 1. Flugnummer ins Formular eintragen
         const flightInput = document.getElementById('flightNumber');
         if (flightInput) flightInput.value = flightNum;
 
-        // 2. Daten auspacken und Zeiten extrahieren
         let depTs = null;
         let arrTs = null;
 
         if (encodedData) {
-            const rawData = JSON.parse(atob(encodedData));
+            const f = JSON.parse(atob(encodedData));
+            // 🚀 Unsere neue API liefert die exakten Timestamps praktischerweise schon mit!
+            depTs = f.dep_time_ts || null;
+            arrTs = f.arr_time_ts || null;
             
-            if (isFutureFormat) {
-                // =========================================================
-                // 🚀 BUGHUNT FIX: FUTURE API START- & LANDEZEIT BERECHNEN
-                // =========================================================
-                if (rawData.sortTime) {
-                    const depDate = new Date(rawData.sortTime);
-                    depTs = Math.floor(depDate.getTime() / 1000);
-
-                    // Ankunftszeit aus dem String ("16:15") extrahieren
-                    if (rawData.arrivalTime && rawData.arrivalTime.time24) {
-                        const arrParts = rawData.arrivalTime.time24.split(':');
-                        if (arrParts.length === 2) {
-                            // Wir erstellen ein Ankunfts-Datum basierend auf dem Abflug-Datum
-                            let arrDate = new Date(rawData.sortTime);
-                            arrDate.setHours(parseInt(arrParts[0], 10));
-                            arrDate.setMinutes(parseInt(arrParts[1], 10));
-                            arrDate.setSeconds(0);
-
-                            arrTs = Math.floor(arrDate.getTime() / 1000);
-
-                            // Geht der Flug über Mitternacht? (Lande-Uhrzeit < Start-Uhrzeit)
-                            if (arrTs < depTs) {
-                                arrTs += 86400; // Genau 1 Tag in Sekunden addieren!
-                            }
-                        }
-                    }
-                }
-                // =========================================================
-            } else {
-                // Live-API Format (Hat die Timestamps glücklicherweise schon fertig)
-                depTs = rawData.dep_time_ts || null;
-                arrTs = rawData.arr_time_ts || null;
+            // Wenn bekannt, tragen wir auch gleich den Flugzeugtyp ein
+            if (f.aircraft_type) {
+                const typeInput = document.getElementById('aircraftType');
+                if (typeInput && !typeInput.value) typeInput.value = f.aircraft_type;
             }
         }
 
-        // 3. Zeiten global zwischenspeichern für den Speichern-Button
         window.tempSelectedFlightData = {
             dep_time_ts: depTs,
             arr_time_ts: arrTs
         };
-        console.log("⏱️ Temporäre Flugdaten für das spätere Speichern gemerkt:", window.tempSelectedFlightData);
+        console.log("⏱️ Temporäre Timestamps aus FlightAware erfolgreich gemerkt:", window.tempSelectedFlightData);
 
-        // 4. Modal schließen
-        if (typeof closeFlightSelector === 'function') {
-            closeFlightSelector();
-        } else if (typeof closeFlightSelectorModal === 'function') {
-            closeFlightSelectorModal();
-        }
+        if (typeof closeFlightSelector === 'function') closeFlightSelector();
 
-        // 5. Visuelle Bestätigung zeigen
         showMessage(
             (typeof getTranslation === 'function' ? getTranslation("flightSearch.successTitle") : null) || "Gefunden!", 
             `Flug ${flightNum} wurde eingetragen.`, 
             "success"
         );
-
     } catch (e) {
         console.error("Fehler beim Übernehmen der Flugdaten:", e);
     }
 };
 
-// Modal schließen
 function closeFlightSelector() {
     const modal = document.getElementById('flight-selector-modal');
     const content = document.getElementById('fs-modal-content');
-    
     modal.classList.add('opacity-0');
     content.classList.add('scale-95');
     setTimeout(() => modal.classList.add('hidden'), 300);

@@ -1099,15 +1099,10 @@ var calculateStatistics = function (flights) {
 };
 
 /**
- * Ruft Flugdaten per Flugnummer und Datum ab und füllt das Formular aus.
- * FR24
+ * Ruft Flugdaten per Flugnummer und Datum via FlightAware (AeroAPI) ab.
  */
 async function autofillFlightData() {
-  const flightNumber = document
-    .getElementById("auto-flight-number")
-    .value.replace(/\s/g, "")
-    .trim()
-    .toUpperCase();
+  const flightNumber = document.getElementById("auto-flight-number").value.replace(/\s/g, "").trim().toUpperCase();
   const flightDate = document.getElementById("auto-flight-date").value;
 
   if (!flightNumber || !flightDate) {
@@ -1120,61 +1115,42 @@ async function autofillFlightData() {
   btn.disabled = true;
 
   try {
-    // Wir übergeben 'flight_number' (wird von der Netlify-Funktion als 'flights' interpretiert)
-    const response = await fetch(
-      `https://aesthetic-strudel-ecfe50.netlify.app/.netlify/functions/fetch-flight-by-number?flight_number=${flightNumber}&date=${flightDate}`
-    );
+    // 🚀 Die neue Wunder-Leitung zu FlightAware nutzen!
+    const url = `${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-fa-flight?flight_number=${flightNumber}&date=${flightDate}`;
+    const response = await fetch(url);
 
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(errorText);
+      throw new Error(`Serverfehler: ${response.status}`);
     }
 
-    const result = await response.json();
+    const flights = await response.json();
 
-    // KORRIGIERTE ANTWORT-STRUKTUR: 'result.data'
-    if (result.data && result.data.length > 0) {
-      // Finde den Flug, der am nächsten am Zieldatum liegt
-      const targetTimestamp = new Date(flightDate).getTime();
-      const flight = result.data.reduce((prev, curr) => {
-        const prevDiff = Math.abs(
-          new Date(prev.first_seen).getTime() - targetTimestamp
-        );
-        const currDiff = Math.abs(
-          new Date(curr.first_seen).getTime() - targetTimestamp
-        );
-        return currDiff < prevDiff ? curr : prev;
-      });
+    if (flights && flights.length > 0) {
+      // Da wir der API das Datum mitgeben, ist der erste Treffer in der Regel der richtige
+      const flight = flights[0];
 
       // --- DATEN EXTRAHIEREN ---
-      const depIata = flight.orig_iata || (flight.airport?.origin?.code?.iata) || "";
-      const arrIata = flight.dest_iata || (flight.airport?.destination?.code?.iata) || "";
-      const airlineIata = flight.operating_as || flight.painted_as || (flight.airline?.code?.icao) || (flight.airline?.code?.iata) || ""; 
-      const aircraftModel = flight.type || (flight.aircraft?.model?.code) || ""; 
-      
-      // Sicheres Auslesen der Registrierung für Live- und Historien-Flüge
-      const registration = flight.reg || (flight.aircraft?.registration) || flight.registration || "";
+      const depIata = flight.dep_iata || "";
+      const arrIata = flight.arr_iata || "";
+      const airlineIata = flight.airline_icao || ""; 
+      const aircraftModel = flight.aircraft_type || ""; 
+      const registration = flight.registration || "";
       
       if (!depIata || !arrIata) {
           throw new Error("Flughafencodes fehlen in den API-Daten.");
       }
 
-      // Airline-Namen abrufen (Robust gegen Arrays, Objekte und Strings)
-      let airlineName = airlineIata; // Standard-Fallback ist der IATA/ICAO Code
-
-      if (airlineIata) {
+      // Airline-Namen vorerst weiter über unsere alte Logik abrufen (wird in Schritt 3 ersetzt!)
+      let airlineName = airlineIata;
+      if (airlineIata && typeof fetchAirlineName === 'function') {
           try {
               const fetchedAirline = await fetchAirlineName(airlineIata);
-              
               if (fetchedAirline) {
                   if (Array.isArray(fetchedAirline) && fetchedAirline.length > 0) {
-                      // API Ninjas liefert oft ein Array: [{ name: "Lufthansa", ... }]
                       airlineName = fetchedAirline[0].name || fetchedAirline[0].icao || airlineIata;
                   } else if (typeof fetchedAirline === 'object' && !Array.isArray(fetchedAirline)) {
-                      // Es ist ein einzelnes Objekt
                       airlineName = fetchedAirline.name || fetchedAirline.icao || airlineIata;
                   } else if (typeof fetchedAirline === 'string' && fetchedAirline.trim() !== "") {
-                      // Es ist bereits reiner Text
                       airlineName = fetchedAirline;
                   }
               }
@@ -1187,13 +1163,12 @@ async function autofillFlightData() {
       document.getElementById("departure").value = depIata;
       document.getElementById("arrival").value = arrIata;
       document.getElementById("aircraftType").value = aircraftModel || "";
-      // Falls die Flugnummer fehlt, nehmen wir das, was der Nutzer ins Suchfeld getippt hat
-      document.getElementById("flightNumber").value = flight.flight || flight.identification?.number?.default || document.getElementById("auto-flight-number").value.trim().toUpperCase() || "";
+      document.getElementById("flightNumber").value = flight.flight_number || flightNumber;
       document.getElementById("airline").value = airlineName || "";
       document.getElementById("registration").value = registration || "";
 
-      // 🚀 BUGHUNT-FIX: Foto direkt nach Autofill laden und Vorschau zeigen!
-      if (registration) {
+      // 🚀 Foto direkt nach Autofill laden und Vorschau zeigen!
+      if (registration && typeof fetchAircraftPhoto === 'function') {
           const photoData = await fetchAircraftPhoto(registration);
           if (photoData) {
               currentPlanespottersData = photoData;
@@ -1213,32 +1188,26 @@ async function autofillFlightData() {
 
       document.getElementById("flightDate").value = flightDate;
 
-      // Wir müssen die Flughafendaten noch schnell cachen, falls sie neu sind
-      // (Wir rufen die Detail-API auf, um alle Infos zu haben)
-      await showAirportDetails(depIata, true); // true = "nur cachen, nicht anzeigen"
+      // Flughafendaten cachen
+      await showAirportDetails(depIata, true); 
       await showAirportDetails(arrIata, true);
 
       updateFlightDetails(); // Distanz, Zeit & CO2 berechnen
       showMessage(getTranslation("form.autopilotSuccess"), "success");
+
     } else {
-      // Prüfen, ob das eingegebene Datum heute oder in der Zukunft liegt
+      // Nichts gefunden
       const selectedDate = new Date(flightDate).setHours(0, 0, 0, 0);
       const today = new Date().setHours(0, 0, 0, 0);
-
       if (selectedDate >= today) {
-          // Meldung für zukünftige oder geplante, aber noch nicht gestartete Flüge
           showMessage(getTranslation("messages.futureData"), "info");
       } else {
-          // Standard-Meldung für alte Flüge, die wirklich nicht existieren
           showMessage(getTranslation("messages.noDataFound"), "error");
       }
     }
   } catch (error) {
     console.error("Fehler beim Abrufen der Flugdaten:", error);
-    showMessage(
-      getTranslation("messages.fetchError") + `: ${error.message}`,
-      "error"
-    );
+    showMessage(getTranslation("messages.fetchError") + `: ${error.message}`, "error");
   } finally {
     btn.textContent = getTranslation("form.buttonFetch");
     btn.disabled = false;
