@@ -882,28 +882,24 @@ window.logFlight = async function () {
   );
   const newFlightId = new Date().getTime();
 
-  // --- NEU: Logo & Name holen ---
+  // --- NEU: Logo & Name holen (LOKAL statt Netlify) ---
   const rawAirlineInput = document.getElementById("airline").value.trim();
   let finalAirlineName = rawAirlineInput;
   let finalAirlineLogo = null;
 
   if (rawAirlineInput.length >= 2) {
-      try {
-          // Wir rufen die API direkt auf (wie im Logbuch), um GANZ SICHER das Logo zu bekommen!
-          const response = await fetch(`${API_BASE_URL}/.netlify/functions/fetch-airline-details?iata_code=${encodeURIComponent(rawAirlineInput.toUpperCase())}`);
-          
-          if (response.ok) {
-              const result = await response.json();
-              if (result && result.data && result.data.length > 0) {
-                  const airlineData = result.data[0];
-                  finalAirlineName = airlineData.name || finalAirlineName;
-                  // Wir sichern alle Logo-Varianten ab (logo_url, brandmark_url, tail_logo_url)
-                  finalAirlineLogo = airlineData.logo_url || airlineData.brandmark_url || airlineData.tail_logo_url || null;
-              }
+      let iataCode = rawAirlineInput.substring(0, 2).toUpperCase(); // Fallback
+      
+      // Reverse Lookup: Wir suchen im Lexikon nach dem Namen (z.B. "Sundair")
+      if (window.AIRLINE_MAPPING) {
+          const foundMapping = Object.values(window.AIRLINE_MAPPING).find(
+              m => m.name.toLowerCase() === rawAirlineInput.toLowerCase()
+          );
+          if (foundMapping && foundMapping.iata) {
+              iataCode = foundMapping.iata;
           }
-      } catch (err) {
-          console.warn("Konnte Airline-Details nicht laden:", err);
       }
+      finalAirlineLogo = `https://images.kiwi.com/airlines/128x128/${iataCode}.png`;
   }
   // ------------------------------
 
@@ -1262,27 +1258,26 @@ async function updateFlight() {
 
   const priceInput = document.getElementById("price").value;
 
-  // --- NEU: Logo & Name auch beim Update holen ---
+  // --- NEU: Logo & Name auch beim Update holen (LOKAL) ---
   const rawAirlineInput = document.getElementById("airline").value.trim();
   let finalAirlineName = rawAirlineInput;
   let finalAirlineLogo = currentlyEditingFlightData.airline_logo || null; 
 
   if (rawAirlineInput.length >= 2) {
-      try {
-          // Auch beim Update den direkten API-Weg gehen!
-          const response = await fetch(`${API_BASE_URL}/.netlify/functions/fetch-airline-details?iata_code=${encodeURIComponent(rawAirlineInput.toUpperCase())}`);
-          
-          if (response.ok) {
-              const result = await response.json();
-              if (result && result.data && result.data.length > 0) {
-                  const airlineData = result.data[0];
-                  finalAirlineName = airlineData.name || finalAirlineName;
-                  // Falls die API ein Logo hat, nimm es. Ansonsten behalte das alte Logo.
-                  finalAirlineLogo = airlineData.logo_url || airlineData.brandmark_url || airlineData.tail_logo_url || finalAirlineLogo;
-              }
+      let iataCode = rawAirlineInput.substring(0, 2).toUpperCase(); 
+      
+      if (window.AIRLINE_MAPPING) {
+          const foundMapping = Object.values(window.AIRLINE_MAPPING).find(
+              m => m.name.toLowerCase() === rawAirlineInput.toLowerCase()
+          );
+          if (foundMapping && foundMapping.iata) {
+              iataCode = foundMapping.iata;
           }
-      } catch (err) {
-          console.warn("Update: Konnte Airline nicht laden", err);
+      }
+      
+      // Nur überschreiben, wenn sich der Name geändert hat oder noch kein Logo da war
+      if (!currentlyEditingFlightData.airline_logo || rawAirlineInput !== currentlyEditingFlightData.airline) {
+          finalAirlineLogo = `https://images.kiwi.com/airlines/128x128/${iataCode}.png`;
       }
   }
   // -----------------------------------------------
@@ -4354,6 +4349,12 @@ window.viewLogbookDetails = async function(type, key) {
         logoImg.src = logoUrl;
         logoContainer.classList.remove('hidden');
         iconEl.classList.add('hidden');
+        
+        // 🚀 BUGHUNT FIX: Falls Kiwi.com das Logo nicht hat (404), zurück zum Emoji!
+        logoImg.onerror = function() {
+            logoContainer.classList.add('hidden');
+            iconEl.classList.remove('hidden');
+        };
     } else {
         logoContainer.classList.add('hidden');
         iconEl.textContent = icon;
