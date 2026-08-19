@@ -1140,18 +1140,19 @@ async function autofillFlightData() {
           throw new Error("Flughafencodes fehlen in den API-Daten.");
       }
 
-      // Airline-Namen vorerst weiter über unsere alte Logik abrufen (wird in Schritt 3 ersetzt!)
+      // Airline-Namen und saubere Flugnummer abrufen
       let airlineName = airlineIata;
+      let displayFlightNumber = flight.flight_number || flightNumber;
+
       if (airlineIata && typeof fetchAirlineName === 'function') {
           try {
               const fetchedAirline = await fetchAirlineName(airlineIata);
               if (fetchedAirline) {
-                  if (Array.isArray(fetchedAirline) && fetchedAirline.length > 0) {
-                      airlineName = fetchedAirline[0].name || fetchedAirline[0].icao || airlineIata;
-                  } else if (typeof fetchedAirline === 'object' && !Array.isArray(fetchedAirline)) {
-                      airlineName = fetchedAirline.name || fetchedAirline.icao || airlineIata;
-                  } else if (typeof fetchedAirline === 'string' && fetchedAirline.trim() !== "") {
-                      airlineName = fetchedAirline;
+                  airlineName = fetchedAirline.name || airlineIata;
+                  
+                  // 🚀 FIX: Wir entfernen das lästige "DLH" und ersetzen es durch "LH" in der Flugnummer!
+                  if (fetchedAirline.iata && displayFlightNumber.startsWith(airlineIata)) {
+                      displayFlightNumber = displayFlightNumber.replace(airlineIata, fetchedAirline.iata);
                   }
               }
           } catch (error) {
@@ -1163,7 +1164,7 @@ async function autofillFlightData() {
       document.getElementById("departure").value = depIata;
       document.getElementById("arrival").value = arrIata;
       document.getElementById("aircraftType").value = aircraftModel || "";
-      document.getElementById("flightNumber").value = flight.flight_number || flightNumber;
+      document.getElementById("flightNumber").value = displayFlightNumber; // 🚀 Hier steht jetzt "LH400" statt "DLH400"
       document.getElementById("airline").value = airlineName || "";
       document.getElementById("registration").value = registration || "";
       document.getElementById("flightDate").value = flightDate;

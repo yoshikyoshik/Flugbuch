@@ -6255,10 +6255,19 @@ async function searchFlightByRoute() {
 
         // Liste rendern
         list.innerHTML = flights.map(f => {
-            const flightNum = f.flight_number || 'Unbekannt';
-            const airlineName = f.airline_icao || 'Unbekannte Airline';
+            let flightNum = f.flight_number || 'Unbekannt';
+            let airlineName = f.airline_icao || 'Unbekannte Airline';
             const depText = getTranslation('flightSearch.departure') || 'Abflug';
             
+            // 🚀 FIX: ICAO in IATA und korrekten Namen umwandeln für die visuelle Liste!
+            if (f.airline_icao && window.AIRLINE_MAPPING && window.AIRLINE_MAPPING[f.airline_icao]) {
+                const mapped = window.AIRLINE_MAPPING[f.airline_icao];
+                airlineName = mapped.name;
+                if (flightNum.startsWith(f.airline_icao)) {
+                    flightNum = flightNum.replace(f.airline_icao, mapped.iata);
+                }
+            }
+
             // Zeit formatieren
             let timeStr = '--:--';
             if (f.dep_time_iso) {

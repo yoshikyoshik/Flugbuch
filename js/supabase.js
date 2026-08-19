@@ -201,18 +201,62 @@ window.fetchExternalAirport = async function (input) {
 };
 
 // ==========================================
-// 🚀 NEU: AIRLINE LOGOS VIA CDN (Keine API nötig!)
+// 🚀 NEU: AIRLINE LOGOS VIA CDN & LOKALES MAPPING
 // ==========================================
-async function fetchAirlineName(iataCode) {
-  if (!iataCode) return { name: "", logo: null };
+// Übersetzt die FlightAware ICAO-Codes in bekannte IATA-Codes für Logos und saubere Flugnummern!
+window.AIRLINE_MAPPING = {
+    "DLH": { iata: "LH", name: "Lufthansa" },
+    "SWR": { iata: "LX", name: "Swiss International Air Lines" },
+    "AUA": { iata: "OS", name: "Austrian Airlines" },
+    "EWG": { iata: "EW", name: "Eurowings" },
+    "OCN": { iata: "4Y", name: "Discover Airlines" },
+    "CFG": { iata: "DE", name: "Condor" },
+    "TUI": { iata: "X3", name: "TUIfly" },
+    "HLX": { iata: "X3", name: "TUIfly" },
+    "SDR": { iata: "SR", name: "Sundair" },
+    "SXS": { iata: "XQ", name: "SunExpress" },
+    "RYR": { iata: "FR", name: "Ryanair" },
+    "EZY": { iata: "U2", name: "easyJet" },
+    "UAE": { iata: "EK", name: "Emirates" },
+    "QTR": { iata: "QR", name: "Qatar Airways" },
+    "THY": { iata: "TK", name: "Turkish Airlines" },
+    "PGT": { iata: "PC", name: "Pegasus Airlines" },
+    "CAI": { iata: "XC", name: "Corendon Airlines" },
+    "AFR": { iata: "AF", name: "Air France" },
+    "KLM": { iata: "KL", name: "KLM Royal Dutch Airlines" },
+    "BAW": { iata: "BA", name: "British Airways" },
+    "SAS": { iata: "SK", name: "SAS Scandinavian Airlines" },
+    "TAP": { iata: "TP", name: "TAP Air Portugal" },
+    "IBE": { iata: "IB", name: "Iberia" },
+    "VLG": { iata: "VY", name: "Vueling" },
+    "AEE": { iata: "A3", name: "Aegean Airlines" },
+    "WZZ": { iata: "W6", name: "Wizz Air" },
+    "DAL": { iata: "DL", name: "Delta Air Lines" },
+    "UAL": { iata: "UA", name: "United Airlines" },
+    "AAL": { iata: "AA", name: "American Airlines" },
+    "ACA": { iata: "AC", name: "Air Canada" },
+    "SIA": { iata: "SQ", name: "Singapore Airlines" },
+    "ANA": { iata: "NH", name: "All Nippon Airways" },
+    "JAL": { iata: "JL", name: "Japan Airlines" },
+    "QFA": { iata: "QF", name: "Qantas" }
+};
+
+async function fetchAirlineName(icaoCode) {
+  if (!icaoCode) return { name: "", logo: null, iata: "" };
   
-  const cleanCode = iataCode.trim().toUpperCase();
-  // Kiwi CDN nutzt die 2-stelligen IATA Codes. 
-  // Wenn wir ICAO (3-stellig) haben, nehmen wir auf Verdacht die ersten 2.
-  const logoCode = cleanCode.length >= 2 ? cleanCode.substring(0, 2) : cleanCode;
+  const cleanCode = icaoCode.trim().toUpperCase();
+  let iata = cleanCode.length >= 2 ? cleanCode.substring(0, 2) : cleanCode;
+  let name = cleanCode;
+
+  // 🚀 Wenn der Code 3-stellig ist und wir ihn im Lexikon haben, übersetzen wir ihn!
+  if (cleanCode.length === 3 && window.AIRLINE_MAPPING && window.AIRLINE_MAPPING[cleanCode]) {
+      iata = window.AIRLINE_MAPPING[cleanCode].iata;
+      name = window.AIRLINE_MAPPING[cleanCode].name;
+  }
   
   return {
-      name: cleanCode, // Name kann der User später manuell anpassen
-      logo: `https://images.kiwi.com/airlines/128x128/${logoCode}.png` // Gestochen scharfes 128px Logo
+      name: name,
+      iata: iata, // Wir geben den echten IATA-Code mit zurück!
+      logo: `https://images.kiwi.com/airlines/128x128/${iata}.png`
   };
 }
