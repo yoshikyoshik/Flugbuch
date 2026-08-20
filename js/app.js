@@ -5518,11 +5518,25 @@ window.refreshLiveFlightData = async function(force = true) {
             } else {
                 data = flightsArray[0];
                 
-                // 🚀 BUGHUNT FIX: Friendly Fire verhindern!
-                // Wenn die Räder am Boden sind, zwingen wir den Status lokal auf 'landed'.
-                // So verhindern wir, dass das Frontend die Datenbank wieder auf "In der Luft" zurücksetzt!
-                if (data.actual_in || data.actual_on) {
-                    data.status = "landed";
+                // 🛡️ DER ABSOLUTE SCHUTZSCHILD: Frag die Datenbank nach der echten Wahrheit!
+                // Das verhindert, dass die App den vom Agenten gesetzten Status überschreibt!
+                try {
+                    const { data: dbTruth } = await supabaseClient
+                        .from('flights')
+                        .select('status, arr_actual_ts')
+                        .eq('flight_id', flightIdToCache)
+                        .maybeSingle();
+                        
+                    // Wenn die DB sagt "gelandet" ODER eine exakte Landezeit (vom Agenten) vorliegt:
+                    if (dbTruth && (dbTruth.status === "landed" || dbTruth.status === "archived" || dbTruth.arr_actual_ts)) {
+                        console.log("🛡️ Schutzschild aktiv: Flug ist in der DB schon gelandet. Ignoriere falsche API-Werte!");
+                        data.status = dbTruth.status === "archived" ? "archived" : "landed";
+                        window.currentLiveFlight.status = data.status; // Lokales RAM-Update erzwingen
+                    } else if (data.actual_in || data.actual_on) {
+                        data.status = "landed";
+                    }
+                } catch(e) {
+                    console.warn("DB-Truth Check fehlgeschlagen", e);
                 }
             }
 
