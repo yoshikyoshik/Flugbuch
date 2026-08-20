@@ -42,8 +42,9 @@ export default async function handler(request, context) {
     const { data: activeFlights, error } = await supabase
         .from('flights')
         .select('*')
-        .in('status', ['scheduled', 'active', 'en-route'])
-        .lt('api_sync_attempts', 5);
+        // 🚀 BUGHUNT FIX: 'manual_review' hinzugefügt und das api_sync_limit GELÖSCHT!
+        // Damit befreien wir den München-Flug aus der GoFlightLabs-Quarantäne.
+        .in('status', ['scheduled', 'active', 'en-route', 'manual_review']);
 
     if (error || !activeFlights || activeFlights.length === 0) {
         console.log("📭 Keine aktiven Flüge zum Prüfen gefunden.");
