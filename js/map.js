@@ -488,7 +488,7 @@ async function openGlobeModal() {
                 if (isStoryModeActive) {
                     // Aktiv: 2.5 (Fett)
                     // Inaktiv: 0.8 (Vorher 0.6 - etwas dicker für die Farbe)
-                    return d.isActive ? 2.5 : 0.8;
+                    return d.isActive ? 4.0 : 1.2;
                 }
                 // Normal: 0.5
                 return 0.5;
@@ -574,10 +574,9 @@ async function openGlobeModal() {
        * EVENT 1: Klick auf eine Flughafen-Säule (Point)
        */
       .onPointClick((point) => {
-        // ✅ NEU: Story-Modus automatisch beenden
-        if (isStoryModeActive) {
-          toggleStoryMode();
-        }
+        // 🚀 FIX: Klicks auf Flughäfen ignorieren, wenn wir im Story-Modus sind!
+        if (isStoryModeActive) return;
+        
         console.log("Fokus auf:", point.code);
         // 1. Rotation stoppen & Slider deaktivieren
         globeInstance.controls().autoRotate = false;
@@ -628,10 +627,7 @@ async function openGlobeModal() {
        * EVENT 2: Klick auf den Globus-Hintergrund (Reset)
        */
       .onGlobeClick(() => {
-        // Wenn der Story-Modus aktiv war, beende ihn jetzt vollständig.
-        if (isStoryModeActive) {
-          toggleStoryMode(); // Setzt Button, Linien & Status zurück
-        }
+        if (isStoryModeActive) return;
 
         console.log("Fokus zurücksetzen");
         // 1. Slider aktivieren und auf MAX setzen
@@ -686,10 +682,7 @@ async function openGlobeModal() {
        * EVENT 3: Klick auf ein Land (Polygon)
        */
       .onPolygonClick((polygon) => {
-        // ✅ NEU: Story-Modus automatisch beenden
-        if (isStoryModeActive) {
-          toggleStoryMode();
-        }
+        if (isStoryModeActive) return;
         console.log("Fokus auf Land:", polygon.properties.ADMIN);
 
         // 1. Rotation stoppen & Slider deaktivieren
