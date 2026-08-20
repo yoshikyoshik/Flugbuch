@@ -42,8 +42,7 @@ export default async function handler(request, context) {
     const { data: activeFlights, error } = await supabase
         .from('flights')
         .select('*')
-        // 🚀 BUGHUNT FIX: 'manual_review' hinzugefügt und das api_sync_limit GELÖSCHT!
-        // Damit befreien wir den München-Flug aus der GoFlightLabs-Quarantäne.
+        // 🚀 BUGHUNT FIX: Quarantäne ist aufgehoben! (Kein api_sync_attempts Limit mehr)
         .in('status', ['scheduled', 'active', 'en-route', 'manual_review']);
 
     if (error || !activeFlights || activeFlights.length === 0) {
@@ -59,7 +58,7 @@ export default async function handler(request, context) {
 
         let shouldCheck = false;
 
-        // 🚀 NEUE LOGIK: Hat er Zeiten? Wenn nein, trotzdem checken!
+        // 🚀 LOGIK: Hat er Zeiten? Wenn nein, trotzdem checken!
         if (flight.arr_time_ts) {
             // Wir geben 30 Minuten Puffer nach der Landung
             if (nowSeconds >= flight.arr_time_ts + 1800) {
@@ -108,8 +107,9 @@ export default async function handler(request, context) {
                     if (matchedFlight.gate_destination) updatePayload.arr_gate = matchedFlight.gate_destination;
                     if (matchedFlight.registration) updatePayload.registration = matchedFlight.registration;
 
-                    if (matchedFlight.actual_in) {
-                        console.log(`✅ Touchdown für ${flightNum} durch FlightAware bestätigt!`);
+                    // 🚀 SCHWELLENWERT-PRÜFUNG: Nur Gate oder Landebahn zählen!
+                    if (matchedFlight.actual_in || matchedFlight.actual_on) {
+                        console.log(`✅ Touchdown für ${flightNum} bestätigt (Grund: ${matchedFlight.actual_in ? 'Gate' : 'Landebahn'})!`);
                         updatePayload.status = 'landed';
                         updatePayload.api_sync_attempts = 0;
                         await supabase.from('flights').update(updatePayload).eq('id', flight.id);
@@ -120,7 +120,11 @@ export default async function handler(request, context) {
                         if (updatePayload.arr_time_ts && nowSeconds > updatePayload.arr_time_ts + 1800) {
                             const newAttempts = (flight.api_sync_attempts || 0) + 1;
                             updatePayload.api_sync_attempts = newAttempts;
-                            if (newAttempts >= 5) updatePayload.status = 'manual_review';
+                            
+                            if (newAttempts >= 5) {
+                                console.log(`⚠️ 5 Fehlversuche erreicht. Setze ${flightNum} auf manual_review.`);
+                                updatePayload.status = 'manual_review';
+                            }
                         }
                         
                         // DB mit geretteten Zeiten updaten
