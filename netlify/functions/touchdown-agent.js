@@ -1,12 +1,11 @@
 // netlify/functions/touchdown-agent.js
 import { createClient } from '@supabase/supabase-js';
 
-
-
 export default async function handler(request, context) {
-    console.log("🤖 [AGENT START] Touchdown & Deep Sweep Agent erwacht...");
+    console.log("🤖 [AGENT START] Touchdown Agent (FlightAware) erwacht...");
 
-    const API_KEY = process.env.GOFLIGHTLABS_API_KEY;
+    // 🚀 NEU: FlightAware API Key
+    const API_KEY = process.env.FLIGHTAWARE_API_KEY;
     const SUPABASE_URL = process.env.SUPABASE_URL;
     const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY; 
 
@@ -19,9 +18,8 @@ export default async function handler(request, context) {
     const nowSeconds = Math.floor(Date.now() / 1000);
 
     // ====================================================================
-    // 🧹 NEU: DER DEEP SWEEP (Automatisches Archivieren)
+    // 🧹 DER DEEP SWEEP (Automatisches Archivieren nach 24h)
     // ====================================================================
-    // Wir suchen Flüge, die seit mehr als 24 Stunden auf 'landed' stehen.
     const oneDayAgo = nowSeconds - 86400; 
     
     const { data: oldFlights } = await supabase
@@ -41,19 +39,7 @@ export default async function handler(request, context) {
     }
 
     // ====================================================================
-    // 🛡️ API-Health-Check Bremse
-    // ====================================================================
-    try {
-        const pingRes = await fetch(`https://www.goflightlabs.com/airports-by-filter?access_key=${API_KEY}&iata_code=FRA`);
-        const pingText = await pingRes.text();
-        JSON.parse(pingText); 
-    } catch (e) {
-        console.error("🛑 [AGENT ABBRUCH] GoFlightLabs API ist down. Agent schläft wieder ein.");
-        return new Response("API Down", { status: 502 });
-    }
-
-    // ====================================================================
-    // 🎯 TOUCHDOWN CHECK (Die reguläre Arbeit)
+    // 🎯 TOUCHDOWN CHECK (Landungen prüfen)
     // ====================================================================
     const { data: activeFlights, error } = await supabase
         .from('flights')
@@ -71,8 +57,9 @@ export default async function handler(request, context) {
     for (const flight of activeFlights) {
         const flightNum = flight.flightNumber || flight.flight_iata || flight.flight_number;
         
+        // Wir prüfen erst 30 Minuten nach der geplanten Ankunft!
         let estimatedTouchdownTs = flight.arr_time_ts || (flight.dep_time_ts ? (flight.dep_time_ts + 7200) : (nowSeconds + 999999));
-        const gracePeriodTs = estimatedTouchdownTs + 1800; // 30 Min Puffer
+        const gracePeriodTs = estimatedTouchdownTs + 1800; 
 
         if (nowSeconds < gracePeriodTs) continue; 
 
@@ -80,22 +67,35 @@ export default async function handler(request, context) {
         processedCount++;
 
         try {
-            const liveUrl = `https://www.goflightlabs.com/advanced-flights-schedules?access_key=${API_KEY}&iataCode=${flight.departure}&type=departure&flight_iata=${flightNum}`;
-            const liveRes = await fetch(liveUrl);
-            const liveData = await liveRes.json();
-            const liveArray = Array.isArray(liveData.data) ? liveData.data : [];
+            const cleanFlightNum = flightNum.replace(/\s+/g, '').toUpperCase();
+            const startDate = `${flight.date}T00:00:00Z`;
+            const endDate = `${flight.date}T23:59:59Z`;
+            const faUrl = `https://aeroapi.flightaware.com/aeroapi/flights/${cleanFlightNum}?start=${startDate}&end=${endDate}`;
             
-            const matchedFlight = liveArray.find(f => 
-                (f.flight_iata === flightNum || f.flight_icao === flightNum) && 
-                f.flight_date === flight.date
-            );
+            const faRes = await fetch(faUrl, { 
+                headers: { 'x-apikey': API_KEY, 'Accept': 'application/json' } 
+            });
+            
+            if (faRes.ok) {
+                const faData = await faRes.json();
+                const faFlights = faData.flights || [];
+                const matchedFlight = faFlights.find(f => f.destination?.code_iata === flight.arrival);
 
-            if (matchedFlight && matchedFlight.status === 'landed') {
-                console.log(`✅ Touchdown für ${flightNum} bestätigt!`);
-                const updatePayload = { status: 'landed', api_sync_attempts: 0 };
-                if (matchedFlight.aircraft_registration) updatePayload.registration = matchedFlight.aircraft_registration;
-                await supabase.from('flights').update(updatePayload).eq('id', flight.id);
+                // 🚀 FLIGHTAWARE LOGIK: Hat der Flug einen "actual_in" (Ankunft am Gate) Stempel?
+                if (matchedFlight && matchedFlight.actual_in) {
+                    console.log(`✅ Touchdown für ${flightNum} durch FlightAware bestätigt!`);
+                    const updatePayload = { status: 'landed', api_sync_attempts: 0 };
+                    if (matchedFlight.registration) updatePayload.registration = matchedFlight.registration;
+                    await supabase.from('flights').update(updatePayload).eq('id', flight.id);
+                } else {
+                    console.log(`⏳ Flug ${flightNum} ist laut FlightAware noch nicht gelandet.`);
+                    const newAttempts = (flight.api_sync_attempts || 0) + 1;
+                    const fallbackPayload = { api_sync_attempts: newAttempts };
+                    if (newAttempts >= 5) fallbackPayload.status = 'manual_review';
+                    await supabase.from('flights').update(fallbackPayload).eq('id', flight.id);
+                }
             } else {
+                console.log(`❌ Fehler von FlightAware. Erhöhe Fehler-Zähler für ${flightNum}.`);
                 const newAttempts = (flight.api_sync_attempts || 0) + 1;
                 const fallbackPayload = { api_sync_attempts: newAttempts };
                 if (newAttempts >= 5) fallbackPayload.status = 'manual_review';
