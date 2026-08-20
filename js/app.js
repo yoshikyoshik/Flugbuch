@@ -5517,6 +5517,13 @@ window.refreshLiveFlightData = async function(force = true) {
                 }
             } else {
                 data = flightsArray[0];
+                
+                // 🚀 BUGHUNT FIX: Friendly Fire verhindern!
+                // Wenn die Räder am Boden sind, zwingen wir den Status lokal auf 'landed'.
+                // So verhindern wir, dass das Frontend die Datenbank wieder auf "In der Luft" zurücksetzt!
+                if (data.actual_in || data.actual_on) {
+                    data.status = "landed";
+                }
             }
 
             try { sessionStorage.setItem(cacheKey, JSON.stringify({ lastApiData: data, lastApiFetch: now })); } catch(e) {}
