@@ -22,17 +22,19 @@ export default async function handler(request, context) {
     const oneDayAgo = nowSeconds - 86400; 
     const { data: oldFlights } = await supabase
         .from('flights')
-        .select('id, flightNumber, arr_time_ts')
+        // 🚀 FIX: flight_id statt id abfragen
+        .select('flight_id, flightNumber, arr_time_ts')
         .eq('status', 'landed');
 
     if (oldFlights && oldFlights.length > 0) {
         const idsToArchive = oldFlights
             .filter(f => (f.arr_time_ts || (nowSeconds - 90000)) < oneDayAgo)
-            .map(f => f.id);
+            .map(f => f.flight_id); // 🚀 FIX: flight_id statt id mappen
 
         if (idsToArchive.length > 0) {
             console.log(`🧹 [DEEP SWEEP] Schiebe ${idsToArchive.length} alte Landungen ins Archiv...`);
-            await supabase.from('flights').update({ status: 'archived' }).in('id', idsToArchive);
+            // 🚀 FIX: in('flight_id', ...) statt in('id', ...)
+            await supabase.from('flights').update({ status: 'archived' }).in('flight_id', idsToArchive);
         }
     }
 
@@ -42,7 +44,6 @@ export default async function handler(request, context) {
     const { data: activeFlights, error } = await supabase
         .from('flights')
         .select('*')
-        // 🚀 BUGHUNT FIX: Quarantäne ist aufgehoben! (Kein api_sync_attempts Limit mehr)
         .in('status', ['scheduled', 'active', 'en-route', 'manual_review']);
 
     if (error || !activeFlights || activeFlights.length === 0) {
@@ -58,17 +59,14 @@ export default async function handler(request, context) {
 
         let shouldCheck = false;
 
-        // 🚀 LOGIK: Hat er Zeiten? Wenn nein, trotzdem checken!
         if (flight.arr_time_ts) {
             // Wir geben 30 Minuten Puffer nach der Landung
             if (nowSeconds >= flight.arr_time_ts + 1800) {
                 shouldCheck = true;
             }
         } else {
-            // Fehlende Timestamps (z.B. manuell angelegte Flüge)
             const todayStr = new Date().toISOString().split('T')[0];
             if (flight.date && flight.date <= todayStr) {
-                console.log(`🔍 Flug ${flightNum} hat keine Timestamps. Erzwinge API-Abruf zur Reparatur!`);
                 shouldCheck = true;
             }
         }
@@ -96,7 +94,6 @@ export default async function handler(request, context) {
                 if (matchedFlight) {
                     const updatePayload = {};
 
-                    // 🚀 RETTUNGS-AKTION: Wir schreiben die fehlenden Timestamps und Gates in die DB!
                     if (matchedFlight.scheduled_out) updatePayload.dep_time_ts = Math.floor(new Date(matchedFlight.scheduled_out).getTime() / 1000);
                     if (matchedFlight.scheduled_in) updatePayload.arr_time_ts = Math.floor(new Date(matchedFlight.scheduled_in).getTime() / 1000);
                     if (matchedFlight.estimated_out) updatePayload.dep_estimated_ts = Math.floor(new Date(matchedFlight.estimated_out).getTime() / 1000);
@@ -107,16 +104,21 @@ export default async function handler(request, context) {
                     if (matchedFlight.gate_destination) updatePayload.arr_gate = matchedFlight.gate_destination;
                     if (matchedFlight.registration) updatePayload.registration = matchedFlight.registration;
 
-                    // 🚀 SCHWELLENWERT-PRÜFUNG: Nur Gate oder Landebahn zählen!
                     if (matchedFlight.actual_in || matchedFlight.actual_on) {
                         console.log(`✅ Touchdown für ${flightNum} bestätigt (Grund: ${matchedFlight.actual_in ? 'Gate' : 'Landebahn'})!`);
                         updatePayload.status = 'landed';
                         updatePayload.api_sync_attempts = 0;
-                        await supabase.from('flights').update(updatePayload).eq('id', flight.id);
+                        
+                        const actualArrIso = matchedFlight.actual_in || matchedFlight.actual_on;
+                        if (actualArrIso) {
+                            updatePayload.arr_actual_ts = Math.floor(new Date(actualArrIso).getTime() / 1000);
+                        }
+                        
+                        // 🚀 FIX: .eq('flight_id', flight.flight_id)
+                        await supabase.from('flights').update(updatePayload).eq('flight_id', flight.flight_id);
                     } else {
                         console.log(`⏳ Flug ${flightNum} ist laut FlightAware noch nicht gelandet.`);
                         
-                        // Zähler nur erhöhen, wenn die Landezeit wirklich schon abgelaufen ist
                         if (updatePayload.arr_time_ts && nowSeconds > updatePayload.arr_time_ts + 1800) {
                             const newAttempts = (flight.api_sync_attempts || 0) + 1;
                             updatePayload.api_sync_attempts = newAttempts;
@@ -127,18 +129,20 @@ export default async function handler(request, context) {
                             }
                         }
                         
-                        // DB mit geretteten Zeiten updaten
                         if (Object.keys(updatePayload).length > 0) {
-                             await supabase.from('flights').update(updatePayload).eq('id', flight.id);
+                             // 🚀 FIX: .eq('flight_id', flight.flight_id)
+                             await supabase.from('flights').update(updatePayload).eq('flight_id', flight.flight_id);
                         }
                     }
                 } else {
                     console.log(`❌ Flug ${flightNum} an diesem Datum nicht in FlightAware gefunden.`);
                     const newAttempts = (flight.api_sync_attempts || 0) + 1;
                     if (newAttempts >= 5) {
-                        await supabase.from('flights').update({ api_sync_attempts: newAttempts, status: 'manual_review' }).eq('id', flight.id);
+                        // 🚀 FIX: .eq('flight_id', flight.flight_id)
+                        await supabase.from('flights').update({ api_sync_attempts: newAttempts, status: 'manual_review' }).eq('flight_id', flight.flight_id);
                     } else {
-                        await supabase.from('flights').update({ api_sync_attempts: newAttempts }).eq('id', flight.id);
+                        // 🚀 FIX: .eq('flight_id', flight.flight_id)
+                        await supabase.from('flights').update({ api_sync_attempts: newAttempts }).eq('flight_id', flight.flight_id);
                     }
                 }
             } else {
