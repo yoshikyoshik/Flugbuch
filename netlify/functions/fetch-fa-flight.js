@@ -1,142 +1,95 @@
 // netlify/functions/fetch-fa-flight.js
-
-exports.handler = async function(event, context) {
-    // 🛡️ CORS-Header (Erlaubt deiner App den Zugriff)
-    const CORS_HEADERS = {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Headers": "Content-Type",
-        "Content-Type": "application/json"
-    };
-
-    if (event.httpMethod === "OPTIONS") {
-        return { statusCode: 200, headers: CORS_HEADERS, body: "OK" };
-    }
-
-    // 🔑 API-Key prüfen
+export default async function handler(request, context) {
     const API_KEY = process.env.FLIGHTAWARE_API_KEY;
     if (!API_KEY) {
-        return { 
-            statusCode: 500, 
-            headers: CORS_HEADERS, 
-            body: JSON.stringify({ error: "FlightAware API Key fehlt in Netlify." }) 
-        };
+        return new Response(JSON.stringify({ error: "Missing API Key" }), { status: 500 });
     }
 
-    // 📥 Parameter aus dem Frontend empfangen
-    const { flight_number, dep, arr, date } = event.queryStringParameters || {};
+    const url = new URL(request.url);
+    const flight_number = url.searchParams.get("flight_number");
+    const dep = url.searchParams.get("dep");
+    const arr = url.searchParams.get("arr");
+    const date = url.searchParams.get("date");
 
     try {
-        let flights = [];
+        let faUrl = "";
+        let isRouteSearch = false;
 
-        // =========================================================
-        // FALL A: SUCHE NACH FLUGNUMMER (Für "Autopilot" & "Live-Widget")
-        // =========================================================
         if (flight_number) {
+            // ==========================================
+            // MODUS A: Suche per Flugnummer (Autopilot / Live Widget)
+            // ==========================================
             const cleanFlightNum = flight_number.replace(/\s+/g, '').toUpperCase();
-            let url = `https://aeroapi.flightaware.com/aeroapi/flights/${cleanFlightNum}`;
-            
-            // Wenn ein Datum übergeben wurde, grenzen wir den Zeitraum ein
+            let startDate = date ? `${date}T00:00:00Z` : "";
+            let endDate = date ? `${date}T23:59:59Z` : "";
+            faUrl = `https://aeroapi.flightaware.com/aeroapi/flights/${cleanFlightNum}`;
             if (date) {
-                const startDate = `${date}T00:00:00Z`;
-                const endDate = `${date}T23:59:59Z`;
-                url += `?start=${startDate}&end=${endDate}`;
+                faUrl += `?start=${startDate}&end=${endDate}`;
             }
-
-            const response = await fetch(url, {
-                headers: { 'x-apikey': API_KEY, 'Accept': 'application/json' }
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                flights = data.flights || [];
-            }
-        } 
-        // =========================================================
-        // FALL B: SUCHE NACH ROUTE (Für "Manuell hinzufügen" Liste)
-        // =========================================================
-        else if (dep && arr) {
-            // Wenn kein Datum da ist, nehmen wir heute
-            const searchDate = date || new Date().toISOString().split('T')[0];
-            const url = `https://aeroapi.flightaware.com/aeroapi/schedules/${searchDate}/${dep.toUpperCase()}/${arr.toUpperCase()}`;
-            
-            const response = await fetch(url, {
-                headers: { 'x-apikey': API_KEY, 'Accept': 'application/json' }
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                flights = data.scheduled_flights || [];
+        } else if (dep && arr) {
+            // ==========================================
+            // MODUS B: Suche per Strecke (Lupe im Formular)
+            // ==========================================
+            isRouteSearch = true;
+            faUrl = `https://aeroapi.flightaware.com/aeroapi/schedules/${dep.toUpperCase()}/${arr.toUpperCase()}`;
+            if (date) {
+                faUrl += `?start=${date}T00:00:00Z&end=${date}T23:59:59Z`;
             }
         } else {
-            return { 
-                statusCode: 400, 
-                headers: CORS_HEADERS, 
-                body: JSON.stringify({ error: "Bitte entweder Flugnummer oder Route (dep/arr) angeben." }) 
-            };
+            return new Response(JSON.stringify({ error: "Missing parameters" }), { status: 400 });
         }
 
-        // =========================================================
-        // 🧹 DATEN-AUFBEREITUNG (Übersetzer für AvioSphere)
-        // =========================================================
-        // FlightAware liefert extrem viele Daten. Wir picken uns nur die Kirschen 
-        // heraus und verpacken sie so flach, dass deine App sie sofort versteht.
-        
-        const mappedFlights = flights.map(f => {
-            // Zeiten sicher extrahieren
-            const depTime = f.actual_out || f.estimated_out || f.scheduled_out || null;
-            const arrTime = f.actual_in || f.estimated_in || f.scheduled_in || null;
-            
-            // Status ableiten
-            let status = "scheduled";
-            if (f.actual_in) status = "landed";
-            else if (f.actual_off) status = "active";
-            else if (f.cancelled) status = "cancelled";
-
-            return {
-                // Basis
-                flight_number: f.ident || "",
-                airline_icao: f.operator || "",
-                
-                // Route
-                dep_iata: f.origin?.code_iata || dep || "",
-                arr_iata: f.destination?.code_iata || arr || "",
-                
-                // Flugzeug (wichtig für Logbuch)
-                aircraft_type: f.aircraft_type || "",
-                registration: f.registration || "",
-                
-                // 🎯 DIE MAGISCHEN FLIGHTAWARE DATEN
-                dep_terminal: f.terminal_origin || "",
-                dep_gate: f.gate_origin || "",
-                arr_terminal: f.terminal_destination || "",
-                arr_gate: f.gate_destination || "",
-                baggage_claim: f.baggage_claim || "",
-                
-                // Zeiten (App nutzt gerne Unix-Timestamps in Sekunden)
-                dep_time_ts: depTime ? Math.floor(new Date(depTime).getTime() / 1000) : null,
-                arr_time_ts: arrTime ? Math.floor(new Date(arrTime).getTime() / 1000) : null,
-                dep_time_iso: depTime, // Auch im Originalformat zur Sicherheit mitgeben
-                arr_time_iso: arrTime,
-                
-                status: status
-            };
+        const faRes = await fetch(faUrl, {
+            headers: { 'x-apikey': API_KEY, 'Accept': 'application/json' }
         });
 
-        // Codeshares und leere Hüllen (ohne Start/Ziel) herausfiltern
-        const validFlights = mappedFlights.filter(f => f.dep_iata && f.arr_iata);
+        if (!faRes.ok) {
+            return new Response(JSON.stringify({ error: "FlightAware Error", status: faRes.status }), { status: faRes.status });
+        }
 
-        return {
-            statusCode: 200,
-            headers: CORS_HEADERS,
-            body: JSON.stringify(validFlights)
-        };
+        const data = await faRes.json();
+        let flights = [];
+
+        // ==========================================
+        // DATEN-NORMALISIERUNG (Für das Frontend)
+        // ==========================================
+        if (isRouteSearch) {
+            flights = data.scheduled_flights || [];
+            // FlightAware /schedules liefert andere Feldnamen als /flights. Wir biegen das für das Frontend gerade!
+            flights = flights.map(f => ({
+                flight_number: f.ident,
+                airline_icao: f.operator,
+                dep_time_iso: f.scheduled_out,
+                arr_time_iso: f.scheduled_in,
+                dep_time_ts: f.scheduled_out ? Math.floor(new Date(f.scheduled_out).getTime() / 1000) : null,
+                arr_time_ts: f.scheduled_in ? Math.floor(new Date(f.scheduled_in).getTime() / 1000) : null,
+                aircraft_type: f.aircraft_type
+            }));
+        } else {
+            flights = data.flights || [];
+            flights = flights.map(f => {
+                const depTime = f.actual_out || f.estimated_out || f.scheduled_out;
+                const arrTime = f.actual_in || f.estimated_in || f.scheduled_in;
+                return {
+                    ...f,
+                    flight_number: f.ident,
+                    airline_icao: f.operator,
+                    dep_time_iso: depTime,
+                    arr_time_iso: arrTime,
+                    dep_time_ts: depTime ? Math.floor(new Date(depTime).getTime() / 1000) : null,
+                    arr_time_ts: arrTime ? Math.floor(new Date(arrTime).getTime() / 1000) : null,
+                    aircraft_registration: f.registration
+                };
+            });
+        }
+
+        return new Response(JSON.stringify(flights), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+        });
 
     } catch (error) {
-        console.error("FlightAware API Fehler:", error);
-        return {
-            statusCode: 500,
-            headers: CORS_HEADERS,
-            body: JSON.stringify({ error: `Server-Fehler: ${error.message}` })
-        };
+        console.error("Backend Error:", error);
+        return new Response(JSON.stringify({ error: error.message }), { status: 500 });
     }
-};
+}
