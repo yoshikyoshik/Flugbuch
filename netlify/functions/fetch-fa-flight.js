@@ -27,7 +27,10 @@ export default async function handler(request, context) {
             // ==========================================
             // MODUS B: Suche per Strecke (Lupe)
             // ==========================================
-            faUrl = `https://aeroapi.flightaware.com/aeroapi/schedules/${date}/${date}?origin=${dep.toUpperCase()}&destination=${arr.toUpperCase()}`;
+            // 🚀 BUGHUNT FIX: Den GANZEN Tag suchen (00:00:00 bis 23:59:59), statt ein 0-Sekunden-Fenster!
+            const startDate = `${date}T00:00:00Z`;
+            const endDate = `${date}T23:59:59Z`;
+            faUrl = `https://aeroapi.flightaware.com/aeroapi/schedules/${startDate}/${endDate}?origin=${dep.toUpperCase()}&destination=${arr.toUpperCase()}`;
         } else {
             return new Response(JSON.stringify({ error: "Missing parameters" }), { status: 400 });
         }
