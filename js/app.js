@@ -6256,6 +6256,10 @@ async function searchFlightByRoute() {
     const content = document.getElementById('fs-modal-content');
     const list = document.getElementById('flight-selector-list');
 
+    // 🚀 BUGHUNT FIX: Zwingt das Modal dazu, einen Scrollbalken zu zeigen, wenn die Liste zu lang wird!
+    list.style.maxHeight = "60vh"; // Maximal 60% der Bildschirmhöhe
+    list.style.overflowY = "auto"; // Scrollbalken aktivieren
+
     const modalTitleEl = content.querySelector('h3');
     modalTitleEl.textContent = isFuture ? (getTranslation('flightSearch.modalTitleFuture') || 'Zukünftige Flüge') : (getTranslation('flightSearch.modalTitle') || 'Heutige Flüge');
     
