@@ -25,10 +25,10 @@ export default async function handler(request, context) {
             }
         } else if (dep && arr) {
             // ==========================================
-            // MODUS B: Suche per Strecke
+            // MODUS B: Suche per Strecke (Lupe)
             // ==========================================
-            // 🚀 BUGHUNT FIX: Der einzig korrekte Endpunkt für Streckensuchen!
-            faUrl = `https://aeroapi.flightaware.com/aeroapi/airports/${dep.toUpperCase()}/flights/to/${arr.toUpperCase()}`;
+            // Der offizielle "Schedules"-Endpunkt für tagesaktuelle & zukünftige Routen
+            faUrl = `https://aeroapi.flightaware.com/aeroapi/schedules/${dep.toUpperCase()}/${arr.toUpperCase()}`;
             if (date) {
                 faUrl += `?start=${date}T00:00:00Z&end=${date}T23:59:59Z`;
             }
@@ -46,16 +46,23 @@ export default async function handler(request, context) {
 
         const data = await faRes.json();
         
-        // Beide Endpunkte liefern die Daten ab sofort einheitlich im Array "flights" zurück!
-        let flights = data.flights || [];
+        // Flexibel abgreifen, da FlightAware die Arrays gerne mal umbenennt
+        let rawFlights = data.scheduled_flights || data.flights || [];
         
-        flights = flights.map(f => {
-            const depTime = f.actual_out || f.estimated_out || f.scheduled_out;
-            const arrTime = f.actual_in || f.estimated_in || f.scheduled_in;
+        // ==========================================
+        // 🚀 DER PANZER-CODE: Daten normalisieren
+        // ==========================================
+        let flights = rawFlights.map(f => {
+            // Wir prüfen alle möglichen Kombinationen, die FlightAware nutzen könnte!
+            const ident = f.ident || f.ident_icao || f.ident_iata || f.flight_number || "Unbekannt";
+            const operator = f.operator || f.operator_icao || f.operator_iata || f.airline_icao || "UNK";
+            const depTime = f.actual_out || f.estimated_out || f.scheduled_out || f.departure_time;
+            const arrTime = f.actual_in || f.estimated_in || f.scheduled_in || f.arrival_time;
+            
             return {
                 ...f,
-                flight_number: f.ident,
-                airline_icao: f.operator,
+                flight_number: ident,
+                airline_icao: operator,
                 dep_time_iso: depTime,
                 arr_time_iso: arrTime,
                 dep_time_ts: depTime ? Math.floor(new Date(depTime).getTime() / 1000) : null,
