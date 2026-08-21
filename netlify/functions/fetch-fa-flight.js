@@ -27,11 +27,7 @@ export default async function handler(request, context) {
             // ==========================================
             // MODUS B: Suche per Strecke (Lupe)
             // ==========================================
-            // 🚀 BUGHUNT FIX: Wir gehen ZURÜCK zum Endpunkt, der die 5 "Unbekannt" Flüge geliefert hat!
-            faUrl = `https://aeroapi.flightaware.com/aeroapi/airports/${dep.toUpperCase()}/flights/to/${arr.toUpperCase()}`;
-            if (date) {
-                faUrl += `?start=${date}T00:00:00Z&end=${date}T23:59:59Z`;
-            }
+            faUrl = `https://aeroapi.flightaware.com/aeroapi/schedules/${date}/${date}?origin=${dep.toUpperCase()}&destination=${arr.toUpperCase()}`;
         } else {
             return new Response(JSON.stringify({ error: "Missing parameters" }), { status: 400 });
         }
@@ -46,45 +42,47 @@ export default async function handler(request, context) {
 
         const data = await faRes.json();
         
-        // FlightAware liefert die Daten je nach Endpunkt als direktes Array oder verschachtelt
+        // 🚀 BUGHUNT FIX 1: "scheduled" aus dem JSON des Nutzers hinzugefügt!
         let rawFlights = [];
         if (Array.isArray(data)) {
             rawFlights = data;
         } else {
-            // Der absolute Staubsauger für alle FlightAware-Endpunkte
             rawFlights = [
+                ...(data.scheduled || []),  // <-- Das ist der Gamechanger!
                 ...(data.flights || []),
                 ...(data.scheduled_flights || []),
                 ...(data.schedules || []),
-                ...(data.scheduled_departures || []),
-                ...(data.departures || []),
-                ...(data.scheduled_arrivals || []),
-                ...(data.arrivals || [])
+                ...(data.departures || [])
             ];
         }
         
         // ==========================================
-        // PANZER-CODE: Alles exakt für ui.js übersetzen!
+        // PANZER-CODE: Maßgeschneidert auf das neue JSON!
         // ==========================================
         let flights = rawFlights.map(f => {
-            // Flugnummer
-            const ident = f.ident || f.ident_iata || f.ident_icao || f.fa_flight_id || f.flight_number || "Unbekannt";
-            // Airline
-            const operator = f.operator || f.operator_iata || f.operator_icao || f.airline || f.airline_icao || "UNK";
+            // 1. FLUGNUMMER: Preferiere 'actual_ident_iata' (Der echte ausführende Flug, blockt Codeshares ab)
+            const ident = f.actual_ident_iata || f.ident_iata || f.ident || f.flight_number || "Unbekannt";
             
-            // Abflug/Ankunft (Zwingend für den Autopiloten!)
-            const depIata = (f.origin && f.origin.code_iata) ? f.origin.code_iata : (typeof f.origin === 'string' ? f.origin : (f.origin_iata || ""));
-            const arrIata = (f.destination && f.destination.code_iata) ? f.destination.code_iata : (typeof f.destination === 'string' ? f.destination : (f.destination_iata || ""));
+            // 2. AIRLINE: Im Schedules-Endpoint fehlt 'operator'. Wir schneiden den ICAO/IATA-Code aus der Flugnummer!
+            let operator = f.operator || f.operator_icao || f.operator_iata || f.airline_icao;
+            if (!operator) {
+                const baseIdent = f.actual_ident_icao || f.ident_icao || f.ident || "";
+                const match = baseIdent.match(/^[A-Za-z]+/); // Holt die Buchstaben raus (z.B. "VLG" aus "VLG1885")
+                operator = match ? match[0] : "UNK";
+            }
+            
+            // 3. FLUGHÄFEN: FlightAware liefert bei /schedules die IATA separat in 'origin_iata'
+            const depIata = f.origin_iata || (f.origin && f.origin.code_iata) || (typeof f.origin === 'string' && f.origin.length === 3 ? f.origin : "UNK");
+            const arrIata = f.destination_iata || (f.destination && f.destination.code_iata) || (typeof f.destination === 'string' && f.destination.length === 3 ? f.destination : "UNK");
 
-            // Flugzeiten
+            // 4. ZEITEN
             const depTime = f.scheduled_out || f.actual_out || f.estimated_out || f.departure_time;
             const arrTime = f.scheduled_in || f.actual_in || f.estimated_in || f.arrival_time;
             
-            // Flugzeugtyp
             const aircraftType = (f.aircraft_type && typeof f.aircraft_type === 'object') ? f.aircraft_type.type : (f.aircraft_type || null);
 
             return {
-                ...f, // Alle Original-Daten erhalten!
+                ...f, 
                 flight_number: ident,
                 airline_icao: operator,
                 dep_iata: depIata,         
@@ -98,12 +96,12 @@ export default async function handler(request, context) {
             };
         });
 
-        // 🚀 DUPLIKATE FILTERN
+        // 🚀 BUGHUNT FIX 2: CODESHARES ZUSAMMENFASSEN
+        // Eliminiert die 4 doppelten Einträge aus deinem JSON und behält nur den echten (z.B. VY1885)
         const uniqueFlights = [];
         const seenIds = new Set();
         for (const flight of flights) {
-            // "Unbekannt" darf NICHT blockiert werden, falls die API zickt
-            const uniqueId = (flight.flight_number !== "Unbekannt") ? flight.flight_number : Math.random().toString();
+            const uniqueId = flight.flight_number !== "Unbekannt" ? flight.flight_number : Math.random().toString();
             
             if (!seenIds.has(uniqueId)) {
                 seenIds.add(uniqueId);
