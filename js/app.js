@@ -1064,33 +1064,37 @@ window.logFlight = async function () {
         if (flightDateStr === todayStr || flightDateStr === tomorrowStr) {
             console.log(`🚀 Starte lautlosen Instant-Sync für neuen Flug ${newFlightForSupabase.flightNumber}...`);
             try {
-                const fetchUrl = `${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-live-flight?dep_iata=${newFlightForSupabase.departure}&flight_iata=${newFlightForSupabase.flightNumber}&date=${flightDateStr}`;
+                // 🚀 BUGHUNT FIX: Auf neue FlightAware-Funktion umleiten!
+                const cleanFlightNum = newFlightForSupabase.flightNumber.replace(/\s+/g, '').toUpperCase();
+                const fetchUrl = `${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-fa-flight?flight_number=${cleanFlightNum}&date=${flightDateStr}`;
                 const syncRes = await fetch(fetchUrl);
                 
                 if (syncRes.ok) {
-                    const data = await syncRes.json();
-                    const updatePayload = {};
+                    const flightsArray = await syncRes.json();
+                    
+                    if (flightsArray && flightsArray.length > 0) {
+                        const data = flightsArray[0];
+                        const updatePayload = {};
 
-                    // Die rettenden Timestamps für den Agenten eintragen!
-                    if (data.dep_time_ts) updatePayload.dep_time_ts = data.dep_time_ts;
-                    if (data.arr_time_ts) updatePayload.arr_time_ts = data.arr_time_ts;
-                    if (data.dep_estimated_ts) updatePayload.dep_estimated_ts = data.dep_estimated_ts;
-                    if (data.arr_estimated_ts) updatePayload.arr_estimated_ts = data.arr_estimated_ts;
+                        // Die rettenden Timestamps für den Agenten eintragen!
+                        if (data.dep_time_ts) updatePayload.dep_time_ts = data.dep_time_ts;
+                        if (data.arr_time_ts) updatePayload.arr_time_ts = data.arr_time_ts;
 
-                    // Gates und Terminals sofort ins UI schieben!
-                    if (data.dep_terminal) updatePayload.dep_terminal = data.dep_terminal;
-                    if (data.dep_gate) updatePayload.dep_gate = data.dep_gate;
-                    if (data.arr_terminal) updatePayload.arr_terminal = data.arr_terminal;
-                    if (data.arr_gate) updatePayload.arr_gate = data.arr_gate;
-                    if (data.aircraft_registration) updatePayload.registration = data.aircraft_registration;
+                        // Gates und Terminals sofort ins UI schieben! (FlightAware Original-Namen)
+                        if (data.terminal_origin) updatePayload.dep_terminal = data.terminal_origin;
+                        if (data.gate_origin) updatePayload.dep_gate = data.gate_origin;
+                        if (data.terminal_destination) updatePayload.arr_terminal = data.terminal_destination;
+                        if (data.gate_destination) updatePayload.arr_gate = data.gate_destination;
+                        if (data.registration) updatePayload.registration = data.registration;
 
-                    if (Object.keys(updatePayload).length > 0) {
-                        await supabaseClient.from('flights').update(updatePayload).eq('flight_id', newFlightId);
-                        console.log(`✅ Instant-Sync erfolgreich! Flug ${newFlightForSupabase.flightNumber} hat sofort Gates/Timestamps erhalten.`);
-                        
-                        // Heimlich die Widgets aktualisieren, damit das neue Gate direkt aufploppt!
-                        if (flightDateStr === todayStr && typeof initLiveWidget === 'function') initLiveWidget();
-                        if (typeof initUpcomingWidget === 'function') initUpcomingWidget();
+                        if (Object.keys(updatePayload).length > 0) {
+                            await supabaseClient.from('flights').update(updatePayload).eq('flight_id', newFlightId);
+                            console.log(`✅ Instant-Sync erfolgreich! Flug ${newFlightForSupabase.flightNumber} hat sofort Gates/Timestamps erhalten.`);
+                            
+                            // Heimlich die Widgets aktualisieren, damit das neue Gate direkt aufploppt!
+                            if (flightDateStr === todayStr && typeof initLiveWidget === 'function') initLiveWidget();
+                            if (typeof initUpcomingWidget === 'function') initUpcomingWidget();
+                        }
                     }
                 }
             } catch (err) {
@@ -6300,8 +6304,11 @@ async function searchFlightByRoute() {
             // Wir machen das Objekt sicher für HTML-Attribute
             const flightDataAttr = btoa(JSON.stringify(f)); 
 
+            // 🚀 BUGHUNT FIX: Den Airline-Namen sicher escapen und als 3. Parameter übergeben!
+            const safeAirlineName = airlineName.replace(/'/g, "\\'");
+
             return `
-            <button onclick="selectFoundFlight('${flightNum}', '${flightDataAttr}')" 
+            <button onclick="selectFoundFlight('${flightNum}', '${flightDataAttr}', '${safeAirlineName}')" 
             class="w-full text-left p-4 rounded-xl bg-surface-container-low dark:bg-slate-800 hover:bg-primary/10 transition border border-transparent hover:border-primary/30 flex justify-between items-center group">
             <div>
                 <div class="font-black text-lg text-on-surface dark:text-white group-hover:text-primary transition-colors">${flightNum}</div>
@@ -6321,10 +6328,18 @@ async function searchFlightByRoute() {
     }
 }
 
-window.selectFoundFlight = function(flightNum, encodedData) {
+window.selectFoundFlight = function(flightNum, encodedData, airlineNameStr) {
     try {
         const flightInput = document.getElementById('flightNumber');
         if (flightInput) flightInput.value = flightNum;
+
+        // 🚀 BUGHUNT FIX: Den Airline-Namen aus der Liste direkt in das Formularfeld schreiben!
+        if (airlineNameStr) {
+            const airlineInput = document.getElementById('airline');
+            if (airlineInput && !airlineInput.value) {
+                airlineInput.value = airlineNameStr;
+            }
+        }
 
         let depTs = null;
         let arrTs = null;
@@ -6501,22 +6516,28 @@ window.silentPostFlightSync = async function(allFlights) {
     for (const flight of yesterdaysFlights) {
         try {
             const flightNum = flight.flightNumber || flight.flightLogNumber;
-            const depIata = flight.departure;
-            if (!flightNum || !depIata) continue;
+            if (!flightNum) continue;
 
-            const response = await fetch(`${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-live-flight?dep_iata=${depIata}&flight_iata=${flightNum}`);
+            const cleanFlightNum = flightNum.toString().replace(/\s+/g, '').toUpperCase();
+            
+            // 🚀 BUGHUNT FIX: Auf neue FlightAware-API umgeleitet
+            const response = await fetch(`${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-fa-flight?flight_number=${cleanFlightNum}&date=${yesterdayStr}`);
+            
             if (response.ok) {
-                const data = await response.json();
+                const flightsArray = await response.json();
                 
-                // Hat die API noch Daten und tatsächliche Zeiten?
-                let updates = {};
-                // (Passe die Keys hier an deine Supabase-Struktur an, falls sie anders heißen!)
-                if (data.arrival_time_actual) updates.arrival_time_actual = data.arrival_time_actual;
-                if (data.departure_time_actual) updates.departure_time_actual = data.departure_time_actual;
-                
-                if (Object.keys(updates).length > 0 && typeof supabaseClient !== 'undefined') {
-                    await supabaseClient.from('flights').update(updates).eq('flight_id', flight.id || flight.flight_id);
-                    console.log(`✅ Silent-Sync erfolgreich für Flug ${flightNum}!`);
+                if (flightsArray && flightsArray.length > 0) {
+                    const data = flightsArray[0];
+                    let updates = {};
+                    
+                    // Wir aktualisieren die tatsächlichen Flugzeiten, falls wir sie noch nicht haben
+                    if (data.actual_out) updates.dep_actual_ts = Math.floor(new Date(data.actual_out).getTime() / 1000);
+                    if (data.actual_in || data.actual_on) updates.arr_actual_ts = Math.floor(new Date(data.actual_in || data.actual_on).getTime() / 1000);
+                    
+                    if (Object.keys(updates).length > 0 && typeof supabaseClient !== 'undefined') {
+                        await supabaseClient.from('flights').update(updates).eq('flight_id', flight.id || flight.flight_id);
+                        console.log(`✅ Silent-Sync erfolgreich für Flug ${flightNum}!`);
+                    }
                 }
             }
         } catch (e) {
