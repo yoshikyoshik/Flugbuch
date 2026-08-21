@@ -16,7 +16,7 @@ export default async function handler(request, context) {
 
         if (flight_number) {
             // ==========================================
-            // MODUS A: Suche per Flugnummer
+            // MODUS A: Suche per Flugnummer (Autopilot)
             // ==========================================
             const cleanFlightNum = flight_number.replace(/\s+/g, '').toUpperCase();
             faUrl = `https://aeroapi.flightaware.com/aeroapi/flights/${cleanFlightNum}`;
@@ -25,12 +25,9 @@ export default async function handler(request, context) {
             }
         } else if (dep && arr) {
             // ==========================================
-            // MODUS B: Suche per Strecke
+            // MODUS B: Suche per Strecke (Lupe)
             // ==========================================
-            faUrl = `https://aeroapi.flightaware.com/aeroapi/airports/${dep.toUpperCase()}/flights/to/${arr.toUpperCase()}`;
-            if (date) {
-                faUrl += `?start=${date}T00:00:00Z&end=${date}T23:59:59Z`;
-            }
+            faUrl = `https://aeroapi.flightaware.com/aeroapi/schedules/${date}/${date}?origin=${dep.toUpperCase()}&destination=${arr.toUpperCase()}`;
         } else {
             return new Response(JSON.stringify({ error: "Missing parameters" }), { status: 400 });
         }
@@ -45,45 +42,64 @@ export default async function handler(request, context) {
 
         const data = await faRes.json();
         
-        // 🚀 BUGHUNT FIX: Der Staubsauger!
-        // Wir holen restlos alle Arrays ab, die FlightAware liefern könnte.
-        let rawFlights = [
-            ...(data.flights || []),
-            ...(data.scheduled_flights || []),
-            ...(data.scheduled_departures || []),
-            ...(data.departures || []),
-            ...(data.scheduled_arrivals || []),
-            ...(data.arrivals || [])
-        ];
+        let rawFlights = [];
+        if (Array.isArray(data)) {
+            rawFlights = data;
+        } else {
+            // Der absolute Staubsauger für alle FlightAware-Endpunkte
+            rawFlights = [
+                ...(data.flights || []),
+                ...(data.scheduled_flights || []),
+                ...(data.schedules || []),
+                ...(data.scheduled_departures || []),
+                ...(data.departures || []),
+                ...(data.scheduled_arrivals || []),
+                ...(data.arrivals || [])
+            ];
+        }
         
         // ==========================================
-        // PANZER-CODE: Mapping der unterschiedlichen Feldnamen
+        // PANZER-CODE: Alles exakt für ui.js übersetzen!
         // ==========================================
         let flights = rawFlights.map(f => {
-            const ident = f.ident_iata || f.ident_icao || f.ident || f.flight_number || "Unbekannt";
-            const operator = f.operator_iata || f.operator_icao || f.operator || f.airline_icao || "UNK";
-            const depTime = f.scheduled_out || f.actual_out || f.estimated_out;
-            const arrTime = f.scheduled_in || f.actual_in || f.estimated_in;
+            // Flugnummer
+            const ident = f.ident || f.ident_iata || f.ident_icao || f.fa_flight_id || f.flight_number || "Unbekannt";
+            // Airline
+            const operator = f.operator || f.operator_iata || f.operator_icao || f.airline || f.airline_icao || "UNK";
             
+            // Abflug/Ankunft (Zwingend für den Autopiloten!)
+            const depIata = (f.origin && f.origin.code_iata) ? f.origin.code_iata : (typeof f.origin === 'string' ? f.origin : (f.origin_iata || ""));
+            const arrIata = (f.destination && f.destination.code_iata) ? f.destination.code_iata : (typeof f.destination === 'string' ? f.destination : (f.destination_iata || ""));
+
+            // Flugzeiten
+            const depTime = f.scheduled_out || f.actual_out || f.estimated_out || f.departure_time;
+            const arrTime = f.scheduled_in || f.actual_in || f.estimated_in || f.arrival_time;
+            
+            // Flugzeugtyp
+            const aircraftType = (f.aircraft_type && typeof f.aircraft_type === 'object') ? f.aircraft_type.type : (f.aircraft_type || null);
+
             return {
-                ...f,
+                ...f, // Alle Original-Daten erhalten!
                 flight_number: ident,
                 airline_icao: operator,
+                dep_iata: depIata,         // 🚀 RETTET DEN AUTOPILOTEN!
+                arr_iata: arrIata,         // 🚀 RETTET DEN AUTOPILOTEN!
                 dep_time_iso: depTime,
                 arr_time_iso: arrTime,
                 dep_time_ts: depTime ? Math.floor(new Date(depTime).getTime() / 1000) : null,
                 arr_time_ts: arrTime ? Math.floor(new Date(arrTime).getTime() / 1000) : null,
                 aircraft_registration: f.registration || null,
-                aircraft_type: f.aircraft_type || null
+                aircraft_type: aircraftType
             };
         });
 
         // 🚀 DUPLIKATE FILTERN
-        // Verhindert, dass ein Flug doppelt auftaucht, wenn er in "scheduled" und "departures" steht.
         const uniqueFlights = [];
         const seenIds = new Set();
         for (const flight of flights) {
-            const uniqueId = flight.fa_flight_id || flight.flight_number;
+            // "Unbekannt" darf NICHT blockiert werden, falls die API zickt
+            const uniqueId = (flight.flight_number !== "Unbekannt") ? flight.flight_number : Math.random().toString();
+            
             if (!seenIds.has(uniqueId)) {
                 seenIds.add(uniqueId);
                 uniqueFlights.push(flight);
