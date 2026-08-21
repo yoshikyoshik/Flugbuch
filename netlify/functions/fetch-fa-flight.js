@@ -9,7 +9,7 @@ export default async function handler(request, context) {
     const flight_number = url.searchParams.get("flight_number");
     const dep = url.searchParams.get("dep");
     const arr = url.searchParams.get("arr");
-    const date = url.searchParams.get("date");
+    const date = url.searchParams.get("date"); // YYYY-MM-DD
 
     try {
         let faUrl = "";
@@ -23,15 +23,13 @@ export default async function handler(request, context) {
             if (date) {
                 faUrl += `?start=${date}T00:00:00Z&end=${date}T23:59:59Z`;
             }
-        } else if (dep && arr) {
+        } else if (dep && arr && date) {
             // ==========================================
             // MODUS B: Suche per Strecke
             // ==========================================
-            // Der einzige Endpunkt, der ALLE geplanten Flüge eines Tages liefert!
-            faUrl = `https://aeroapi.flightaware.com/aeroapi/schedules/${dep.toUpperCase()}/${arr.toUpperCase()}`;
-            if (date) {
-                faUrl += `?start=${date}T00:00:00Z&end=${date}T23:59:59Z`;
-            }
+            // 🚀 BUGHUNT FIX: Der WAHRE Endpunkt für geplante Flüge (Schedules)!
+            // Laut FlightAware-Doku gehört dieser nicht zu /airports/, sondern zu /schedules/
+            faUrl = `https://aeroapi.flightaware.com/aeroapi/schedules/${date}/${date}?origin=${dep.toUpperCase()}&destination=${arr.toUpperCase()}`;
         } else {
             return new Response(JSON.stringify({ error: "Missing parameters" }), { status: 400 });
         }
@@ -41,7 +39,9 @@ export default async function handler(request, context) {
         });
 
         if (!faRes.ok) {
-            return new Response(JSON.stringify({ error: "FlightAware Error", status: faRes.status }), { status: faRes.status });
+            // Für leichteres Debugging im Netlify Log
+            const errorText = await faRes.text();
+            return new Response(JSON.stringify({ error: "FlightAware Error", status: faRes.status, details: errorText }), { status: faRes.status });
         }
 
         const data = await faRes.json();
@@ -50,10 +50,9 @@ export default async function handler(request, context) {
         let rawFlights = data.scheduled_flights || data.flights || [];
         
         // ==========================================
-        // 🚀 PANZER-CODE: Mapping der unterschiedlichen Feldnamen
+        // PANZER-CODE: Mapping der unterschiedlichen Feldnamen
         // ==========================================
         let flights = rawFlights.map(f => {
-            // Alle FlightAware Namensvarianten abfangen
             const ident = f.ident_iata || f.ident_icao || f.ident || f.flight_number || "Unbekannt";
             const operator = f.operator_iata || f.operator_icao || f.operator || f.airline_icao || "UNK";
             const depTime = f.scheduled_out || f.actual_out || f.estimated_out;
