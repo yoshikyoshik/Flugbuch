@@ -94,6 +94,11 @@ export default async function handler(request, context) {
                 arr_time_iso: arrTime,
                 dep_time_ts: depTime ? Math.floor(new Date(depTime).getTime() / 1000) : null,
                 arr_time_ts: arrTime ? Math.floor(new Date(arrTime).getTime() / 1000) : null,
+                // 🚀 BUGHUNT FIX: Gates und Terminals exakt für das UI-Widget übersetzen!
+                dep_terminal: f.terminal_origin || null,
+                dep_gate: f.gate_origin || null,
+                arr_terminal: f.terminal_destination || null,
+                arr_gate: f.gate_destination || null,
                 aircraft_registration: f.registration || null,
                 aircraft_type: aircraftType
             };
