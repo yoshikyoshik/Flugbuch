@@ -84,6 +84,18 @@ export default async function handler(request, context) {
             
             const aircraftType = (f.aircraft_type && typeof f.aircraft_type === 'object') ? f.aircraft_type.type : (f.aircraft_type || null);
 
+            // ==========================================
+            // 🚀 BUGHUNT FIX: Den echten Status berechnen!
+            // ==========================================
+            let flightStatus = "scheduled";
+            if (f.cancelled === true || (typeof f.status === 'string' && f.status.toLowerCase().includes('cancel'))) {
+                flightStatus = "cancelled";
+            } else if (f.actual_in || f.actual_on) {
+                flightStatus = "landed";
+            } else if (f.actual_out || f.actual_off) {
+                flightStatus = "active";
+            }
+
             return {
                 ...f, 
                 flight_number: ident,
@@ -99,6 +111,8 @@ export default async function handler(request, context) {
                 dep_gate: f.gate_origin || null,
                 arr_terminal: f.terminal_destination || null,
                 arr_gate: f.gate_destination || null,
+                // Status explizit setzen
+                status: flightStatus,
                 aircraft_registration: f.registration || null,
                 aircraft_type: aircraftType
             };
