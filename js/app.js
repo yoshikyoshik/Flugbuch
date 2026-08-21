@@ -3688,7 +3688,7 @@ window.startBoardingPassScanner = async function() {
         await new Promise(resolve => setTimeout(resolve, 100));
 
         // Scan starten
-        const result = await BarcodeScanner.startScan({ targetedFormats: ['PDF_417', 'QR_CODE'] });
+        const result = await BarcodeScanner.startScan({ targetedFormats: ['PDF_417', 'QR_CODE', 'AZTEC'] });
 
         // Sofort aufräumen
         cleanupScannerUI();
