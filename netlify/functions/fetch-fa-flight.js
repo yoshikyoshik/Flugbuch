@@ -27,7 +27,11 @@ export default async function handler(request, context) {
             // ==========================================
             // MODUS B: Suche per Strecke (Lupe)
             // ==========================================
-            faUrl = `https://aeroapi.flightaware.com/aeroapi/schedules/${date}/${date}?origin=${dep.toUpperCase()}&destination=${arr.toUpperCase()}`;
+            // 🚀 BUGHUNT FIX: Wir gehen ZURÜCK zum Endpunkt, der die 5 "Unbekannt" Flüge geliefert hat!
+            faUrl = `https://aeroapi.flightaware.com/aeroapi/airports/${dep.toUpperCase()}/flights/to/${arr.toUpperCase()}`;
+            if (date) {
+                faUrl += `?start=${date}T00:00:00Z&end=${date}T23:59:59Z`;
+            }
         } else {
             return new Response(JSON.stringify({ error: "Missing parameters" }), { status: 400 });
         }
@@ -42,6 +46,7 @@ export default async function handler(request, context) {
 
         const data = await faRes.json();
         
+        // FlightAware liefert die Daten je nach Endpunkt als direktes Array oder verschachtelt
         let rawFlights = [];
         if (Array.isArray(data)) {
             rawFlights = data;
@@ -82,8 +87,8 @@ export default async function handler(request, context) {
                 ...f, // Alle Original-Daten erhalten!
                 flight_number: ident,
                 airline_icao: operator,
-                dep_iata: depIata,         // 🚀 RETTET DEN AUTOPILOTEN!
-                arr_iata: arrIata,         // 🚀 RETTET DEN AUTOPILOTEN!
+                dep_iata: depIata,         
+                arr_iata: arrIata,         
                 dep_time_iso: depTime,
                 arr_time_iso: arrTime,
                 dep_time_ts: depTime ? Math.floor(new Date(depTime).getTime() / 1000) : null,
