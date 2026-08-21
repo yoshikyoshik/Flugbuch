@@ -9,7 +9,7 @@ export default async function handler(request, context) {
     const flight_number = url.searchParams.get("flight_number");
     const dep = url.searchParams.get("dep");
     const arr = url.searchParams.get("arr");
-    const date = url.searchParams.get("date"); // YYYY-MM-DD
+    const date = url.searchParams.get("date"); // Erwartet YYYY-MM-DD
 
     try {
         let faUrl = "";
@@ -23,13 +23,14 @@ export default async function handler(request, context) {
             if (date) {
                 faUrl += `?start=${date}T00:00:00Z&end=${date}T23:59:59Z`;
             }
-        } else if (dep && arr && date) {
+        } else if (dep && arr) {
             // ==========================================
             // MODUS B: Suche per Strecke
             // ==========================================
-            // 🚀 BUGHUNT FIX: Der WAHRE Endpunkt für geplante Flüge (Schedules)!
-            // Laut FlightAware-Doku gehört dieser nicht zu /airports/, sondern zu /schedules/
-            faUrl = `https://aeroapi.flightaware.com/aeroapi/schedules/${date}/${date}?origin=${dep.toUpperCase()}&destination=${arr.toUpperCase()}`;
+            faUrl = `https://aeroapi.flightaware.com/aeroapi/airports/${dep.toUpperCase()}/flights/to/${arr.toUpperCase()}`;
+            if (date) {
+                faUrl += `?start=${date}T00:00:00Z&end=${date}T23:59:59Z`;
+            }
         } else {
             return new Response(JSON.stringify({ error: "Missing parameters" }), { status: 400 });
         }
@@ -39,15 +40,21 @@ export default async function handler(request, context) {
         });
 
         if (!faRes.ok) {
-            // Für leichteres Debugging im Netlify Log
-            const errorText = await faRes.text();
-            return new Response(JSON.stringify({ error: "FlightAware Error", status: faRes.status, details: errorText }), { status: faRes.status });
+            return new Response(JSON.stringify({ error: "FlightAware Error", status: faRes.status }), { status: faRes.status });
         }
 
         const data = await faRes.json();
         
-        // FlightAware liefert je nach Endpunkt "flights" oder "scheduled_flights"
-        let rawFlights = data.scheduled_flights || data.flights || [];
+        // 🚀 BUGHUNT FIX: Der Staubsauger!
+        // Wir holen restlos alle Arrays ab, die FlightAware liefern könnte.
+        let rawFlights = [
+            ...(data.flights || []),
+            ...(data.scheduled_flights || []),
+            ...(data.scheduled_departures || []),
+            ...(data.departures || []),
+            ...(data.scheduled_arrivals || []),
+            ...(data.arrivals || [])
+        ];
         
         // ==========================================
         // PANZER-CODE: Mapping der unterschiedlichen Feldnamen
@@ -71,7 +78,26 @@ export default async function handler(request, context) {
             };
         });
 
-        return new Response(JSON.stringify(flights), {
+        // 🚀 DUPLIKATE FILTERN
+        // Verhindert, dass ein Flug doppelt auftaucht, wenn er in "scheduled" und "departures" steht.
+        const uniqueFlights = [];
+        const seenIds = new Set();
+        for (const flight of flights) {
+            const uniqueId = flight.fa_flight_id || flight.flight_number;
+            if (!seenIds.has(uniqueId)) {
+                seenIds.add(uniqueId);
+                uniqueFlights.push(flight);
+            }
+        }
+
+        // Chronologisch nach Abflugzeit sortieren
+        uniqueFlights.sort((a, b) => {
+            if (!a.dep_time_ts) return 1;
+            if (!b.dep_time_ts) return -1;
+            return a.dep_time_ts - b.dep_time_ts;
+        });
+
+        return new Response(JSON.stringify(uniqueFlights), {
             status: 200,
             headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
         });
