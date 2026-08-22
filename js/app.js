@@ -3921,16 +3921,16 @@ window.viewFlightDetails = async function(id, isSwitching = false, customScope =
     }
     // =========================================================
 
-    // 7. Button Logik (Bearbeiten & Löschen)
+    // 7. Button Logik (Bearbeiten, Löschen & KARTE)
     const editBtn = document.getElementById('fd-edit-btn');
-    const deleteBtn = document.getElementById('fd-delete-btn'); // 🚀 NEU
+    const deleteBtn = document.getElementById('fd-delete-btn');
+    const mapBtn = document.getElementById('fd-map-btn'); // 🚀 NEU
 
     if (typeof isDemoMode !== 'undefined' && isDemoMode) {
-        // Im Demo-Modus werden Edit & Delete komplett ausgeblendet
         if (editBtn) editBtn.style.display = 'none';
         if (deleteBtn) deleteBtn.style.display = 'none';
+        if (mapBtn) mapBtn.style.display = 'none'; // Im Demo-Modus verstecken
     } else {
-        // Im normalen Modus sind Edit & Delete sichtbar und klickbar
         if (editBtn) {
             editBtn.style.display = ''; 
             editBtn.onclick = () => {
@@ -3938,12 +3938,18 @@ window.viewFlightDetails = async function(id, isSwitching = false, customScope =
                 if (typeof editFlight === 'function') editFlight(flight.id || flight.flight_id);
             };
         }
-        // 🚀 NEU: Lösch-Button Logik
         if (deleteBtn) {
             deleteBtn.style.display = ''; 
             deleteBtn.onclick = () => {
-                closeFlightDetails(); // Karte schließen
-                if (typeof deleteFlight === 'function') deleteFlight(flight.id || flight.flight_id); // Löschen auslösen
+                closeFlightDetails(); 
+                if (typeof deleteFlight === 'function') deleteFlight(flight.id || flight.flight_id); 
+            };
+        }
+        // 🚀 NEU: Klick-Logik für den Karten-Button!
+        if (mapBtn) {
+            mapBtn.style.display = '';
+            mapBtn.onclick = () => {
+                if (typeof focusFlightOnMap === 'function') focusFlightOnMap(flight.id || flight.flight_id);
             };
         }
     }

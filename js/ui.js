@@ -2572,3 +2572,37 @@ function toggleFeatureCard(element) {
     // Diese Karte umschalten
     element.classList.toggle('active');
 }
+
+// ==========================================
+// 🚀 UX FEATURE: FLUG GEZIELT AUF KARTE ZEIGEN
+// ==========================================
+window.focusFlightOnMap = function(flightId) {
+    // 1. Bordkarte sanft schließen
+    if (typeof closeFlightDetails === 'function') closeFlightDetails();
+
+    // 2. Zum Tab mit der Karte wechseln (Timeline)
+    if (typeof showTab === 'function') showTab('timeline');
+
+    // 3. "Alle Routen" Ansicht zwingend deaktivieren, falls sie an ist
+    if (window.isAllRoutesViewActive) {
+        window.isAllRoutesViewActive = false;
+        
+        const mapBtn = document.getElementById("toggle-map-view-btn");
+        if (mapBtn) {
+            mapBtn.innerHTML = `
+                <span class="material-symbols-outlined text-3xl text-primary dark:text-indigo-400 group-hover:scale-110 transition-transform">map</span>
+                <span class="text-sm font-bold text-on-surface dark:text-white" data-i18n="allRoutes">${typeof getTranslation === 'function' ? getTranslation("allRoutes") : "Alle Routen"}</span>
+            `;
+            mapBtn.classList.remove('bg-primary/10', 'dark:bg-indigo-900/40');
+        }
+    }
+
+    // 4. Die Liste neu rendern und den Fokus EXAKT auf diese ID setzen!
+    // renderFlights kümmert sich automatisch um das Zeichnen der Route!
+    if (typeof renderFlights === 'function') {
+        renderFlights(null, flightId);
+    }
+
+    // 5. Ganz nach oben scrollen, damit die Karte perfekt im Sichtfeld ist
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+};
