@@ -506,10 +506,6 @@ window.renderFlights = async function (
   if (typeof stopAnimation === 'function') stopAnimation();
   window.currentPage = page;
 
-  // 🚀 BUGHUNT FIX: Wir löschen isAllRoutesViewActive NICHT mehr blind!
-  // isAllRoutesViewActive = false; 
-
-  // Button-Status mit der Variablen synchronisieren (Aktions-orientiert)
   const mapBtn = document.getElementById("toggle-map-view-btn");
   if (mapBtn) {
       if (window.isAllRoutesViewActive) {
@@ -569,21 +565,22 @@ window.renderFlights = async function (
       window.updatePaginationUI(allFlights);
   }
 
-  // 🚀 BUGHUNT FIX: Sicherstellen, dass 'currentPage' immer als korrekte Zahl existiert, 
-  // bevor wir die Liste zerschneiden!
   const cp = window.currentPage || 1;
   const startIndex = (cp - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
   const paginatedFlights = allFlights.slice(startIndex, endIndex);
 
   // 🚀 BUGHUNT FIX: Karte nur dann als Einzelansicht zeichnen, wenn der Modus inaktiv ist!
+  let flightForMap = null; 
+  
   if (window.isAllRoutesViewActive) {
       if (typeof drawAllRoutesOnMap === 'function') {
           drawAllRoutesOnMap(allFlights);
       }
+      const mapDetailsTitle = document.querySelector('#last-flight-map-details h2');
+      if (mapDetailsTitle) mapDetailsTitle.textContent = getTranslation("allRoutes") || "Alle Routen";
+      
   } else {
-      let flightForMap = null;
-
       if (flightIdToFocus) {
         flightForMap = allFlights.find((f) => f.id === flightIdToFocus);
       }
@@ -600,22 +597,25 @@ window.renderFlights = async function (
         })[0];
       }
 
+      const mapDetailsTitle = document.querySelector('#last-flight-map-details h2');
+
       if (flightForMap) {
         window.drawRouteOnMap(
-          flightForMap.depLat,
-          flightForMap.depLon,
-          flightForMap.arrLat,
-          flightForMap.arrLon,
-          flightForMap.departure,
-          flightForMap.arrival,
-          flightForMap.depName,
-          flightForMap.arrName,
-          flightForMap
+          flightForMap.depLat, flightForMap.depLon, flightForMap.arrLat, flightForMap.arrLon,
+          flightForMap.departure, flightForMap.arrival, flightForMap.depName, flightForMap.arrName, flightForMap
         );
+        
+        if (mapDetailsTitle) {
+            mapDetailsTitle.textContent = `Visualisierung: ${flightForMap.departure} ➔ ${flightForMap.arrival}`;
+            mapDetailsTitle.removeAttribute("data-i18n"); 
+        }
       } else {
         window.drawRouteOnMap();
+        if (mapDetailsTitle) mapDetailsTitle.textContent = "Keine Flugdaten vorhanden";
       }
   }
+
+  const activeMapFlightId = (window.isAllRoutesViewActive || !flightForMap) ? null : (flightForMap.id || flightForMap.flight_id);
 
   const flightList = document.getElementById("flight-log-list");
   flightList.innerHTML = "";
@@ -642,8 +642,13 @@ window.renderFlights = async function (
           ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-tertiary-fixed text-on-tertiary-container dark:bg-purple-900/30 dark:text-purple-300 uppercase tracking-wide">🏝️ ${flight.trips.name}</span>` 
           : '';
 
+      const isMapActive = (flight.id || flight.flight_id) === activeMapFlightId;
+      const activeBorderClass = isMapActive 
+          ? "border-[2px] border-primary dark:border-indigo-400 shadow-[0_0_20px_rgba(79,91,155,0.25)] dark:shadow-[0_0_20px_rgba(129,140,248,0.25)]" 
+          : "border border-outline-variant/20 dark:border-slate-700";
+
       flightElement.innerHTML = `
-        <div class="bg-surface-container-lowest dark:bg-slate-800 rounded-[2rem] p-5 md:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none relative overflow-hidden border border-outline-variant/20 dark:border-slate-700 transition-all duration-300 group-hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] group-hover:-translate-y-1">
+        <div class="bg-surface-container-lowest dark:bg-slate-800 rounded-[2rem] p-5 md:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none relative overflow-hidden ${activeBorderClass} transition-all duration-300 group-hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] group-hover:-translate-y-1">
             <div class="absolute right-0 top-0 w-3/4 h-full ${planeOpacity} transition-opacity duration-500 bg-cover bg-center pointer-events-none" ${planeBg}></div>
             <div class="absolute inset-0 bg-gradient-to-r from-surface-container-lowest via-surface-container-lowest/90 to-transparent dark:from-slate-800 dark:via-slate-800/90 z-0 pointer-events-none"></div>
 
@@ -2577,16 +2582,11 @@ function toggleFeatureCard(element) {
 // 🚀 UX FEATURE: FLUG GEZIELT AUF KARTE ZEIGEN
 // ==========================================
 window.focusFlightOnMap = function(flightId) {
-    // 1. Bordkarte sanft schließen
     if (typeof closeFlightDetails === 'function') closeFlightDetails();
-
-    // 2. Zum Tab mit der Karte wechseln (Timeline)
     if (typeof showTab === 'function') showTab('timeline');
 
-    // 3. "Alle Routen" Ansicht zwingend deaktivieren, falls sie an ist
     if (window.isAllRoutesViewActive) {
         window.isAllRoutesViewActive = false;
-        
         const mapBtn = document.getElementById("toggle-map-view-btn");
         if (mapBtn) {
             mapBtn.innerHTML = `
@@ -2597,12 +2597,12 @@ window.focusFlightOnMap = function(flightId) {
         }
     }
 
-    // 4. Die Liste neu rendern und den Fokus EXAKT auf diese ID setzen!
-    // renderFlights kümmert sich automatisch um das Zeichnen der Route!
+    // 🚀 BUGHUNT FIX: Die App muss sich diesen Flug als "aktiven Fokus" merken!
+    globalLastFlightId = flightId; 
+
     if (typeof renderFlights === 'function') {
         renderFlights(null, flightId);
     }
 
-    // 5. Ganz nach oben scrollen, damit die Karte perfekt im Sichtfeld ist
     window.scrollTo({ top: 0, behavior: 'smooth' });
 };
