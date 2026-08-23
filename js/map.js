@@ -1154,6 +1154,10 @@ async function runAnimationLoop() {
             try {
                 const url = `${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-fa-track?fa_flight_id=${encodeURIComponent(flight.fa_flight_id)}`;
                 const response = await fetch(url);
+                
+                // 🛑 ZOMBIE-KILLER 1: Hat der Nutzer während des Ladens "Stop" oder einen anderen Flug geklickt?
+                if (window.animationState !== "running") return;
+
                 if (response.ok) {
                     const data = await response.json();
                     if (data.positions && data.positions.length > 1) {
@@ -1176,6 +1180,9 @@ async function runAnimationLoop() {
         const tempLine = L.polyline(points);
         map.fitBounds(tempLine.getBounds(), { padding: [50, 50] });
 
+        // 🛑 ZOMBIE-KILLER 2: Letzter Check, bevor der Pinsel das Papier berührt!
+        if (window.animationState !== "running") return;
+        
         // Wir wollen, dass die Animation ca. 3 Sekunden dauert. 
         // Wir teilen die Zeit durch die Anzahl der Punkte (egal ob 40 Fallback-Punkte oder 400 GPS-Punkte!)
         const animationDurationMs = 3000;

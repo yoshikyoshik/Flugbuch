@@ -506,6 +506,12 @@ window.renderFlights = async function (
   if (typeof stopAnimation === 'function') stopAnimation();
   window.currentPage = page;
 
+  // 🚀 UX FIX 1: Chronik-Leiste IMMER anzeigen, sobald die Flugliste lädt!
+  const chronicleContainer = document.getElementById('chronicle-controls-container');
+  if (chronicleContainer) {
+      chronicleContainer.classList.remove('hidden');
+  }
+
   const mapBtn = document.getElementById("toggle-map-view-btn");
   if (mapBtn) {
       if (window.isAllRoutesViewActive) {
