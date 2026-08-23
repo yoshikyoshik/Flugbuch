@@ -2314,7 +2314,7 @@ window.switchTimelineView = function(view) {
         if (mapButtons) mapButtons.classList.remove('hidden');
         if (printBtnContainer) printBtnContainer.classList.remove('hidden'); // Großen Button wieder zeigen
         
-        if (chronicleControls && window.isAllRoutesViewActive) {
+        if (chronicleControls) {
              chronicleControls.classList.remove('hidden');
         }
 
@@ -2409,17 +2409,13 @@ window.toggleAllRoutesView = async function() {
         }
     }
 
-    // 🚀 NEU: Chronik-Leiste ein-/ausblenden und ggf. stoppen
+    // 🚀 NEU: Chronik-Leiste bleibt JETZT IMMER an!
     const chronicleContainer = document.getElementById('chronicle-controls-container');
     if (chronicleContainer) {
-        if (window.isAllRoutesViewActive) {
-            chronicleContainer.classList.remove('hidden');
-        } else {
-            chronicleContainer.classList.add('hidden');
-            // Wenn man auf Einzelansicht geht, Chronik hart abbrechen
-            if (typeof stopTravelChronicle === 'function') stopTravelChronicle();
-            if (typeof updateChronicleUI === 'function') updateChronicleUI('stopped');
-        }
+        chronicleContainer.classList.remove('hidden');
+        // Wenn man den Modus wechselt, aktuelle Animation hart abbrechen!
+        if (typeof stopTravelChronicle === 'function') stopTravelChronicle();
+        if (typeof updateChronicleUI === 'function') updateChronicleUI('stopped');
     }
 
 };

@@ -1088,10 +1088,12 @@ async function runAnimationLoop() {
   if (window.animationStartIndex === 0) {
     routeLayer.clearLayers();
     map.setView([20, 0], 2);
+    // Wir nehmen an, 'delay' ist in deiner codebase definiert, ansonsten hier der Helfer:
+    const delay = ms => new Promise(res => setTimeout(res, ms));
     await delay(100); 
   }
 
-  // 🚀 BUGHUNT FIX: Flüge intelligent laden (Demo vs. Filter vs. Datenbank)
+  // Flüge laden
   const allFlights = (typeof isDemoMode !== 'undefined' && isDemoMode && window.flights) 
         ? window.flights 
         : (typeof currentlyFilteredFlights !== 'undefined' && currentlyFilteredFlights ? currentlyFilteredFlights : await getFlights());
@@ -1103,40 +1105,40 @@ async function runAnimationLoop() {
     return;
   }
 
-  const sortedFlights = typeof resequenceAndAssignNumbers === 'function' ? resequenceAndAssignNumbers(allFlights) : allFlights;
+  // 🚀 UX FIX 1: Entscheiden, welche Flüge animiert werden (Alle oder nur Einer?)
+  let flightsToAnimate = [];
+  if (window.isAllRoutesViewActive) {
+      // Alle Flüge abspielen
+      flightsToAnimate = typeof resequenceAndAssignNumbers === 'function' ? resequenceAndAssignNumbers(allFlights) : allFlights;
+  } else {
+      // Einzelansicht: Wir animieren nur den EINEN aktiven Flug
+      let flightForMap = allFlights.find((f) => f.id == globalLastFlightId);
+      if (!flightForMap) flightForMap = allFlights[0];
+      if (flightForMap) flightsToAnimate = [flightForMap];
+  }
+
   const chronicleColors = [
-    "#312E81",
-    "#10B981",
-    "#E11D48",
-    "#14B8A6",
-    "#D97706",
+    "#312E81", "#10B981", "#E11D48", "#14B8A6", "#D97706",
   ];
 
   try {
-    for (let i = window.animationStartIndex; i < sortedFlights.length; i++) {
+    for (let i = window.animationStartIndex; i < flightsToAnimate.length; i++) {
       
-      // --- ALTE, FALSCHE LOGIK LÖSCHEN ---
-      // if (window.animationState !== "running") {
-      //   window.animationStartIndex = i; 
-      //   if (window.animationState === "paused") { ... }
-      //   return; 
-      // }
-      // -----------------------------------
-
-      // 🚀 BUGHUNT FIX: RICHTIGE LOGIK (Einfach schlafen, anstatt abzubrechen!)
       while (window.animationState === "paused") {
-          if(mapInfo) mapInfo.textContent = (getTranslation("anim.paused") || "Pausiert").replace("{count}", sortedFlights[i].flightLogNumber || (i+1));
+          const delay = ms => new Promise(res => setTimeout(res, ms));
+          if(mapInfo) mapInfo.textContent = (getTranslation("anim.paused") || "Pausiert").replace("{count}", flightsToAnimate[i].flightLogNumber || (i+1));
           await delay(100);
       }
       if (window.animationState === "stopped") return;
 
-      const flight = sortedFlights[i];
-      const color = chronicleColors[i % chronicleColors.length];
+      const flight = flightsToAnimate[i];
+      // Bei Einzelansicht nehmen wir eine feste, frische Farbe (Grün), sonst wechseln wir durch
+      const color = window.isAllRoutesViewActive ? chronicleColors[i % chronicleColors.length] : "#10B981";
 
       if (flight.depLat && flight.arrLat) {
         if(mapInfo) mapInfo.textContent = (getTranslation("map.animationProgress") || "Flug {number} / {total}: {date} von {dep} nach {arr}")
           .replace("{number}", flight.flightLogNumber || (i+1))
-          .replace("{total}", sortedFlights.length)
+          .replace("{total}", flightsToAnimate.length)
           .replace("{date}", flight.date)
           .replace("{dep}", flight.departure)
           .replace("{arr}", flight.arrival);
@@ -1144,28 +1146,44 @@ async function runAnimationLoop() {
         L.marker([flight.depLat, flight.depLon]).addTo(routeLayer);
         L.marker([flight.arrLat, flight.arrLon]).addTo(routeLayer);
 
-        map.fitBounds(
-          [
-            [flight.depLat, flight.depLon],
-            [flight.arrLat, flight.arrLon],
-          ],
-          { padding: [50, 50] }
-        );
+        // ==========================================
+        // 🚀 UX FIX 2: GPS TRACK LADEN FÜR DIE ANIMATION
+        // ==========================================
+        let points = [];
+        if (flight.fa_flight_id) {
+            try {
+                const url = `${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-fa-track?fa_flight_id=${encodeURIComponent(flight.fa_flight_id)}`;
+                const response = await fetch(url);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.positions && data.positions.length > 1) {
+                        points = data.positions
+                            .filter(p => p.latitude && p.longitude)
+                            .map(p => [p.latitude, p.longitude]);
+                    }
+                }
+            } catch(e) {
+                console.warn("GPS Track für Animation nicht geladen", e);
+            }
+        }
 
-        const animationSteps = 40;
+        // Fallback: Gerade Linie (wie bisher), falls kein GPS Track da ist
+        if (points.length === 0) {
+            points = interpolatePoints(flight.depLat, flight.depLon, flight.arrLat, flight.arrLon, 40);
+        }
+
+        // Karte dynamisch auf diese neue Strecke zentrieren
+        const tempLine = L.polyline(points);
+        map.fitBounds(tempLine.getBounds(), { padding: [50, 50] });
+
+        // Wir wollen, dass die Animation ca. 3 Sekunden dauert. 
+        // Wir teilen die Zeit durch die Anzahl der Punkte (egal ob 40 Fallback-Punkte oder 400 GPS-Punkte!)
         const animationDurationMs = 3000;
-        const delayPerStep = animationDurationMs / animationSteps;
-        const points = interpolatePoints(
-          flight.depLat,
-          flight.depLon,
-          flight.arrLat,
-          flight.arrLon,
-          animationSteps
-        );
+        const delayPerStep = Math.max(10, animationDurationMs / points.length);
 
         const animatedPath = L.polyline([], {
           color: color,
-          weight: 2.5,
+          weight: 3, // Minimal dicker für bessere Sichtbarkeit
           opacity: 0.8,
         }).addTo(routeLayer);
         
@@ -1192,15 +1210,14 @@ async function runAnimationLoop() {
           icon: flightMarkerIcon,
         }).addTo(routeLayer);
 
-        // Die innere Schleife (Schritt für Schritt fliegen)
+        // Die innere Schleife (Schritt für Schritt die GPS-Punkte fliegen)
+        const delay = ms => new Promise(res => setTimeout(res, ms));
         for (let p = 0; p < points.length; p++) {
           
-          // 🚀 BUGHUNT FIX: Harter Abbruch WÄHREND des Flugs, falls Stop gedrückt wird!
           if (window.animationState === "stopped") {
               return; 
           }
           
-          // 🚀 BUGHUNT FIX: Millisekunden-genaue Pause WÄHREND das Flugzeug in der Luft ist!
           while (window.animationState === "paused") {
               await delay(100);
               if (window.animationState === "stopped") return;
@@ -1212,9 +1229,6 @@ async function runAnimationLoop() {
           await delay(delayPerStep);
         }
 
-        // 🚀 BUGHUNT FIX (Der getCenter Crash): 
-        // Prüfe, ob die Map die Line noch hat (falls in genau dieser Millisekunde Stopp gedrückt wurde),
-        // bevor getCenter aufgerufen wird!
         if (window.animationState === "running" && map.hasLayer(animatedPath) && animatedPath.getLatLngs().length > 0) {
             const centerLatLng = animatedPath.getCenter();
             flightMarker.setLatLng(centerLatLng);
@@ -1222,9 +1236,8 @@ async function runAnimationLoop() {
       }
     } // Ende for-Schleife
 
-    // Wenn er komplett durchgelaufen ist:
     if (window.animationState === "running") {
-      if(mapInfo) mapInfo.textContent = (getTranslation("anim.finished") || "Fertig").replace("{count}", sortedFlights.length);
+      if(mapInfo) mapInfo.textContent = (getTranslation("anim.finished") || "Fertig").replace("{count}", flightsToAnimate.length);
       window.animationState = "stopped";
       window.animationStartIndex = 0;
       if (typeof updateChronicleUI === 'function') updateChronicleUI('stopped');
