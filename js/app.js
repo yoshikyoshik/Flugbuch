@@ -6361,12 +6361,14 @@ window.selectFoundFlight = function(flightNum, encodedData, airlineNameStr) {
 
         let depTs = null;
         let arrTs = null;
+        let faId = null; // 🚀 FIX: Variable HIER deklarieren, damit sie überall gültig ist!
 
         if (encodedData) {
             const f = JSON.parse(atob(encodedData));
             // 🚀 Unsere neue API liefert die exakten Timestamps praktischerweise schon mit!
             depTs = f.dep_time_ts || null;
             arrTs = f.arr_time_ts || null;
+            faId = f.fa_flight_id || null; // 🚀 FIX: Die ID hier aus dem Objekt 'f' auslesen!
             
             // Wenn bekannt, tragen wir auch gleich den Flugzeugtyp ein
             if (f.aircraft_type) {
@@ -6378,9 +6380,9 @@ window.selectFoundFlight = function(flightNum, encodedData, airlineNameStr) {
         window.tempSelectedFlightData = {
             dep_time_ts: depTs,
             arr_time_ts: arrTs,
-            fa_flight_id: f.fa_flight_id || null // 🚀 NEU
+            fa_flight_id: faId // 🚀 FIX: Die gesicherte Variable hier verwenden
         };
-        console.log("⏱️ Temporäre Timestamps aus FlightAware erfolgreich gemerkt:", window.tempSelectedFlightData);
+        console.log("⏱️ Temporäre Daten aus FlightAware erfolgreich gemerkt:", window.tempSelectedFlightData);
 
         if (typeof closeFlightSelector === 'function') closeFlightSelector();
 
