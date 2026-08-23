@@ -63,8 +63,15 @@ export default async function handler(request, context) {
         // PANZER-CODE: Maßgeschneidert auf das neue JSON!
         // ==========================================
         let flights = rawFlights.map(f => {
-            // 1. FLUGNUMMER: Preferiere 'actual_ident_iata' (Der echte ausführende Flug, blockt Codeshares ab)
-            const ident = f.actual_ident_iata || f.ident_iata || f.ident || f.flight_number || "Unbekannt";
+            // 1. FLUGNUMMER: Preferiere 'actual_ident_iata'
+            let ident = f.actual_ident_iata || f.ident_iata || f.ident || f.flight_number || "Unbekannt";
+            
+            // 🚀 BUGHUNT FIX: Identitäts-Krise beenden!
+            // Wenn das Widget explizit nach einer Flugnummer fragt (Autopilot/Live-Widget), 
+            // erzwingen wir genau diesen Namen, damit das Widget seinen Flug wiedererkennt!
+            if (flight_number) {
+                ident = flight_number.replace(/\s+/g, '').toUpperCase();
+            }
             
             // 2. AIRLINE: Im Schedules-Endpoint fehlt 'operator'. Wir schneiden den ICAO/IATA-Code aus der Flugnummer!
             let operator = f.operator || f.operator_icao || f.operator_iata || f.airline_icao;
