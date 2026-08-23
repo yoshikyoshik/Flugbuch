@@ -1172,7 +1172,8 @@ async function autofillFlightData() {
       // 🚀 HIER IST DER FIX: Die Zeiten für das spätere Speichern sichern!
       window.tempSelectedFlightData = {
           dep_time_ts: flight.dep_time_ts || null,
-          arr_time_ts: flight.arr_time_ts || null
+          arr_time_ts: flight.arr_time_ts || null,
+          fa_flight_id: flight.fa_flight_id || null // 🚀 NEU
       };
       console.log("⏱️ Timestamps für Autopilot gesichert:", window.tempSelectedFlightData);
 

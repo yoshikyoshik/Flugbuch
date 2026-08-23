@@ -82,7 +82,7 @@ window.drawRouteOnMap = async function (
   arrCode,
   depName,
   arrName,
-  flightData // <-- NEU: Das Flug-Objekt für den Tooltip
+  flightData // <-- NEU: Das Flug-Objekt
 ) {
   var mapInfo = document.getElementById("map-info");
   routeLayer.clearLayers();
@@ -103,28 +103,55 @@ window.drawRouteOnMap = async function (
   const depHtml = window.buildAirportTooltipHtml(depName, depCode, `🛫 ${getTranslation("map.departure") || "Abflug"}`);
   const arrHtml = window.buildAirportTooltipHtml(arrName, arrCode, `🛬 ${getTranslation("map.arrival") || "Ankunft"}`);
 
-  // bindTooltip statt bindPopup macht es zum Hover-Effekt!
   const depMarker = L.marker([depLat, depLon]).bindTooltip(depHtml, { sticky: true, className: 'custom-map-tooltip' });
   const arrMarker = L.marker([arrLat, arrLon]).bindTooltip(arrHtml, { sticky: true, className: 'custom-map-tooltip' });
 
+  // ==========================================
+  // 🚀 PREMIUM: Echte GPS-Tracks laden!
+  // ==========================================
+  let gpsCoords = null; 
+
+  if (flightData && flightData.fa_flight_id) {
+      try {
+          const url = `${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-fa-track?fa_flight_id=${encodeURIComponent(flightData.fa_flight_id)}`;
+          const response = await fetch(url);
+          if (response.ok) {
+              const data = await response.json();
+              if (data.positions && data.positions.length > 1) {
+                  gpsCoords = data.positions
+                      .filter(p => p.latitude && p.longitude)
+                      .map(p => [p.latitude, p.longitude]);
+              }
+          }
+      } catch (err) {
+          console.warn("Konnte GPS-Track nicht laden, nutze Fallback-Kurve.");
+      }
+  }
+
+  // Die ultimative Weiche für die Wegpunkte
+  let finalPathCoords;
+  if (gpsCoords && gpsCoords.length > 0) {
+      finalPathCoords = gpsCoords; // Echte Radardaten nutzen!
+  } else {
+      // FALLBACK: Keine Livedaten. Alte, glatte Kurve ziehen.
+      finalPathCoords = [
+          [depLat, depLon],
+          [arrLat, arrLon]
+      ];
+  }
+
   const flightPath = L.polyline(
-    [
-      [depLat, depLon],
-      [arrLat, arrLon],
-    ],
+    finalPathCoords,
     { color: "#10B981", weight: 3 }
   );
 
-  // --- 🎯 DER TRICK: Unsichtbare, extra dicke Hitbox für fette Finger ---
+  // Die unsichtbare, dicke Hitbox für sauberes Klicken
   const hitBox = L.polyline(
-    [
-      [depLat, depLon],
-      [arrLat, arrLon],
-    ],
-    { color: "transparent", weight: 30, opacity: 0 } // 30px breiter Klick-Bereich!
+    finalPathCoords,
+    { color: "transparent", weight: 30, opacity: 0 } 
   );
 
-  // --- NEU: Hover & Klick hängen jetzt an der dicken Hitbox ---
+  // Klick und Hover hängen an der Hitbox
   if (flightData) {
       const popupHtml = window.buildMapTooltipHtml(flightData, 1);
       hitBox.bindTooltip(popupHtml, { sticky: true, className: 'custom-map-tooltip' });
@@ -134,20 +161,15 @@ window.drawRouteOnMap = async function (
           }
       });
   }
-  // ----------------------------------------------
 
   routeLayer.addLayer(depMarker);
   routeLayer.addLayer(arrMarker);
   routeLayer.addLayer(flightPath);
-  routeLayer.addLayer(hitBox); // <--- WICHTIG: Die Hitbox zur Karte hinzufügen
+  routeLayer.addLayer(hitBox); 
 
-  map.fitBounds(
-    [
-      [depLat, depLon],
-      [arrLat, arrLon],
-    ],
-    { padding: [50, 50] }
-  );
+  // 🚀 BUGHUNT FIX: Bei echten GPS-Tracks kann die Route vom Mittelpunkt abweichen. 
+  // Wir passen die Kamera jetzt auf die exakte Route an!
+  map.fitBounds(flightPath.getBounds(), { padding: [50, 50] });
 
   mapInfo.setAttribute("data-dynamic-depName", depName);
   mapInfo.setAttribute("data-dynamic-depCode", depCode);
@@ -160,7 +182,6 @@ window.drawRouteOnMap = async function (
     .replace("{depCode}", depCode)
     .replace("{arrName}", arrName)
     .replace("{arrCode}", arrCode);
-
 };
 
 window.drawAllRoutesOnMap = function (flights) {

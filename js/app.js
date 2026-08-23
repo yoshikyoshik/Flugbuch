@@ -984,6 +984,10 @@ window.logFlight = async function () {
       if (window.tempSelectedFlightData.arr_time_ts) {
           newFlightForSupabase.arr_time_ts = window.tempSelectedFlightData.arr_time_ts;
       }
+      // 🚀 NEU: Die ID sichern
+      if (window.tempSelectedFlightData.fa_flight_id) {
+          newFlightForSupabase.fa_flight_id = window.tempSelectedFlightData.fa_flight_id;
+      }
       
       // Nach dem Übernehmen leeren wir den Speicher, 
       // damit der nächste manuell eingetippte Flug nicht versehentlich diese Zeiten bekommt!
@@ -1362,6 +1366,10 @@ async function updateFlight() {
       }
       if (window.tempSelectedFlightData.arr_time_ts) {
           newFlightForSupabase.arr_time_ts = window.tempSelectedFlightData.arr_time_ts;
+      }
+      // 🚀 NEU: Die ID sichern
+      if (window.tempSelectedFlightData.fa_flight_id) {
+          newFlightForSupabase.fa_flight_id = window.tempSelectedFlightData.fa_flight_id;
       }
       
       // Nach dem Übernehmen leeren wir den Speicher, 
@@ -6369,7 +6377,8 @@ window.selectFoundFlight = function(flightNum, encodedData, airlineNameStr) {
 
         window.tempSelectedFlightData = {
             dep_time_ts: depTs,
-            arr_time_ts: arrTs
+            arr_time_ts: arrTs,
+            fa_flight_id: f.fa_flight_id || null // 🚀 NEU
         };
         console.log("⏱️ Temporäre Timestamps aus FlightAware erfolgreich gemerkt:", window.tempSelectedFlightData);
 
