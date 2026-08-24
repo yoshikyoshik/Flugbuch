@@ -35,21 +35,38 @@ export default async function handler(request, context) {
         // MODUS A: Suche per Flugnummer (Autopilot & Widget)
         // ==========================================
         if (cleanFlightNum) {
-            console.log(`📡 Abfrage: Sende direkte Anfrage für ${cleanFlightNum}...`);
-            let faUrl = `https://aeroapi.flightaware.com/aeroapi/flights/${encodeURIComponent(cleanFlightNum)}`;
-            if (startDateIso && endDateIso) {
-                faUrl += `?start=${startDateIso}&end=${endDateIso}`;
+            // 🚀 BUGHUNT FIX: FlightAware liebt ICAO-Codes! Wir wandeln IATA (z.B. 4Y518) in ICAO (OCN518) um.
+            let searchIdents = [cleanFlightNum];
+            if (cleanFlightNum.startsWith("4Y")) {
+                searchIdents.unshift(cleanFlightNum.replace("4Y", "OCN")); // OCN518 an erster Stelle probieren!
+            } else if (cleanFlightNum.startsWith("LH")) {
+                searchIdents.unshift(cleanFlightNum.replace("LH", "DLH")); // DLH statt LH
             }
 
-            const response = await fetch(faUrl, { headers });
-            if (response.ok) {
-                const data = await response.json();
-                if (data.flights && data.flights.length > 0) {
-                    rawFlights = data.flights;
-                    console.log(`✅ Direkttreffer: Flug gefunden. Gates vorhanden: ${!!rawFlights[0].gate_origin}`);
-                } else {
-                    console.log(`⚠️ Kein Direkttreffer für ${cleanFlightNum}.`);
+            let response = null;
+            let usedIdent = cleanFlightNum;
+
+            for (let idToTry of searchIdents) {
+                console.log(`📡 Abfrage: Versuche direkte Anfrage für ${idToTry}...`);
+                let faUrl = `https://aeroapi.flightaware.com/aeroapi/flights/${encodeURIComponent(idToTry)}`;
+                if (startDateIso && endDateIso) {
+                    faUrl += `?start=${startDateIso}&end=${endDateIso}`;
                 }
+
+                const res = await fetch(faUrl, { headers });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.flights && data.flights.length > 0) {
+                        rawFlights = data.flights;
+                        usedIdent = idToTry;
+                        console.log(`✅ Direkttreffer mit ${idToTry}! Flug gefunden. Gates vorhanden: ${!!rawFlights[0].gate_origin}`);
+                        break;
+                    }
+                }
+            }
+
+            if (rawFlights.length === 0) {
+                console.log(`⚠️ Kein Direkttreffer für ${cleanFlightNum} (auch nicht mit ICAO-Aliasen).`);
             }
 
             // 🕵️‍♂️ DETECTIVE 1: THE MERGER 
