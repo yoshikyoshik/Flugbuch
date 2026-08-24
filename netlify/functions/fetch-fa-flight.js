@@ -98,6 +98,16 @@ exports.handler = async function(event, context) {
                         }
                     } else {
                         console.log(`❌ Detective: Keiner der ${scheduledFlights.length} Flüge enthält den Codeshare ${cleanFlightNum}.`);
+                        // 🔦 DAS LICHT ANMACHEN: Wir drucken die kompletten Identitätsdaten der 15 Flüge aus!
+                        const dump = scheduledFlights.map(f => ({
+                            id: f.ident,
+                            iata: f.ident_iata,
+                            actual: f.actual_ident || f.actual_ident_iata,
+                            out: f.scheduled_out,
+                            cs: f.codeshares ? f.codeshares.join(",") : "none",
+                            cs_iata: f.codeshares_iata ? f.codeshares_iata.join(",") : "none"
+                        }));
+                        console.log("🕵️‍♂️ API DUMP:", JSON.stringify(dump));
                     }
                 } else {
                     console.log(`❌ Detective API Error: Status ${routeRes.status} bei /schedules`);
