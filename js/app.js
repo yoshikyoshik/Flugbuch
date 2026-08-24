@@ -5571,8 +5571,12 @@ window.refreshLiveFlightData = async function(force = true) {
                     const flightIdToSync = window.currentLiveFlight.id || window.currentLiveFlight.flight_id;
                     const syncPayload = {};
 
+                    // 🚀 BUGHUNT FIX: Auch die verspäteten/geschätzten Zeiten an Supabase übergeben!
                     if (data.dep_time_ts) syncPayload.dep_time_ts = data.dep_time_ts;
                     if (data.arr_time_ts) syncPayload.arr_time_ts = data.arr_time_ts;
+                    if (data.dep_estimated_ts) syncPayload.dep_estimated_ts = data.dep_estimated_ts;
+                    if (data.arr_estimated_ts) syncPayload.arr_estimated_ts = data.arr_estimated_ts;
+                    
                     if (data.dep_terminal) syncPayload.dep_terminal = data.dep_terminal;
                     if (data.dep_gate) syncPayload.dep_gate = data.dep_gate;
                     if (data.arr_terminal) syncPayload.arr_terminal = data.arr_terminal;
@@ -5581,7 +5585,7 @@ window.refreshLiveFlightData = async function(force = true) {
                     if (data.registration) syncPayload.registration = data.registration;
 
                     if (Object.keys(syncPayload).length > 0) {
-                        await supabaseClient.from('flights').update(syncPayload).eq('flight_id', flightIdToSync);
+                        await supabaseClient.from('flights').update(syncPayload).eq('flight_id', flightIdToCache);
                         Object.assign(window.currentLiveFlight, syncPayload);
                     }
                 } catch (syncErr) {}
