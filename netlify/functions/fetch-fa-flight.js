@@ -37,11 +37,12 @@ exports.handler = async function(event, context) {
             }
 
             // 🕵️‍♂️ DER CODESHARE-DETECTIVE (Cross-Reference Fallback)
-            if (rawFlights.length === 0 && dep && arr && startDate) {
+            if (rawFlights.length === 0 && dep && arr && date) {
                 console.log(`🔍 Detective-Mode: Keine Live-Daten für ${cleanFlightNum}. Suche Schedule für Route ${dep} -> ${arr}...`);
                 
-                // 🚀 BUGHUNT FIX: Korrekter API-Endpunkt für Routen!
-                const routeUrl = `https://aeroapi.flightaware.com/aeroapi/schedules/${dep}/${arr}?start=${startDate}&end=${endDate}`;
+                // 🚀 BUGHUNT FIX: Korrekter API-Endpunkt für Schedules!
+                // AeroAPI v4 verlangt: /schedules/{date_start}/{date_end}?origin=XXX&destination=YYY
+                const routeUrl = `https://aeroapi.flightaware.com/aeroapi/schedules/${date}/${date}?origin=${dep}&destination=${arr}`;
                 const routeRes = await fetch(routeUrl, { headers });
                 
                 if (routeRes.ok) {
@@ -96,9 +97,9 @@ exports.handler = async function(event, context) {
         // ==========================================
         // 2. SCENARIO: REINE ROUTEN-SUCHE (Die Lupe)
         // ==========================================
-        else if (dep && arr) {
+        else if (dep && arr && date) {
             // 🚀 BUGHUNT FIX: Auch die Lupe nutzt jetzt den korrekten Schedule-Endpunkt
-            const url = `https://aeroapi.flightaware.com/aeroapi/schedules/${dep}/${arr}?start=${startDate}&end=${endDate}`;
+            const url = `https://aeroapi.flightaware.com/aeroapi/schedules/${date}/${date}?origin=${dep}&destination=${arr}`;
             const response = await fetch(url, { headers });
             if (response.ok) {
                 const data = await response.json();
