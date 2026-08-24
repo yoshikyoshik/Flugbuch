@@ -919,7 +919,11 @@ window.logFlight = async function () {
   // =========================================================
   let depWeather = null;
   let arrWeather = null;
-  if (navigator.onLine) {
+  const flightDateStr = document.getElementById("flightDate").value || new Date().toISOString().slice(0, 10);
+  const todayStrForWeather = new Date().toISOString().split('T')[0];
+
+  // 🚀 BUGHUNT FIX: Aktuelles Wetter nur für heutige oder zukünftige Flüge laden!
+  if (navigator.onLine && flightDateStr >= todayStrForWeather) {
       try {
           depWeather = await window.fetchAviationWeather(departureAirport.code);
           arrWeather = await window.fetchAviationWeather(arrivalAirport.code);
@@ -975,7 +979,7 @@ window.logFlight = async function () {
   };
 
   // ================================================================
-  // 🚀 BUGHUNT FIX: ZEITSTEMPEL AUS DER SUCHE ÜBERNEHMEN
+  // 🚀 BUGHUNT FIX: ZEITSTEMPEL & GATES AUS DER SUCHE ÜBERNEHMEN
   // ================================================================
   if (window.tempSelectedFlightData) {
       if (window.tempSelectedFlightData.dep_time_ts) {
@@ -984,15 +988,45 @@ window.logFlight = async function () {
       if (window.tempSelectedFlightData.arr_time_ts) {
           newFlightForSupabase.arr_time_ts = window.tempSelectedFlightData.arr_time_ts;
       }
-      // 🚀 NEU: Die ID sichern
+      
+      // 🚀 NEU: Historische Zeiten & Gates mitspeichern
+      if (window.tempSelectedFlightData.dep_estimated_ts) {
+          newFlightForSupabase.dep_estimated_ts = window.tempSelectedFlightData.dep_estimated_ts;
+      }
+      if (window.tempSelectedFlightData.arr_estimated_ts) {
+          newFlightForSupabase.arr_estimated_ts = window.tempSelectedFlightData.arr_estimated_ts;
+      }
+      if (window.tempSelectedFlightData.dep_terminal) {
+          newFlightForSupabase.dep_terminal = window.tempSelectedFlightData.dep_terminal;
+      }
+      if (window.tempSelectedFlightData.dep_gate) {
+          newFlightForSupabase.dep_gate = window.tempSelectedFlightData.dep_gate;
+      }
+      if (window.tempSelectedFlightData.arr_terminal) {
+          newFlightForSupabase.arr_terminal = window.tempSelectedFlightData.arr_terminal;
+      }
+      if (window.tempSelectedFlightData.arr_gate) {
+          newFlightForSupabase.arr_gate = window.tempSelectedFlightData.arr_gate;
+      }
+      
+      // 🚀 NEU: Status erzwingen (z.B. "archived" für alte Flüge)
+      if (window.tempSelectedFlightData.status) {
+          newFlightForSupabase.status = window.tempSelectedFlightData.status;
+      }
+
+      // Die ID sichern
       if (window.tempSelectedFlightData.fa_flight_id) {
           newFlightForSupabase.fa_flight_id = window.tempSelectedFlightData.fa_flight_id;
       }
       
+      if (window.tempSelectedFlightData.gps_track) {
+          newFlightForSupabase.gps_track = window.tempSelectedFlightData.gps_track;
+      }
+
       // Nach dem Übernehmen leeren wir den Speicher, 
       // damit der nächste manuell eingetippte Flug nicht versehentlich diese Zeiten bekommt!
       window.tempSelectedFlightData = null; 
-      console.log("⏱️ Zeitstempel aus Suche erfolgreich an Supabase-Payload angehängt!");
+      console.log("⏱️ Historische Daten erfolgreich an Supabase-Payload angehängt!");
   }
   // ================================================================
 
@@ -1302,7 +1336,11 @@ async function updateFlight() {
   let finalDepWeather = currentlyEditingFlightData.weather_dep || null;
   let finalArrWeather = currentlyEditingFlightData.weather_arr || null;
 
-  if (navigator.onLine) {
+  const flightDateStr = document.getElementById("flightDate").value || new Date().toISOString().slice(0, 10);
+  const todayStrForWeather = new Date().toISOString().split('T')[0];
+
+  // 🚀 BUGHUNT FIX: Aktuelles Wetter nur updaten/holen, wenn der Flug heute oder in der Zukunft liegt!
+  if (navigator.onLine && flightDateStr >= todayStrForWeather) {
       try {
           // Nur Wetter holen, wenn sich der Flughafen geändert hat oder noch gar keins da war!
           if (!finalDepWeather || departureAirport.code !== currentlyEditingFlightData.departure) {
@@ -1314,6 +1352,9 @@ async function updateFlight() {
       } catch (we) {
           console.warn("Wetter konnte beim Update nicht geladen werden:", we);
       }
+  } else if (flightDateStr < todayStrForWeather) {
+      // Kleines Log zur Kontrolle
+      console.log("🌤️ Historischer Flug: Live-Wetter-Update übersprungen, um alte Daten zu schützen.");
   }
   // =========================================================
 
@@ -1358,24 +1399,54 @@ async function updateFlight() {
   };
 
   // ================================================================
-  // 🚀 BUGHUNT FIX: ZEITSTEMPEL AUS DER SUCHE ÜBERNEHMEN
+  // 🚀 BUGHUNT FIX: ZEITSTEMPEL & GATES AUS DER SUCHE ÜBERNEHMEN
   // ================================================================
   if (window.tempSelectedFlightData) {
       if (window.tempSelectedFlightData.dep_time_ts) {
-          newFlightForSupabase.dep_time_ts = window.tempSelectedFlightData.dep_time_ts;
+          updatedFlightForSupabase.dep_time_ts = window.tempSelectedFlightData.dep_time_ts;
       }
       if (window.tempSelectedFlightData.arr_time_ts) {
-          newFlightForSupabase.arr_time_ts = window.tempSelectedFlightData.arr_time_ts;
+          updatedFlightForSupabase.arr_time_ts = window.tempSelectedFlightData.arr_time_ts;
       }
-      // 🚀 NEU: Die ID sichern
+      
+      // 🚀 NEU: Historische Zeiten & Gates mitspeichern
+      if (window.tempSelectedFlightData.dep_estimated_ts) {
+          updatedFlightForSupabase.dep_estimated_ts = window.tempSelectedFlightData.dep_estimated_ts;
+      }
+      if (window.tempSelectedFlightData.arr_estimated_ts) {
+          updatedFlightForSupabase.arr_estimated_ts = window.tempSelectedFlightData.arr_estimated_ts;
+      }
+      if (window.tempSelectedFlightData.dep_terminal) {
+          updatedFlightForSupabase.dep_terminal = window.tempSelectedFlightData.dep_terminal;
+      }
+      if (window.tempSelectedFlightData.dep_gate) {
+          updatedFlightForSupabase.dep_gate = window.tempSelectedFlightData.dep_gate;
+      }
+      if (window.tempSelectedFlightData.arr_terminal) {
+          updatedFlightForSupabase.arr_terminal = window.tempSelectedFlightData.arr_terminal;
+      }
+      if (window.tempSelectedFlightData.arr_gate) {
+          updatedFlightForSupabase.arr_gate = window.tempSelectedFlightData.arr_gate;
+      }
+      
+      // 🚀 NEU: Status erzwingen (z.B. "archived" für alte Flüge)
+      if (window.tempSelectedFlightData.status) {
+          updatedFlightForSupabase.status = window.tempSelectedFlightData.status;
+      }
+
+      // Die ID sichern
       if (window.tempSelectedFlightData.fa_flight_id) {
-          newFlightForSupabase.fa_flight_id = window.tempSelectedFlightData.fa_flight_id;
+          updatedFlightForSupabase.fa_flight_id = window.tempSelectedFlightData.fa_flight_id;
+      }
+      
+      if (window.tempSelectedFlightData.gps_track) {
+          updatedFlightForSupabase.gps_track = window.tempSelectedFlightData.gps_track;
       }
       
       // Nach dem Übernehmen leeren wir den Speicher, 
       // damit der nächste manuell eingetippte Flug nicht versehentlich diese Zeiten bekommt!
       window.tempSelectedFlightData = null; 
-      console.log("⏱️ Zeitstempel aus Suche erfolgreich an Supabase-Payload angehängt!");
+      console.log("⏱️ Historische Daten erfolgreich an Supabase-Payload angehängt!");
   }
   // ================================================================
 
@@ -6564,6 +6635,21 @@ window.silentPostFlightSync = async function(allFlights) {
                     // Wir aktualisieren die tatsächlichen Flugzeiten, falls wir sie noch nicht haben
                     if (data.actual_out) updates.dep_actual_ts = Math.floor(new Date(data.actual_out).getTime() / 1000);
                     if (data.actual_in || data.actual_on) updates.arr_actual_ts = Math.floor(new Date(data.actual_in || data.actual_on).getTime() / 1000);
+                    
+                    // 🚀 NEU: Den fertigen GPS-Track für immer ins Archiv laden!
+                    if (data.fa_flight_id && !flight.gps_track) {
+                        try {
+                            const trackRes = await fetch(`${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-fa-track?fa_flight_id=${encodeURIComponent(data.fa_flight_id)}`);
+                            if (trackRes.ok) {
+                                const trackData = await trackRes.json();
+                                if (trackData.positions && trackData.positions.length > 1) {
+                                    updates.gps_track = trackData.positions
+                                        .filter(p => p.latitude && p.longitude)
+                                        .map(p => [p.latitude, p.longitude]);
+                                }
+                            }
+                        } catch(e) { console.warn("GPS-Sync Fehler", e); }
+                    }
                     
                     if (Object.keys(updates).length > 0 && typeof supabaseClient !== 'undefined') {
                         await supabaseClient.from('flights').update(updates).eq('flight_id', flight.id || flight.flight_id);

@@ -102,7 +102,11 @@ window.drawRouteOnMap = async function (
 
   let gpsCoords = null; 
 
-  if (flightData && flightData.fa_flight_id) {
+  if (flightData && flightData.gps_track && flightData.gps_track.length > 0) {
+      // 🚀 TURBO: GPS-Track liegt schon lokal in Supabase! Kein API-Aufruf nötig!
+      gpsCoords = flightData.gps_track;
+      console.log("⚡ Turbo-Draw: Route direkt aus der Datenbank geladen!");
+  } else if (flightData && flightData.fa_flight_id) {
       try {
           const url = `${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-fa-track?fa_flight_id=${encodeURIComponent(flightData.fa_flight_id)}`;
           const response = await fetch(url);
@@ -1152,7 +1156,10 @@ async function runAnimationLoop() {
         // 🚀 UX FIX 2: GPS TRACK LADEN FÜR DIE ANIMATION
         // ==========================================
         let points = [];
-        if (flight.fa_flight_id) {
+        if (flight.gps_track && flight.gps_track.length > 0) {
+            // 🚀 TURBO: GPS-Track direkt aus der DB nehmen!
+            points = flight.gps_track;
+        } else if (flight.fa_flight_id) {
             try {
                 const url = `${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-fa-track?fa_flight_id=${encodeURIComponent(flight.fa_flight_id)}`;
                 const response = await fetch(url);

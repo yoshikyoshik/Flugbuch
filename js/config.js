@@ -1169,13 +1169,46 @@ async function autofillFlightData() {
       document.getElementById("registration").value = registration || "";
       document.getElementById("flightDate").value = flightDate;
 
-      // 🚀 HIER IST DER FIX: Die Zeiten für das spätere Speichern sichern!
+      // 🚀 HIER IST DER FIX: Die Zeiten, Gates und den Status für das spätere Speichern sichern!
+      const todayStr = new Date().toISOString().split('T')[0];
+      let finalStatus = flight.status || "scheduled";
+      
+      // Historische Flüge direkt als "archived" (Beendet) markieren!
+      if (flightDate < todayStr) {
+          finalStatus = "archived";
+      }
+
       window.tempSelectedFlightData = {
           dep_time_ts: flight.dep_time_ts || null,
           arr_time_ts: flight.arr_time_ts || null,
-          fa_flight_id: flight.fa_flight_id || null // 🚀 NEU
+          dep_estimated_ts: flight.dep_estimated_ts || null,
+          arr_estimated_ts: flight.arr_estimated_ts || null,
+          dep_terminal: flight.dep_terminal || null,
+          dep_gate: flight.dep_gate || null,
+          arr_terminal: flight.arr_terminal || null,
+          arr_gate: flight.arr_gate || null,
+          status: finalStatus,
+          fa_flight_id: flight.fa_flight_id || null,
+          gps_track: null // Platzhalter für gleich
       };
-      console.log("⏱️ Timestamps für Autopilot gesichert:", window.tempSelectedFlightData);
+      // 🚀 DER EWIGE FLUGSCHREIBER: GPS-Track direkt beim Autopiloten für die Ewigkeit sichern!
+      if (flight.fa_flight_id) {
+          try {
+              const trackUrl = `${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-fa-track?fa_flight_id=${encodeURIComponent(flight.fa_flight_id)}`;
+              const trackRes = await fetch(trackUrl);
+              if (trackRes.ok) {
+                  const trackData = await trackRes.json();
+                  if (trackData.positions && trackData.positions.length > 1) {
+                      window.tempSelectedFlightData.gps_track = trackData.positions
+                          .filter(p => p.latitude && p.longitude)
+                          .map(p => [p.latitude, p.longitude]);
+                      console.log("📍 GPS-Track erfolgreich für das Archiv gesichert!");
+                  }
+              }
+          } catch(e) {
+              console.warn("Konnte GPS-Track nicht laden.", e);
+          }
+      }
 
       // 🚀 Foto direkt nach Autofill laden und Vorschau zeigen!
       if (registration && typeof fetchAircraftPhoto === 'function') {
