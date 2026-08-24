@@ -6383,9 +6383,6 @@ async function searchFlightByRoute() {
 
     let targetDate = todayStr;
     let isFuture = false;
-
-    let targetDate = todayStr;
-    let isFuture = false;
     let isPast = false; // 🚀 NEU: Zeitreise-Modus!
 
     if (dateInput) {
@@ -6401,6 +6398,7 @@ async function searchFlightByRoute() {
     const content = document.getElementById('fs-modal-content');
     const list = document.getElementById('flight-selector-list');
 
+    // 🚀 BUGHUNT FIX: Zwingt das Modal dazu, einen Scrollbalken zu zeigen!
     list.style.maxHeight = "60vh"; 
     list.style.overflowY = "auto"; 
 
@@ -6414,7 +6412,6 @@ async function searchFlightByRoute() {
     } else {
         modalTitleEl.textContent = (typeof getTranslation === 'function' ? getTranslation('flightSearch.modalTitle') : null) || 'Heutige Flüge';
     }
-    modalTitleEl.textContent = isFuture ? (getTranslation('flightSearch.modalTitleFuture') || 'Zukünftige Flüge') : (getTranslation('flightSearch.modalTitle') || 'Heutige Flüge');
     
     modal.classList.remove('hidden');
     setTimeout(() => { modal.classList.remove('opacity-0'); content.classList.remove('scale-95'); }, 10);
@@ -6426,7 +6423,6 @@ async function searchFlightByRoute() {
         </div>`;
 
     try {
-        // 🚀 Nur noch ein einziger, sauberer Aufruf! Kein Fallback-Chaos mehr!
         const url = `${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-fa-flight?dep=${dep}&arr=${arr}&date=${targetDate}`;
         const response = await fetch(url);
         const flights = await response.json();
@@ -6442,7 +6438,6 @@ async function searchFlightByRoute() {
             let airlineName = f.airline_icao || 'Unbekannte Airline';
             const depText = getTranslation('flightSearch.departure') || 'Abflug';
             
-            // 🚀 FIX: ICAO in IATA und korrekten Namen umwandeln für die visuelle Liste!
             if (f.airline_icao && window.AIRLINE_MAPPING && window.AIRLINE_MAPPING[f.airline_icao]) {
                 const mapped = window.AIRLINE_MAPPING[f.airline_icao];
                 airlineName = mapped.name;
@@ -6458,10 +6453,7 @@ async function searchFlightByRoute() {
                 timeStr = dateObj.getHours().toString().padStart(2, '0') + ':' + dateObj.getMinutes().toString().padStart(2, '0');
             }
 
-            // Wir machen das Objekt sicher für HTML-Attribute
             const flightDataAttr = btoa(JSON.stringify(f)); 
-
-            // 🚀 BUGHUNT FIX: Den Airline-Namen sicher escapen und als 3. Parameter übergeben!
             const safeAirlineName = airlineName.replace(/'/g, "\\'");
 
             return `
