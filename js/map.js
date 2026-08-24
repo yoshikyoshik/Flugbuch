@@ -73,18 +73,19 @@ window.buildAirportTooltipHtml = function(name, code, subtitle) {
     `;
 };
 
+// 🚀 Wir hängen den Zähler knallhart an das window-Objekt, damit er unzerstörbar global ist!
+window.currentDrawRouteId = 0;
+
 window.drawRouteOnMap = async function (
-  depLat,
-  depLon,
-  arrLat,
-  arrLon,
-  depCode,
-  arrCode,
-  depName,
-  arrName,
-  flightData // <-- NEU: Das Flug-Objekt
+  depLat, depLon, arrLat, arrLon, depCode, arrCode, depName, arrName, flightData
 ) {
+  // Ticket-Nummer für diesen Zeichenvorgang ziehen
+  window.currentDrawRouteId++;
+  const thisDrawId = window.currentDrawRouteId;
+
   var mapInfo = document.getElementById("map-info");
+  
+  // Erste Reinigung
   routeLayer.clearLayers();
 
   if (markerClusterGroup) {
@@ -99,22 +100,16 @@ window.drawRouteOnMap = async function (
     return;
   }
 
-  // --- NEU: Schicke Hover-Tooltips für Abflug und Ankunft ---
-  const depHtml = window.buildAirportTooltipHtml(depName, depCode, `🛫 ${getTranslation("map.departure") || "Abflug"}`);
-  const arrHtml = window.buildAirportTooltipHtml(arrName, arrCode, `🛬 ${getTranslation("map.arrival") || "Ankunft"}`);
-
-  const depMarker = L.marker([depLat, depLon]).bindTooltip(depHtml, { sticky: true, className: 'custom-map-tooltip' });
-  const arrMarker = L.marker([arrLat, arrLon]).bindTooltip(arrHtml, { sticky: true, className: 'custom-map-tooltip' });
-
-  // ==========================================
-  // 🚀 PREMIUM: Echte GPS-Tracks laden!
-  // ==========================================
   let gpsCoords = null; 
 
   if (flightData && flightData.fa_flight_id) {
       try {
           const url = `${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-fa-track?fa_flight_id=${encodeURIComponent(flightData.fa_flight_id)}`;
           const response = await fetch(url);
+          
+          // 🛑 SICHERHEITS-CHECK 1: Abbruch, falls zwischenzeitlich ein anderer Flug geklickt wurde!
+          if (thisDrawId !== window.currentDrawRouteId) return; 
+
           if (response.ok) {
               const data = await response.json();
               if (data.positions && data.positions.length > 1) {
@@ -128,12 +123,23 @@ window.drawRouteOnMap = async function (
       }
   }
 
-  // Die ultimative Weiche für die Wegpunkte
+  // 🛑 DER ULTIMATIVE SICHERHEITS-CHECK
+  if (thisDrawId !== window.currentDrawRouteId) return;
+
+  // 🧹 Zweite Reinigung! Falls in der Zwischenzeit (während des API-Abrufs) 
+  // Geister-Linien entstanden sind, fegen wir sie jetzt endgültig weg!
+  routeLayer.clearLayers();
+
+  const depHtml = window.buildAirportTooltipHtml(depName, depCode, `🛫 ${getTranslation("map.departure") || "Abflug"}`);
+  const arrHtml = window.buildAirportTooltipHtml(arrName, arrCode, `🛬 ${getTranslation("map.arrival") || "Ankunft"}`);
+
+  const depMarker = L.marker([depLat, depLon]).bindTooltip(depHtml, { sticky: true, className: 'custom-map-tooltip' });
+  const arrMarker = L.marker([arrLat, arrLon]).bindTooltip(arrHtml, { sticky: true, className: 'custom-map-tooltip' });
+
   let finalPathCoords;
   if (gpsCoords && gpsCoords.length > 0) {
-      finalPathCoords = gpsCoords; // Echte Radardaten nutzen!
+      finalPathCoords = gpsCoords; 
   } else {
-      // FALLBACK: Keine Livedaten. Alte, glatte Kurve ziehen.
       finalPathCoords = [
           [depLat, depLon],
           [arrLat, arrLon]
@@ -145,13 +151,11 @@ window.drawRouteOnMap = async function (
     { color: "#10B981", weight: 3 }
   );
 
-  // Die unsichtbare, dicke Hitbox für sauberes Klicken
   const hitBox = L.polyline(
     finalPathCoords,
     { color: "transparent", weight: 30, opacity: 0 } 
   );
 
-  // Klick und Hover hängen an der Hitbox
   if (flightData) {
       const popupHtml = window.buildMapTooltipHtml(flightData, 1);
       hitBox.bindTooltip(popupHtml, { sticky: true, className: 'custom-map-tooltip' });
@@ -167,8 +171,6 @@ window.drawRouteOnMap = async function (
   routeLayer.addLayer(flightPath);
   routeLayer.addLayer(hitBox); 
 
-  // 🚀 BUGHUNT FIX: Bei echten GPS-Tracks kann die Route vom Mittelpunkt abweichen. 
-  // Wir passen die Kamera jetzt auf die exakte Route an!
   map.fitBounds(flightPath.getBounds(), { padding: [50, 50] });
 
   mapInfo.setAttribute("data-dynamic-depName", depName);

@@ -2585,7 +2585,6 @@ function toggleFeatureCard(element) {
 // ==========================================
 window.focusFlightOnMap = function(flightId) {
     if (typeof closeFlightDetails === 'function') closeFlightDetails();
-    if (typeof showTab === 'function') showTab('timeline');
 
     if (window.isAllRoutesViewActive) {
         window.isAllRoutesViewActive = false;
@@ -2599,12 +2598,11 @@ window.focusFlightOnMap = function(flightId) {
         }
     }
 
-    // 🚀 BUGHUNT FIX: Die App muss sich diesen Flug als "aktiven Fokus" merken!
+    // 🚀 BUGHUNT FIX: 1. Zuerst die ID global merken!
     globalLastFlightId = flightId; 
 
-    if (typeof renderFlights === 'function') {
-        renderFlights(null, flightId);
-    }
+    // 2. DANN erst den Tab wechseln. Das triggert das saubere Zeichnen der Karte automatisch und nur exakt 1x!
+    if (typeof showTab === 'function') showTab('timeline');
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
 };
