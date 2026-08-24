@@ -6482,38 +6482,36 @@ window.selectFoundFlight = function(flightNum, encodedData, airlineNameStr) {
         const flightInput = document.getElementById('flightNumber');
         if (flightInput) flightInput.value = flightNum;
 
-        // 🚀 BUGHUNT FIX: Den Airline-Namen aus der Liste direkt in das Formularfeld schreiben!
+        // Airline-Name eintragen
         if (airlineNameStr) {
             const airlineInput = document.getElementById('airline');
-            if (airlineInput && !airlineInput.value) {
-                airlineInput.value = airlineNameStr;
-            }
+            if (airlineInput && !airlineInput.value) airlineInput.value = airlineNameStr;
         }
-
-        let depTs = null;
-        let arrTs = null;
-        let faId = null; // 🚀 FIX: Variable HIER deklarieren, damit sie überall gültig ist!
 
         if (encodedData) {
             const f = JSON.parse(atob(encodedData));
-            // 🚀 Unsere neue API liefert die exakten Timestamps praktischerweise schon mit!
-            depTs = f.dep_time_ts || null;
-            arrTs = f.arr_time_ts || null;
-            faId = f.fa_flight_id || null; // 🚀 FIX: Die ID hier aus dem Objekt 'f' auslesen!
             
-            // Wenn bekannt, tragen wir auch gleich den Flugzeugtyp ein
+            // Flugzeugtyp eintragen
             if (f.aircraft_type) {
                 const typeInput = document.getElementById('aircraftType');
                 if (typeInput && !typeInput.value) typeInput.value = f.aircraft_type;
             }
-        }
 
-        window.tempSelectedFlightData = {
-            dep_time_ts: depTs,
-            arr_time_ts: arrTs,
-            fa_flight_id: faId // 🚀 FIX: Die gesicherte Variable hier verwenden
-        };
-        console.log("⏱️ Temporäre Daten aus FlightAware erfolgreich gemerkt:", window.tempSelectedFlightData);
+            // 🚀 BUGHUNT FIX: Lupe rettet jetzt ALLE historischen Daten!
+            window.tempSelectedFlightData = {
+                dep_time_ts: f.dep_time_ts || null,
+                arr_time_ts: f.arr_time_ts || null,
+                dep_estimated_ts: f.dep_estimated_ts || null,
+                arr_estimated_ts: f.arr_estimated_ts || null,
+                dep_terminal: f.dep_terminal || null,
+                dep_gate: f.dep_gate || null,
+                arr_terminal: f.arr_terminal || null,
+                arr_gate: f.arr_gate || null,
+                status: f.status || "scheduled", // History-API liefert hier sauber "archived"
+                fa_flight_id: f.fa_flight_id || null
+            };
+            console.log("⏱️ Alle Daten aus der Lupe gerettet:", window.tempSelectedFlightData);
+        }
 
         if (typeof closeFlightSelector === 'function') closeFlightSelector();
 
