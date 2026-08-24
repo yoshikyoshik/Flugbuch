@@ -1100,6 +1100,9 @@ window.logFlight = async function () {
         showTab("timeline"); // In die Vergangenheit springen
     }
     
+    // 🚀 BUGHUNT FIX: Zwingt die Liste zum frischen DB-Download!
+    currentlyFilteredFlights = null;
+    
     renderFlights(null, newFlightId);
     initLiveWidget(); 
     initUpcomingWidget(); 
@@ -1522,6 +1525,9 @@ async function updateFlight() {
   } else {
       showTab("timeline");
   }
+  
+  // 🚀 BUGHUNT FIX: Zwingt die Liste zum frischen DB-Download!
+  currentlyFilteredFlights = null;
   
   renderFlights(null, flightIdToFocus);
   initLiveWidget(); 
