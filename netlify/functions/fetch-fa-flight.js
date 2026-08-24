@@ -208,8 +208,11 @@ export default async function handler(request, context) {
         // ==========================================
         let flights = rawFlights.map(f => {
             let ident = f.actual_ident_iata || f.ident_iata || f.ident || f.flight_number || "Unbekannt";
-            if (cleanFlightNum) ident = cleanFlightNum;
-
+            
+            if (cleanFlightNum) {
+                ident = cleanFlightNum;
+            }
+            
             let operator = f.operator || f.operator_icao || f.operator_iata || f.airline_icao;
             if (!operator) {
                 const baseIdent = f.actual_ident_icao || f.ident_icao || f.ident || "";
@@ -220,9 +223,14 @@ export default async function handler(request, context) {
             const depIata = f.origin_iata || (f.origin && f.origin.code_iata) || (typeof f.origin === 'string' && f.origin.length === 3 ? f.origin : "UNK");
             const arrIata = f.destination_iata || (f.destination && f.destination.code_iata) || (typeof f.destination === 'string' && f.destination.length === 3 ? f.destination : "UNK");
 
-            const depTime = f.scheduled_out || f.actual_out || f.estimated_out || f.departure_time;
-            const arrTime = f.scheduled_in || f.actual_in || f.estimated_in || f.arrival_time;
+            // 🚀 GEPLANT (Streng nach Plan)
+            const depTime = f.scheduled_out || f.departure_time;
+            const arrTime = f.scheduled_in || f.arrival_time;
             
+            // 🚀 ERWARTET / TATSÄCHLICH (Priorität: Actual -> Estimated -> Scheduled)
+            const depEstimated = f.actual_out || f.estimated_out || f.scheduled_out || f.departure_time;
+            const arrEstimated = f.actual_in || f.actual_on || f.estimated_in || f.arrival_time;
+
             const aircraftType = (f.aircraft_type && typeof f.aircraft_type === 'object') ? f.aircraft_type.type : (f.aircraft_type || null);
 
             let flightStatus = "scheduled";
@@ -241,12 +249,14 @@ export default async function handler(request, context) {
                 airline_icao: operator,
                 dep_iata: depIata,         
                 arr_iata: arrIata,         
-                dep_time_iso: depTime,
-                arr_time_iso: arrTime,
+                dep_time_iso: depTime,                   // Geplante Abflugzeit (GEPLANT)
+                arr_time_iso: arrTime,                   // Geplante Ankunftszeit
+                dep_estimated_iso: depEstimated,         // Erwartete/Tatsächliche Abflugzeit (ERWARTET)
+                arr_estimated_iso: arrEstimated,         // Erwartete/Tatsächliche Ankunftszeit (ERWARTET)
                 dep_time_ts: depTime ? Math.floor(new Date(depTime).getTime() / 1000) : null,
                 arr_time_ts: arrTime ? Math.floor(new Date(arrTime).getTime() / 1000) : null,
-                dep_estimated_ts: f.estimated_out ? Math.floor(new Date(f.estimated_out).getTime() / 1000) : (depTime ? Math.floor(new Date(depTime).getTime() / 1000) : null),
-                arr_estimated_ts: f.estimated_in ? Math.floor(new Date(f.estimated_in).getTime() / 1000) : (arrTime ? Math.floor(new Date(arrTime).getTime() / 1000) : null),
+                dep_estimated_ts: depEstimated ? Math.floor(new Date(depEstimated).getTime() / 1000) : null,
+                arr_estimated_ts: arrEstimated ? Math.floor(new Date(arrEstimated).getTime() / 1000) : null,
                 dep_terminal: f.terminal_origin || null,
                 dep_gate: f.gate_origin || null,
                 arr_terminal: f.terminal_destination || null,
