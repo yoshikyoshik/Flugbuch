@@ -10,7 +10,7 @@ exports.handler = async function(event, context) {
 
     const headers = { 'x-apikey': API_KEY, 'Content-Type': 'application/json' };
 
-    // Zeitfenster für den heutigen Tag
+    // Zeitfenster für den kompletten Tag berechnen (T00:00:00Z bis T23:59:59Z)
     let startDate, endDate;
     if (date) {
         startDate = `${date}T00:00:00Z`;
@@ -37,24 +37,23 @@ exports.handler = async function(event, context) {
             }
 
             // 🕵️‍♂️ DER CODESHARE-DETECTIVE (Cross-Reference Fallback)
-            if (rawFlights.length === 0 && dep && arr && date) {
-                console.log(`🔍 Detective-Mode: Keine Live-Daten für ${cleanFlightNum}. Suche Schedule für Route ${dep} -> ${arr}...`);
+            if (rawFlights.length === 0 && dep && arr && startDate) {
+                console.log(`🔍 Detective-Mode: Keine Live-Daten für ${cleanFlightNum}. Suche über Route ${dep} -> ${arr}...`);
                 
-                // 🚀 BUGHUNT FIX: Korrekter API-Endpunkt für Schedules!
-                // AeroAPI v4 verlangt: /schedules/{date_start}/{date_end}?origin=XXX&destination=YYY
-                const routeUrl = `https://aeroapi.flightaware.com/aeroapi/schedules/${date}/${date}?origin=${dep}&destination=${arr}`;
+                // 🚀 BUGHUNT FIX: Wir nutzen wieder den exakten Endpunkt, den auch die Lupe erfolgreich nutzt!
+                const routeUrl = `https://aeroapi.flightaware.com/aeroapi/flights?origin=${dep}&destination=${arr}&start=${startDate}&end=${endDate}`;
                 const routeRes = await fetch(routeUrl, { headers });
                 
                 if (routeRes.ok) {
                     const routeData = await routeRes.json();
-                    const schedules = routeData.schedules || [];
-                    console.log(`✅ Detective: ${schedules.length} geplante Flüge gefunden.`);
+                    const routeFlights = routeData.flights || [];
+                    console.log(`✅ Detective: ${routeFlights.length} Flüge auf dieser Route gefunden.`);
 
-                    // Finde den wahren Flug (Aggressive Suche)
-                    const masterSchedule = schedules.find(f => {
+                    // Finde den wahren Master-Flug (Aggressive Suche)
+                    const masterFlight = routeFlights.find(f => {
                         const codeshares = f.codeshares || [];
                         const codesharesIata = f.codeshares_iata || [];
-                        const searchNum = cleanFlightNum.replace(/\D/g, ''); // Zieht nur "514" aus "4Y514"
+                        const searchNum = cleanFlightNum.replace(/\D/g, ''); // Zieht nur die Nummer, z.B. "514" aus "4Y514"
                         
                         return codeshares.includes(cleanFlightNum) || 
                                codesharesIata.includes(cleanFlightNum) ||
@@ -64,11 +63,11 @@ exports.handler = async function(event, context) {
                                codeshares.some(code => code.includes(searchNum));
                     });
 
-                    if (masterSchedule && masterSchedule.ident) {
-                        const masterIdent = masterSchedule.ident; // z.B. DLH4301
+                    if (masterFlight && masterFlight.ident) {
+                        const masterIdent = masterFlight.ident; // z.B. DLH4306
                         console.log(`🎯 Codeshare gelöst! Master ist ${masterIdent}. Hole jetzt Live-Daten für Master...`);
                         
-                        // JETZT holen wir die echten LIVE-Daten des Masters!
+                        // JETZT holen wir die echten LIVE-Daten des Masters über seinen Ident!
                         const masterUrl = `https://aeroapi.flightaware.com/aeroapi/flights/${masterIdent}?start=${startDate}&end=${endDate}`;
                         const masterRes = await fetch(masterUrl, { headers });
                         
@@ -87,23 +86,26 @@ exports.handler = async function(event, context) {
                             }
                         }
                     } else {
-                        console.log(`❌ Detective: Keiner der ${schedules.length} Flüge enthält den Codeshare ${cleanFlightNum}.`);
+                        console.log(`❌ Detective: Keiner der ${routeFlights.length} Flüge enthält den Codeshare ${cleanFlightNum}.`);
+                        console.log("Gefundene Master-Idents:", routeFlights.map(f => f.ident).join(", "));
                     }
                 } else {
-                    console.log(`❌ Detective API Error: Status ${routeRes.status} bei /schedules`);
+                    console.log(`❌ Detective API Error: Status ${routeRes.status} bei /flights?origin...`);
                 }
             }
         } 
         // ==========================================
         // 2. SCENARIO: REINE ROUTEN-SUCHE (Die Lupe)
         // ==========================================
-        else if (dep && arr && date) {
-            // 🚀 BUGHUNT FIX: Auch die Lupe nutzt jetzt den korrekten Schedule-Endpunkt
-            const url = `https://aeroapi.flightaware.com/aeroapi/schedules/${date}/${date}?origin=${dep}&destination=${arr}`;
+        else if (dep && arr) {
+            let url = `https://aeroapi.flightaware.com/aeroapi/flights?origin=${dep}&destination=${arr}`;
+            if (startDate && endDate) {
+                url += `&start=${startDate}&end=${endDate}`;
+            }
             const response = await fetch(url, { headers });
             if (response.ok) {
                 const data = await response.json();
-                if (data.schedules) rawFlights = data.schedules;
+                if (data.flights) rawFlights = data.flights;
             }
         }
 
