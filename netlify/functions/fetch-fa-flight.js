@@ -37,40 +37,59 @@ exports.handler = async function(event, context) {
             }
 
             // 🕵️‍♂️ DER CODESHARE-DETECTIVE (Cross-Reference Fallback)
-            // Wenn die direkte Suche scheitert, wir aber die Strecke kennen (vom Widget geschickt!):
             if (rawFlights.length === 0 && dep && arr && startDate) {
-                console.log(`🔍 Detective-Mode: Keine Live-Daten für ${cleanFlightNum}. Suche über Route ${dep} -> ${arr}...`);
+                console.log(`🔍 Detective-Mode: Keine Live-Daten für ${cleanFlightNum}. Suche Schedule für Route ${dep} -> ${arr}...`);
                 
-                const routeUrl = `https://aeroapi.flightaware.com/aeroapi/flights?origin=${dep}&destination=${arr}&start=${startDate}&end=${endDate}`;
+                // 🚀 BUGHUNT FIX: Korrekter API-Endpunkt für Routen!
+                const routeUrl = `https://aeroapi.flightaware.com/aeroapi/schedules/${dep}/${arr}?start=${startDate}&end=${endDate}`;
                 const routeRes = await fetch(routeUrl, { headers });
                 
                 if (routeRes.ok) {
                     const routeData = await routeRes.json();
-                    if (routeData.flights) {
-                        // Finde den wahren Flug, der unser Ticket als Codeshare gelistet hat!
-                        const masterFlight = routeData.flights.find(f => {
-                            const codeshares = f.codeshares || [];
-                            const codesharesIata = f.codeshares_iata || [];
-                            return codeshares.includes(cleanFlightNum) || 
-                                   codesharesIata.includes(cleanFlightNum) ||
-                                   f.ident === cleanFlightNum || 
-                                   f.ident_iata === cleanFlightNum;
-                        });
+                    const schedules = routeData.schedules || [];
+                    console.log(`✅ Detective: ${schedules.length} geplante Flüge gefunden.`);
 
-                        if (masterFlight) {
-                            console.log(`✅ Codeshare gelöst! Master ist ${masterFlight.ident}. Wir tarnen ihn nun für das Frontend als ${cleanFlightNum}.`);
-                            
-                            // 🚀 Tarnung anwenden: Wir überschreiben die Identität des Master-Flugs, 
-                            // damit dein Frontend-Widget ihn anstandslos als seinen eigenen Flug akzeptiert!
-                            masterFlight.actual_ident_iata = masterFlight.ident_iata; // Echten Namen merken
-                            masterFlight.ident_iata = cleanFlightNum;
-                            masterFlight.flight_number = cleanFlightNum;
-                            
-                            rawFlights = [masterFlight];
-                        } else {
-                            console.log(`❌ Auch der Detective konnte keinen Codeshare für ${cleanFlightNum} auf dieser Route finden.`);
+                    // Finde den wahren Flug (Aggressive Suche)
+                    const masterSchedule = schedules.find(f => {
+                        const codeshares = f.codeshares || [];
+                        const codesharesIata = f.codeshares_iata || [];
+                        const searchNum = cleanFlightNum.replace(/\D/g, ''); // Zieht nur "514" aus "4Y514"
+                        
+                        return codeshares.includes(cleanFlightNum) || 
+                               codesharesIata.includes(cleanFlightNum) ||
+                               f.ident === cleanFlightNum || 
+                               f.ident_iata === cleanFlightNum ||
+                               codesharesIata.some(code => code.includes(searchNum)) ||
+                               codeshares.some(code => code.includes(searchNum));
+                    });
+
+                    if (masterSchedule && masterSchedule.ident) {
+                        const masterIdent = masterSchedule.ident; // z.B. DLH4301
+                        console.log(`🎯 Codeshare gelöst! Master ist ${masterIdent}. Hole jetzt Live-Daten für Master...`);
+                        
+                        // JETZT holen wir die echten LIVE-Daten des Masters!
+                        const masterUrl = `https://aeroapi.flightaware.com/aeroapi/flights/${masterIdent}?start=${startDate}&end=${endDate}`;
+                        const masterRes = await fetch(masterUrl, { headers });
+                        
+                        if (masterRes.ok) {
+                            const masterData = await masterRes.json();
+                            if (masterData.flights && masterData.flights.length > 0) {
+                                const masterLive = masterData.flights[0];
+                                
+                                // 🚀 TARNUNG ANWENDEN
+                                masterLive.actual_ident_iata = masterLive.ident_iata; 
+                                masterLive.ident_iata = cleanFlightNum;
+                                masterLive.flight_number = cleanFlightNum;
+                                
+                                rawFlights = [masterLive];
+                                console.log(`🕵️‍♂️ Mission erfüllt! Tarnung aktiv. Sende Live-Daten als ${cleanFlightNum} an Frontend.`);
+                            }
                         }
+                    } else {
+                        console.log(`❌ Detective: Keiner der ${schedules.length} Flüge enthält den Codeshare ${cleanFlightNum}.`);
                     }
+                } else {
+                    console.log(`❌ Detective API Error: Status ${routeRes.status} bei /schedules`);
                 }
             }
         } 
@@ -78,11 +97,12 @@ exports.handler = async function(event, context) {
         // 2. SCENARIO: REINE ROUTEN-SUCHE (Die Lupe)
         // ==========================================
         else if (dep && arr) {
-            const url = `https://aeroapi.flightaware.com/aeroapi/flights?origin=${dep}&destination=${arr}&start=${startDate}&end=${endDate}`;
+            // 🚀 BUGHUNT FIX: Auch die Lupe nutzt jetzt den korrekten Schedule-Endpunkt
+            const url = `https://aeroapi.flightaware.com/aeroapi/schedules/${dep}/${arr}?start=${startDate}&end=${endDate}`;
             const response = await fetch(url, { headers });
             if (response.ok) {
                 const data = await response.json();
-                if (data.flights) rawFlights = data.flights;
+                if (data.schedules) rawFlights = data.schedules;
             }
         }
 
@@ -104,7 +124,7 @@ exports.handler = async function(event, context) {
             const arrTs = f.scheduled_in ? Math.floor(new Date(f.scheduled_in).getTime() / 1000) : null;
 
             return {
-                fa_flight_id: f.fa_flight_id,
+                fa_flight_id: f.fa_flight_id || f.ident,
                 ident_iata: ident,
                 flight_number: ident,
                 airline_icao: f.operator_iata || f.operator_icao || f.operator || "Unknown",
