@@ -1,157 +1,163 @@
-// netlify/functions/fetch-fa-flight.js
-export default async function handler(request, context) {
-    const API_KEY = process.env.FLIGHTAWARE_API_KEY;
-    if (!API_KEY) {
-        return new Response(JSON.stringify({ error: "Missing API Key" }), { status: 500 });
+const fetch = require('node-fetch');
+
+exports.handler = async function(event, context) {
+    if (event.httpMethod === 'OPTIONS') {
+        return { statusCode: 200, headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Content-Type' }, body: '' };
     }
 
-    const url = new URL(request.url);
-    const flight_number = url.searchParams.get("flight_number");
-    const dep = url.searchParams.get("dep");
-    const arr = url.searchParams.get("arr");
-    const date = url.searchParams.get("date"); // Erwartet YYYY-MM-DD
+    const { flight_number, dep, arr, date } = event.queryStringParameters;
+    const API_KEY = process.env.FLIGHTAWARE_API_KEY;
+
+    const headers = { 'x-apikey': API_KEY, 'Content-Type': 'application/json' };
+
+    // Zeitfenster für den heutigen Tag
+    let startDate, endDate;
+    if (date) {
+        startDate = `${date}T00:00:00Z`;
+        endDate = `${date}T23:59:59Z`;
+    }
 
     try {
-        let faUrl = "";
-
-        if (flight_number) {
-            // ==========================================
-            // MODUS A: Suche per Flugnummer (Autopilot)
-            // ==========================================
-            const cleanFlightNum = flight_number.replace(/\s+/g, '').toUpperCase();
-            faUrl = `https://aeroapi.flightaware.com/aeroapi/flights/${cleanFlightNum}`;
-            if (date) {
-                faUrl += `?start=${date}T00:00:00Z&end=${date}T23:59:59Z`;
-            }
-        } else if (dep && arr) {
-            // ==========================================
-            // MODUS B: Suche per Strecke (Lupe)
-            // ==========================================
-            // 🚀 BUGHUNT FIX: Den GANZEN Tag suchen (00:00:00 bis 23:59:59), statt ein 0-Sekunden-Fenster!
-            const startDate = `${date}T00:00:00Z`;
-            const endDate = `${date}T23:59:59Z`;
-            faUrl = `https://aeroapi.flightaware.com/aeroapi/schedules/${startDate}/${endDate}?origin=${dep.toUpperCase()}&destination=${arr.toUpperCase()}&max_pages=5`;
-        } else {
-            return new Response(JSON.stringify({ error: "Missing parameters" }), { status: 400 });
-        }
-
-        const faRes = await fetch(faUrl, {
-            headers: { 'x-apikey': API_KEY, 'Accept': 'application/json' }
-        });
-
-        if (!faRes.ok) {
-            return new Response(JSON.stringify({ error: "FlightAware Error", status: faRes.status }), { status: faRes.status });
-        }
-
-        const data = await faRes.json();
-        
-        // 🚀 BUGHUNT FIX 1: "scheduled" aus dem JSON des Nutzers hinzugefügt!
         let rawFlights = [];
-        if (Array.isArray(data)) {
-            rawFlights = data;
-        } else {
-            rawFlights = [
-                ...(data.scheduled || []),  // <-- Das ist der Gamechanger!
-                ...(data.flights || []),
-                ...(data.scheduled_flights || []),
-                ...(data.schedules || []),
-                ...(data.departures || [])
-            ];
-        }
-        
+        let cleanFlightNum = flight_number ? flight_number.replace(/\s+/g, '').toUpperCase() : null;
+
         // ==========================================
-        // PANZER-CODE: Maßgeschneidert auf das neue JSON!
+        // 1. SCENARIO: DIREKTE FLUGNUMMER SUCHE (Widget, Sync, Autopilot)
+        // ==========================================
+        if (cleanFlightNum) {
+            let url = `https://aeroapi.flightaware.com/aeroapi/flights/${encodeURIComponent(cleanFlightNum)}`;
+            if (startDate && endDate) url += `?start=${startDate}&end=${endDate}`;
+
+            const response = await fetch(url, { headers });
+            if (response.ok) {
+                const data = await response.json();
+                if (data.flights && data.flights.length > 0) {
+                    rawFlights = data.flights;
+                }
+            }
+
+            // 🕵️‍♂️ DER CODESHARE-DETECTIVE (Cross-Reference Fallback)
+            // Wenn die direkte Suche scheitert, wir aber die Strecke kennen (vom Widget geschickt!):
+            if (rawFlights.length === 0 && dep && arr && startDate) {
+                console.log(`🔍 Detective-Mode: Keine Live-Daten für ${cleanFlightNum}. Suche über Route ${dep} -> ${arr}...`);
+                
+                const routeUrl = `https://aeroapi.flightaware.com/aeroapi/flights?origin=${dep}&destination=${arr}&start=${startDate}&end=${endDate}`;
+                const routeRes = await fetch(routeUrl, { headers });
+                
+                if (routeRes.ok) {
+                    const routeData = await routeRes.json();
+                    if (routeData.flights) {
+                        // Finde den wahren Flug, der unser Ticket als Codeshare gelistet hat!
+                        const masterFlight = routeData.flights.find(f => {
+                            const codeshares = f.codeshares || [];
+                            const codesharesIata = f.codeshares_iata || [];
+                            return codeshares.includes(cleanFlightNum) || 
+                                   codesharesIata.includes(cleanFlightNum) ||
+                                   f.ident === cleanFlightNum || 
+                                   f.ident_iata === cleanFlightNum;
+                        });
+
+                        if (masterFlight) {
+                            console.log(`✅ Codeshare gelöst! Master ist ${masterFlight.ident}. Wir tarnen ihn nun für das Frontend als ${cleanFlightNum}.`);
+                            
+                            // 🚀 Tarnung anwenden: Wir überschreiben die Identität des Master-Flugs, 
+                            // damit dein Frontend-Widget ihn anstandslos als seinen eigenen Flug akzeptiert!
+                            masterFlight.actual_ident_iata = masterFlight.ident_iata; // Echten Namen merken
+                            masterFlight.ident_iata = cleanFlightNum;
+                            masterFlight.flight_number = cleanFlightNum;
+                            
+                            rawFlights = [masterFlight];
+                        } else {
+                            console.log(`❌ Auch der Detective konnte keinen Codeshare für ${cleanFlightNum} auf dieser Route finden.`);
+                        }
+                    }
+                }
+            }
+        } 
+        // ==========================================
+        // 2. SCENARIO: REINE ROUTEN-SUCHE (Die Lupe)
+        // ==========================================
+        else if (dep && arr) {
+            const url = `https://aeroapi.flightaware.com/aeroapi/flights?origin=${dep}&destination=${arr}&start=${startDate}&end=${endDate}`;
+            const response = await fetch(url, { headers });
+            if (response.ok) {
+                const data = await response.json();
+                if (data.flights) rawFlights = data.flights;
+            }
+        }
+
+        // ==========================================
+        // PANZER-CODE: Mapping für das Frontend
         // ==========================================
         let flights = rawFlights.map(f => {
-            // 1. FLUGNUMMER: Preferiere 'actual_ident_iata'
-            let ident = f.actual_ident_iata || f.ident_iata || f.ident || f.flight_number || "Unbekannt";
+            let ident = f.ident_iata || f.actual_ident_iata || f.ident || f.flight_number || "Unbekannt";
             
-            // 🚀 BUGHUNT FIX: Identitäts-Krise beenden!
-            // Wenn das Widget explizit nach einer Flugnummer fragt (Autopilot/Live-Widget), 
-            // erzwingen wir genau diesen Namen, damit das Widget seinen Flug wiedererkennt!
-            if (flight_number) {
-                ident = flight_number.replace(/\s+/g, '').toUpperCase();
-            }
-            
-            // 2. AIRLINE: Im Schedules-Endpoint fehlt 'operator'. Wir schneiden den ICAO/IATA-Code aus der Flugnummer!
-            let operator = f.operator || f.operator_icao || f.operator_iata || f.airline_icao;
-            if (!operator) {
-                const baseIdent = f.actual_ident_icao || f.ident_icao || f.ident || "";
-                const match = baseIdent.match(/^[A-Za-z]+/); // Holt die Buchstaben raus (z.B. "VLG" aus "VLG1885")
-                operator = match ? match[0] : "UNK";
-            }
-            
-            // 3. FLUGHÄFEN: FlightAware liefert bei /schedules die IATA separat in 'origin_iata'
-            const depIata = f.origin_iata || (f.origin && f.origin.code_iata) || (typeof f.origin === 'string' && f.origin.length === 3 ? f.origin : "UNK");
-            const arrIata = f.destination_iata || (f.destination && f.destination.code_iata) || (typeof f.destination === 'string' && f.destination.length === 3 ? f.destination : "UNK");
+            // Zwinge den Ident knallhart auf den gesuchten Flight Number!
+            if (cleanFlightNum) ident = cleanFlightNum;
 
-            // 4. ZEITEN
-            const depTime = f.scheduled_out || f.actual_out || f.estimated_out || f.departure_time;
-            const arrTime = f.scheduled_in || f.actual_in || f.estimated_in || f.arrival_time;
-            
-            const aircraftType = (f.aircraft_type && typeof f.aircraft_type === 'object') ? f.aircraft_type.type : (f.aircraft_type || null);
+            let status = "scheduled";
+            if (f.status && f.status.toLowerCase().includes("en route")) status = "active";
+            if (f.status && f.status.toLowerCase().includes("arrived")) status = "landed";
+            if (f.status && f.status.toLowerCase().includes("cancelled")) status = "cancelled";
 
-            // ==========================================
-            // 🚀 BUGHUNT FIX: Den echten Status berechnen!
-            // ==========================================
-            let flightStatus = "scheduled";
-            if (f.cancelled === true || (typeof f.status === 'string' && f.status.toLowerCase().includes('cancel'))) {
-                flightStatus = "cancelled";
-            } else if (f.actual_in || f.actual_on) {
-                flightStatus = "landed";
-            } else if (f.actual_out || f.actual_off) {
-                flightStatus = "active";
-            }
+            const depTs = f.scheduled_out ? Math.floor(new Date(f.scheduled_out).getTime() / 1000) : null;
+            const arrTs = f.scheduled_in ? Math.floor(new Date(f.scheduled_in).getTime() / 1000) : null;
 
             return {
-                ...f, 
+                fa_flight_id: f.fa_flight_id,
+                ident_iata: ident,
                 flight_number: ident,
-                airline_icao: operator,
-                dep_iata: depIata,         
-                arr_iata: arrIata,         
-                dep_time_iso: depTime,
-                arr_time_iso: arrTime,
-                dep_time_ts: depTime ? Math.floor(new Date(depTime).getTime() / 1000) : null,
-                arr_time_ts: arrTime ? Math.floor(new Date(arrTime).getTime() / 1000) : null,
-                // 🚀 BUGHUNT FIX: Gates und Terminals exakt für das UI-Widget übersetzen!
+                airline_icao: f.operator_iata || f.operator_icao || f.operator || "Unknown",
+                dep_iata: f.origin?.code_iata || f.origin?.code || dep,
+                arr_iata: f.destination?.code_iata || f.destination?.code || arr,
+                dep_time_iso: f.scheduled_out,
+                arr_time_iso: f.scheduled_in,
+                dep_time_ts: depTs,
+                arr_time_ts: arrTs,
+                dep_estimated_ts: f.estimated_out ? Math.floor(new Date(f.estimated_out).getTime() / 1000) : depTs,
+                arr_estimated_ts: f.estimated_in ? Math.floor(new Date(f.estimated_in).getTime() / 1000) : arrTs,
                 dep_terminal: f.terminal_origin || null,
                 dep_gate: f.gate_origin || null,
                 arr_terminal: f.terminal_destination || null,
                 arr_gate: f.gate_destination || null,
-                // Status explizit setzen
-                status: flightStatus,
-                aircraft_registration: f.registration || null,
-                aircraft_type: aircraftType
+                status: status,
+                aircraft_type: f.aircraft_type || null,
+                registration: f.registration || null,
+                baggage_claim: f.baggage_claim || null,
+                actual_out: f.actual_out || null,
+                actual_in: f.actual_in || f.actual_on || null
             };
         });
 
-        // 🚀 BUGHUNT FIX 2: CODESHARES ZUSAMMENFASSEN
-        // Eliminiert die 4 doppelten Einträge aus deinem JSON und behält nur den echten (z.B. VY1885)
-        const uniqueFlights = [];
-        const seenIds = new Set();
-        for (const flight of flights) {
-            const uniqueId = flight.flight_number !== "Unbekannt" ? flight.flight_number : Math.random().toString();
+        // ==========================================
+        // FILTER: Duplikate in der Lupen-Ansicht löschen
+        // ==========================================
+        if (!cleanFlightNum) {
+            const uniqueFlights = [];
+            const seenActualIdents = new Set();
             
-            if (!seenIds.has(uniqueId)) {
-                seenIds.add(uniqueId);
-                uniqueFlights.push(flight);
-            }
+            flights.forEach(f => {
+                const actual = f.actual_ident_iata || f.ident_iata;
+                if (!seenActualIdents.has(actual)) {
+                    seenActualIdents.add(actual);
+                    uniqueFlights.push(f);
+                }
+            });
+            flights = uniqueFlights;
         }
 
-        // Chronologisch nach Abflugzeit sortieren
-        uniqueFlights.sort((a, b) => {
-            if (!a.dep_time_ts) return 1;
-            if (!b.dep_time_ts) return -1;
-            return a.dep_time_ts - b.dep_time_ts;
-        });
-
-        return new Response(JSON.stringify(uniqueFlights), {
-            status: 200,
-            headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
-        });
+        return {
+            statusCode: 200,
+            headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
+            body: JSON.stringify(flights)
+        };
 
     } catch (error) {
-        console.error("Backend Error:", error);
-        return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+        console.error("FlightFetch Error:", error);
+        return {
+            statusCode: 500,
+            headers: { 'Access-Control-Allow-Origin': '*' },
+            body: JSON.stringify({ error: 'Internal Server Error' })
+        };
     }
-}
+};

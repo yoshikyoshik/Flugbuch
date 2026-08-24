@@ -1070,7 +1070,7 @@ window.logFlight = async function () {
             try {
                 // 🚀 BUGHUNT FIX: Auf neue FlightAware-Funktion umleiten!
                 const cleanFlightNum = newFlightForSupabase.flightNumber.replace(/\s+/g, '').toUpperCase();
-                const fetchUrl = `${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-fa-flight?flight_number=${cleanFlightNum}&date=${flightDateStr}`;
+                const fetchUrl = `${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-fa-flight?flight_number=${cleanFlightNum}&date=${flightDateStr}&dep=${newFlightForSupabase.departure}&arr=${newFlightForSupabase.arrival}`;
                 const syncRes = await fetch(fetchUrl);
                 
                 if (syncRes.ok) {
@@ -5519,8 +5519,10 @@ window.refreshLiveFlightData = async function(force = true) {
         } else {
             console.log(`✈️ Starte ECHTEN FlightAware Live-Abruf für Flug ${flightNum} am ${flightDate}...`);
             
-            // 🚀 NEU: FLIGHTAWARE API ansteuern
-            const fetchUrl = `${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-fa-flight?flight_number=${flightNum}&date=${flightDate}`;
+            // 🚀 NEU: FLIGHTAWARE API ansteuern (JETZT MIT CODESHARE-CROSS-REFERENCE)
+            const flightDep = window.currentLiveFlight.departure;
+            const flightArr = window.currentLiveFlight.arrival;
+            const fetchUrl = `${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-fa-flight?flight_number=${flightNum}&date=${flightDate}&dep=${flightDep}&arr=${flightArr}`;
             const response = await fetch(fetchUrl);
             
             if (!response.ok) throw new Error("Flug nicht gefunden");
@@ -6542,7 +6544,7 @@ window.silentPostFlightSync = async function(allFlights) {
             const cleanFlightNum = flightNum.toString().replace(/\s+/g, '').toUpperCase();
             
             // 🚀 BUGHUNT FIX: Auf neue FlightAware-API umgeleitet
-            const response = await fetch(`${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-fa-flight?flight_number=${cleanFlightNum}&date=${yesterdayStr}`);
+            const response = await fetch(`${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-fa-flight?flight_number=${cleanFlightNum}&date=${yesterdayStr}&dep=${flight.departure}&arr=${flight.arrival}`);
             
             if (response.ok) {
                 const flightsArray = await response.json();
