@@ -1,67 +1,42 @@
-const fetch = require('node-fetch');
-
-exports.handler = async function(event, context) {
-    // Erlaubt Anfragen aus dem Frontend
-    if (event.httpMethod === 'OPTIONS') {
-        return {
-            statusCode: 200,
-            headers: {
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Headers': 'Content-Type',
-                'Access-Control-Allow-Methods': 'GET, OPTIONS'
-            },
-            body: ''
-        };
+export default async function handler(request, context) {
+    const API_KEY = process.env.FLIGHTAWARE_API_KEY;
+    if (!API_KEY) {
+        return new Response(JSON.stringify({ error: "Missing API Key" }), { status: 500 });
     }
 
-    const { fa_flight_id } = event.queryStringParameters;
+    const url = new URL(request.url);
+    const fa_flight_id = url.searchParams.get("fa_flight_id");
 
     if (!fa_flight_id) {
-        return { 
-            statusCode: 400, 
-            headers: { 'Access-Control-Allow-Origin': '*' },
-            body: JSON.stringify({ error: "Missing FlightAware ID" }) 
-        };
+        return new Response(JSON.stringify({ error: "Missing ID" }), { status: 400 });
     }
 
-    const API_KEY = process.env.FLIGHTAWARE_API_KEY;
-    // Wir fragen exakt nach dem Flight-Track für diese spezifische Flug-ID
-    const faUrl = `https://aeroapi.flightaware.com/aeroapi/flights/${encodeURIComponent(fa_flight_id)}/track`;
+    const headers = { 'x-apikey': API_KEY, 'Accept': 'application/json' };
 
     try {
-        const response = await fetch(faUrl, {
-            headers: {
-                'x-apikey': API_KEY
-            }
-        });
+        // 1. Versuch: Der schnelle Live/Recent Endpunkt
+        let trackUrl = `https://aeroapi.flightaware.com/aeroapi/flights/${encodeURIComponent(fa_flight_id)}/track`;
+        let response = await fetch(trackUrl, { headers });
 
-        if (!response.ok) {
-            console.warn(`Kein GPS-Track gefunden für ${fa_flight_id}. Status: ${response.status}`);
-            return { 
-                statusCode: response.status, 
-                headers: { 'Access-Control-Allow-Origin': '*' },
-                body: JSON.stringify({ positions: [] }) // Leeres Array als sicherer Fallback
-            };
+        // 2. Versuch: Wenn 404 (Not Found) oder leer, schalte den History-Turbo ein!
+        if (!response.ok || response.status === 404) {
+            console.log(`⚠️ Live-Track nicht gefunden. Schalte auf History-Track um für ${fa_flight_id}...`);
+            trackUrl = `https://aeroapi.flightaware.com/aeroapi/history/flights/${encodeURIComponent(fa_flight_id)}/track`;
+            response = await fetch(trackUrl, { headers });
         }
 
-        const data = await response.json();
-
-        return {
-            statusCode: 200,
-            headers: {
-                'Access-Control-Allow-Origin': '*',
-                'Content-Type': 'application/json'
-            },
-            // Wir schicken nur das Positions-Array ans Frontend, um Daten zu sparen
-            body: JSON.stringify(data)
-        };
+        if (response.ok) {
+            const data = await response.json();
+            return new Response(JSON.stringify(data), {
+                status: 200,
+                headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+            });
+        } else {
+            return new Response(JSON.stringify({ error: "Track not found in Live or History" }), { status: response.status });
+        }
 
     } catch (error) {
-        console.error("Netzwerkfehler beim Track-Fetch:", error);
-        return { 
-            statusCode: 500, 
-            headers: { 'Access-Control-Allow-Origin': '*' },
-            body: JSON.stringify({ error: 'Internal Server Error' }) 
-        };
+        console.error("Track Fetch Error:", error);
+        return new Response(JSON.stringify({ error: error.message }), { status: 500 });
     }
-};
+}
