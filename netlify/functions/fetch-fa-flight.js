@@ -18,6 +18,7 @@ export default async function handler(request, context) {
     let dateEnd = "";
 
     if (date) {
+        // 🚀 BUGHUNT FIX: Die Zeitstempel SIND ZURÜCK! Ohne sie gibt es keine Gates aus dem Live-System!
         startDateIso = `${date}T00:00:00Z`;
         endDateIso = `${date}T23:59:59Z`;
         
@@ -51,7 +52,7 @@ export default async function handler(request, context) {
             // 🕵️‍♂️ DETECTIVE 1: THE MERGER (Für LH4306 etc.)
             if (rawFlights.length > 0) {
                 let firstHit = rawFlights[0];
-                let actualIdent = firstHit.actual_ident || firstHit.actual_ident_iata;
+                let actualIdent = firstHit.actual_ident_iata || firstHit.actual_ident;
                 
                 if (actualIdent && actualIdent !== cleanFlightNum) {
                     console.log(`🕵️‍♂️ Codeshare erkannt! ${cleanFlightNum} zeigt auf ${actualIdent}. Hole ATC-Daten...`);
@@ -65,12 +66,14 @@ export default async function handler(request, context) {
                         if (masterData.flights && masterData.flights.length > 0) {
                             let masterLive = masterData.flights[0];
                             
+                            // THE MERGE: Wir übernehmen die Gates vom Marketing-Flug
                             masterLive.gate_origin = masterLive.gate_origin || firstHit.gate_origin;
                             masterLive.terminal_origin = masterLive.terminal_origin || firstHit.terminal_origin;
                             masterLive.gate_destination = masterLive.gate_destination || firstHit.gate_destination;
                             masterLive.terminal_destination = masterLive.terminal_destination || firstHit.terminal_destination;
                             masterLive.baggage_claim = masterLive.baggage_claim || firstHit.baggage_claim;
                             
+                            // Tarnung
                             masterLive.actual_ident_iata = masterLive.ident_iata || actualIdent;
                             masterLive.ident_iata = cleanFlightNum;
                             masterLive.flight_number = cleanFlightNum;
@@ -104,7 +107,7 @@ export default async function handler(request, context) {
                     });
 
                     if (masterSchedule) {
-                        const masterIdent = masterSchedule.actual_ident || masterSchedule.ident;
+                        const masterIdent = masterSchedule.actual_ident_iata || masterSchedule.actual_ident || masterSchedule.ident_iata || masterSchedule.ident;
                         console.log(`🎯 Codeshare gelöst! Master ist ${masterIdent}. Hole Live-Daten...`);
                         
                         let masterUrl = `https://aeroapi.flightaware.com/aeroapi/flights/${encodeURIComponent(masterIdent)}`;
@@ -116,18 +119,16 @@ export default async function handler(request, context) {
                             if (masterData.flights && masterData.flights.length > 0) {
                                 let masterLive = masterData.flights[0];
                                 
-                                // GATE STEALER
+                                // GATE STEALER: Frag die Brüder!
                                 if (!masterLive.gate_origin && !masterLive.terminal_origin) {
                                     console.log(`🕵️‍♂️ Master ${masterIdent} hat keine Gates. Untersuche Schedule-Brüder...`);
                                     
                                     const brothers = scheduledFlights.filter(f => 
-                                        (f.actual_ident === masterIdent || f.actual_ident_iata === masterIdent || f.actual_ident === masterSchedule.ident_iata) && f.ident !== masterIdent
+                                        (f.actual_ident === masterSchedule.actual_ident || f.actual_ident_iata === masterSchedule.actual_ident_iata) && f.ident !== masterIdent
                                     );
                                     
-                                    let gatesFound = false;
-
                                     for (let brother of brothers) {
-                                        // 1. Check: Sind sie direkt im Flugplan?
+                                        // Spart API Aufrufe: Sind die Gates schon im Schedule-Datensatz?
                                         if (brother.gate_origin || brother.terminal_origin) {
                                             masterLive.gate_origin = brother.gate_origin;
                                             masterLive.terminal_origin = brother.terminal_origin;
@@ -136,36 +137,30 @@ export default async function handler(request, context) {
                                             break;
                                         }
 
-                                        // 2. Check: Wir holen die Live-Daten OHNE Zeitstempel!
-                                        const idsToTry = [brother.ident_iata, brother.ident].filter(Boolean);
+                                        // Wenn nicht, holen wir die Livedaten des Bruders MIT ZEITSTEMPEL!
+                                        // 🚀 BUGHUNT FIX: Wir bevorzugen zwingend IATA (z.B. LH), denn nur IATA liefert am Flughafen die Gates!
+                                        const queryId = brother.ident_iata || brother.ident; 
+                                        console.log(`Versuche Live-Gates von Bruder ${queryId} zu klauen...`);
                                         
-                                        for (let queryId of idsToTry) {
-                                            console.log(`Versuche Live-Gates von Bruder ${queryId} zu klauen...`);
-                                            
-                                            // 🚀 BUGHUNT FIX: KEINE DATUMS-FESSELN MEHR!
-                                            let csUrl = `https://aeroapi.flightaware.com/aeroapi/flights/${encodeURIComponent(queryId)}`;
-                                            
-                                            const csRes = await fetch(csUrl, { headers });
-                                            if (csRes.ok) {
-                                                const csData = await csRes.json();
-                                                if (csData.flights && csData.flights.length > 0) {
-                                                    let csLive = csData.flights[0];
-                                                    if (csLive.gate_origin || csLive.terminal_origin || csLive.gate_destination) {
-                                                        masterLive.gate_origin = csLive.gate_origin;
-                                                        masterLive.terminal_origin = csLive.terminal_origin;
-                                                        masterLive.gate_destination = csLive.gate_destination;
-                                                        masterLive.terminal_destination = csLive.terminal_destination;
-                                                        masterLive.baggage_claim = csLive.baggage_claim;
-                                                        console.log(`✅ BINGO! Gates via API von ${queryId} gestohlen!`);
-                                                        gatesFound = true;
-                                                        break; 
-                                                    } else {
-                                                        console.log(`❌ Flug ${queryId} gefunden, hat aber keine Gates.`);
-                                                    }
+                                        let csUrl = `https://aeroapi.flightaware.com/aeroapi/flights/${encodeURIComponent(queryId)}`;
+                                        if (startDateIso && endDateIso) csUrl += `?start=${startDateIso}&end=${endDateIso}`;
+                                        
+                                        const csRes = await fetch(csUrl, { headers });
+                                        if (csRes.ok) {
+                                            const csData = await csRes.json();
+                                            if (csData.flights && csData.flights.length > 0) {
+                                                let csLive = csData.flights[0];
+                                                if (csLive.gate_origin || csLive.terminal_origin || csLive.gate_destination) {
+                                                    masterLive.gate_origin = csLive.gate_origin;
+                                                    masterLive.terminal_origin = csLive.terminal_origin;
+                                                    masterLive.gate_destination = csLive.gate_destination;
+                                                    masterLive.terminal_destination = csLive.terminal_destination;
+                                                    masterLive.baggage_claim = csLive.baggage_claim;
+                                                    console.log(`✅ BINGO! Gates via API von ${queryId} gestohlen!`);
+                                                    break; 
                                                 }
                                             }
                                         }
-                                        if (gatesFound) break;
                                     }
                                 }
                                 
