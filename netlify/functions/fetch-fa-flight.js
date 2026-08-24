@@ -10,11 +10,23 @@ exports.handler = async function(event, context) {
 
     const headers = { 'x-apikey': API_KEY, 'Content-Type': 'application/json' };
 
-    // Zeitfenster für den kompletten Tag berechnen (T00:00:00Z bis T23:59:59Z)
-    let startDate, endDate;
+    // 🚀 BUGHUNT FIX: Perfektes Zeitfenster berechnen, um "400 Bad Request" zu vermeiden!
+    let dateStart = "";
+    let dateEnd = "";
+    let startDateIso = "";
+    let endDateIso = "";
+    
     if (date) {
-        startDate = `${date}T00:00:00Z`;
-        endDate = `${date}T23:59:59Z`;
+        const d1 = new Date(date);
+        dateStart = d1.toISOString().split('T')[0]; // z.B. 2026-08-24
+        
+        const d2 = new Date(d1);
+        d2.setDate(d2.getDate() + 1); // +1 Tag
+        dateEnd = d2.toISOString().split('T')[0]; // z.B. 2026-08-25
+        
+        // Die ISO-Zeiten brauchen wir für die direkte /flights/ Abfrage
+        startDateIso = `${dateStart}T00:00:00Z`;
+        endDateIso = `${dateStart}T23:59:59Z`; 
     }
 
     try {
@@ -26,7 +38,7 @@ exports.handler = async function(event, context) {
         // ==========================================
         if (cleanFlightNum) {
             let url = `https://aeroapi.flightaware.com/aeroapi/flights/${encodeURIComponent(cleanFlightNum)}`;
-            if (startDate && endDate) url += `?start=${startDate}&end=${endDate}`;
+            if (startDateIso && endDateIso) url += `?start=${startDateIso}&end=${endDateIso}`;
 
             const response = await fetch(url, { headers });
             if (response.ok) {
@@ -37,23 +49,23 @@ exports.handler = async function(event, context) {
             }
 
             // 🕵️‍♂️ DER CODESHARE-DETECTIVE (Cross-Reference Fallback)
-            if (rawFlights.length === 0 && dep && arr && startDate) {
-                console.log(`🔍 Detective-Mode: Keine Live-Daten für ${cleanFlightNum}. Suche über Route ${dep} -> ${arr}...`);
+            if (rawFlights.length === 0 && dep && arr && dateStart && dateEnd) {
+                console.log(`🔍 Detective-Mode: Keine Live-Daten für ${cleanFlightNum}. Suche Schedule für Route ${dep} -> ${arr}...`);
                 
-                // 🚀 BUGHUNT FIX: Wir nutzen wieder den exakten Endpunkt, den auch die Lupe erfolgreich nutzt!
-                const routeUrl = `https://aeroapi.flightaware.com/aeroapi/flights?origin=${dep}&destination=${arr}&start=${startDate}&end=${endDate}`;
+                // 🚀 BUGHUNT FIX: Nutzt jetzt /schedules mit einem echten 24h-Zeitfenster!
+                const routeUrl = `https://aeroapi.flightaware.com/aeroapi/schedules/${dateStart}/${dateEnd}?origin=${dep}&destination=${arr}`;
                 const routeRes = await fetch(routeUrl, { headers });
                 
                 if (routeRes.ok) {
                     const routeData = await routeRes.json();
-                    const routeFlights = routeData.flights || [];
-                    console.log(`✅ Detective: ${routeFlights.length} Flüge auf dieser Route gefunden.`);
+                    const schedules = routeData.schedules || [];
+                    console.log(`✅ Detective: ${schedules.length} geplante Flüge gefunden.`);
 
                     // Finde den wahren Master-Flug (Aggressive Suche)
-                    const masterFlight = routeFlights.find(f => {
+                    const masterSchedule = schedules.find(f => {
                         const codeshares = f.codeshares || [];
                         const codesharesIata = f.codeshares_iata || [];
-                        const searchNum = cleanFlightNum.replace(/\D/g, ''); // Zieht nur die Nummer, z.B. "514" aus "4Y514"
+                        const searchNum = cleanFlightNum.replace(/\D/g, ''); // Zieht nur "514" aus "4Y514"
                         
                         return codeshares.includes(cleanFlightNum) || 
                                codesharesIata.includes(cleanFlightNum) ||
@@ -63,12 +75,12 @@ exports.handler = async function(event, context) {
                                codeshares.some(code => code.includes(searchNum));
                     });
 
-                    if (masterFlight && masterFlight.ident) {
-                        const masterIdent = masterFlight.ident; // z.B. DLH4306
+                    if (masterSchedule && masterSchedule.ident) {
+                        const masterIdent = masterSchedule.ident; // z.B. DLH4306
                         console.log(`🎯 Codeshare gelöst! Master ist ${masterIdent}. Hole jetzt Live-Daten für Master...`);
                         
                         // JETZT holen wir die echten LIVE-Daten des Masters über seinen Ident!
-                        const masterUrl = `https://aeroapi.flightaware.com/aeroapi/flights/${masterIdent}?start=${startDate}&end=${endDate}`;
+                        const masterUrl = `https://aeroapi.flightaware.com/aeroapi/flights/${masterIdent}?start=${startDateIso}&end=${endDateIso}`;
                         const masterRes = await fetch(masterUrl, { headers });
                         
                         if (masterRes.ok) {
@@ -86,26 +98,22 @@ exports.handler = async function(event, context) {
                             }
                         }
                     } else {
-                        console.log(`❌ Detective: Keiner der ${routeFlights.length} Flüge enthält den Codeshare ${cleanFlightNum}.`);
-                        console.log("Gefundene Master-Idents:", routeFlights.map(f => f.ident).join(", "));
+                        console.log(`❌ Detective: Keiner der ${schedules.length} Flüge enthält den Codeshare ${cleanFlightNum}.`);
                     }
                 } else {
-                    console.log(`❌ Detective API Error: Status ${routeRes.status} bei /flights?origin...`);
+                    console.log(`❌ Detective API Error: Status ${routeRes.status} bei /schedules`);
                 }
             }
         } 
         // ==========================================
         // 2. SCENARIO: REINE ROUTEN-SUCHE (Die Lupe)
         // ==========================================
-        else if (dep && arr) {
-            let url = `https://aeroapi.flightaware.com/aeroapi/flights?origin=${dep}&destination=${arr}`;
-            if (startDate && endDate) {
-                url += `&start=${startDate}&end=${endDate}`;
-            }
+        else if (dep && arr && dateStart && dateEnd) {
+            const url = `https://aeroapi.flightaware.com/aeroapi/schedules/${dateStart}/${dateEnd}?origin=${dep}&destination=${arr}`;
             const response = await fetch(url, { headers });
             if (response.ok) {
                 const data = await response.json();
-                if (data.flights) rawFlights = data.flights;
+                if (data.schedules) rawFlights = data.schedules;
             }
         }
 
@@ -126,13 +134,17 @@ exports.handler = async function(event, context) {
             const depTs = f.scheduled_out ? Math.floor(new Date(f.scheduled_out).getTime() / 1000) : null;
             const arrTs = f.scheduled_in ? Math.floor(new Date(f.scheduled_in).getTime() / 1000) : null;
 
+            // 🚀 FIX: Fallback-Handling für Orte (String vs. Objekt je nach FlightAware-Endpunkt)
+            const depIata = (f.origin && f.origin.code_iata) ? f.origin.code_iata : (typeof f.origin === 'string' ? f.origin : dep);
+            const arrIata = (f.destination && f.destination.code_iata) ? f.destination.code_iata : (typeof f.destination === 'string' ? f.destination : arr);
+
             return {
                 fa_flight_id: f.fa_flight_id || f.ident,
                 ident_iata: ident,
                 flight_number: ident,
                 airline_icao: f.operator_iata || f.operator_icao || f.operator || "Unknown",
-                dep_iata: f.origin?.code_iata || f.origin?.code || dep,
-                arr_iata: f.destination?.code_iata || f.destination?.code || arr,
+                dep_iata: depIata,
+                arr_iata: arrIata,
                 dep_time_iso: f.scheduled_out,
                 arr_time_iso: f.scheduled_in,
                 dep_time_ts: depTs,
