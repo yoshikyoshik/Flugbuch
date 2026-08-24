@@ -1084,11 +1084,11 @@ window.logFlight = async function () {
                         if (data.dep_time_ts) updatePayload.dep_time_ts = data.dep_time_ts;
                         if (data.arr_time_ts) updatePayload.arr_time_ts = data.arr_time_ts;
 
-                        // Gates und Terminals sofort ins UI schieben! (FlightAware Original-Namen)
-                        if (data.terminal_origin) updatePayload.dep_terminal = data.terminal_origin;
-                        if (data.gate_origin) updatePayload.dep_gate = data.gate_origin;
-                        if (data.terminal_destination) updatePayload.arr_terminal = data.terminal_destination;
-                        if (data.gate_destination) updatePayload.arr_gate = data.gate_destination;
+                        // Gates und Terminals sofort ins UI schieben! (AvioSphere Panzer-Format)
+                        if (data.dep_terminal) updatePayload.dep_terminal = data.dep_terminal;
+                        if (data.dep_gate) updatePayload.dep_gate = data.dep_gate;
+                        if (data.arr_terminal) updatePayload.arr_terminal = data.arr_terminal;
+                        if (data.arr_gate) updatePayload.arr_gate = data.arr_gate;
                         if (data.registration) updatePayload.registration = data.registration;
 
                         if (Object.keys(updatePayload).length > 0) {
