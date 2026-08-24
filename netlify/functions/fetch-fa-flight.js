@@ -8,7 +8,7 @@ export default async function handler(request, context) {
     const flight_number = url.searchParams.get("flight_number");
     const dep = url.searchParams.get("dep");
     const arr = url.searchParams.get("arr");
-    const date = url.searchParams.get("date"); // Erwartet YYYY-MM-DD
+    const date = url.searchParams.get("date"); 
 
     const headers = { 'x-apikey': API_KEY, 'Accept': 'application/json' };
 
@@ -35,14 +35,13 @@ export default async function handler(request, context) {
         // MODUS A: Suche per Flugnummer (Autopilot & Widget)
         // ==========================================
         if (cleanFlightNum) {
+            console.log(`📡 Abfrage: Sende direkte Anfrage für ${cleanFlightNum}...`);
             let faUrl = `https://aeroapi.flightaware.com/aeroapi/flights/${encodeURIComponent(cleanFlightNum)}`;
             if (startDateIso && endDateIso) {
                 faUrl += `?start=${startDateIso}&end=${endDateIso}`;
             }
 
-            console.log(`📡 Abfrage: Sende direkte Anfrage für ${cleanFlightNum}...`);
             const response = await fetch(faUrl, { headers });
-            
             if (response.ok) {
                 const data = await response.json();
                 if (data.flights && data.flights.length > 0) {
@@ -53,7 +52,7 @@ export default async function handler(request, context) {
                 }
             }
 
-            // 🕵️‍♂️ DETECTIVE 1: THE MERGER
+            // 🕵️‍♂️ DETECTIVE 1: THE MERGER 
             if (rawFlights.length > 0) {
                 let firstHit = rawFlights[0];
                 let actualIdent = firstHit.actual_ident_iata || firstHit.actual_ident;
@@ -87,8 +86,7 @@ export default async function handler(request, context) {
                 }
             }
 
-            // 🕵️‍♂️ DETECTIVE 2: THE GATE STEALER
-            // 🚀 BUGHUNT FIX: Greift jetzt AUCH ein, wenn der Flug da ist, aber keine Gates hat!
+            // 🕵️‍♂️ DETECTIVE 2: THE GATE STEALER & FALLBACK (Für 4Y514, 4Y518 etc.)
             if ((rawFlights.length === 0 || !rawFlights[0].gate_origin) && dep && arr && dateStart && dateEnd) {
                 console.log(`🔍 Detective: Flug ${cleanFlightNum} fehlt oder hat keine Gates. Durchsuche den Tagesplan...`);
                 
@@ -100,7 +98,8 @@ export default async function handler(request, context) {
                     const scheduledFlights = routeData.scheduled || []; 
                     console.log(`✅ Tagesplan: ${scheduledFlights.length} geplante Flüge gefunden.`);
 
-                    const masterSchedule = scheduledFlights.find(f => {
+                    // Finde ALLE Kandidaten für diesen Flug!
+                    const matchingSchedules = scheduledFlights.filter(f => {
                         const searchNum = cleanFlightNum.replace(/\D/g, ''); 
                         const cs = f.codeshares || [];
                         const csi = f.codeshares_iata || [];
@@ -109,67 +108,63 @@ export default async function handler(request, context) {
                                cs.some(c => c.includes(searchNum)) || csi.some(c => c.includes(searchNum));
                     });
 
-                    if (masterSchedule) {
-                        const masterIdent = masterSchedule.actual_ident_iata || masterSchedule.actual_ident || masterSchedule.ident_iata || masterSchedule.ident;
-                        console.log(`🎯 Master ermittelt: ${masterIdent}. Hole Live-Daten...`);
-                        
-                        let masterUrl = `https://aeroapi.flightaware.com/aeroapi/flights/${encodeURIComponent(masterIdent)}`;
-                        if (startDateIso && endDateIso) masterUrl += `?start=${startDateIso}&end=${endDateIso}`;
-                        
-                        const masterRes = await fetch(masterUrl, { headers });
-                        if (masterRes.ok) {
-                            const masterData = await masterRes.json();
-                            if (masterData.flights && masterData.flights.length > 0) {
-                                let masterLive = masterData.flights[0];
-                                
-                                if (!masterLive.gate_origin && !masterLive.terminal_origin) {
-                                    console.log(`🕵️‍♂️ Master ${masterIdent} hat selbst keine Gates. Untersuche Brüder...`);
-                                    
-                                    const brothers = scheduledFlights.filter(f => 
-                                        (f.actual_ident === masterSchedule.actual_ident || f.actual_ident_iata === masterSchedule.actual_ident_iata) && f.ident !== masterIdent
-                                    );
-                                    
-                                    for (let brother of brothers) {
-                                        if (brother.gate_origin || brother.terminal_origin) {
-                                            masterLive.gate_origin = brother.gate_origin;
-                                            masterLive.terminal_origin = brother.terminal_origin;
-                                            masterLive.gate_destination = brother.gate_destination;
-                                            console.log(`✅ BINGO! Gates direkt aus dem Flugplan von ${brother.ident} gestohlen!`);
-                                            break;
-                                        }
+                    if (matchingSchedules.length > 0) {
+                        console.log(`🎯 ${matchingSchedules.length} Kandidaten für ${cleanFlightNum} gefunden. Prüfe Live-Daten...`);
+                        let liveDataFound = false;
 
-                                        const queryId = brother.ident_iata || brother.ident;
-                                        console.log(`Prüfe Live-Gates von Bruder ${queryId}...`);
-                                        
-                                        let csUrl = `https://aeroapi.flightaware.com/aeroapi/flights/${encodeURIComponent(queryId)}`;
-                                        if (startDateIso && endDateIso) csUrl += `?start=${startDateIso}&end=${endDateIso}`;
-                                        
-                                        const csRes = await fetch(csUrl, { headers });
-                                        if (csRes.ok) {
-                                            const csData = await csRes.json();
-                                            if (csData.flights && csData.flights.length > 0) {
-                                                let csLive = csData.flights[0];
-                                                if (csLive.gate_origin || csLive.terminal_origin || csLive.gate_destination) {
-                                                    masterLive.gate_origin = csLive.gate_origin;
-                                                    masterLive.terminal_origin = csLive.terminal_origin;
-                                                    masterLive.gate_destination = csLive.gate_destination;
-                                                    masterLive.terminal_destination = csLive.terminal_destination;
-                                                    masterLive.baggage_claim = csLive.baggage_claim;
-                                                    console.log(`✅ BINGO! Gates via API von ${queryId} gestohlen!`);
-                                                    break; 
-                                                }
+                        // Wir probieren jeden Kandidaten (z.B. 4Y518, OCN518, LH4320), bis einer Live-Daten hat
+                        for (let match of matchingSchedules) {
+                            const tryIdent = match.actual_ident_iata || match.actual_ident || match.ident_iata || match.ident;
+                            console.log(`🔄 Prüfe Kandidat: ${tryIdent}...`);
+                            
+                            let masterUrl = `https://aeroapi.flightaware.com/aeroapi/flights/${encodeURIComponent(tryIdent)}`;
+                            if (startDateIso && endDateIso) masterUrl += `?start=${startDateIso}&end=${endDateIso}`;
+                            
+                            const masterRes = await fetch(masterUrl, { headers });
+                            if (masterRes.ok) {
+                                const masterData = await masterRes.json();
+                                if (masterData.flights && masterData.flights.length > 0) {
+                                    let masterLive = masterData.flights[0];
+                                    console.log(`✅ Live-Daten für ${tryIdent} gefunden!`);
+                                    
+                                    // GATE STEALER
+                                    if (!masterLive.gate_origin && !masterLive.terminal_origin) {
+                                        console.log(`🕵️‍♂️ ${tryIdent} hat keine Gates. Untersuche die anderen Kandidaten im Flugplan...`);
+                                        for (let brother of matchingSchedules) {
+                                            if (brother.gate_origin || brother.terminal_origin) {
+                                                masterLive.gate_origin = brother.gate_origin;
+                                                masterLive.terminal_origin = brother.terminal_origin;
+                                                masterLive.gate_destination = brother.gate_destination;
+                                                masterLive.terminal_destination = brother.terminal_destination;
+                                                console.log(`✅ BINGO! Gates direkt aus Flugplan von ${brother.ident} gestohlen!`);
+                                                break;
                                             }
                                         }
                                     }
+                                    
+                                    // TARNUNG ANWENDEN
+                                    masterLive.actual_ident_iata = masterLive.ident_iata || tryIdent;
+                                    masterLive.ident_iata = cleanFlightNum;
+                                    masterLive.flight_number = cleanFlightNum;
+                                    
+                                    rawFlights = [masterLive];
+                                    liveDataFound = true;
+                                    break; // Wir haben Live-Daten! Schleife abbrechen.
+                                } else {
+                                    console.log(`⚠️ Keine Live-Daten für ${tryIdent}. Versuche nächsten Kandidaten...`);
                                 }
-                                
-                                masterLive.actual_ident_iata = masterLive.ident_iata || masterIdent;
-                                masterLive.ident_iata = cleanFlightNum;
-                                masterLive.flight_number = cleanFlightNum;
-                                
-                                rawFlights = [masterLive];
                             }
                         }
+
+                        // 🚀 ULTIMATIVER FALLBACK: Wenn KEIN Kandidat Live-Daten hatte, nimm den reinen Flugplan!
+                        if (!liveDataFound) {
+                            console.log(`⚠️ Kein Kandidat hatte Live-Daten. Nutze reinen Flugplan als Fallback!`);
+                            let masterLive = matchingSchedules[0]; 
+                            masterLive.ident_iata = cleanFlightNum;
+                            masterLive.flight_number = cleanFlightNum;
+                            rawFlights = [masterLive];
+                        }
+
                     } else {
                         console.log(`❌ Flug ${cleanFlightNum} nicht im Tagesplan gefunden.`);
                     }
