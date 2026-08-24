@@ -4011,6 +4011,56 @@ window.viewFlightDetails = async function(id, isSwitching = false, customScope =
     }
 
     // =========================================================
+    // 🗄️ SCHRITT 2.5: ARCHIV-DATEN (GATES & ZEITEN) EINBLENDEN
+    // =========================================================
+    let historicalDataContainer = document.getElementById('fd-historical-data-container');
+    if (!historicalDataContainer) {
+        historicalDataContainer = document.createElement('div');
+        historicalDataContainer.id = 'fd-historical-data-container';
+        const notesContainer = document.getElementById('fd-notes-container');
+        if (notesContainer && notesContainer.parentNode) {
+            notesContainer.parentNode.insertBefore(historicalDataContainer, notesContainer);
+        }
+    }
+
+    if (flight.dep_time_ts || flight.dep_gate || flight.arr_gate) {
+        const formatTs = (ts) => {
+            if (!ts) return "--:--";
+            const d = new Date(ts * 1000);
+            return d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0');
+        };
+
+        const depTime = formatTs(flight.dep_time_ts);
+        const arrTime = formatTs(flight.arr_time_ts);
+        const depGate = flight.dep_gate ? `Gate ${flight.dep_gate}` : "-";
+        const arrGate = flight.arr_gate ? `Gate ${flight.arr_gate}` : "-";
+        const depTerm = flight.dep_terminal ? `T${flight.dep_terminal}` : "-";
+        const arrTerm = flight.arr_terminal ? `T${flight.arr_terminal}` : "-";
+
+        historicalDataContainer.innerHTML = `
+            <div class="bg-surface-container-low dark:bg-slate-900/50 p-4 rounded-xl border border-outline-variant/10 dark:border-slate-700/50 mb-6">
+                <h4 class="text-xs font-bold text-on-surface/50 dark:text-slate-500 uppercase tracking-wider mb-3">Flug-Details (Archiv)</h4>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-[10px] text-on-surface/40 dark:text-slate-500 uppercase">Abflug (${flight.departure})</p>
+                        <p class="text-sm font-bold text-on-surface dark:text-slate-200">🕒 ${depTime}</p>
+                        <p class="text-xs text-on-surface/70 dark:text-slate-400">🚪 ${depTerm} | ${depGate}</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] text-on-surface/40 dark:text-slate-500 uppercase">Ankunft (${flight.arrival})</p>
+                        <p class="text-sm font-bold text-on-surface dark:text-slate-200">🕒 ${arrTime}</p>
+                        <p class="text-xs text-on-surface/70 dark:text-slate-400">🚪 ${arrTerm} | ${arrGate}</p>
+                    </div>
+                </div>
+            </div>
+        `;
+        historicalDataContainer.style.display = '';
+    } else {
+        historicalDataContainer.innerHTML = '';
+        historicalDataContainer.style.display = 'none';
+    }
+    
+    // =========================================================
     // 🌤️ SCHRITT 3: WETTER IN DER FLUGKARTE (MODAL) ANZEIGEN
     // =========================================================
     let weatherContainer = document.getElementById('fd-weather-container');
@@ -4038,8 +4088,20 @@ window.viewFlightDetails = async function(id, isSwitching = false, customScope =
         weatherContainer.innerHTML = (depHtml || "") + (arrHtml || "");
         weatherContainer.style.display = ''; // Sichtbar machen
     } else {
-        weatherContainer.innerHTML = '';
-        weatherContainer.style.display = 'none'; // Verstecken, falls kein Wetter da ist
+        const todayStr = new Date().toISOString().split('T')[0];
+        if (flight.date < todayStr) {
+             // 🚀 BUGHUNT FIX: Erklärung für fehlendes historisches Wetter anzeigen
+             weatherContainer.className = 'w-full mb-6';
+             weatherContainer.innerHTML = `
+                <div class="bg-surface-container-low dark:bg-slate-900/30 p-3 rounded-xl border border-outline-variant/5 dark:border-slate-700/30 text-center">
+                    <p class="text-xs text-on-surface/50 dark:text-slate-500">🌦️ Historische Wetterdaten sind für alte Flüge nicht verfügbar.</p>
+                </div>
+             `;
+             weatherContainer.style.display = '';
+        } else {
+             weatherContainer.innerHTML = '';
+             weatherContainer.style.display = 'none';
+        }
     }
     // =========================================================
 
@@ -6501,6 +6563,12 @@ window.selectFoundFlight = function(flightNum, encodedData, airlineNameStr) {
             if (f.aircraft_type) {
                 const typeInput = document.getElementById('aircraftType');
                 if (typeInput && !typeInput.value) typeInput.value = f.aircraft_type;
+            }
+            // 🚀 BUGHUNT FIX: Registrierung ins Formular eintragen!
+            const reg = f.aircraft_registration || f.registration;
+            if (reg) {
+                const regInput = document.getElementById('registration');
+                if (regInput && !regInput.value) regInput.value = reg;
             }
 
             // 🚀 BUGHUNT FIX: Lupe rettet jetzt ALLE historischen Daten!
