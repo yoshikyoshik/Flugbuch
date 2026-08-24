@@ -6384,13 +6384,16 @@ async function searchFlightByRoute() {
     let targetDate = todayStr;
     let isFuture = false;
 
+    let targetDate = todayStr;
+    let isFuture = false;
+    let isPast = false; // 🚀 NEU: Zeitreise-Modus!
+
     if (dateInput) {
-        if (dateInput < todayStr) {
-            showMessage(getTranslation("flightSearch.errorTitle") || "Fehler", getTranslation("flightSearch.errorWrongDate") || "Die Flugsuche funktioniert nur für das heutige oder zukünftige Datum.", "error");
-            return; 
-        } else if (dateInput > todayStr) {
-            targetDate = dateInput;
+        targetDate = dateInput;
+        if (dateInput > todayStr) {
             isFuture = true;
+        } else if (dateInput < todayStr) {
+            isPast = true;
         }
     }
 
@@ -6398,11 +6401,19 @@ async function searchFlightByRoute() {
     const content = document.getElementById('fs-modal-content');
     const list = document.getElementById('flight-selector-list');
 
-    // 🚀 BUGHUNT FIX: Zwingt das Modal dazu, einen Scrollbalken zu zeigen, wenn die Liste zu lang wird!
-    list.style.maxHeight = "60vh"; // Maximal 60% der Bildschirmhöhe
-    list.style.overflowY = "auto"; // Scrollbalken aktivieren
+    list.style.maxHeight = "60vh"; 
+    list.style.overflowY = "auto"; 
 
     const modalTitleEl = content.querySelector('h3');
+    
+    // 🚀 BUGHUNT FIX: Titel dynamisch an die Zeitreise anpassen!
+    if (isPast) {
+        modalTitleEl.textContent = (typeof getTranslation === 'function' ? getTranslation('flightSearch.modalTitlePast') : null) || 'Vergangene Flüge';
+    } else if (isFuture) {
+        modalTitleEl.textContent = (typeof getTranslation === 'function' ? getTranslation('flightSearch.modalTitleFuture') : null) || 'Zukünftige Flüge';
+    } else {
+        modalTitleEl.textContent = (typeof getTranslation === 'function' ? getTranslation('flightSearch.modalTitle') : null) || 'Heutige Flüge';
+    }
     modalTitleEl.textContent = isFuture ? (getTranslation('flightSearch.modalTitleFuture') || 'Zukünftige Flüge') : (getTranslation('flightSearch.modalTitle') || 'Heutige Flüge');
     
     modal.classList.remove('hidden');
