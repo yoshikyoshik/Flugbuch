@@ -1030,6 +1030,23 @@ window.logFlight = async function () {
   }
   // ================================================================
 
+  // 🚀 DER EWIGE FLUGSCHREIBER: Letzter Check vor dem Speichern!
+  if (newFlightForSupabase.fa_flight_id && (!newFlightForSupabase.gps_track || newFlightForSupabase.gps_track.length === 0)) {
+      console.log("📍 Lade GPS-Track für Supabase herunter...");
+      try {
+          const trackUrl = `${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-fa-track?fa_flight_id=${encodeURIComponent(newFlightForSupabase.fa_flight_id)}`;
+          const trackRes = await fetch(trackUrl);
+          if (trackRes.ok) {
+              const trackData = await trackRes.json();
+              if (trackData.positions && trackData.positions.length > 1) {
+                  newFlightForSupabase.gps_track = trackData.positions
+                      .filter(p => p.latitude && p.longitude)
+                      .map(p => [p.latitude, p.longitude]);
+              }
+          }
+      } catch(e) { console.warn("GPS Track Fehler", e); }
+  }
+
   // --- OFFLINE CHECK & SAVE ---
   if (!navigator.onLine) {
       // 1. Warnung bzgl. Fotos (da Supabase Storage offline nicht geht)
@@ -1449,6 +1466,26 @@ async function updateFlight() {
       console.log("⏱️ Historische Daten erfolgreich an Supabase-Payload angehängt!");
   }
   // ================================================================
+
+  // 🚀 DER EWIGE FLUGSCHREIBER: Check beim Bearbeiten alter Flüge!
+  const targetFaId = updatedFlightForSupabase.fa_flight_id || currentlyEditingFlightData.fa_flight_id;
+  const targetGps = updatedFlightForSupabase.gps_track || currentlyEditingFlightData.gps_track;
+
+  if (targetFaId && (!targetGps || targetGps.length === 0)) {
+      console.log("📍 Lade fehlenden GPS-Track für Supabase herunter...");
+      try {
+          const trackUrl = `${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-fa-track?fa_flight_id=${encodeURIComponent(targetFaId)}`;
+          const trackRes = await fetch(trackUrl);
+          if (trackRes.ok) {
+              const trackData = await trackRes.json();
+              if (trackData.positions && trackData.positions.length > 1) {
+                  updatedFlightForSupabase.gps_track = trackData.positions
+                      .filter(p => p.latitude && p.longitude)
+                      .map(p => [p.latitude, p.longitude]);
+              }
+          }
+      } catch(e) { console.warn("GPS Track Fehler", e); }
+  }
 
   const { error } = await supabaseClient
     .from("flights")
@@ -5801,38 +5838,43 @@ window.prepareAndOpenFinishModal = async function() {
     const originalText = btn.innerHTML;
 
     try {
-        // 1. Button in einen Lade-Zustand versetzen
         if (btn) {
-            btn.innerHTML = `<span class="material-symbols-outlined animate-spin text-[16px]">sync</span> <span data-i18n="live.fetchingWeather">Wetter laden...</span>`;
+            btn.innerHTML = `<span class="material-symbols-outlined animate-spin text-[16px]">sync</span> <span data-i18n="live.fetchingWeather">Wetter & GPS laden...</span>`;
             btn.disabled = true;
             btn.classList.add('opacity-70', 'cursor-not-allowed');
         }
 
-        // 2. Ziel-Flughafen auslesen
         const arrIata = window.currentLiveFlight.arrival;
-        
+        const faId = window.currentLiveFlight.fa_flight_id;
+
+        // 1. Wetter laden
         if (arrIata) {
-            console.log(`🌤️ 'Flug beenden' geklickt. Hole finales Landewetter für ${arrIata}...`);
-            // Wir ziehen das frische Wetter
             const freshWeather = await window.fetchAviationWeather(arrIata);
-            
-            if (freshWeather) {
-                // Wir speichern das frische Wetter direkt am aktuellen Flug
-                window.currentLiveFlight.weather_arr = freshWeather;
-                console.log("✅ Wetter erfolgreich nachgeladen!");
+            if (freshWeather) window.currentLiveFlight.weather_arr = freshWeather;
+        }
+
+        // 2. 🚀 NEU: GPS-Track endgültig laden, wenn der Flug landet!
+        if (faId) {
+            console.log("📍 Lade finalen GPS-Track für das Archiv...");
+            const trackUrl = `${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-fa-track?fa_flight_id=${encodeURIComponent(faId)}`;
+            const trackRes = await fetch(trackUrl);
+            if (trackRes.ok) {
+                const trackData = await trackRes.json();
+                if (trackData.positions && trackData.positions.length > 1) {
+                    window.currentLiveFlight.gps_track = trackData.positions
+                        .filter(p => p.latitude && p.longitude)
+                        .map(p => [p.latitude, p.longitude]);
+                }
             }
         }
     } catch (e) {
-        console.warn("Wetter konnte beim Klick auf 'Flug beenden' nicht geladen werden.", e);
+        console.warn("Daten konnten beim Klick auf 'Flug beenden' nicht geladen werden.", e);
     } finally {
-        // 3. Button wiederherstellen
         if (btn) {
             btn.innerHTML = originalText;
             btn.disabled = false;
             btn.classList.remove('opacity-70', 'cursor-not-allowed');
         }
-
-        // 4. 🚀 DEINE ORIGINAL-FUNKTION AUFRUFEN!
         if (typeof finishLiveFlight === 'function') {
             finishLiveFlight(); 
         } else if (typeof window.finishLiveFlight === 'function') {
@@ -5971,7 +6013,7 @@ window.finishLiveFlight = async function() {
     
     const flightId = window.currentLiveFlight.id || window.currentLiveFlight.flight_id;
     
-    // 1. Visuell sofort ausblenden (für diese Sitzung)
+    // 1. Visuell sofort ausblenden
     const hiddenList = JSON.parse(localStorage.getItem('hiddenLiveFlightsList') || '[]');
     if (!hiddenList.some(h => h.id === flightId)) {
         hiddenList.push({ id: flightId });
@@ -5981,10 +6023,16 @@ window.finishLiveFlight = async function() {
     // 2. Wetter-Lock setzen
     localStorage.setItem(`weather_finalized_${flightId}`, 'true');
 
-    // 3. 🚀 DER ZOMBIE-KILLER: Flug in Supabase für immer ins Archiv schieben!
+    // 3. 🚀 DER ZOMBIE-KILLER + EWIGER FLUGSCHREIBER
     try {
+        const updatePayload = { status: 'archived' };
+        
+        // Wetter und GPS mitspeichern, falls in prepareAndOpenFinishModal geladen
+        if (window.currentLiveFlight.weather_arr) updatePayload.weather_arr = window.currentLiveFlight.weather_arr;
+        if (window.currentLiveFlight.gps_track) updatePayload.gps_track = window.currentLiveFlight.gps_track;
+
         await supabaseClient.from('flights')
-            .update({ status: 'archived' })
+            .update(updatePayload)
             .eq('flight_id', flightId);
     } catch (e) {
         console.warn("Konnte Status nicht auf archived setzen", e);
@@ -5993,7 +6041,6 @@ window.finishLiveFlight = async function() {
     const successMsg = (typeof getTranslation === 'function' ? getTranslation("live.flightArchivedSuccess") : null) || "Flug erfolgreich ins Logbuch verschoben! 📖";
     alert(successMsg);
 
-    // 4. Widget neu initialisieren
     window.initLiveWidget();
 };
 
