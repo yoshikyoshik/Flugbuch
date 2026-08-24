@@ -98,14 +98,17 @@ export default async function handler(request, context) {
                     const scheduledFlights = routeData.scheduled || []; 
                     console.log(`✅ Tagesplan: ${scheduledFlights.length} geplante Flüge gefunden.`);
 
-                    // Finde ALLE Kandidaten für diesen Flug!
+                    // 🚀 BUGHUNT FIX: Wir suchen jetzt aktiv nach echten Codeshares im Flugplan!
                     const matchingSchedules = scheduledFlights.filter(f => {
-                        const searchNum = cleanFlightNum.replace(/\D/g, ''); 
                         const cs = f.codeshares || [];
                         const csi = f.codeshares_iata || [];
-                        return f.ident === cleanFlightNum || f.ident_iata === cleanFlightNum ||
-                               cs.includes(cleanFlightNum) || csi.includes(cleanFlightNum) ||
-                               cs.some(c => c.includes(searchNum)) || csi.some(c => c.includes(searchNum));
+                        const ident = f.ident || '';
+                        const identIata = f.ident_iata || '';
+                        
+                        return ident === cleanFlightNum || 
+                               identIata === cleanFlightNum ||
+                               cs.includes(cleanFlightNum) || 
+                               csi.includes(cleanFlightNum);
                     });
 
                     if (matchingSchedules.length > 0) {
