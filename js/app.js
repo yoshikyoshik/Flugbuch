@@ -5601,14 +5601,18 @@ window.refreshLiveFlightData = async function(force = true) {
 
         const timeStrDep = formatTime(data.dep_time_iso) || "--:--";
         const timeStrArr = formatTime(data.arr_time_iso) || "--:--";
+        
+        // 🚀 BUGHUNT FIX: Echte geschätzte/verspätete Zeiten auswerten!
+        const estStrDep = formatTime(data.dep_estimated_iso) || timeStrDep;
+        const estStrArr = formatTime(data.arr_estimated_iso) || timeStrArr;
 
         document.getElementById('live-dep-sched').textContent = timeStrDep;
         document.getElementById('live-arr-sched').textContent = timeStrArr;
         
         const depEstEl = document.getElementById('live-dep-est');
         const arrEstEl = document.getElementById('live-arr-est');
-        depEstEl.textContent = timeStrDep;
-        arrEstEl.textContent = timeStrArr;
+        depEstEl.textContent = estStrDep;
+        arrEstEl.textContent = estStrArr;
         depEstEl.className = "font-black text-indigo-600 dark:text-indigo-400";
         arrEstEl.className = "font-black text-indigo-600 dark:text-indigo-400";
 
