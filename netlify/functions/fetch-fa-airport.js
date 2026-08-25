@@ -1,47 +1,61 @@
 export default async function handler(request, context) {
     const API_KEY = process.env.FLIGHTAWARE_API_KEY;
+    
+    // Standard Header für eine saubere Kommunikation
+    const headers = { 
+        'Content-Type': 'application/json', 
+        'Access-Control-Allow-Origin': '*' 
+    };
+
     if (!API_KEY) {
-        return new Response(JSON.stringify({ error: "Missing API Key" }), { status: 500 });
+        return new Response(JSON.stringify({ error: "Missing API Key" }), { status: 500, headers });
     }
 
     const url = new URL(request.url);
-    const airportCode = url.searchParams.get("airport"); // Z.B. "BER"
-    const type = url.searchParams.get("type") || "arrivals"; // "arrivals" oder "departures"
+    const airportCode = url.searchParams.get("airport");
+    const type = url.searchParams.get("type") || "arrivals";
 
     if (!airportCode) {
-        return new Response(JSON.stringify({ error: "Missing airport code" }), { status: 400 });
+        return new Response(JSON.stringify({ error: "Missing airport code" }), { status: 400, headers });
     }
 
-    const headers = { 'x-apikey': API_KEY, 'Accept': 'application/json' };
+    const faHeaders = { 'x-apikey': API_KEY, 'Accept': 'application/json' };
 
     try {
-        // FlightAware API v4 Endpunkt für Flughafen-Aktivität
         const faUrl = `https://aeroapi.flightaware.com/aeroapi/airports/${encodeURIComponent(airportCode)}/flights/${encodeURIComponent(type)}?max_pages=1`;
         
-        const res = await fetch(faUrl, { headers });
+        const res = await fetch(faUrl, { headers: faHeaders });
         
         if (!res.ok) {
            throw new Error(`FlightAware API error: ${res.status}`);
         }
 
-        const data = await res.json();
+        // 🛡️ SICHERHEIT: Falls FlightAware (z.B. bei kleinen Flughäfen) komplett leere Daten schickt
+        const rawText = await res.text();
+        if (!rawText || rawText.trim() === "") {
+            return new Response(JSON.stringify([]), { status: 200, headers });
+        }
+
+        const data = JSON.parse(rawText);
         const flights = data.arrivals || data.departures || [];
 
-        // Wir bereinigen die Daten leicht fürs Frontend
+        // 🧹 AUFRÄUMEN: Bulletproof-Datenverarbeitung
         const cleanFlights = flights.map(f => {
-            // Smarte Flughafen-Erkennung (IATA bevorzugt, sonst ICAO, sonst Unbekannt)
+            
+            // Flughäfen (Erkennt IATA, ICAO oder reinen Text)
             let orig = "N/A";
-            if (f.origin) {
-                orig = f.origin.code_iata || f.origin.code_icao || "N/A";
-            }
-            let dest = "N/A";
-            if (f.destination) {
-                dest = f.destination.code_iata || f.destination.code_icao || "N/A";
+            if (f.origin && f.origin !== "null") {
+                orig = typeof f.origin === 'object' ? (f.origin.code_iata || f.origin.code_icao || "N/A") : f.origin;
             }
 
-            // Flugzeugtyp absichern
+            let dest = "N/A";
+            if (f.destination && f.destination !== "null") {
+                dest = typeof f.destination === 'object' ? (f.destination.code_iata || f.destination.code_icao || "N/A") : f.destination;
+            }
+
+            // Flugzeugtyp
             let acType = "N/A";
-            if (f.aircraft_type) {
+            if (f.aircraft_type && f.aircraft_type !== "null") {
                 acType = typeof f.aircraft_type === 'object' ? (f.aircraft_type.type || "N/A") : f.aircraft_type;
             }
 
@@ -58,8 +72,11 @@ export default async function handler(request, context) {
             };
         });
 
+        // Alles lief perfekt, wir schicken die sauberen Daten zur App!
+        return new Response(JSON.stringify(cleanFlights), { status: 200, headers });
+
     } catch (error) {
         console.error("Airport Fetch Error:", error);
-        return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+        return new Response(JSON.stringify({ error: error.message }), { status: 500, headers });
     }
 }
