@@ -6926,7 +6926,13 @@ async function loadAirportRadar() {
             throw new Error(`API Fehler: ${response.status}`);
         }
 
-        const flights = await response.json();
+        // 🚀 BUGHUNT FIX: Den rohen Text auslesen und prüfen, bevor JSON geparst wird!
+        const rawText = await response.text();
+        if (!rawText || rawText.trim() === "") {
+            throw new Error("Leere Daten vom Radar-Server erhalten (möglicher API-Timeout).");
+        }
+        
+        const flights = JSON.parse(rawText);
         
         // Erfolgreiche Daten in den Panzer-Cache schreiben
         radarDataCache[cacheKey] = {
@@ -6996,25 +7002,28 @@ function renderRadarFlights(flights, airportIata) {
             statusIcon = "airport_shuttle";
         }
 
-        // 3. 🚀 BUGHUNT FIX: Die wilden Daten zähmen
+        // 3. 🚀 BUGHUNT FIX: Die wilden Daten zähmen (Bulletproof-Edition)
         
         // Airports sichern
         const orig = (f.origin && f.origin !== "null") ? f.origin : "N/A";
         const dest = (f.destination && f.destination !== "null") ? f.destination : "N/A";
 
+        // SICHERHEIT: Zwingt jede Flugnummer oder ID zu einem echten Text-String (verhindert TypeErrors bei reinen Zahlen)
+        const safeFlightNum = String(f.flight_number || f.ident || "Privatflug");
+
         // Das Icon im Quadrat (Airline Code oder kleines Flugzeug)
         let iconContent = "✈️";
         let isPrivate = false;
 
-        if (f.flight_number && f.flight_number !== "Privatflug") {
+        if (safeFlightNum !== "Privatflug") {
             // Wenn es ein Kennzeichen (wie D-ECJU) ist oder zu lang
-            if (f.flight_number.includes('-') || f.flight_number.length > 7) {
+            if (safeFlightNum.includes('-') || safeFlightNum.length > 7) {
                 iconContent = "🛩️"; // General Aviation Icon
                 isPrivate = true;
             } else {
                 // Bei echten Airlines versuchen wir, Buchstaben für das Icon zu isolieren (z.B. "LH" aus "LH400")
-                const match = f.flight_number.match(/^[A-Za-z]+/);
-                iconContent = match ? match[0].substring(0, 2).toUpperCase() : f.flight_number.substring(0, 2);
+                const match = safeFlightNum.match(/^[A-Za-z]+/);
+                iconContent = match ? match[0].substring(0, 2).toUpperCase() : safeFlightNum.substring(0, 2);
             }
         }
 
@@ -7031,7 +7040,7 @@ function renderRadarFlights(flights, airportIata) {
                             ${iconContent}
                         </div>
                         <div>
-                            <h4 class="font-display font-black text-on-surface dark:text-white leading-tight ${isPrivate ? 'text-sm' : ''}">${f.flight_number}</h4>
+                            <h4 class="font-display font-black text-on-surface dark:text-white leading-tight ${isPrivate ? 'text-sm' : ''}">${safeFlightNum}</h4>
                             <p class="text-[10px] uppercase tracking-widest font-bold text-on-surface/50 dark:text-slate-400">${f.aircraft_type === 'N/A' ? 'Unbekannt' : f.aircraft_type}</p>
                         </div>
                     </div>
