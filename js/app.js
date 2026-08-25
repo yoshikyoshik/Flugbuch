@@ -6889,14 +6889,33 @@ function setRadarType(type) {
 
 async function loadAirportRadar() {
     const inputEl = document.getElementById('radar-airport-input');
-    const iata = inputEl.value.trim().toUpperCase();
+    const rawInput = inputEl.value.trim();
     const listEl = document.getElementById('radar-results-list');
 
-    if (iata.length !== 3) {
-        showMessage("Ungültiger Code", "Bitte gib einen 3-stelligen IATA-Code ein (z.B. BER).", "error");
-        return;
+    if (!rawInput) return;
+
+    let targetIata = rawInput.toUpperCase();
+
+    // 🚀 BUGHUNT FIX: Die smarte Lupe!
+    // Wenn der Nutzer nicht exakt 3 Buchstaben tippt (z.B. "Dresden" oder "EDDC"),
+    // nutzen wir deine interne 'findAirport'-Funktion, um den Code zu ermitteln!
+    if (targetIata.length !== 3) {
+        if (typeof findAirport === 'function') {
+            const foundAirport = findAirport(rawInput);
+            if (foundAirport && (foundAirport.iata || foundAirport.code)) {
+                targetIata = (foundAirport.iata || foundAirport.code).toUpperCase();
+                inputEl.value = targetIata; // Das Feld zur Bestätigung auf "DRS" ändern
+            } else {
+                showMessage("Nicht gefunden", "Flughafen konnte nicht ermittelt werden. Bitte wähle ihn aus der Liste.", "error");
+                return;
+            }
+        } else {
+            showMessage("Ungültiges Format", "Bitte gib einen 3-stelligen IATA-Code ein.", "error");
+            return;
+        }
     }
 
+    const iata = targetIata;
     const cacheKey = `${iata}_${currentRadarType}`;
     const now = Date.now();
 
@@ -6905,9 +6924,8 @@ async function loadAirportRadar() {
         console.log(`📡 Lade ${cacheKey} aus dem lokalen Cache (spart API-Calls!)...`);
         renderRadarFlights(radarDataCache[cacheKey].data, iata);
         
-        // Netter Hinweis für den Nutzer
         const remaining = Math.ceil((RADAR_CACHE_TTL - (now - radarDataCache[cacheKey].timestamp)) / 1000);
-        showMessage("Daten aktuell", `Die Live-Signale für ${iata} wurden gerade erst abgerufen. Ein erneuter Such-Ping ist in ${remaining}s möglich.`, "info");
+        showMessage("Daten aktuell", `Signale für ${iata} wurden gerade erst abgerufen. Ein erneuter Such-Ping ist in ${remaining}s möglich.`, "info");
         return;
     }
 
@@ -6926,7 +6944,6 @@ async function loadAirportRadar() {
             throw new Error(`API Fehler: ${response.status}`);
         }
 
-        // 🚀 BUGHUNT FIX: Den rohen Text auslesen und prüfen, bevor JSON geparst wird!
         const rawText = await response.text();
         if (!rawText || rawText.trim() === "") {
             throw new Error("Leere Daten vom Radar-Server erhalten (möglicher API-Timeout).");
@@ -6934,7 +6951,6 @@ async function loadAirportRadar() {
         
         const flights = JSON.parse(rawText);
         
-        // Erfolgreiche Daten in den Panzer-Cache schreiben
         radarDataCache[cacheKey] = {
             timestamp: now,
             data: flights
@@ -7084,26 +7100,18 @@ function initRadarAutocomplete() {
             return;
         }
 
-        // 🚀 BUGHUNT FIX: Wir greifen jetzt korrekt auf 'window.airportData' zu
-        // und wandeln das Objekt in ein durchsuchbares Array um!
-        if (typeof window.airportData !== 'undefined') {
+        // 🚀 BUGHUNT FIX: Zurück zur echten globalen Array-Variable 'airports'
+        if (typeof airports !== 'undefined' && Array.isArray(airports)) {
             
-            // Objekt in ein Array aus Werten umwandeln und den Code als Eigenschaft hinzufügen
-            const airportArray = Object.keys(window.airportData).map(code => {
-                return {
-                    code: code,
-                    ...window.airportData[code]
-                };
-            });
+            // Suche nach Übereinstimmungen in IATA, ICAO, Name oder Stadt
+            const matches = airports.filter(a => {
+                const searchIata = (a.iata || a.code || "").toLowerCase();
+                const searchIcao = (a.icao || "").toLowerCase();
+                const searchName = (a.name || "").toLowerCase();
+                const searchCity = (a.city || "").toLowerCase();
 
-            // Suche nach Übereinstimmungen (IATA, ICAO, Name, Stadt)
-            const matches = airportArray.filter(a => {
-                const searchCode = a.code.toLowerCase();
-                const searchName = a.name ? a.name.toLowerCase() : "";
-                const searchCity = a.city ? a.city.toLowerCase() : "";
-
-                return searchCode.includes(val) || searchName.includes(val) || searchCity.includes(val);
-            }).slice(0, 6); // Max 6 Ergebnisse
+                return searchIata.includes(val) || searchIcao.includes(val) || searchName.includes(val) || searchCity.includes(val);
+            }).slice(0, 6);
 
             if (matches.length > 0) {
                 radarList.classList.remove('hidden');
@@ -7112,23 +7120,24 @@ function initRadarAutocomplete() {
                     const div = document.createElement('div');
                     div.className = "p-3 hover:bg-surface-container-low dark:hover:bg-slate-700 cursor-pointer border-b border-outline-variant/10 dark:border-slate-700/50 last:border-0 transition-colors flex items-center justify-between";
                     
+                    const displayIata = airport.iata || airport.code || "";
+                    
                     div.innerHTML = `
                         <div class="overflow-hidden pr-2">
                             <div class="font-bold text-sm text-on-surface dark:text-white truncate">${airport.name}</div>
-                            <div class="text-[10px] text-on-surface/50 dark:text-slate-400 uppercase tracking-widest truncate">${airport.city || airport.country_code || ''}</div>
+                            <div class="text-[10px] text-on-surface/50 dark:text-slate-400 uppercase tracking-widest truncate">${airport.city || airport.country || ''}</div>
                         </div>
                         <div class="font-display font-black text-primary dark:text-indigo-400 shrink-0">
-                            ${airport.code}
+                            ${displayIata}
                         </div>
                     `;
                     
                     div.addEventListener('click', () => {
                         // Trage den Code in das Feld ein
-                        radarInput.value = airport.code;
+                        radarInput.value = displayIata;
                         radarInput.value = radarInput.value.toUpperCase(); 
                         radarList.classList.add('hidden');
                         
-                        // 🔥 UX-Boost: Direkt den API-Call starten!
                         loadAirportRadar();
                     });
                     
