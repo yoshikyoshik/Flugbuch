@@ -23,11 +23,13 @@ export default async function handler(request, context) {
     try {
         // 🚀 SCHRITT 2: DER INTELLIGENTE ZEITFILTER (-2h bis +6h)
         const now = new Date();
-        const startTime = new Date(now.getTime() - (2 * 60 * 60 * 1000)).toISOString();
-        const endTime = new Date(now.getTime() + (6 * 60 * 60 * 1000)).toISOString();
+        
+        // 🛡️ BUGHUNT FIX: Millisekunden abschneiden (.split('.')[0] + 'Z'), sonst stürzt FlightAware ab!
+        const startTime = new Date(now.getTime() - (2 * 60 * 60 * 1000)).toISOString().split('.')[0] + 'Z';
+        const endTime = new Date(now.getTime() + (6 * 60 * 60 * 1000)).toISOString().split('.')[0] + 'Z';
 
-        // API URL mit Start, End und einem Limit von 50 Flügen (damit bei großen Airports nichts abgeschnitten wird)
-        const faUrl = `https://aeroapi.flightaware.com/aeroapi/airports/${encodeURIComponent(airportCode)}/flights/${encodeURIComponent(type)}?start=${startTime}&end=${endTime}&max_pages=1`;
+        // API URL (Wir müssen die Zeitstempel mit encodeURIComponent absichern, da sie Doppelpunkte enthalten!)
+        const faUrl = `https://aeroapi.flightaware.com/aeroapi/airports/${encodeURIComponent(airportCode)}/flights/${encodeURIComponent(type)}?start=${encodeURIComponent(startTime)}&end=${encodeURIComponent(endTime)}&max_pages=1`;
         
         const res = await fetch(faUrl, { headers: faHeaders });
         
