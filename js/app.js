@@ -279,6 +279,16 @@ async function initializeApp() {
         updateFlightDetails();
       });
   }
+
+  // 🚀 BUGHUNT FIX: Radar-Suche an die hauseigene AvioSphere-Autocomplete-Engine klemmen!
+  const radarAirportEl = document.getElementById("radar-airport-input");
+  if (radarInput) {
+      radarInput.addEventListener("input", () => {
+          if (typeof updateAutocompleteList === 'function') {
+              updateAutocompleteList("radar-airport-input", "radar-airport-list");
+          }
+      });
+  }
   
   const lbAircraft = document.getElementById("logbook-view-aircraft");
   if (lbAircraft) lbAircraft.addEventListener("click", () => renderLogbookView("aircraftType"));
@@ -6896,21 +6906,20 @@ async function loadAirportRadar() {
 
     let targetIata = rawInput.toUpperCase();
 
-    // 🚀 BUGHUNT FIX: Die smarte Lupe!
-    // Wenn der Nutzer nicht exakt 3 Buchstaben tippt (z.B. "Dresden" oder "EDDC"),
-    // nutzen wir deine interne 'findAirport'-Funktion, um den Code zu ermitteln!
-    if (targetIata.length !== 3) {
+    // 🚀 BUGHUNT FIX: Wenn es kein reiner IATA (3) oder ICAO (4) Code ist, 
+    // bitten wir deine findAirport-Funktion um die Übersetzung!
+    if (targetIata.length !== 3 && targetIata.length !== 4) {
         if (typeof findAirport === 'function') {
             const foundAirport = findAirport(rawInput);
-            if (foundAirport && (foundAirport.iata || foundAirport.code)) {
-                targetIata = (foundAirport.iata || foundAirport.code).toUpperCase();
-                inputEl.value = targetIata; // Das Feld zur Bestätigung auf "DRS" ändern
+            if (foundAirport && (foundAirport.iata || foundAirport.code || foundAirport.icao)) {
+                targetIata = (foundAirport.iata || foundAirport.code || foundAirport.icao).toUpperCase();
+                inputEl.value = targetIata; // Feld optisch auf den Code korrigieren
             } else {
-                showMessage("Nicht gefunden", "Flughafen konnte nicht ermittelt werden. Bitte wähle ihn aus der Liste.", "error");
+                showMessage("Nicht gefunden", "Flughafen konnte nicht ermittelt werden.", "error");
                 return;
             }
         } else {
-            showMessage("Ungültiges Format", "Bitte gib einen 3-stelligen IATA-Code ein.", "error");
+            showMessage("Fehler", "Bitte wähle den Flughafen aus der Liste aus.", "error");
             return;
         }
     }
@@ -7047,112 +7056,57 @@ function renderRadarFlights(flights, airportIata) {
             ? `${orig} &rarr; <strong>${airportIata}</strong>` 
             : `<strong>${airportIata}</strong> &rarr; ${dest}`;
 
-        // Optik
+        // 🚀 BUGHUNT FIX: Die Karte ist jetzt ein natives, aufklappbares <details> Akkordeon!
         html += `
-            <div class="bg-surface-container-lowest dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-outline-variant/20 dark:border-slate-700 flex flex-col gap-3 group transition-transform hover:-translate-y-1 hover:shadow-md cursor-default">
-                <div class="flex justify-between items-start">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-surface-container-low dark:bg-slate-900 flex items-center justify-center border border-outline-variant/10 font-black text-primary dark:text-indigo-400 text-lg">
-                            ${iconContent}
+            <details class="bg-surface-container-lowest dark:bg-slate-800 rounded-2xl shadow-sm border border-outline-variant/20 dark:border-slate-700 group transition-all duration-300">
+                <summary class="list-none cursor-pointer p-4 flex flex-col gap-3 outline-none">
+                    <div class="flex justify-between items-start">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-surface-container-low dark:bg-slate-900 flex items-center justify-center border border-outline-variant/10 font-black text-primary dark:text-indigo-400 text-lg shadow-inner">
+                                ${iconContent}
+                            </div>
+                            <div>
+                                <h4 class="font-display font-black text-on-surface dark:text-white leading-tight ${isPrivate ? 'text-sm' : ''}">${safeFlightNum}</h4>
+                                <p class="text-[10px] uppercase tracking-widest font-bold text-on-surface/50 dark:text-slate-400">${f.aircraft_type === 'N/A' ? 'Unbekannt' : f.aircraft_type}</p>
+                            </div>
                         </div>
-                        <div>
-                            <h4 class="font-display font-black text-on-surface dark:text-white leading-tight ${isPrivate ? 'text-sm' : ''}">${safeFlightNum}</h4>
-                            <p class="text-[10px] uppercase tracking-widest font-bold text-on-surface/50 dark:text-slate-400">${f.aircraft_type === 'N/A' ? 'Unbekannt' : f.aircraft_type}</p>
+                        <div class="flex flex-col items-end gap-1.5">
+                            <div class="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-white px-2 py-1 rounded-full ${statusColor}">
+                                <span class="material-symbols-outlined text-[12px]">${statusIcon}</span> ${statusText}
+                            </div>
+                            <!-- Pfeil, der sich beim Aufklappen dreht -->
+                            <span class="material-symbols-outlined text-on-surface/30 group-open:rotate-180 transition-transform duration-300 text-sm">keyboard_arrow_down</span>
                         </div>
                     </div>
-                    <div class="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-white px-2 py-1 rounded-full ${statusColor}">
-                        <span class="material-symbols-outlined text-[12px]">${statusIcon}</span> ${statusText}
+                    
+                    <div class="flex justify-between items-end bg-surface-container-low dark:bg-slate-900/50 p-3 rounded-xl border border-outline-variant/10 dark:border-white/5 mt-1">
+                        <div class="text-sm font-medium text-on-surface/80 dark:text-slate-300">
+                            ${routeText}
+                        </div>
+                        <div class="text-right">
+                            <p class="text-[9px] uppercase tracking-widest font-bold text-on-surface/40 dark:text-slate-500 mb-0.5">Zeit</p>
+                            <p class="font-black text-lg text-on-surface dark:text-white leading-none">${timeString}</p>
+                        </div>
                     </div>
-                </div>
+                </summary>
                 
-                <div class="flex justify-between items-end bg-surface-container-low dark:bg-slate-900/50 p-3 rounded-xl border border-outline-variant/10 dark:border-white/5">
-                    <div class="text-sm font-medium text-on-surface/80 dark:text-slate-300">
-                        ${routeText}
-                    </div>
-                    <div class="text-right">
-                        <p class="text-[9px] uppercase tracking-widest font-bold text-on-surface/40 dark:text-slate-500 mb-0.5">Zeit</p>
-                        <p class="font-black text-lg text-on-surface dark:text-white leading-none">${timeString}</p>
+                <!-- Der versteckte Akkordeon-Inhalt -->
+                <div class="p-4 border-t border-outline-variant/10 dark:border-slate-700/50 bg-surface-container-low/30 dark:bg-slate-900/30 flex flex-col gap-4">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-surface-container-lowest dark:bg-slate-800 p-3 rounded-xl border border-outline-variant/10 shadow-sm">
+                            <p class="text-[9px] uppercase tracking-widest font-bold text-on-surface/50 dark:text-slate-400 mb-1">Abflug (${orig})</p>
+                            <p class="text-sm font-bold text-on-surface dark:text-white">Term. ${f.dep_terminal || "-"} | Gate ${f.dep_gate || "-"}</p>
+                        </div>
+                        <div class="bg-surface-container-lowest dark:bg-slate-800 p-3 rounded-xl border border-outline-variant/10 shadow-sm">
+                            <p class="text-[9px] uppercase tracking-widest font-bold text-on-surface/50 dark:text-slate-400 mb-1">Ankunft (${dest})</p>
+                            <p class="text-sm font-bold text-on-surface dark:text-white">Term. ${f.arr_terminal || "-"} | Gate ${f.arr_gate || "-"}</p>
+                            ${currentRadarType === 'arrivals' ? `<p class="text-[10px] font-bold text-primary mt-1">Gepäckband: ${f.baggage_claim || "TBD"}</p>` : ''}
+                        </div>
                     </div>
                 </div>
-            </div>
+            </details>
         `;
     });
 
     listEl.innerHTML = html;
-}
-
-// =========================================================
-// 🔍 AUTOCOMPLETE FÜR DAS LIVE-RADAR
-// =========================================================
-
-function initRadarAutocomplete() {
-    const radarInput = document.getElementById('radar-airport-input');
-    const radarList = document.getElementById('radar-airport-list');
-
-    if (!radarInput || !radarList) return;
-
-    radarInput.addEventListener('input', function() {
-        const val = this.value.trim().toLowerCase();
-        radarList.innerHTML = '';
-        
-        if (!val) {
-            radarList.classList.add('hidden');
-            return;
-        }
-
-        // 🚀 BUGHUNT FIX: Zurück zur echten globalen Array-Variable 'airports'
-        if (typeof airports !== 'undefined' && Array.isArray(airports)) {
-            
-            // Suche nach Übereinstimmungen in IATA, ICAO, Name oder Stadt
-            const matches = airports.filter(a => {
-                const searchIata = (a.iata || a.code || "").toLowerCase();
-                const searchIcao = (a.icao || "").toLowerCase();
-                const searchName = (a.name || "").toLowerCase();
-                const searchCity = (a.city || "").toLowerCase();
-
-                return searchIata.includes(val) || searchIcao.includes(val) || searchName.includes(val) || searchCity.includes(val);
-            }).slice(0, 6);
-
-            if (matches.length > 0) {
-                radarList.classList.remove('hidden');
-                
-                matches.forEach(airport => {
-                    const div = document.createElement('div');
-                    div.className = "p-3 hover:bg-surface-container-low dark:hover:bg-slate-700 cursor-pointer border-b border-outline-variant/10 dark:border-slate-700/50 last:border-0 transition-colors flex items-center justify-between";
-                    
-                    const displayIata = airport.iata || airport.code || "";
-                    
-                    div.innerHTML = `
-                        <div class="overflow-hidden pr-2">
-                            <div class="font-bold text-sm text-on-surface dark:text-white truncate">${airport.name}</div>
-                            <div class="text-[10px] text-on-surface/50 dark:text-slate-400 uppercase tracking-widest truncate">${airport.city || airport.country || ''}</div>
-                        </div>
-                        <div class="font-display font-black text-primary dark:text-indigo-400 shrink-0">
-                            ${displayIata}
-                        </div>
-                    `;
-                    
-                    div.addEventListener('click', () => {
-                        // Trage den Code in das Feld ein
-                        radarInput.value = displayIata;
-                        radarInput.value = radarInput.value.toUpperCase(); 
-                        radarList.classList.add('hidden');
-                        
-                        loadAirportRadar();
-                    });
-                    
-                    radarList.appendChild(div);
-                });
-            } else {
-                radarList.classList.add('hidden');
-            }
-        }
-    });
-
-    // Schließe das Dropdown, wenn man irgendwo anders hinklickt
-    document.addEventListener('click', function(e) {
-        if (e.target !== radarInput && !radarList.contains(e.target)) {
-            radarList.classList.add('hidden');
-        }
-    });
 }

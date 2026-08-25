@@ -68,7 +68,13 @@ export default async function handler(request, context) {
                 estimated_time: f.estimated_on || f.estimated_in || f.estimated_out,
                 actual_time: f.actual_on || f.actual_in || f.actual_out,
                 status: f.status,
-                aircraft_type: acType
+                aircraft_type: acType,
+                // 🚀 NEU: Live Terminal & Gate Daten für das Akkordeon!
+                dep_terminal: f.terminal_origin || null,
+                dep_gate: f.gate_origin || null,
+                arr_terminal: f.terminal_destination || null,
+                arr_gate: f.gate_destination || null,
+                baggage_claim: f.baggage_claim || null
             };
         });
 
