@@ -282,8 +282,8 @@ async function initializeApp() {
 
   // 🚀 BUGHUNT FIX: Radar-Suche an die hauseigene AvioSphere-Autocomplete-Engine klemmen!
   const radarAirportEl = document.getElementById("radar-airport-input");
-  if (radarInput) {
-      radarInput.addEventListener("input", () => {
+  if (radarAirportEl) {
+      radarAirportEl.addEventListener("input", () => {
           if (typeof updateAutocompleteList === 'function') {
               updateAutocompleteList("radar-airport-input", "radar-airport-list");
           }
