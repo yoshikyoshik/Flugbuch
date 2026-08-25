@@ -1,7 +1,6 @@
 export default async function handler(request, context) {
     const API_KEY = process.env.FLIGHTAWARE_API_KEY;
     
-    // Standard Header für eine saubere Kommunikation
     const headers = { 
         'Content-Type': 'application/json', 
         'Access-Control-Allow-Origin': '*' 
@@ -22,7 +21,13 @@ export default async function handler(request, context) {
     const faHeaders = { 'x-apikey': API_KEY, 'Accept': 'application/json' };
 
     try {
-        const faUrl = `https://aeroapi.flightaware.com/aeroapi/airports/${encodeURIComponent(airportCode)}/flights/${encodeURIComponent(type)}?max_pages=1`;
+        // 🚀 SCHRITT 2: DER INTELLIGENTE ZEITFILTER (-2h bis +6h)
+        const now = new Date();
+        const startTime = new Date(now.getTime() - (2 * 60 * 60 * 1000)).toISOString();
+        const endTime = new Date(now.getTime() + (6 * 60 * 60 * 1000)).toISOString();
+
+        // API URL mit Start, End und einem Limit von 50 Flügen (damit bei großen Airports nichts abgeschnitten wird)
+        const faUrl = `https://aeroapi.flightaware.com/aeroapi/airports/${encodeURIComponent(airportCode)}/flights/${encodeURIComponent(type)}?start=${startTime}&end=${endTime}&max_pages=1`;
         
         const res = await fetch(faUrl, { headers: faHeaders });
         
@@ -30,7 +35,6 @@ export default async function handler(request, context) {
            throw new Error(`FlightAware API error: ${res.status}`);
         }
 
-        // 🛡️ SICHERHEIT: Falls FlightAware (z.B. bei kleinen Flughäfen) komplett leere Daten schickt
         const rawText = await res.text();
         if (!rawText || rawText.trim() === "") {
             return new Response(JSON.stringify([]), { status: 200, headers });
@@ -41,8 +45,6 @@ export default async function handler(request, context) {
 
         // 🧹 AUFRÄUMEN: Bulletproof-Datenverarbeitung
         const cleanFlights = flights.map(f => {
-            
-            // Flughäfen (Erkennt IATA, ICAO oder reinen Text)
             let orig = "N/A";
             if (f.origin && f.origin !== "null") {
                 orig = typeof f.origin === 'object' ? (f.origin.code_iata || f.origin.code_icao || "N/A") : f.origin;
@@ -53,7 +55,6 @@ export default async function handler(request, context) {
                 dest = typeof f.destination === 'object' ? (f.destination.code_iata || f.destination.code_icao || "N/A") : f.destination;
             }
 
-            // Flugzeugtyp
             let acType = "N/A";
             if (f.aircraft_type && f.aircraft_type !== "null") {
                 acType = typeof f.aircraft_type === 'object' ? (f.aircraft_type.type || "N/A") : f.aircraft_type;
@@ -69,7 +70,7 @@ export default async function handler(request, context) {
                 actual_time: f.actual_on || f.actual_in || f.actual_out,
                 status: f.status,
                 aircraft_type: acType,
-                // 🚀 NEU: Live Terminal & Gate Daten für das Akkordeon!
+                // 🪗 SCHRITT 3: Gate- und Terminal-Daten für das Akkordeon
                 dep_terminal: f.terminal_origin || null,
                 dep_gate: f.gate_origin || null,
                 arr_terminal: f.terminal_destination || null,
@@ -78,7 +79,6 @@ export default async function handler(request, context) {
             };
         });
 
-        // Alles lief perfekt, wir schicken die sauberen Daten zur App!
         return new Response(JSON.stringify(cleanFlights), { status: 200, headers });
 
     } catch (error) {
