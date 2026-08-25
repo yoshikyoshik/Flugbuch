@@ -7069,11 +7069,21 @@ function renderRadarFlights(flights, airportIata) {
             }
         }
 
-        const routeText = currentRadarType === 'arrivals' 
-            ? `${orig} &rarr; <strong>${airportIata}</strong>` 
-            : `<strong>${airportIata}</strong> &rarr; ${dest}`;
+        // 🚀 BUGHUNT FIX: Namen für eine elegante UX anzeigen!
+        // Wir formatieren den "fremden" Flughafen als z.B. "London (LTN)", um Platz zu sparen.
+        const origDisplay = currentRadarType === 'arrivals' && f.origin_name 
+            ? `${f.origin_name} (${orig})` 
+            : orig;
+            
+        const destDisplay = currentRadarType === 'departures' && f.destination_name 
+            ? `${f.destination_name} (${dest})` 
+            : dest;
 
-        // Optik (Jetzt mit der doppelten Zeitanzeige!)
+        const routeText = currentRadarType === 'arrivals' 
+            ? `${origDisplay} &rarr; <strong>${airportIata}</strong>` 
+            : `<strong>${airportIata}</strong> &rarr; ${destDisplay}`;
+
+        // Optik (Akkordeon)
         html += `
             <details class="bg-surface-container-lowest dark:bg-slate-800 rounded-2xl shadow-sm border border-outline-variant/20 dark:border-slate-700 group transition-all duration-300">
                 <summary class="list-none cursor-pointer p-4 flex flex-col gap-3 outline-none">
@@ -7110,11 +7120,11 @@ function renderRadarFlights(flights, airportIata) {
                 <div class="p-4 border-t border-outline-variant/10 dark:border-slate-700/50 bg-surface-container-low/30 dark:bg-slate-900/30 flex flex-col gap-4">
                     <div class="grid grid-cols-2 gap-3">
                         <div class="bg-surface-container-lowest dark:bg-slate-800 p-3 rounded-xl border border-outline-variant/10 shadow-sm">
-                            <p class="text-[9px] uppercase tracking-widest font-bold text-on-surface/50 dark:text-slate-400 mb-1">Abflug (${orig})</p>
+                            <p class="text-[9px] uppercase tracking-widest font-bold text-on-surface/50 dark:text-slate-400 mb-1">Abflug (${f.origin_name || orig})</p>
                             <p class="text-sm font-bold text-on-surface dark:text-white">Term. ${f.dep_terminal || "-"} | Gate ${f.dep_gate || "-"}</p>
                         </div>
                         <div class="bg-surface-container-lowest dark:bg-slate-800 p-3 rounded-xl border border-outline-variant/10 shadow-sm">
-                            <p class="text-[9px] uppercase tracking-widest font-bold text-on-surface/50 dark:text-slate-400 mb-1">Ankunft (${dest})</p>
+                            <p class="text-[9px] uppercase tracking-widest font-bold text-on-surface/50 dark:text-slate-400 mb-1">Ankunft (${f.destination_name || dest})</p>
                             <p class="text-sm font-bold text-on-surface dark:text-white">Term. ${f.arr_terminal || "-"} | Gate ${f.arr_gate || "-"}</p>
                             ${currentRadarType === 'arrivals' ? `<p class="text-[10px] font-bold text-primary mt-1">Gepäckband: ${f.baggage_claim || "TBD"}</p>` : ''}
                         </div>
