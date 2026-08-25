@@ -6890,9 +6890,11 @@ function setRadarType(type) {
         btnArr.className = "flex-1 py-2 text-sm font-bold rounded-lg text-on-surface/50 hover:text-on-surface dark:text-slate-400 dark:hover:text-white transition";
     }
     
-    // Wenn schon ein Flughafen drin steht, direkt laden
+    // 🚀 BUGHUNT FIX: Keine sture Längen-Prüfung mehr!
+    // Solange mindestens 3 Zeichen im Feld stehen (egal ob "DRS" oder "Dresden (DRS)"), 
+    // feuern wir die Suche ab. Das smarte Herausfiltern übernimmt 'loadAirportRadar' von selbst.
     const input = document.getElementById('radar-airport-input').value.trim();
-    if(input.length === 3) {
+    if(input.length >= 3) {
         loadAirportRadar();
     }
 }
