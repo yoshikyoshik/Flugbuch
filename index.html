@@ -374,6 +374,48 @@
             </div>
 
             
+            <!-- ========================================== -->
+            <!-- TAB: FLUGHAFEN LIVE RADAR (NEU)            -->
+            <!-- ========================================== -->
+            <div id="tab-content-airport-radar" class="hidden">
+              <div class="flex items-center justify-between mb-8 pr-2">
+                <h2 class="text-2xl font-display font-extrabold text-on-surface dark:text-white tracking-tight">
+                  Flughafen Live
+                </h2>
+              </div>
+
+              <!-- Suchfeld & Filter -->
+              <div class="mb-6">
+                  <div class="bg-surface-container-low dark:bg-slate-900 rounded-2xl p-4 shadow-sm border border-outline-variant/10 dark:border-slate-800">
+                      <div class="flex gap-2 mb-3">
+                          <div class="relative flex-1 group">
+                              <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface/40 group-focus-within:text-primary transition-colors">flight_takeoff</span>
+                              <input type="text" id="radar-airport-input" placeholder="IATA (z.B. BER)" 
+                                     class="w-full bg-surface-container-lowest dark:bg-slate-800 rounded-xl py-3 pl-12 pr-4 font-bold uppercase text-on-surface dark:text-white placeholder:text-on-surface/30 focus:outline-none focus:ring-2 focus:ring-primary/50 transition border-none shadow-inner">
+                          </div>
+                          <button onclick="loadAirportRadar()" class="bg-primary text-white font-bold px-5 rounded-xl hover:bg-primary/90 transition shadow-sm flex items-center justify-center">
+                              <span class="material-symbols-outlined">search</span>
+                          </button>
+                      </div>
+                      
+                      <!-- Toggle Buttons für Ankünfte/Abflüge -->
+                      <div class="flex bg-surface-container-lowest dark:bg-slate-800 p-1 rounded-xl shadow-inner border border-outline-variant/10 dark:border-slate-700/50">
+                          <button onclick="setRadarType('arrivals')" id="btn-radar-arr" class="flex-1 py-2 text-sm font-bold rounded-lg bg-primary/10 text-primary dark:bg-indigo-900/30 dark:text-indigo-400 transition">Ankünfte</button>
+                          <button onclick="setRadarType('departures')" id="btn-radar-dep" class="flex-1 py-2 text-sm font-bold rounded-lg text-on-surface/50 hover:text-on-surface dark:text-slate-400 dark:hover:text-white transition">Abflüge</button>
+                      </div>
+                  </div>
+              </div>
+
+              <!-- Radar Ergebnis-Liste -->
+              <div id="radar-results-list" class="space-y-3 pb-24">
+                  <div class="flex flex-col items-center justify-center py-12 text-center opacity-50 px-4 bg-surface-container-lowest dark:bg-slate-800 rounded-[2rem] border border-dashed border-outline-variant/30 dark:border-slate-700">
+                      <span class="material-symbols-outlined text-5xl mb-4">travel_explore</span>
+                      <p class="font-bold text-sm">Gib einen Flughafen-Code ein, um Live-Daten zu sehen.</p>
+                  </div>
+              </div>
+            </div>
+            <!-- ========================================== -->
+            
             <div id="tab-content-timeline" class="hidden">
               
               <div class="flex items-center justify-between mb-6 pr-2">
@@ -1016,6 +1058,11 @@
             <button onclick="showTab('radar')" id="tab-btn-radar" class="tab-btn flex-1 flex flex-col items-center justify-center text-primary dark:text-indigo-400 pb-2 transition-all">
               <span class="material-symbols-outlined text-[24px] mb-1">radar</span>
               <span class="font-display text-[10px] font-bold uppercase tracking-wider">Radar</span>
+            </button>
+
+            <button onclick="showTab('airport-radar')" id="tab-btn-airport-radar" class="tab-btn flex-1 flex flex-col items-center justify-center text-on-surface/40 dark:text-slate-500 hover:text-on-surface/80 dark:hover:text-slate-300 pb-2 transition-all">
+              <span class="material-symbols-outlined text-[24px] mb-1">flight_land</span>
+              <span class="font-display text-[10px] font-bold uppercase tracking-wider">Live</span>
             </button>
             
             <button onclick="showTab('timeline')" id="tab-btn-timeline" class="tab-btn flex-1 flex flex-col items-center justify-center text-on-surface/40 dark:text-slate-500 hover:text-on-surface/80 dark:hover:text-slate-300 pb-2 transition-all">
