@@ -67,31 +67,51 @@ export default async function handler(request, context) {
             let acType = "N/A";
             if (f.aircraft_type && f.aircraft_type !== "null") acType = typeof f.aircraft_type === 'object' ? (f.aircraft_type.type || "N/A") : f.aircraft_type;
 
-            // 🚀 BUGHUNT FIX 2: Smarte Flugnummern-Generierung (IATA Format bevorzugen)
+            // 🚀 BUGHUNT FIX 1: Smarte Flugnummern-Generierung (Mit führenden Nullen!)
             let finalFlightNumber = f.flight_number || f.ident || "Privatflug";
             
-            // Wenn der Ident-Code (z.B. DLH68) vorliegt, wandeln wir den 3-Letter ICAO (DLH) 
-            // in den für Passagiere gewohnten 2-Letter IATA (LH) um.
             if (f.ident && f.ident.match(/^[A-Z]{3}\d+/)) {
                 const icaoCode = f.ident.substring(0, 3);
-                const flightDigits = f.ident.substring(3);
                 
-                // Ein kleines Mini-Mapping für die gängigsten Airlines am Beispiel DRS
+                // Das präzise Airline-Wörterbuch
                 const icaoToIata = {
-                    'DLH': 'LH', 'EWG': 'XQ', 'SXD': 'XQ', 'SXS': 'XQ', 'SWR': 'LX', 
-                    'RYR': 'FR', 'EZY': 'FR', 'CFG': 'DE', 'SDR': 'SR'
+                    'DLH': 'LH', 'EWG': 'EW', 'SXD': 'XQ', 'SXS': 'XQ', 'SWR': 'LX', 
+                    'RYR': 'FR', 'EZY': 'U2', 'CFG': 'DE', 'SDR': 'SR', 'AUA': 'OS', 'KLM': 'KL'
                 };
                 
                 if (icaoToIata[icaoCode]) {
-                    finalFlightNumber = icaoToIata[icaoCode] + flightDigits;
+                    let numStr = f.flight_number ? String(f.flight_number) : f.ident.substring(3);
+                    
+                    // Führende Nullen auffüllen, um dem Flughafen-Standard (LH069) zu entsprechen
+                    if (numStr.length === 1) numStr = "00" + numStr;
+                    else if (numStr.length === 2) numStr = "0" + numStr;
+                    
+                    finalFlightNumber = icaoToIata[icaoCode] + numStr;
                 } else {
-                    finalFlightNumber = f.ident; // Fallback auf das Original (DLH68)
+                    finalFlightNumber = f.ident; 
                 }
             } else if (f.ident && f.flight_number) {
-                 // Fallback: Wenn wir nur "68" haben, versuchen wir aus der Operator-Info etwas zu basteln
                  if (f.operator && f.operator.match(/^[A-Z]{3}/)) {
                      finalFlightNumber = f.operator.substring(0,2) + f.flight_number;
                  }
+            }
+
+            // 🚀 BUGHUNT FIX 2: GETRENNTE ZEIT-LOGIK FÜR ANKUNFT UND ABFLUG!
+            // Wir wissen über die Such-URL (type), in welchem Tab der Nutzer gerade ist.
+            const isDeparture = type === 'departures';
+            
+            let sTime, eTime, aTime;
+
+            if (isDeparture) {
+                // ABFLÜGE: Wir greifen exklusiv auf "out" (Gate-Abflug) und "off" (Runway-Abflug) zu!
+                sTime = f.scheduled_out || f.scheduled_off || null;
+                eTime = f.estimated_out || f.estimated_off || null;
+                aTime = f.actual_out || f.actual_off || null;
+            } else {
+                // ANKÜNFTE: Wir greifen exklusiv auf "in" (Gate-Ankunft) und "on" (Runway-Landung) zu!
+                sTime = f.scheduled_in || f.scheduled_on || null;
+                eTime = f.estimated_in || f.estimated_on || null;
+                aTime = f.actual_in || f.actual_on || null;
             }
 
             return {
@@ -100,10 +120,10 @@ export default async function handler(request, context) {
                 origin: orig,
                 destination: dest,
                 
-                // 🚀 BUGHUNT FIX 3: Eindeutige, getrennte Zeitstempel an die App liefern!
-                scheduled_time: f.scheduled_on || f.scheduled_in || f.scheduled_out || null,
-                estimated_time: f.estimated_on || f.estimated_in || f.estimated_out || null,
-                actual_time: f.actual_on || f.actual_in || f.actual_out || null,
+                // Exakt die Zeiten übergeben, die für diesen Tab relevant sind
+                scheduled_time: sTime,
+                estimated_time: eTime,
+                actual_time: aTime,
                 
                 status: f.status,
                 aircraft_type: acType,
