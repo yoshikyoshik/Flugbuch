@@ -6995,12 +6995,36 @@ function renderRadarFlights(flights, airportIata) {
     let html = '';
     
     flights.forEach(f => {
-        // 1. Smarte Zeit-Ermittlung (bleibt gleich)
-        const timeTarget = currentRadarType === 'arrivals' ? (f.estimated_time || f.scheduled_time) : (f.actual_time || f.estimated_time || f.scheduled_time);
-        let timeString = "--:--";
-        if(timeTarget) {
-            const d = new Date(timeTarget);
-            timeString = d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+        // 1. 🚀 BUGHUNT FIX 3: Anzeigetafel-Zeiten (Geplant vs. Tatsächlich)
+        let mainTimeStr = "--:--";
+        let subTimeStr = "";
+        let subTimeLabel = "";
+
+        if (f.scheduled_time) {
+            const sd = new Date(f.scheduled_time);
+            mainTimeStr = sd.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+            
+            // Wenn es eine tatsächliche oder geschätzte Zeit gibt, die abweicht, zeigen wir sie an!
+            const compareTime = f.actual_time || f.estimated_time;
+            if (compareTime) {
+                const cd = new Date(compareTime);
+                const compareStr = cd.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+                
+                // Nur anzeigen, wenn die Zeit um mehr als 1 Minute abweicht
+                if (mainTimeStr !== compareStr) {
+                    subTimeStr = compareStr;
+                    subTimeLabel = f.actual_time ? "Tatsächlich" : "Erwartet";
+                    
+                    // Verspätung in Rot anzeigen!
+                    if (cd.getTime() > sd.getTime() + 60000) {
+                        subTimeStr = `<span class="text-red-500 font-bold">${compareStr}</span>`;
+                    }
+                }
+            }
+        } else if (f.actual_time || f.estimated_time) {
+            // Fallback: Wenn wir warum auch immer keine geplante Zeit haben
+            const d = new Date(f.actual_time || f.estimated_time);
+            mainTimeStr = d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
         }
 
         // 2. Status-Farben (bleibt gleich)
@@ -7027,26 +7051,19 @@ function renderRadarFlights(flights, airportIata) {
             statusIcon = "airport_shuttle";
         }
 
-        // 3. 🚀 BUGHUNT FIX: Die wilden Daten zähmen (Bulletproof-Edition)
-        
-        // Airports sichern
+        // 3. Die wilden Daten zähmen
         const orig = (f.origin && f.origin !== "null") ? f.origin : "N/A";
         const dest = (f.destination && f.destination !== "null") ? f.destination : "N/A";
-
-        // SICHERHEIT: Zwingt jede Flugnummer oder ID zu einem echten Text-String (verhindert TypeErrors bei reinen Zahlen)
         const safeFlightNum = String(f.flight_number || f.ident || "Privatflug");
 
-        // Das Icon im Quadrat (Airline Code oder kleines Flugzeug)
         let iconContent = "✈️";
         let isPrivate = false;
 
         if (safeFlightNum !== "Privatflug") {
-            // Wenn es ein Kennzeichen (wie D-ECJU) ist oder zu lang
             if (safeFlightNum.includes('-') || safeFlightNum.length > 7) {
-                iconContent = "🛩️"; // General Aviation Icon
+                iconContent = "🛩️"; 
                 isPrivate = true;
             } else {
-                // Bei echten Airlines versuchen wir, Buchstaben für das Icon zu isolieren (z.B. "LH" aus "LH400")
                 const match = safeFlightNum.match(/^[A-Za-z]+/);
                 iconContent = match ? match[0].substring(0, 2).toUpperCase() : safeFlightNum.substring(0, 2);
             }
@@ -7056,13 +7073,13 @@ function renderRadarFlights(flights, airportIata) {
             ? `${orig} &rarr; <strong>${airportIata}</strong>` 
             : `<strong>${airportIata}</strong> &rarr; ${dest}`;
 
-        // 🚀 BUGHUNT FIX: Die Karte ist jetzt ein natives, aufklappbares <details> Akkordeon!
+        // Optik (Jetzt mit der doppelten Zeitanzeige!)
         html += `
             <details class="bg-surface-container-lowest dark:bg-slate-800 rounded-2xl shadow-sm border border-outline-variant/20 dark:border-slate-700 group transition-all duration-300">
                 <summary class="list-none cursor-pointer p-4 flex flex-col gap-3 outline-none">
                     <div class="flex justify-between items-start">
                         <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-xl bg-surface-container-low dark:bg-slate-900 flex items-center justify-center border border-outline-variant/10 font-black text-primary dark:text-indigo-400 text-lg shadow-inner">
+                            <div class="w-10 h-10 rounded-xl bg-surface-container-low dark:bg-slate-900 flex items-center justify-center border border-outline-variant/10 font-black text-primary dark:text-indigo-400 text-lg shadow-inner shrink-0">
                                 ${iconContent}
                             </div>
                             <div>
@@ -7070,27 +7087,26 @@ function renderRadarFlights(flights, airportIata) {
                                 <p class="text-[10px] uppercase tracking-widest font-bold text-on-surface/50 dark:text-slate-400">${f.aircraft_type === 'N/A' ? 'Unbekannt' : f.aircraft_type}</p>
                             </div>
                         </div>
-                        <div class="flex flex-col items-end gap-1.5">
+                        <div class="flex flex-col items-end gap-1.5 shrink-0">
                             <div class="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-white px-2 py-1 rounded-full ${statusColor}">
                                 <span class="material-symbols-outlined text-[12px]">${statusIcon}</span> ${statusText}
                             </div>
-                            <!-- Pfeil, der sich beim Aufklappen dreht -->
                             <span class="material-symbols-outlined text-on-surface/30 group-open:rotate-180 transition-transform duration-300 text-sm">keyboard_arrow_down</span>
                         </div>
                     </div>
                     
                     <div class="flex justify-between items-end bg-surface-container-low dark:bg-slate-900/50 p-3 rounded-xl border border-outline-variant/10 dark:border-white/5 mt-1">
-                        <div class="text-sm font-medium text-on-surface/80 dark:text-slate-300">
+                        <div class="text-sm font-medium text-on-surface/80 dark:text-slate-300 pb-1">
                             ${routeText}
                         </div>
                         <div class="text-right">
-                            <p class="text-[9px] uppercase tracking-widest font-bold text-on-surface/40 dark:text-slate-500 mb-0.5">Zeit</p>
-                            <p class="font-black text-lg text-on-surface dark:text-white leading-none">${timeString}</p>
+                            <p class="text-[9px] uppercase tracking-widest font-bold text-on-surface/40 dark:text-slate-500 mb-0.5">Geplant</p>
+                            <p class="font-black text-lg text-on-surface dark:text-white leading-none">${mainTimeStr}</p>
+                            ${subTimeStr ? `<p class="text-[10px] font-bold mt-1 text-on-surface/60 dark:text-slate-400 uppercase tracking-widest">${subTimeLabel}: ${subTimeStr}</p>` : ''}
                         </div>
                     </div>
                 </summary>
                 
-                <!-- Der versteckte Akkordeon-Inhalt -->
                 <div class="p-4 border-t border-outline-variant/10 dark:border-slate-700/50 bg-surface-container-low/30 dark:bg-slate-900/30 flex flex-col gap-4">
                     <div class="grid grid-cols-2 gap-3">
                         <div class="bg-surface-container-lowest dark:bg-slate-800 p-3 rounded-xl border border-outline-variant/10 shadow-sm">

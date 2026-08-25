@@ -17,21 +17,20 @@ export default async function handler(request, context) {
     const faHeaders = { 'x-apikey': API_KEY, 'Accept': 'application/json' };
 
     try {
-        // 🚀 BUGHUNT FIX 1: FlightAware trennt strikt in Vergangenheit/Gegenwart und Zukunft!
-        // Wir holen uns einfach BEIDE Listen, um ein perfektes Radar zu bauen.
         const type1 = type === 'arrivals' ? 'arrivals' : 'departures';
         const type2 = type === 'arrivals' ? 'scheduled_arrivals' : 'scheduled_departures';
 
-        // 🚀 BUGHUNT FIX 2: Zeitfenster (-4 Stunden bis +8 Stunden)
-        // Millisekunden sauber abgeschnitten, damit der FlightAware Server nicht abstürzt. KEIN "limit"-Parameter!
-        const now = new Date();
-        const startTime = new Date(now.getTime() - (4 * 60 * 60 * 1000)).toISOString().split('.')[0] + 'Z';
-        const endTime = new Date(now.getTime() + (8 * 60 * 60 * 1000)).toISOString().split('.')[0] + 'Z';
+        // 🚀 BUGHUNT FIX 1: Absolute, zeitzonenunabhängige UTC-Zeitfenster (-4h bis +8h)
+        const nowMs = Date.now();
+        const startMs = nowMs - (4 * 60 * 60 * 1000);
+        const endMs = nowMs + (8 * 60 * 60 * 1000);
+
+        const startTime = new Date(startMs).toISOString().split('.')[0] + 'Z';
+        const endTime = new Date(endMs).toISOString().split('.')[0] + 'Z';
 
         const faUrl1 = `https://aeroapi.flightaware.com/aeroapi/airports/${encodeURIComponent(airportCode)}/flights/${type1}?start=${encodeURIComponent(startTime)}&end=${encodeURIComponent(endTime)}&max_pages=1`;
         const faUrl2 = `https://aeroapi.flightaware.com/aeroapi/airports/${encodeURIComponent(airportCode)}/flights/${type2}?start=${encodeURIComponent(startTime)}&end=${encodeURIComponent(endTime)}&max_pages=1`;
         
-        // Beide API-Calls parallel abfeuern (geht extrem schnell)
         const [res1, res2] = await Promise.all([
             fetch(faUrl1, { headers: faHeaders }),
             fetch(faUrl2, { headers: faHeaders })
@@ -43,14 +42,11 @@ export default async function handler(request, context) {
         const data1 = await res1.json();
         const data2 = await res2.json();
 
-        // Flug-Arrays aus den FlightAware-Antworten extrahieren
         const flights1 = data1[type1] || [];
         const flights2 = data2[type2] || [];
 
-        // 🚀 BUGHUNT FIX 3: Beide Welten (Vergangenheit & Zukunft) verschmelzen
         const allFlights = [...flights1, ...flights2];
         
-        // Doppelte Einträge filtern (falls FlightAware bei Überschneidungen doppelt liefert)
         const uniqueFlights = [];
         const seen = new Set();
         for (const f of allFlights) {
@@ -61,7 +57,6 @@ export default async function handler(request, context) {
             }
         }
 
-        // Daten säubern
         const cleanFlights = uniqueFlights.map(f => {
             let orig = "N/A";
             if (f.origin && f.origin !== "null") orig = typeof f.origin === 'object' ? (f.origin.code_iata || f.origin.code_icao || "N/A") : f.origin;
@@ -72,14 +67,44 @@ export default async function handler(request, context) {
             let acType = "N/A";
             if (f.aircraft_type && f.aircraft_type !== "null") acType = typeof f.aircraft_type === 'object' ? (f.aircraft_type.type || "N/A") : f.aircraft_type;
 
+            // 🚀 BUGHUNT FIX 2: Smarte Flugnummern-Generierung (IATA Format bevorzugen)
+            let finalFlightNumber = f.flight_number || f.ident || "Privatflug";
+            
+            // Wenn der Ident-Code (z.B. DLH68) vorliegt, wandeln wir den 3-Letter ICAO (DLH) 
+            // in den für Passagiere gewohnten 2-Letter IATA (LH) um.
+            if (f.ident && f.ident.match(/^[A-Z]{3}\d+/)) {
+                const icaoCode = f.ident.substring(0, 3);
+                const flightDigits = f.ident.substring(3);
+                
+                // Ein kleines Mini-Mapping für die gängigsten Airlines am Beispiel DRS
+                const icaoToIata = {
+                    'DLH': 'LH', 'EWG': 'XQ', 'SXD': 'XQ', 'SXS': 'XQ', 'SWR': 'LX', 
+                    'RYR': 'FR', 'EZY': 'FR', 'CFG': 'DE', 'SDR': 'SR'
+                };
+                
+                if (icaoToIata[icaoCode]) {
+                    finalFlightNumber = icaoToIata[icaoCode] + flightDigits;
+                } else {
+                    finalFlightNumber = f.ident; // Fallback auf das Original (DLH68)
+                }
+            } else if (f.ident && f.flight_number) {
+                 // Fallback: Wenn wir nur "68" haben, versuchen wir aus der Operator-Info etwas zu basteln
+                 if (f.operator && f.operator.match(/^[A-Z]{3}/)) {
+                     finalFlightNumber = f.operator.substring(0,2) + f.flight_number;
+                 }
+            }
+
             return {
                 ident: f.ident,
-                flight_number: f.flight_number || f.ident || "Privatflug",
+                flight_number: finalFlightNumber,
                 origin: orig,
                 destination: dest,
-                scheduled_time: f.scheduled_on || f.scheduled_in || f.scheduled_out,
-                estimated_time: f.estimated_on || f.estimated_in || f.estimated_out,
-                actual_time: f.actual_on || f.actual_in || f.actual_out,
+                
+                // 🚀 BUGHUNT FIX 3: Eindeutige, getrennte Zeitstempel an die App liefern!
+                scheduled_time: f.scheduled_on || f.scheduled_in || f.scheduled_out || null,
+                estimated_time: f.estimated_on || f.estimated_in || f.estimated_out || null,
+                actual_time: f.actual_on || f.actual_in || f.actual_out || null,
+                
                 status: f.status,
                 aircraft_type: acType,
                 dep_terminal: f.terminal_origin || null,
@@ -90,10 +115,10 @@ export default async function handler(request, context) {
             };
         });
 
-        // Chronologisch sortieren (Absteigend, damit der aktuellste/späteste Flug oben steht)
+        // Chronologisch sortieren (Absteigend)
         cleanFlights.sort((a, b) => {
-            const timeA = new Date(a.actual_time || a.estimated_time || a.scheduled_time || 0).getTime();
-            const timeB = new Date(b.actual_time || b.estimated_time || b.scheduled_time || 0).getTime();
+            const timeA = new Date(a.scheduled_time || a.actual_time || a.estimated_time || 0).getTime();
+            const timeB = new Date(b.scheduled_time || b.actual_time || b.estimated_time || 0).getTime();
             return timeB - timeA; 
         });
 
