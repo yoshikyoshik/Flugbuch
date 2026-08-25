@@ -431,7 +431,7 @@ window.showTab = function (tabId) {
     // damit du im Demo-Modus an den "Demo Beenden" und Dark-Mode Button kommst!
 
     // 1. Alle Tab-Inhalte verstecken
-    const allTabs = ['radar', 'timeline', 'analytics', 'profil'];
+    const allTabs = ['radar', 'airport-radar', 'timeline', 'analytics', 'profil'];
     allTabs.forEach(id => {
         const contentBlock = document.getElementById(`tab-content-${id}`);
         if (contentBlock) {

@@ -6964,7 +6964,7 @@ function renderRadarFlights(flights, airportIata) {
     let html = '';
     
     flights.forEach(f => {
-        // Smarte Zeit-Ermittlung
+        // 1. Smarte Zeit-Ermittlung (bleibt gleich)
         const timeTarget = currentRadarType === 'arrivals' ? (f.estimated_time || f.scheduled_time) : (f.actual_time || f.estimated_time || f.scheduled_time);
         let timeString = "--:--";
         if(timeTarget) {
@@ -6972,11 +6972,10 @@ function renderRadarFlights(flights, airportIata) {
             timeString = d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
         }
 
-        // Dynamische Status-Farben und Icons
+        // 2. Status-Farben (bleibt gleich)
         let statusColor = "bg-slate-500 dark:bg-slate-700";
         let statusText = "Geplant";
         let statusIcon = "schedule";
-        
         const rawStatus = (f.status || "").toLowerCase();
         
         if (rawStatus.includes('cancel')) {
@@ -6997,23 +6996,43 @@ function renderRadarFlights(flights, airportIata) {
             statusIcon = "airport_shuttle";
         }
 
-        // Routen-Text dynamisch bauen (Ankunft vs Abflug)
-        const isArr = currentRadarType === 'arrivals';
-        const routeText = isArr 
-            ? `${f.origin} &rarr; <strong>${airportIata}</strong>` 
-            : `<strong>${airportIata}</strong> &rarr; ${f.destination}`;
+        // 3. 🚀 BUGHUNT FIX: Die wilden Daten zähmen
+        
+        // Airports sichern
+        const orig = (f.origin && f.origin !== "null") ? f.origin : "N/A";
+        const dest = (f.destination && f.destination !== "null") ? f.destination : "N/A";
 
-        // Optisch passend zu deinen bestehenden AvioSphere Flight-Cards!
+        // Das Icon im Quadrat (Airline Code oder kleines Flugzeug)
+        let iconContent = "✈️";
+        let isPrivate = false;
+
+        if (f.flight_number && f.flight_number !== "Privatflug") {
+            // Wenn es ein Kennzeichen (wie D-ECJU) ist oder zu lang
+            if (f.flight_number.includes('-') || f.flight_number.length > 7) {
+                iconContent = "🛩️"; // General Aviation Icon
+                isPrivate = true;
+            } else {
+                // Bei echten Airlines versuchen wir, Buchstaben für das Icon zu isolieren (z.B. "LH" aus "LH400")
+                const match = f.flight_number.match(/^[A-Za-z]+/);
+                iconContent = match ? match[0].substring(0, 2).toUpperCase() : f.flight_number.substring(0, 2);
+            }
+        }
+
+        const routeText = currentRadarType === 'arrivals' 
+            ? `${orig} &rarr; <strong>${airportIata}</strong>` 
+            : `<strong>${airportIata}</strong> &rarr; ${dest}`;
+
+        // Optik
         html += `
             <div class="bg-surface-container-lowest dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-outline-variant/20 dark:border-slate-700 flex flex-col gap-3 group transition-transform hover:-translate-y-1 hover:shadow-md cursor-default">
                 <div class="flex justify-between items-start">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-surface-container-low dark:bg-slate-900 flex items-center justify-center border border-outline-variant/10 font-black text-primary dark:text-indigo-400">
-                            ${f.flight_number.substring(0,2)}
+                        <div class="w-10 h-10 rounded-xl bg-surface-container-low dark:bg-slate-900 flex items-center justify-center border border-outline-variant/10 font-black text-primary dark:text-indigo-400 text-lg">
+                            ${iconContent}
                         </div>
                         <div>
-                            <h4 class="font-display font-black text-on-surface dark:text-white leading-tight">${f.flight_number}</h4>
-                            <p class="text-[10px] uppercase tracking-widest font-bold text-on-surface/50 dark:text-slate-400">${f.aircraft_type}</p>
+                            <h4 class="font-display font-black text-on-surface dark:text-white leading-tight ${isPrivate ? 'text-sm' : ''}">${f.flight_number}</h4>
+                            <p class="text-[10px] uppercase tracking-widest font-bold text-on-surface/50 dark:text-slate-400">${f.aircraft_type === 'N/A' ? 'Unbekannt' : f.aircraft_type}</p>
                         </div>
                     </div>
                     <div class="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-white px-2 py-1 rounded-full ${statusColor}">

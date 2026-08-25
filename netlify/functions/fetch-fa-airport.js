@@ -29,22 +29,33 @@ export default async function handler(request, context) {
 
         // Wir bereinigen die Daten leicht fürs Frontend
         const cleanFlights = flights.map(f => {
+            // Smarte Flughafen-Erkennung (IATA bevorzugt, sonst ICAO, sonst Unbekannt)
+            let orig = "N/A";
+            if (f.origin) {
+                orig = f.origin.code_iata || f.origin.code_icao || "N/A";
+            }
+            let dest = "N/A";
+            if (f.destination) {
+                dest = f.destination.code_iata || f.destination.code_icao || "N/A";
+            }
+
+            // Flugzeugtyp absichern
+            let acType = "N/A";
+            if (f.aircraft_type) {
+                acType = typeof f.aircraft_type === 'object' ? (f.aircraft_type.type || "N/A") : f.aircraft_type;
+            }
+
             return {
                 ident: f.ident,
-                flight_number: f.flight_number || f.ident,
-                origin: f.origin ? f.origin.code_iata : "UNK",
-                destination: f.destination ? f.destination.code_iata : "UNK",
+                flight_number: f.flight_number || f.ident || "Privatflug",
+                origin: orig,
+                destination: dest,
                 scheduled_time: f.scheduled_on || f.scheduled_in || f.scheduled_out,
                 estimated_time: f.estimated_on || f.estimated_in || f.estimated_out,
                 actual_time: f.actual_on || f.actual_in || f.actual_out,
                 status: f.status,
-                aircraft_type: (f.aircraft_type && f.aircraft_type.type) ? f.aircraft_type.type : "UNK"
+                aircraft_type: acType
             };
-        });
-
-        return new Response(JSON.stringify(cleanFlights), {
-            status: 200,
-            headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
         });
 
     } catch (error) {
