@@ -7064,3 +7064,86 @@ function renderRadarFlights(flights, airportIata) {
 
     listEl.innerHTML = html;
 }
+
+// =========================================================
+// 🔍 AUTOCOMPLETE FÜR DAS LIVE-RADAR
+// =========================================================
+
+function initRadarAutocomplete() {
+    const radarInput = document.getElementById('radar-airport-input');
+    const radarList = document.getElementById('radar-airport-list');
+
+    if (!radarInput || !radarList) return;
+
+    radarInput.addEventListener('input', function() {
+        const val = this.value.trim().toLowerCase();
+        radarList.innerHTML = '';
+        
+        if (!val) {
+            radarList.classList.add('hidden');
+            return;
+        }
+
+        // 🚀 BUGHUNT FIX: Wir greifen jetzt korrekt auf 'window.airportData' zu
+        // und wandeln das Objekt in ein durchsuchbares Array um!
+        if (typeof window.airportData !== 'undefined') {
+            
+            // Objekt in ein Array aus Werten umwandeln und den Code als Eigenschaft hinzufügen
+            const airportArray = Object.keys(window.airportData).map(code => {
+                return {
+                    code: code,
+                    ...window.airportData[code]
+                };
+            });
+
+            // Suche nach Übereinstimmungen (IATA, ICAO, Name, Stadt)
+            const matches = airportArray.filter(a => {
+                const searchCode = a.code.toLowerCase();
+                const searchName = a.name ? a.name.toLowerCase() : "";
+                const searchCity = a.city ? a.city.toLowerCase() : "";
+
+                return searchCode.includes(val) || searchName.includes(val) || searchCity.includes(val);
+            }).slice(0, 6); // Max 6 Ergebnisse
+
+            if (matches.length > 0) {
+                radarList.classList.remove('hidden');
+                
+                matches.forEach(airport => {
+                    const div = document.createElement('div');
+                    div.className = "p-3 hover:bg-surface-container-low dark:hover:bg-slate-700 cursor-pointer border-b border-outline-variant/10 dark:border-slate-700/50 last:border-0 transition-colors flex items-center justify-between";
+                    
+                    div.innerHTML = `
+                        <div class="overflow-hidden pr-2">
+                            <div class="font-bold text-sm text-on-surface dark:text-white truncate">${airport.name}</div>
+                            <div class="text-[10px] text-on-surface/50 dark:text-slate-400 uppercase tracking-widest truncate">${airport.city || airport.country_code || ''}</div>
+                        </div>
+                        <div class="font-display font-black text-primary dark:text-indigo-400 shrink-0">
+                            ${airport.code}
+                        </div>
+                    `;
+                    
+                    div.addEventListener('click', () => {
+                        // Trage den Code in das Feld ein
+                        radarInput.value = airport.code;
+                        radarInput.value = radarInput.value.toUpperCase(); 
+                        radarList.classList.add('hidden');
+                        
+                        // 🔥 UX-Boost: Direkt den API-Call starten!
+                        loadAirportRadar();
+                    });
+                    
+                    radarList.appendChild(div);
+                });
+            } else {
+                radarList.classList.add('hidden');
+            }
+        }
+    });
+
+    // Schließe das Dropdown, wenn man irgendwo anders hinklickt
+    document.addEventListener('click', function(e) {
+        if (e.target !== radarInput && !radarList.contains(e.target)) {
+            radarList.classList.add('hidden');
+        }
+    });
+}

@@ -388,10 +388,14 @@
               <div class="mb-6">
                   <div class="bg-surface-container-low dark:bg-slate-900 rounded-2xl p-4 shadow-sm border border-outline-variant/10 dark:border-slate-800">
                       <div class="flex gap-2 mb-3">
-                          <div class="relative flex-1 group">
-                              <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface/40 group-focus-within:text-primary transition-colors">flight_takeoff</span>
-                              <input type="text" id="radar-airport-input" placeholder="IATA (z.B. BER)" 
-                                     class="w-full bg-surface-container-lowest dark:bg-slate-800 rounded-xl py-3 pl-12 pr-4 font-bold uppercase text-on-surface dark:text-white placeholder:text-on-surface/30 focus:outline-none focus:ring-2 focus:ring-primary/50 transition border-none shadow-inner">
+                          <div class="relative flex-1 group autocomplete-container">
+                              <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface/40 group-focus-within:text-primary transition-colors z-10">flight_takeoff</span>
+                              <!-- Das input-Feld: autocomplete="off" verhindert, dass der Browser sein eigenes, hässliches Menü darüberlegt -->
+                              <input type="text" id="radar-airport-input" placeholder="Name, IATA, ICAO..." autocomplete="off"
+                                     class="w-full bg-surface-container-lowest dark:bg-slate-800 rounded-xl py-3 pl-12 pr-4 font-bold text-on-surface dark:text-white placeholder:text-on-surface/40 focus:outline-none focus:ring-2 focus:ring-primary/50 transition border-none shadow-inner">
+                              
+                              <!-- Das unsichtbare Container-Dropdown für unsere Ergebnisse -->
+                              <div id="radar-airport-list" class="autocomplete-list hidden absolute left-0 right-0 top-full mt-2 bg-surface-container-lowest dark:bg-slate-800 rounded-xl shadow-xl border border-outline-variant/20 z-[100] max-h-60 overflow-y-auto"></div>
                           </div>
                           <button onclick="loadAirportRadar()" class="bg-primary text-white font-bold px-5 rounded-xl hover:bg-primary/90 transition shadow-sm flex items-center justify-center">
                               <span class="material-symbols-outlined">search</span>
