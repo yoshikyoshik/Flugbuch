@@ -6899,21 +6899,27 @@ function setRadarType(type) {
 
 async function loadAirportRadar() {
     const inputEl = document.getElementById('radar-airport-input');
-    const rawInput = inputEl.value.trim();
+    let rawInput = inputEl.value.trim();
     const listEl = document.getElementById('radar-results-list');
 
     if (!rawInput) return;
 
+    // 🚀 UX FIX 2a: Wenn im Feld schon "Dresden (DRS)" steht, klammern wir "DRS" sicher heraus
+    const bracketMatch = rawInput.match(/\(([A-Z]{3,4})\)$/i);
+    if (bracketMatch) {
+        rawInput = bracketMatch[1]; 
+    }
+
     let targetIata = rawInput.toUpperCase();
 
-    // 🚀 BUGHUNT FIX: Wenn es kein reiner IATA (3) oder ICAO (4) Code ist, 
-    // bitten wir deine findAirport-Funktion um die Übersetzung!
+    // 🚀 UX FIX 2b: Wir prüfen, was der Nutzer eingegeben hat und machen es "schön"
     if (targetIata.length !== 3 && targetIata.length !== 4) {
         if (typeof findAirport === 'function') {
             const foundAirport = findAirport(rawInput);
             if (foundAirport && (foundAirport.iata || foundAirport.code || foundAirport.icao)) {
                 targetIata = (foundAirport.iata || foundAirport.code || foundAirport.icao).toUpperCase();
-                inputEl.value = targetIata; // Feld optisch auf den Code korrigieren
+                // Direkt "Stadt/Name (CODE)" ins Feld schreiben!
+                inputEl.value = `${foundAirport.name} (${targetIata})`; 
             } else {
                 showMessage("Nicht gefunden", "Flughafen konnte nicht ermittelt werden.", "error");
                 return;
@@ -6921,6 +6927,17 @@ async function loadAirportRadar() {
         } else {
             showMessage("Fehler", "Bitte wähle den Flughafen aus der Liste aus.", "error");
             return;
+        }
+    } else {
+        // Auch wenn der Nutzer faul war und nur "DRS" getippt (oder per Autocomplete geklickt) hat:
+        // Wir suchen kurz den Namen und formatieren das Feld schick als "Dresden (DRS)"!
+        if (typeof findAirport === 'function') {
+            const foundAirport = findAirport(targetIata);
+            if (foundAirport && foundAirport.name) {
+                inputEl.value = `${foundAirport.name} (${targetIata})`;
+            } else {
+                inputEl.value = targetIata; // Fallback, falls wir den Namen nicht kennen
+            }
         }
     }
 
@@ -7056,28 +7073,29 @@ function renderRadarFlights(flights, airportIata) {
         const dest = (f.destination && f.destination !== "null") ? f.destination : "N/A";
         const safeFlightNum = String(f.flight_number || f.ident || "Privatflug");
 
-        let iconContent = "✈️";
+        // 🚀 UX FIX 1: Echte Airline-Logos via Kiwi.com laden!
+        let iconContent = '<span class="text-lg">✈️</span>';
         let isPrivate = false;
 
         if (safeFlightNum !== "Privatflug") {
             if (safeFlightNum.includes('-') || safeFlightNum.length > 7) {
-                iconContent = "🛩️"; 
+                iconContent = '<span class="text-lg">🛩️</span>'; 
                 isPrivate = true;
             } else {
                 const match = safeFlightNum.match(/^[A-Za-z]+/);
-                iconContent = match ? match[0].substring(0, 2).toUpperCase() : safeFlightNum.substring(0, 2);
+                if (match) {
+                    const airlineIata = match[0].substring(0, 2).toUpperCase();
+                    // Wir nutzen das <img> Tag. WICHTIG: Das onerror fängt Fälle ab, 
+                    // in denen Kiwi.com eine kleine/neue Airline nicht kennt und zeigt stattdessen das Emoji!
+                    iconContent = `<img src="https://images.kiwi.com/airlines/128x128/${airlineIata}.png" class="w-7 h-7 object-contain" onerror="this.onerror=null; this.outerHTML='<span class=\\'text-lg\\'>✈️</span>'">`;
+                } else {
+                    iconContent = `<span class="text-lg text-primary dark:text-indigo-400">${safeFlightNum.substring(0, 2)}</span>`;
+                }
             }
         }
 
-        // 🚀 BUGHUNT FIX: Namen für eine elegante UX anzeigen!
-        // Wir formatieren den "fremden" Flughafen als z.B. "London (LTN)", um Platz zu sparen.
-        const origDisplay = currentRadarType === 'arrivals' && f.origin_name 
-            ? `${f.origin_name} (${orig})` 
-            : orig;
-            
-        const destDisplay = currentRadarType === 'departures' && f.destination_name 
-            ? `${f.destination_name} (${dest})` 
-            : dest;
+        const origDisplay = currentRadarType === 'arrivals' && f.origin_name ? `${f.origin_name} (${orig})` : orig;
+        const destDisplay = currentRadarType === 'departures' && f.destination_name ? `${f.destination_name} (${dest})` : dest;
 
         const routeText = currentRadarType === 'arrivals' 
             ? `${origDisplay} &rarr; <strong>${airportIata}</strong>` 
