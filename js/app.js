@@ -6856,3 +6856,183 @@ window.closeAddFlightModal = function() {
         modal.classList.remove('flex'); 
     }, 300);
 };
+
+// =========================================================
+// 📡 LIVE FLUGHAFEN RADAR (Mit Smart-Cache & Throttle)
+// =========================================================
+
+let currentRadarType = 'arrivals';
+let radarDataCache = {}; 
+const RADAR_CACHE_TTL = 60000; // 60 Sekunden Schutz-Zeitraum pro Suchanfrage
+
+function setRadarType(type) {
+    currentRadarType = type;
+    
+    // UI Update für die Toggle-Buttons
+    const btnArr = document.getElementById('btn-radar-arr');
+    const btnDep = document.getElementById('btn-radar-dep');
+    
+    if(type === 'arrivals') {
+        btnArr.className = "flex-1 py-2 text-sm font-bold rounded-lg bg-primary/10 text-primary dark:bg-indigo-900/30 dark:text-indigo-400 transition";
+        btnDep.className = "flex-1 py-2 text-sm font-bold rounded-lg text-on-surface/50 hover:text-on-surface dark:text-slate-400 dark:hover:text-white transition";
+    } else {
+        btnDep.className = "flex-1 py-2 text-sm font-bold rounded-lg bg-primary/10 text-primary dark:bg-indigo-900/30 dark:text-indigo-400 transition";
+        btnArr.className = "flex-1 py-2 text-sm font-bold rounded-lg text-on-surface/50 hover:text-on-surface dark:text-slate-400 dark:hover:text-white transition";
+    }
+    
+    // Wenn schon ein Flughafen drin steht, direkt laden
+    const input = document.getElementById('radar-airport-input').value.trim();
+    if(input.length === 3) {
+        loadAirportRadar();
+    }
+}
+
+async function loadAirportRadar() {
+    const inputEl = document.getElementById('radar-airport-input');
+    const iata = inputEl.value.trim().toUpperCase();
+    const listEl = document.getElementById('radar-results-list');
+
+    if (iata.length !== 3) {
+        showMessage("Ungültiger Code", "Bitte gib einen 3-stelligen IATA-Code ein (z.B. BER).", "error");
+        return;
+    }
+
+    const cacheKey = `${iata}_${currentRadarType}`;
+    const now = Date.now();
+
+    // 🛡️ BUGHUNT & KOSTENSCHUTZ: Der intelligente Cache
+    if (radarDataCache[cacheKey] && (now - radarDataCache[cacheKey].timestamp < RADAR_CACHE_TTL)) {
+        console.log(`📡 Lade ${cacheKey} aus dem lokalen Cache (spart API-Calls!)...`);
+        renderRadarFlights(radarDataCache[cacheKey].data, iata);
+        
+        // Netter Hinweis für den Nutzer
+        const remaining = Math.ceil((RADAR_CACHE_TTL - (now - radarDataCache[cacheKey].timestamp)) / 1000);
+        showMessage("Daten aktuell", `Die Live-Signale für ${iata} wurden gerade erst abgerufen. Ein erneuter Such-Ping ist in ${remaining}s möglich.`, "info");
+        return;
+    }
+
+    // Lade-Animation anzeigen
+    listEl.innerHTML = `
+        <div class="flex flex-col items-center justify-center py-12 text-center opacity-70">
+            <div class="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin mb-4"></div>
+            <p class="font-bold text-sm">Fange Radar-Signale für ${iata} auf...</p>
+        </div>
+    `;
+
+    try {
+        const response = await fetch(`/.netlify/functions/fetch-fa-airport?airport=${iata}&type=${currentRadarType}`);
+        
+        if (!response.ok) {
+            throw new Error(`API Fehler: ${response.status}`);
+        }
+
+        const flights = await response.json();
+        
+        // Erfolgreiche Daten in den Panzer-Cache schreiben
+        radarDataCache[cacheKey] = {
+            timestamp: now,
+            data: flights
+        };
+
+        renderRadarFlights(flights, iata);
+
+    } catch (error) {
+        console.error("Radar Fetch Error:", error);
+        listEl.innerHTML = `
+            <div class="flex flex-col items-center justify-center py-12 text-center px-4 bg-red-500/10 rounded-[2rem] border border-red-500/20">
+                <span class="material-symbols-outlined text-4xl mb-4 text-red-500">signal_disconnected</span>
+                <p class="font-bold text-sm text-red-500">Radar-Verbindung fehlgeschlagen.</p>
+                <p class="text-xs mt-2 text-on-surface/60 dark:text-slate-400">Prüfe den Flughafen-Code oder versuche es später noch einmal.</p>
+            </div>
+        `;
+    }
+}
+
+function renderRadarFlights(flights, airportIata) {
+    const listEl = document.getElementById('radar-results-list');
+    
+    if (!flights || flights.length === 0) {
+        listEl.innerHTML = `
+            <div class="flex flex-col items-center justify-center py-12 text-center opacity-50 px-4 bg-surface-container-lowest dark:bg-slate-800 rounded-[2rem] border border-dashed border-outline-variant/30 dark:border-slate-700">
+                <span class="material-symbols-outlined text-4xl mb-4">flight_off</span>
+                <p class="font-bold text-sm">Keine aktuellen Flüge gefunden.</p>
+            </div>
+        `;
+        return;
+    }
+
+    let html = '';
+    
+    flights.forEach(f => {
+        // Smarte Zeit-Ermittlung
+        const timeTarget = currentRadarType === 'arrivals' ? (f.estimated_time || f.scheduled_time) : (f.actual_time || f.estimated_time || f.scheduled_time);
+        let timeString = "--:--";
+        if(timeTarget) {
+            const d = new Date(timeTarget);
+            timeString = d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        // Dynamische Status-Farben und Icons
+        let statusColor = "bg-slate-500 dark:bg-slate-700";
+        let statusText = "Geplant";
+        let statusIcon = "schedule";
+        
+        const rawStatus = (f.status || "").toLowerCase();
+        
+        if (rawStatus.includes('cancel')) {
+            statusColor = "bg-red-500";
+            statusText = "Annulliert";
+            statusIcon = "cancel";
+        } else if (rawStatus.includes('land') || rawStatus.includes('arriv') || rawStatus.includes('taxii')) {
+            statusColor = "bg-emerald-500";
+            statusText = "Gelandet";
+            statusIcon = "flight_land";
+        } else if (rawStatus.includes('en route') || rawStatus.includes('departed')) {
+            statusColor = "bg-blue-500";
+            statusText = "In der Luft";
+            statusIcon = "flight_takeoff";
+        } else if (rawStatus.includes('gate') || rawStatus.includes('sched')) {
+            statusColor = "bg-amber-500";
+            statusText = "Geplant";
+            statusIcon = "airport_shuttle";
+        }
+
+        // Routen-Text dynamisch bauen (Ankunft vs Abflug)
+        const isArr = currentRadarType === 'arrivals';
+        const routeText = isArr 
+            ? `${f.origin} &rarr; <strong>${airportIata}</strong>` 
+            : `<strong>${airportIata}</strong> &rarr; ${f.destination}`;
+
+        // Optisch passend zu deinen bestehenden AvioSphere Flight-Cards!
+        html += `
+            <div class="bg-surface-container-lowest dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-outline-variant/20 dark:border-slate-700 flex flex-col gap-3 group transition-transform hover:-translate-y-1 hover:shadow-md cursor-default">
+                <div class="flex justify-between items-start">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-surface-container-low dark:bg-slate-900 flex items-center justify-center border border-outline-variant/10 font-black text-primary dark:text-indigo-400">
+                            ${f.flight_number.substring(0,2)}
+                        </div>
+                        <div>
+                            <h4 class="font-display font-black text-on-surface dark:text-white leading-tight">${f.flight_number}</h4>
+                            <p class="text-[10px] uppercase tracking-widest font-bold text-on-surface/50 dark:text-slate-400">${f.aircraft_type}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-white px-2 py-1 rounded-full ${statusColor}">
+                        <span class="material-symbols-outlined text-[12px]">${statusIcon}</span> ${statusText}
+                    </div>
+                </div>
+                
+                <div class="flex justify-between items-end bg-surface-container-low dark:bg-slate-900/50 p-3 rounded-xl border border-outline-variant/10 dark:border-white/5">
+                    <div class="text-sm font-medium text-on-surface/80 dark:text-slate-300">
+                        ${routeText}
+                    </div>
+                    <div class="text-right">
+                        <p class="text-[9px] uppercase tracking-widest font-bold text-on-surface/40 dark:text-slate-500 mb-0.5">Zeit</p>
+                        <p class="font-black text-lg text-on-surface dark:text-white leading-none">${timeString}</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+
+    listEl.innerHTML = html;
+}
