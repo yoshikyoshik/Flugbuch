@@ -47,15 +47,45 @@ export default async function handler(request, context) {
 
         const allFlights = [...flights1, ...flights2];
         
-        const uniqueFlights = [];
-        const seen = new Set();
+        // 🚀 BUGHUNT FIX 4: Smarte Codeshare-Erkennung (Duplikate eliminieren)
+        const uniqueFlightsMap = new Map();
+
         for (const f of allFlights) {
-            const id = f.fa_flight_id || f.ident;
-            if (!seen.has(id)) {
-                seen.add(id);
-                uniqueFlights.push(f);
+            // 1. Physischen Fingerabdruck bauen (Zeit + Strecke)
+            // Ein Flug zur selben geplanten Minute, vom selben Start zum selben Ziel = Dasselbe Flugzeug!
+            const timeKey = f.scheduled_out || f.scheduled_in || f.scheduled_on || f.scheduled_off || f.ident;
+            
+            const origCode = typeof f.origin === 'object' ? (f.origin?.code_iata || f.origin?.code_icao) : f.origin;
+            const destCode = typeof f.destination === 'object' ? (f.destination?.code_iata || f.destination?.code_icao) : f.destination;
+            
+            const physicalKey = `${timeKey}_${origCode}_${destCode}`;
+
+            if (!uniqueFlightsMap.has(physicalKey)) {
+                uniqueFlightsMap.set(physicalKey, f);
+            } else {
+                // Kollision! Einer der beiden ist ein Codeshare oder Dummy. 
+                // Wir behalten den Flug, der mehr echte "Live-Daten" hat.
+                const existingFlight = uniqueFlightsMap.get(physicalKey);
+                
+                // Helfer: Zählt, wie viele Live/Wichtige-Datenfelder gefüllt sind
+                const getLiveScore = (flight) => {
+                    let score = 0;
+                    if (flight.estimated_out) score++;
+                    if (flight.estimated_in || flight.estimated_on) score++;
+                    if (flight.actual_out) score++;
+                    if (flight.actual_in || flight.actual_on) score++;
+                    if (flight.gate_origin || flight.gate_destination) score++;
+                    return score;
+                };
+
+                // Wenn der neue Eintrag aus der Schleife "reicher" an Daten ist, überschreibt er den alten
+                if (getLiveScore(f) > getLiveScore(existingFlight)) {
+                    uniqueFlightsMap.set(physicalKey, f);
+                }
             }
         }
+
+        const uniqueFlights = Array.from(uniqueFlightsMap.values());
 
         const cleanFlights = uniqueFlights.map(f => {
             let orig = "N/A";
