@@ -1114,9 +1114,49 @@ async function autofillFlightData() {
   btn.textContent = getTranslation("form.buttonFetching");
   btn.disabled = true;
 
+  // ================================================================
+  // 🚀 BUGHUNT FIX: IATA zu ICAO Übersetzer für FlightAware
+  // ================================================================
+  let flightNumToFetch = flightNumber;
+  const iataMatch = flightNumber.match(/^([A-Z]{2})(\d+)$/);
+  
+  if (iataMatch) {
+      const iataCode = iataMatch[1];
+      const digits = iataMatch[2];
+      
+      let foundIcao = null;
+      
+      // 1. Versuch: In der lokalen AvioSphere-Datenbank (AIRLINE_MAPPING) suchen
+      if (window.AIRLINE_MAPPING) {
+          for (const [icao, data] of Object.entries(window.AIRLINE_MAPPING)) {
+              if (data.iata === iataCode) {
+                  foundIcao = icao;
+                  break;
+              }
+          }
+      }
+      
+      // 2. Versuch: Hardcoded Fallback für bekannte Airlines (inkl. OA -> OAW)
+      if (!foundIcao) {
+          const quickMap = {
+              'OA': 'OAW', 'LH': 'DLH', 'EW': 'EWG', 'XQ': 'SXS', 'LX': 'SWR', 
+              'FR': 'RYR', 'U2': 'EZY', 'DE': 'CFG', 'SR': 'SDR', 'OS': 'AUA', 
+              'KL': 'KLM', 'AF': 'AFR', 'BA': 'BAW', 'TK': 'THY', 'EK': 'UAE'
+          };
+          foundIcao = quickMap[iataCode];
+      }
+
+      // Wenn wir einen 3-Letter Code gefunden haben, bauen wir die Flugnummer für die API um!
+      if (foundIcao) {
+          flightNumToFetch = foundIcao + digits;
+          console.log(`🤖 Autopilot: Übersetze Passagier-Code ${flightNumber} zu Radar-Code ${flightNumToFetch} für FlightAware`);
+      }
+  }
+  // ================================================================
+
   try {
-    // 🚀 Die neue Wunder-Leitung zu FlightAware nutzen!
-    const url = `${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-fa-flight?flight_number=${flightNumber}&date=${flightDate}`;
+    // 🚀 Die neue Wunder-Leitung zu FlightAware nutzen! (JETZT MIT ÜBERSETZTER NUMMER!)
+    const url = `${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-fa-flight?flight_number=${flightNumToFetch}&date=${flightDate}`;
     const response = await fetch(url);
 
     if (!response.ok) {
