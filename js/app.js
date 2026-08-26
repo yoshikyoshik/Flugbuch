@@ -1096,6 +1096,34 @@ window.logFlight = async function () {
     showMessage(getTranslation("toast.successTitle"), getTranslation("toast.flightSaved"), "success");
     resetForm();
     
+    // ================================================================
+    // 🔔 PUSH-ALERT BEI FLIGHTAWARE REGISTRIEREN
+    // ================================================================
+    // Wir setzen Alerts nur für Flüge, die eine FlightAware ID haben 
+    // und NICHT in der Vergangenheit liegen (FlightAware lehnt historische Alerts ab).
+    const targetFlightDate = newFlightForSupabase.date;
+    const todayStrAlert = new Date().toISOString().split('T')[0];
+    
+    if (newFlightForSupabase.fa_flight_id && targetFlightDate >= todayStrAlert) {
+        console.log("✈️ Sende Alert-Auftrag an FlightAware...");
+        try {
+            const alertUrl = `${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fa-create-alert`;
+            fetch(alertUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    fa_flight_id: newFlightForSupabase.fa_flight_id 
+                })
+            }).then(res => {
+                if (res.ok) console.log("✅ FlightAware wird dich ab sofort über diesen Flug benachrichtigen!");
+                else console.warn("⚠️ Alert konnte nicht registriert werden (evtl. Limit erreicht?).");
+            });
+        } catch(e) {
+            console.error("Fehler beim Alert-Auftrag:", e);
+        }
+    }
+    // ================================================================
+
     // ID in Supabase Metadaten speichern
     supabaseClient.auth.updateUser({
         data: { last_flight_id: newFlightId }
