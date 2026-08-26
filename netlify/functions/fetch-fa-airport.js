@@ -27,8 +27,12 @@ export default async function handler(request, context) {
         const startTime = new Date(startMs).toISOString().split('.')[0] + 'Z';
         const endTime = new Date(endMs).toISOString().split('.')[0] + 'Z';
 
-        const faUrl1 = `https://aeroapi.flightaware.com/aeroapi/airports/${encodeURIComponent(airportCode)}/flights/${type1}?start=${encodeURIComponent(startTime)}&end=${encodeURIComponent(endTime)}&max_pages=1`;
-        const faUrl2 = `https://aeroapi.flightaware.com/aeroapi/airports/${encodeURIComponent(airportCode)}/flights/${type2}?start=${encodeURIComponent(startTime)}&end=${encodeURIComponent(endTime)}&max_pages=1`;
+        // 🚀 BUGHUNT FIX: Wir heben das Paginierungs-Limit an!
+        // max_pages=2 (ca. 30 Flüge) für die Vergangenheit/Gegenwart.
+        // max_pages=5 (ca. 75 Flüge) für die Zukunft, damit wir in Berlin weit genug vorausschauen!
+        const faUrl1 = `https://aeroapi.flightaware.com/aeroapi/airports/${encodeURIComponent(airportCode)}/flights/${type1}?start=${encodeURIComponent(startTime)}&end=${encodeURIComponent(endTime)}&max_pages=2`;
+        
+        const faUrl2 = `https://aeroapi.flightaware.com/aeroapi/airports/${encodeURIComponent(airportCode)}/flights/${type2}?start=${encodeURIComponent(startTime)}&end=${encodeURIComponent(endTime)}&max_pages=5`;
         
         const [res1, res2] = await Promise.all([
             fetch(faUrl1, { headers: faHeaders }),
