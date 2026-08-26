@@ -53,7 +53,19 @@ export default async function handler(request, context) {
             throw new Error(`FlightAware Fehler: ${faResponse.status} - ${errText}`);
         }
 
-        const result = await faResponse.json();
+        // 🚀 BUGHUNT FIX: FlightAware schickt bei Erfolg oft eine leere Antwort.
+        // Wir lesen sie als einfachen Text und parsen nur, wenn wirklich etwas drin steht!
+        const rawText = await faResponse.text();
+        let result = {};
+        
+        if (rawText && rawText.trim() !== "") {
+            try {
+                result = JSON.parse(rawText);
+            } catch (parseError) {
+                console.warn("⚠️ Konnte FlightAware-Antwort nicht als JSON lesen, aber Alert wurde gesetzt.");
+            }
+        }
+
         console.log(`✅ Alert für ${fa_flight_id} erfolgreich bei FlightAware registriert!`);
 
         return new Response(JSON.stringify({ success: true, alert: result }), { status: 200 });
