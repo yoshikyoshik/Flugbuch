@@ -17,10 +17,10 @@ export default async function handler(request, context) {
             return new Response(JSON.stringify({ error: "fa_flight_id fehlt" }), { status: 400 });
         }
 
-        // 🚀 Das ist das Paket, das wir bei FlightAware einreichen!
-        // Wir abonnieren gezielt: Abflug, Ankunft, Verspätungen, Gate-Änderungen und Stornierungen
+        // 🚀 BUGHUNT FIX: FlightAware verlangt zwingend den Schlüssel "ident", 
+        // auch wenn wir ihm eine extrem präzise fa_flight_id übergeben!
         const alertPayload = {
-            flight_id: fa_flight_id,
+            ident: fa_flight_id,
             events: {
                 arrival: true,
                 departure: true,
