@@ -141,6 +141,11 @@ async function initializeApp() {
       // --- ✅ PROFIL & UI UPDATES ---
       loadUserProfile(user);
 
+      // 🔔 PUSH-NOTIFICATIONS INITIALISIEREN
+      if (typeof initPushNotifications === 'function') {
+          initPushNotifications();
+      }
+
       // 2. Schloss am Scanner-Button steuern
       const scannerLock = document.getElementById("scanner-lock");
       if (currentUserSubscription === "pro") {
@@ -7165,3 +7170,90 @@ function renderRadarFlights(flights, airportIata) {
 
     listEl.innerHTML = html;
 }
+
+// =================================================================
+// 🔔 PUSH NOTIFICATIONS (CAPACITOR + FIREBASE)
+// =================================================================
+
+window.initPushNotifications = async function() {
+    // 1. Prüfen, ob wir auf einem echten Handy (nativ) sind
+    const isNative = typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform();
+    if (!isNative) {
+        console.log("🔔 Push-Notifications werden im Browser übersprungen.");
+        return;
+    }
+
+    try {
+        const { PushNotifications } = Capacitor.Plugins;
+
+        // 2. Erlaubnis vom Nutzer einholen
+        let permStatus = await PushNotifications.checkPermissions();
+
+        if (permStatus.receive === 'prompt') {
+            permStatus = await PushNotifications.requestPermissions();
+        }
+
+        if (permStatus.receive !== 'granted') {
+            console.warn("🔔 Push-Benachrichtigungen vom Nutzer abgelehnt.");
+            return;
+        }
+
+        // 3. Wenn erlaubt, bei Firebase registrieren!
+        await PushNotifications.register();
+
+        // 4. Die Listener (Lauscher) einrichten
+        
+        // A) Erfolgreich registriert -> Wir bekommen den Token!
+        PushNotifications.addListener('registration', async (token) => {
+            console.log('🔔 Firebase Token erfolgreich erhalten:', token.value);
+            window.currentPushToken = token.value; 
+            
+            // OPTIONAL: Zeigt den Token (bzw. die ersten Zeichen davon) als Pop-up auf dem Handy an!
+            // Wenn es dich später nervt, kannst du diese Zeile einfach löschen oder auskommentieren.
+            if (typeof showMessage === 'function') {
+                showMessage("Push Token", "Erfolgreich generiert: " + token.value.substring(0, 15) + "...", "success");
+            }
+
+            // 🚀 DIREKT IN SUPABASE SPEICHERN
+            try {
+                // Prüfen, wer gerade eingeloggt ist
+                const { data: { user } } = await supabaseClient.auth.getUser();
+                if (user) {
+                    // Den Token in die neue Spalte 'fcm_token' des Profils schreiben
+                    const { error } = await supabaseClient
+                        .from('profiles')
+                        .update({ fcm_token: token.value })
+                        .eq('id', user.id);
+                        
+                    if (error) throw error;
+                    console.log('✅ Push-Token erfolgreich in Supabase gesichert!');
+                }
+            } catch (err) {
+                console.error("Fehler beim Speichern des Push-Tokens:", err);
+            }
+        });
+
+        // B) Fehler bei der Registrierung
+        PushNotifications.addListener('registrationError', (error) => {
+            console.error('🔔 Fehler bei Push-Registrierung:', error);
+        });
+
+        // C) Eine Nachricht kommt an, WÄHREND die App geöffnet ist
+        PushNotifications.addListener('pushNotificationReceived', (notification) => {
+            console.log('🔔 Push erhalten:', notification);
+            // Wir können hier später eine In-App Info-Meldung anzeigen
+            if (typeof showMessage === 'function') {
+                showMessage(notification.title || "Update", notification.body || "Neue Flug-Info", "info");
+            }
+        });
+
+        // D) Der Nutzer tippt auf die Benachrichtigung im Sperrbildschirm
+        PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
+            console.log('🔔 Push angeklickt:', notification);
+            // TODO für später: Direkt zum Radar-Tab wechseln, wenn geklickt wird
+        });
+
+    } catch (e) {
+        console.error("🔔 Genereller Fehler beim Initialisieren der Push Notifications:", e);
+    }
+};
