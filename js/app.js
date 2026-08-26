@@ -5680,10 +5680,23 @@ window.refreshLiveFlightData = async function(force = true) {
     if (icon) icon.classList.add('animate-spin');
 
     try {
-        const flightNum = window.currentLiveFlight.flight_iata || window.currentLiveFlight.flight_number || window.currentLiveFlight.flightNumber;
+        const rawFlightNum = window.currentLiveFlight.flight_iata || window.currentLiveFlight.flight_number || window.currentLiveFlight.flightNumber;
         const flightDate = window.currentLiveFlight.date; 
         
-        if (!flightNum || !flightDate) throw new Error("Flugnummer oder Datum fehlt");
+        if (!rawFlightNum || !flightDate) throw new Error("Flugnummer oder Datum fehlt");
+
+        // 🚀 BUGHUNT FIX: FlightAware liebt ICAO-Codes (OAW) statt IATA (OA)!
+        // Wir extrahieren die reinen Zahlen aus der Flugnummer (z.B. "975" aus "OA975")
+        // und kleben den 3-stelligen Airline-Code davor, falls er in der DB steht!
+        let flightNumToFetch = rawFlightNum.replace(/\s+/g, '').toUpperCase();
+        const airlineCode = window.currentLiveFlight.airline;
+        
+        if (airlineCode && airlineCode.length === 3) {
+            const digitsMatch = flightNumToFetch.match(/\d+/);
+            if (digitsMatch) {
+                flightNumToFetch = airlineCode.toUpperCase() + digitsMatch[0]; // Baut aus OA975 -> OAW975
+            }
+        }
 
         let data; 
         const flight = window.currentLiveFlight;
@@ -5703,12 +5716,11 @@ window.refreshLiveFlightData = async function(force = true) {
             if (cachedData.isError) throw new Error(cachedData.errorMessage); 
             data = cachedData.lastApiData; 
         } else {
-            console.log(`✈️ Starte ECHTEN FlightAware Live-Abruf für Flug ${flightNum} am ${flightDate}...`);
+            console.log(`✈️ Starte ECHTEN FlightAware Live-Abruf für Flug ${flightNumToFetch} am ${flightDate}...`);
             
-            // 🚀 NEU: FLIGHTAWARE API ansteuern (JETZT MIT CODESHARE-CROSS-REFERENCE)
             const flightDep = window.currentLiveFlight.departure;
             const flightArr = window.currentLiveFlight.arrival;
-            const fetchUrl = `${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-fa-flight?flight_number=${flightNum}&date=${flightDate}&dep=${flightDep}&arr=${flightArr}`;
+            const fetchUrl = `${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-fa-flight?flight_number=${flightNumToFetch}&date=${flightDate}&dep=${flightDep}&arr=${flightArr}`;
             const response = await fetch(fetchUrl);
             
             if (!response.ok) throw new Error("Flug nicht gefunden");
@@ -5717,15 +5729,13 @@ window.refreshLiveFlightData = async function(force = true) {
             if (!flightsArray || flightsArray.length === 0) {
                 const todayStr = new Date().toISOString().split('T')[0];
                 if (flightDate < todayStr) {
-                    data = { status: "landed" }; // Vergangene Flüge künstlich als gelandet markieren
+                    data = { status: "landed" }; 
                 } else {
                     throw new Error("Flug noch nicht aktiv");
                 }
             } else {
                 data = flightsArray[0];
                 
-                // 🛡️ DER ABSOLUTE SCHUTZSCHILD: Frag die Datenbank nach der echten Wahrheit!
-                // Das verhindert, dass die App den vom Agenten gesetzten Status überschreibt!
                 try {
                     const { data: dbTruth } = await supabaseClient
                         .from('flights')
@@ -5733,11 +5743,10 @@ window.refreshLiveFlightData = async function(force = true) {
                         .eq('flight_id', flightIdToCache)
                         .maybeSingle();
                         
-                    // Wenn die DB sagt "gelandet" ODER eine exakte Landezeit (vom Agenten) vorliegt:
                     if (dbTruth && (dbTruth.status === "landed" || dbTruth.status === "archived" || dbTruth.arr_actual_ts)) {
-                        console.log("🛡️ Schutzschild aktiv: Flug ist in der DB schon gelandet. Ignoriere falsche API-Werte!");
+                        console.log("🛡️ Schutzschild aktiv: Flug ist in der DB schon gelandet.");
                         data.status = dbTruth.status === "archived" ? "archived" : "landed";
-                        window.currentLiveFlight.status = data.status; // Lokales RAM-Update erzwingen
+                        window.currentLiveFlight.status = data.status; 
                     } else if (data.actual_in || data.actual_on) {
                         data.status = "landed";
                     }
