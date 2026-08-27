@@ -1,37 +1,58 @@
 export default async function handler(request, context) {
     const API_KEY = process.env.FLIGHTAWARE_API_KEY;
     const WEBHOOK_URL = process.env.WEBHOOK_URL;
-    
-    if (!API_KEY || !WEBHOOK_URL) {
-        return new Response(JSON.stringify({ error: "Fehlende API-Keys oder Webhook-URL" }), { status: 500 });
+
+    // 1. CORS Preflight für Browser-Anfragen abfangen
+    if (request.method === 'OPTIONS') {
+        return new Response(null, {
+            status: 204,
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Content-Type',
+                'Access-Control-Allow-Methods': 'POST, OPTIONS'
+            }
+        });
     }
 
     if (request.method !== 'POST') {
+        console.warn(`⚠️ Falsche Methode: ${request.method}`);
         return new Response('Bitte POST verwenden', { status: 405 });
     }
 
+    if (!API_KEY) {
+        console.error("❌ FLIGHTAWARE_API_KEY fehlt in den Netlify Environment Variables!");
+        return new Response(JSON.stringify({ error: "API-Key fehlt" }), { status: 500 });
+    }
+
     try {
-        const { fa_flight_id } = await request.json();
+        const bodyText = await request.text();
+        console.log("📥 fa-create-alert empfangen:", bodyText);
+
+        const body = bodyText ? JSON.parse(bodyText) : {};
+        const fa_flight_id = body.fa_flight_id;
 
         if (!fa_flight_id) {
+            console.error("❌ Keine fa_flight_id im Request-Body übergeben!");
             return new Response(JSON.stringify({ error: "fa_flight_id fehlt" }), { status: 400 });
         }
 
-        // 🚀 BUGHUNT FIX: FlightAware verlangt zwingend den Schlüssel "ident".
-        // PLUS: Wir schicken unsere target_url direkt mit, um das Dashboard zu übersteuern!
+        console.log(`✈️ Registriere Alert bei FlightAware für ID: ${fa_flight_id}...`);
+
+        // Offizieller AeroAPI v4 Payload laut Dokumentation
         const alertPayload = {
             ident: fa_flight_id,
-            target_url: WEBHOOK_URL, // <-- 🚀 NEU: Der kugelsichere Trick!
             events: {
-                arrival: true,
-                departure: true,
+                departure: true, // Beinhaltet Abflug, Gate-Wechsel & Delays
+                arrival: true,   // Beinhaltet Landung & En-Route Updates
                 cancelled: true,
-                delay: true,
-                diverted: true,
-                gate_departure: true,
-                gate_arrival: true
+                diverted: true
             }
         };
+
+        // Falls eine individuelle target_url definiert ist, mitsenden
+        if (WEBHOOK_URL) {
+            alertPayload.target_url = WEBHOOK_URL;
+        }
 
         const faResponse = await fetch('https://aeroapi.flightaware.com/aeroapi/alerts', {
             method: 'POST',
@@ -43,30 +64,26 @@ export default async function handler(request, context) {
             body: JSON.stringify(alertPayload)
         });
 
+        const rawResText = await faResponse.text();
+        console.log(`📡 FlightAware Antwort-Status: ${faResponse.status}, Body: ${rawResText}`);
+
         if (!faResponse.ok) {
-            const errText = await faResponse.text();
-            throw new Error(`FlightAware Fehler: ${faResponse.status} - ${errText}`);
+            throw new Error(`FlightAware Fehler (${faResponse.status}): ${rawResText}`);
         }
 
-        // 🚀 BUGHUNT FIX: FlightAware schickt bei Erfolg oft eine leere Antwort.
-        // Wir lesen sie als einfachen Text und parsen nur, wenn wirklich etwas drin steht!
-        const rawText = await faResponse.text();
         let result = {};
-        
-        if (rawText && rawText.trim() !== "") {
-            try {
-                result = JSON.parse(rawText);
-            } catch (parseError) {
-                console.warn("⚠️ Konnte FlightAware-Antwort nicht als JSON lesen, aber Alert wurde gesetzt.");
-            }
+        if (rawResText && rawResText.trim() !== "") {
+            try { result = JSON.parse(rawResText); } catch(e) {}
         }
 
-        console.log(`✅ Alert für ${fa_flight_id} erfolgreich bei FlightAware registriert!`);
-
-        return new Response(JSON.stringify({ success: true, alert: result }), { status: 200 });
+        console.log(`✅ Alert für ${fa_flight_id} erfolgreich registriert!`);
+        return new Response(JSON.stringify({ success: true, alert: result }), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' }
+        });
 
     } catch (error) {
-        console.error("❌ Fehler beim Erstellen des Alerts:", error);
+        console.error("❌ Fehler in fa-create-alert:", error.message);
         return new Response(JSON.stringify({ error: error.message }), { status: 500 });
     }
 }
