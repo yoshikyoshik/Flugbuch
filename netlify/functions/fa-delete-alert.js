@@ -12,7 +12,7 @@ export default async function handler(request, context) {
             return new Response(JSON.stringify({ error: "fa_flight_id fehlt" }), { status: 400 });
         }
 
-        // 1. Alle Alerts abrufen, um die interne Alert-ID von FlightAware zu finden
+        // 1. Alle Alerts abrufen
         const getRes = await fetch('https://aeroapi.flightaware.com/aeroapi/alerts', {
             method: 'GET',
             headers: { 'x-apikey': API_KEY }
@@ -21,8 +21,17 @@ export default async function handler(request, context) {
         if (!getRes.ok) throw new Error('Konnte Alert-Liste nicht abrufen');
         const data = await getRes.json();
         
-        // 2. Den passenden Alert für diesen Flug suchen
-        const alertToDelete = data.alerts?.find(a => a.ident === fa_flight_id);
+        // 🚀 BUGHUNT FIX: Wir loggen die rohe Antwort von FlightAware, 
+        // um zu sehen, wie sie unsere Flugnummern speichern!
+        console.log(`🔍 Suche nach: ${fa_flight_id}`);
+        console.log("🗃️ Aktuelle FlightAware Alerts:", JSON.stringify(data.alerts));
+        
+        // 2. Den passenden Alert suchen (Jetzt auch mit Teil-Übereinstimmung!)
+        const alertToDelete = data.alerts?.find(a => 
+            a.ident === fa_flight_id || 
+            a.flight_id === fa_flight_id || 
+            fa_flight_id.startsWith(a.ident) // <-- Das ist der Fuzzy-Match Trick!
+        );
 
         if (!alertToDelete) {
             console.log(`Kein aktiver Alert für ${fa_flight_id} gefunden. Nichts zu tun.`);
@@ -37,7 +46,7 @@ export default async function handler(request, context) {
 
         if (!delRes.ok) throw new Error('Fehler beim Löschen des Alerts');
 
-        console.log(`🗑️ Alert für ${fa_flight_id} erfolgreich abbestellt!`);
+        console.log(`🗑️ Alert für ${fa_flight_id} (ID: ${alertToDelete.id}) erfolgreich abbestellt!`);
         return new Response(JSON.stringify({ success: true }), { status: 200 });
 
     } catch (error) {
