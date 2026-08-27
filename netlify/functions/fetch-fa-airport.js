@@ -1,6 +1,18 @@
 export default async function handler(request, context) {
     const API_KEY = process.env.FLIGHTAWARE_API_KEY;
-    const headers = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
+    
+    // 🚀 BUGHUNT FIX: Komplette CORS-Header für die Android-App!
+    const headers = { 
+        'Content-Type': 'application/json', 
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-apikey',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS'
+    };
+
+    // 🚀 BUGHUNT FIX: Den Android-Preflight-Check durchwinken
+    if (request.method === 'OPTIONS') {
+        return new Response(null, { status: 204, headers });
+    }
 
     if (!API_KEY) {
         return new Response(JSON.stringify({ error: "Missing API Key" }), { status: 500, headers });

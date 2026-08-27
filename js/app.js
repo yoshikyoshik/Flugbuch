@@ -7019,7 +7019,7 @@ async function loadAirportRadar() {
     `;
 
     try {
-        const response = await fetch(`/.netlify/functions/fetch-fa-airport?airport=${iata}&type=${currentRadarType}`);
+        const response = await fetch(`${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-fa-airport?airport=${iata}&type=${currentRadarType}`);
         
         if (!response.ok) {
             throw new Error(`API Fehler: ${response.status}`);
