@@ -6597,57 +6597,45 @@ async function searchFlightByRoute() {
     }
 }
 
-window.selectFoundFlight = function(flightNum, encodedData, airlineNameStr) {
+window.selectFoundFlight = async function(flightNum, encodedData, airlineNameStr) {
     try {
-        const flightInput = document.getElementById('flightNumber');
-        if (flightInput) flightInput.value = flightNum;
-
-        // Airline-Name eintragen
-        if (airlineNameStr) {
-            const airlineInput = document.getElementById('airline');
-            if (airlineInput && !airlineInput.value) airlineInput.value = airlineNameStr;
-        }
-
-        if (encodedData) {
-            const f = JSON.parse(atob(encodedData));
-            
-            // Flugzeugtyp eintragen
-            if (f.aircraft_type) {
-                const typeInput = document.getElementById('aircraftType');
-                if (typeInput && !typeInput.value) typeInput.value = f.aircraft_type;
-            }
-            // 🚀 BUGHUNT FIX: Registrierung ins Formular eintragen!
-            const reg = f.aircraft_registration || f.registration;
-            if (reg) {
-                const regInput = document.getElementById('registration');
-                if (regInput && !regInput.value) regInput.value = reg;
-            }
-
-            // 🚀 BUGHUNT FIX: Lupe rettet jetzt ALLE historischen Daten!
-            window.tempSelectedFlightData = {
-                dep_time_ts: f.dep_time_ts || null,
-                arr_time_ts: f.arr_time_ts || null,
-                dep_estimated_ts: f.dep_estimated_ts || null,
-                arr_estimated_ts: f.arr_estimated_ts || null,
-                dep_terminal: f.dep_terminal || null,
-                dep_gate: f.dep_gate || null,
-                arr_terminal: f.arr_terminal || null,
-                arr_gate: f.arr_gate || null,
-                status: f.status || "scheduled", // History-API liefert hier sauber "archived"
-                fa_flight_id: f.fa_flight_id || null
-            };
-            console.log("⏱️ Alle Daten aus der Lupe gerettet:", window.tempSelectedFlightData);
-        }
-
+        // 1. Modal sofort schließen
         if (typeof closeFlightSelector === 'function') closeFlightSelector();
 
-        showMessage(
-            (typeof getTranslation === 'function' ? getTranslation("flightSearch.successTitle") : null) || "Gefunden!", 
-            `Flug ${flightNum} wurde eingetragen.`, 
-            "success"
-        );
+        // 2. Wir zeigen dem User kurz, dass wir tiefere Daten graben
+        if (typeof showMessage === 'function') {
+            showMessage("Lade Flugdaten...", `Kopple Radar an Flug ${flightNum}...`, "info");
+        }
+
+        // 3. 🧙‍♂️ DER GENIALE TRICK: Wir füttern den Autopiloten mit dem Ergebnis der Lupe!
+        // Wir suchen uns das Datum aus dem Formular (oder nehmen heute)
+        const dateInput = document.getElementById('flightDate').value || new Date().toISOString().split('T')[0];
+
+        // Wir füllen die Felder des Autopiloten (die Lupe ganz oben) unsichtbar aus
+        const autoNumInput = document.getElementById("auto-flight-number");
+        const autoDateInput = document.getElementById("auto-flight-date");
+
+        if (autoNumInput && autoDateInput) {
+            autoNumInput.value = flightNum;
+            autoDateInput.value = dateInput;
+
+            // Wir rufen den Autopiloten auf, als hätte der Nutzer selbst getippt!
+            // Der Autopilot kümmert sich jetzt um die Gates, das Flugzeug-Foto UND die fa_flight_id.
+            await autofillFlightData();
+        } else {
+            // Fallback (Falls die Autopilot-Felder warum auch immer nicht da sind)
+            const flightInput = document.getElementById('flightNumber');
+            if (flightInput) flightInput.value = flightNum;
+            if (airlineNameStr) {
+                const airlineInput = document.getElementById('airline');
+                if (airlineInput && !airlineInput.value) airlineInput.value = airlineNameStr;
+            }
+            showMessage("Gefunden", `Basis-Daten für ${flightNum} eingetragen.`, "success");
+        }
+
     } catch (e) {
         console.error("Fehler beim Übernehmen der Flugdaten:", e);
+        showMessage("Fehler", "Die Flugdaten konnten nicht vollständig übernommen werden.", "error");
     }
 };
 
