@@ -1,10 +1,11 @@
-import admin from 'firebase-admin';
+import { initializeApp, cert, getApps } from 'firebase-admin/app';
+import { getMessaging } from 'firebase-admin/messaging';
 import { createClient } from '@supabase/supabase-js';
 
 // 1. FIREBASE ADMIN INITIALISIEREN (Sicherstellen, dass es nur 1x geladen wird)
-if (!admin.apps.length) {
-    admin.initializeApp({
-        credential: admin.credential.cert({
+if (!getApps().length) {
+    initializeApp({
+        credential: cert({
             projectId: process.env.FIREBASE_PROJECT_ID,
             clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
             // 🚀 BUGHUNT FIX: Netlify zerschießt oft die Zeilenumbrüche (\n) in Env-Variablen.
@@ -63,7 +64,7 @@ export default async function handler(request, context) {
 
             if (profile && profile.fcm_token) {
                 // Firebase beauftragen, die Nachricht ans Handy zu feuern!
-                await admin.messaging().send({
+                await getMessaging().send({
                     token: profile.fcm_token,
                     notification: {
                         title: messageTitle,
