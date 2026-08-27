@@ -17,10 +17,11 @@ export default async function handler(request, context) {
             return new Response(JSON.stringify({ error: "fa_flight_id fehlt" }), { status: 400 });
         }
 
-        // 🚀 BUGHUNT FIX: FlightAware verlangt zwingend den Schlüssel "ident", 
-        // auch wenn wir ihm eine extrem präzise fa_flight_id übergeben!
+        // 🚀 BUGHUNT FIX: FlightAware verlangt zwingend den Schlüssel "ident".
+        // PLUS: Wir schicken unsere target_url direkt mit, um das Dashboard zu übersteuern!
         const alertPayload = {
             ident: fa_flight_id,
+            target_url: WEBHOOK_URL, // <-- 🚀 NEU: Der kugelsichere Trick!
             events: {
                 arrival: true,
                 departure: true,
@@ -29,13 +30,7 @@ export default async function handler(request, context) {
                 diverted: true,
                 gate_departure: true,
                 gate_arrival: true
-            },
-            destinations: [
-                {
-                    destination_type: "webhook",
-                    target: WEBHOOK_URL
-                }
-            ]
+            }
         };
 
         const faResponse = await fetch('https://aeroapi.flightaware.com/aeroapi/alerts', {

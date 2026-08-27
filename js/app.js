@@ -1595,6 +1595,18 @@ window.deleteFlight = async function (id) {
     return;
   }
 
+  // 🚀 NEU: Wir müssen die FlightAware ID (fa_flight_id) aus dem lokalen Speicher retten,
+  // BEVOR der Flug gleich aus der Datenbank gelöscht wird!
+  let flightToDelete = null;
+  if (typeof currentlyFilteredFlights !== 'undefined' && currentlyFilteredFlights) {
+      flightToDelete = currentlyFilteredFlights.find(f => f.id === id || f.flight_id === id);
+  }
+  if (!flightToDelete) {
+      const all = await getFlights();
+      flightToDelete = all.find(f => f.id === id || f.flight_id === id);
+  }
+  const faIdToCancel = flightToDelete ? flightToDelete.fa_flight_id : null;
+
   // 2. Löschen in Supabase
   const { error } = await supabaseClient
     .from("flights")
@@ -1615,23 +1627,35 @@ window.deleteFlight = async function (id) {
       "success"
     );
 
+    // ================================================================
+    // 🗑️ PUSH-ALERT BEI FLIGHTAWARE STORNIEREN
+    // ================================================================
+    if (faIdToCancel) {
+        console.log("🗑️ Storniere Alert für gelöschten Flug...");
+        try {
+            const deleteAlertUrl = `${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fa-delete-alert`;
+            fetch(deleteAlertUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ fa_flight_id: faIdToCancel })
+            }).then(res => {
+                if (res.ok) console.log("✅ FlightAware-Abo erfolgreich storniert!");
+            });
+        } catch(e) {
+            console.error("Fehler beim Alert-Storno:", e);
+        }
+    }
+    // ================================================================
+
     // --- ✅ BUGFIX: Lokalen Cache aktualisieren ---
-    
     if (currentlyFilteredFlights) {
-        // FALL A: Ein Filter ist aktiv (oder wurde mal benutzt)
-        // Wir entfernen den Flug manuell aus der lokalen Liste
         currentlyFilteredFlights = currentlyFilteredFlights.filter(f => f.id !== id);
-        
-        // Rendern mit der aktualisierten Liste (ohne Neuladen vom Server)
-        // Wir behalten 'currentPage' bei, damit der User nicht auf Seite 1 springt
         renderFlights(currentlyFilteredFlights, null, currentPage);
     } else {
-        // FALL B: Kein Filter aktiv (Alles wird angezeigt)
-        // Wir rufen renderFlights() ohne Argumente auf -> Das erzwingt ein getFlights() vom Server
         renderFlights(null, null, currentPage);
     }
-    initLiveWidget(); // 🚀 NEU: Falls der heutige Flug gelöscht wurde, Widget verstecken!
-    initUpcomingWidget(); // 🚀 NEU: Und auch hier das Upcoming Widget aktualisieren!
+    initLiveWidget(); 
+    initUpcomingWidget(); 
   }
 };
 
