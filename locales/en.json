@@ -1160,6 +1160,46 @@
         "b2_strong": "Story Mode:",
         "b2_text": "Sit back and enjoy a cinematic replay of your journeys."
     }
-}
+},
+
+"airportRadar": {
+    "title": "Airport Live",
+    "searchPlaceholder": "Name, IATA, ICAO...",
+    "arrivals": "Arrivals",
+    "departures": "Departures",
+    "emptyState": "Enter an airport code to view live data.",
+    "loading": "Catching radar signals for {iata}...",
+    "errorTitle": "Radar connection failed.",
+    "errorDesc": "Check the airport code or try again later.",
+    "noFlights": "No current flights found.",
+    "statusCancelled": "Cancelled",
+    "statusLanded": "Landed",
+    "statusInAir": "In the Air",
+    "statusScheduled": "Scheduled",
+    "timeActual": "Actual",
+    "timeEstimated": "Estimated",
+    "termGate": "Term. {terminal} | Gate {gate}",
+    "baggage": "Baggage claim: {baggage}",
+    "tbd": "TBD"
+  },
+  "toastRadar": {
+    "airportNotDetermined": "Airport could not be determined.",
+    "selectFromList": "Please select an airport from the list.",
+    "dataUpToDate": "Data up to date",
+    "radarCooldown": "Signals for {iata} were just retrieved. A new search ping is possible in {remaining}s.",
+    "linkingRadar": "Linking radar to flight {flight}...",
+    "flightDataError": "Flight data could not be loaded.",
+    "loadingFlightData": "Loading flight data..."
+  },
+  "tabNav": {
+    "radar": "Radar",
+    "live": "Live",
+    "timeline": "Timeline",
+    "analytics": "Analytics",
+    "profile": "Profile"
+  },
+  "boot": {
+    "syncing": "Syncing flight data..."
+  }
 
 }

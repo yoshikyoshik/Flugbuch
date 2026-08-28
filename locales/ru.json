@@ -1156,6 +1156,46 @@
         "b2_strong": "Режим Истории:",
         "b2_text": "Откиньтесь на спинку кресла и наслаждайтесь кинематографичным повтором ваших путешествий."
     }
-}
+},
+
+"airportRadar": {
+    "title": "Аэропорт Live",
+    "searchPlaceholder": "Название, IATA, ICAO...",
+    "arrivals": "Прибытия",
+    "departures": "Вылеты",
+    "emptyState": "Введите код аэропорта для просмотра данных.",
+    "loading": "Ловим сигналы радара для {iata}...",
+    "errorTitle": "Ошибка подключения к радару.",
+    "errorDesc": "Проверьте код аэропорта или попробуйте позже.",
+    "noFlights": "Текущие рейсы не найдены.",
+    "statusCancelled": "Отменен",
+    "statusLanded": "Приземлился",
+    "statusInAir": "В воздухе",
+    "statusScheduled": "По расписанию",
+    "timeActual": "Фактически",
+    "timeEstimated": "Ожидается",
+    "termGate": "Терм. {terminal} | Выход {gate}",
+    "baggage": "Выдача багажа: {baggage}",
+    "tbd": "TBD"
+  },
+  "toastRadar": {
+    "airportNotDetermined": "Аэропорт не удалось определить.",
+    "selectFromList": "Пожалуйста, выберите аэропорт из списка.",
+    "dataUpToDate": "Данные актуальны",
+    "radarCooldown": "Сигналы для {iata} только что получены. Новый поиск возможен через {remaining} сек.",
+    "linkingRadar": "Привязка радара к рейсу {flight}...",
+    "flightDataError": "Не удалось загрузить данные рейса.",
+    "loadingFlightData": "Загрузка данных рейса..."
+  },
+  "tabNav": {
+    "radar": "Радар",
+    "live": "Live",
+    "timeline": "История",
+    "analytics": "Аналитика",
+    "profile": "Профиль"
+  },
+  "boot": {
+    "syncing": "Синхронизация данных полета..."
+  }
 
 }

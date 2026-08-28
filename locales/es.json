@@ -1156,6 +1156,46 @@
         "b2_strong": "Modo Historia:",
         "b2_text": "Ponte cómodo y disfruta de una repetición cinematográfica de tus viajes."
     }
-}
+},
+
+"airportRadar": {
+    "title": "Aeropuerto en Vivo",
+    "searchPlaceholder": "Nombre, IATA, ICAO...",
+    "arrivals": "Llegadas",
+    "departures": "Salidas",
+    "emptyState": "Ingresa un código de aeropuerto para ver datos en vivo.",
+    "loading": "Captando señales de radar para {iata}...",
+    "errorTitle": "Fallo en la conexión del radar.",
+    "errorDesc": "Verifica el código del aeropuerto o inténtalo más tarde.",
+    "noFlights": "No se encontraron vuelos actuales.",
+    "statusCancelled": "Cancelado",
+    "statusLanded": "Aterrizó",
+    "statusInAir": "En el aire",
+    "statusScheduled": "Programado",
+    "timeActual": "Real",
+    "timeEstimated": "Estimado",
+    "termGate": "Term. {terminal} | Puerta {gate}",
+    "baggage": "Equipaje: {baggage}",
+    "tbd": "TBD"
+  },
+  "toastRadar": {
+    "airportNotDetermined": "No se pudo determinar el aeropuerto.",
+    "selectFromList": "Por favor selecciona el aeropuerto de la lista.",
+    "dataUpToDate": "Datos actualizados",
+    "radarCooldown": "Las señales de {iata} acaban de ser recuperadas. Una nueva búsqueda será posible en {remaining}s.",
+    "linkingRadar": "Vinculando radar al vuelo {flight}...",
+    "flightDataError": "No se pudieron cargar los datos del vuelo.",
+    "loadingFlightData": "Cargando datos del vuelo..."
+  },
+  "tabNav": {
+    "radar": "Radar",
+    "live": "En Vivo",
+    "timeline": "Cronología",
+    "analytics": "Analítica",
+    "profile": "Perfil"
+  },
+  "boot": {
+    "syncing": "Sincronizando datos de vuelo..."
+  }
 
 }

@@ -1156,6 +1156,46 @@
         "b2_strong": "故事模式：",
         "b2_text": "坐下来，欣赏您旅程的电影式回放。"
     }
-}
+},
+
+"airportRadar": {
+    "title": "机场实时动态",
+    "searchPlaceholder": "名称，IATA，ICAO...",
+    "arrivals": "到达",
+    "departures": "出发",
+    "emptyState": "输入机场代码以查看实时数据。",
+    "loading": "正在捕获 {iata} 的雷达信号...",
+    "errorTitle": "雷达连接失败。",
+    "errorDesc": "请检查机场代码或稍后再试。",
+    "noFlights": "未找到当前航班。",
+    "statusCancelled": "已取消",
+    "statusLanded": "已降落",
+    "statusInAir": "飞行中",
+    "statusScheduled": "已计划",
+    "timeActual": "实际",
+    "timeEstimated": "预计",
+    "termGate": "航站楼 {terminal} | 登机口 {gate}",
+    "baggage": "行李提取: {baggage}",
+    "tbd": "待定"
+  },
+  "toastRadar": {
+    "airportNotDetermined": "无法确定机场。",
+    "selectFromList": "请从列表中选择机场。",
+    "dataUpToDate": "数据已是最新",
+    "radarCooldown": "刚刚检索了 {iata} 的信号。{remaining} 秒后可以进行新的搜索。",
+    "linkingRadar": "正在将雷达链接至航班 {flight}...",
+    "flightDataError": "无法加载航班数据。",
+    "loadingFlightData": "正在加载航班数据..."
+  },
+  "tabNav": {
+    "radar": "雷达",
+    "live": "实时",
+    "timeline": "时间轴",
+    "analytics": "统计",
+    "profile": "个人资料"
+  },
+  "boot": {
+    "syncing": "正在同步航班数据..."
+  }
 
 }

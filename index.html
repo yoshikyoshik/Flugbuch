@@ -238,7 +238,7 @@
                  <span class="material-symbols-outlined text-primary dark:text-indigo-400 text-3xl absolute animate-pulse">flight</span>
             </div>
             <h2 class="text-2xl font-display font-black text-on-surface dark:text-white mb-2 tracking-tight">AvioSphere</h2>
-            <p class="text-[10px] font-bold uppercase tracking-widest text-on-surface/50 dark:text-slate-400 animate-pulse">Flugdaten werden synchronisiert...</p>
+            <p class="text-[10px] font-bold uppercase tracking-widest text-on-surface/50 dark:text-slate-400 animate-pulse" data-i18n="boot.syncing">Flugdaten werden synchronisiert...</p>
         </div>
       <div
         class="w-full max-w-4xl bg-transparent sm:bg-surface-container-lowest/90 sm:dark:bg-slate-900/80 sm:backdrop-blur-3xl sm:shadow-2xl rounded-none sm:rounded-[2.5rem] px-3 pb-4 pt-[max(1.5rem,env(safe-area-inset-top))] sm:p-8 md:p-12 sm:border border-outline-variant/20 dark:border-slate-800"
@@ -257,7 +257,7 @@
             
             <div id="tab-content-radar">
               <div class="flex items-center justify-between mb-8 pr-2">
-                <h2 class="text-2xl font-display font-extrabold text-on-surface dark:text-white tracking-tight">
+                <h2 class="text-2xl font-display font-extrabold text-on-surface dark:text-white tracking-tight" data-i18n="tabs.radar">
                   Radar
                 </h2>
               </div>
@@ -379,7 +379,7 @@
             <!-- ========================================== -->
             <div id="tab-content-airport-radar" class="hidden">
               <div class="flex items-center justify-between mb-8 pr-2">
-                <h2 class="text-2xl font-display font-extrabold text-on-surface dark:text-white tracking-tight">
+                <h2 class="text-2xl font-display font-extrabold text-on-surface dark:text-white tracking-tight" data-i18n="airportRadar.title">
                   Flughafen Live
                 </h2>
               </div>
@@ -391,8 +391,8 @@
                           <div class="relative flex-1 group autocomplete-container">
                               <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface/40 group-focus-within:text-primary transition-colors z-10">flight_takeoff</span>
                               <!-- Das input-Feld: autocomplete="off" verhindert, dass der Browser sein eigenes, hässliches Menü darüberlegt -->
-                              <input type="text" id="radar-airport-input" placeholder="Name, IATA, ICAO..." autocomplete="off"
-                                     class="w-full bg-surface-container-lowest dark:bg-slate-800 rounded-xl py-3 pl-12 pr-4 font-bold text-on-surface dark:text-white placeholder:text-on-surface/40 focus:outline-none focus:ring-2 focus:ring-primary/50 transition border-none shadow-inner">
+                              <input type="text" id="radar-airport-input" placeholder="Name, IATA, ICAO..." data-i18n-placeholder="airportRadar.searchPlaceholder" autocomplete="off"
+                                    class="w-full bg-surface-container-lowest dark:bg-slate-800 rounded-xl py-3 pl-12 pr-4 font-bold text-on-surface dark:text-white placeholder:text-on-surface/40 focus:outline-none focus:ring-2 focus:ring-primary/50 transition border-none shadow-inner">
                               
                               <!-- Das unsichtbare Container-Dropdown für unsere Ergebnisse -->
                               <div id="radar-airport-list" class="autocomplete-list hidden absolute left-0 right-0 top-full mt-2 bg-surface-container-lowest dark:bg-slate-800 rounded-xl shadow-xl border border-outline-variant/20 z-[100] max-h-60 overflow-y-auto"></div>
@@ -404,8 +404,8 @@
                       
                       <!-- Toggle Buttons für Ankünfte/Abflüge -->
                       <div class="flex bg-surface-container-lowest dark:bg-slate-800 p-1 rounded-xl shadow-inner border border-outline-variant/10 dark:border-slate-700/50">
-                          <button onclick="setRadarType('arrivals')" id="btn-radar-arr" class="flex-1 py-2 text-sm font-bold rounded-lg bg-primary/10 text-primary dark:bg-indigo-900/30 dark:text-indigo-400 transition">Ankünfte</button>
-                          <button onclick="setRadarType('departures')" id="btn-radar-dep" class="flex-1 py-2 text-sm font-bold rounded-lg text-on-surface/50 hover:text-on-surface dark:text-slate-400 dark:hover:text-white transition">Abflüge</button>
+                          <button onclick="setRadarType('arrivals')" id="btn-radar-arr" class="flex-1 py-2 text-sm font-bold rounded-lg bg-primary/10 text-primary dark:bg-indigo-900/30 dark:text-indigo-400 transition" data-i18n="airportRadar.arrivals">Ankünfte</button>
+                          <button onclick="setRadarType('departures')" id="btn-radar-dep" class="flex-1 py-2 text-sm font-bold rounded-lg text-on-surface/50 hover:text-on-surface dark:text-slate-400 dark:hover:text-white transition" data-i18n="airportRadar.departures">Abflüge</button>
                       </div>
                   </div>
               </div>
@@ -414,7 +414,7 @@
               <div id="radar-results-list" class="space-y-3 pb-24">
                   <div class="flex flex-col items-center justify-center py-12 text-center opacity-50 px-4 bg-surface-container-lowest dark:bg-slate-800 rounded-[2rem] border border-dashed border-outline-variant/30 dark:border-slate-700">
                       <span class="material-symbols-outlined text-5xl mb-4">travel_explore</span>
-                      <p class="font-bold text-sm">Gib einen Flughafen-Code ein, um Live-Daten zu sehen.</p>
+                      <p class="font-bold text-sm" data-i18n="airportRadar.emptyState">Gib einen Flughafen-Code ein, um Live-Daten zu sehen.</p>
                   </div>
               </div>
             </div>
@@ -1061,17 +1061,17 @@
             
             <button onclick="showTab('radar')" id="tab-btn-radar" class="tab-btn flex-1 flex flex-col items-center justify-center text-primary dark:text-indigo-400 pb-2 transition-all">
               <span class="material-symbols-outlined text-[24px] mb-1">radar</span>
-              <span class="font-display text-[10px] font-bold uppercase tracking-wider">Radar</span>
+              <span class="font-display text-[10px] font-bold uppercase tracking-wider" data-i18n="tabNav.radar">Radar</span>
             </button>
 
             <button onclick="showTab('airport-radar')" id="tab-btn-airport-radar" class="tab-btn flex-1 flex flex-col items-center justify-center text-on-surface/40 dark:text-slate-500 hover:text-on-surface/80 dark:hover:text-slate-300 pb-2 transition-all">
               <span class="material-symbols-outlined text-[24px] mb-1">flight_land</span>
-              <span class="font-display text-[10px] font-bold uppercase tracking-wider">Live</span>
+              <span class="font-display text-[10px] font-bold uppercase tracking-wider" data-i18n="tabNav.live">Live</span>
             </button>
             
             <button onclick="showTab('timeline')" id="tab-btn-timeline" class="tab-btn flex-1 flex flex-col items-center justify-center text-on-surface/40 dark:text-slate-500 hover:text-on-surface/80 dark:hover:text-slate-300 pb-2 transition-all">
               <span class="material-symbols-outlined text-[24px] mb-1">history</span>
-              <span class="font-display text-[10px] font-bold uppercase tracking-wider">Timeline</span>
+              <span class="font-display text-[10px] font-bold uppercase tracking-wider" data-i18n="tabNav.timeline">Timeline</span>
             </button>
 
             <div class="flex-shrink-0 flex justify-center relative -top-6 px-2">
@@ -1082,12 +1082,12 @@
             
             <button onclick="showTab('analytics')" id="tab-btn-analytics" class="tab-btn flex-1 flex flex-col items-center justify-center text-on-surface/40 dark:text-slate-500 hover:text-on-surface/80 dark:hover:text-slate-300 pb-2 transition-all">
               <span class="material-symbols-outlined text-[24px] mb-1">analytics</span>
-              <span class="font-display text-[10px] font-bold uppercase tracking-wider">Analytics</span>
+              <span class="font-display text-[10px] font-bold uppercase tracking-wider" data-i18n="tabNav.analytics">Analytics</span>
             </button>
             
             <button onclick="showTab('profil')" id="tab-btn-profil" class="tab-btn flex-1 flex flex-col items-center justify-center text-on-surface/40 dark:text-slate-500 hover:text-on-surface/80 dark:hover:text-slate-300 pb-2 transition-all">
               <span class="material-symbols-outlined text-[24px] mb-1">person</span>
-              <span class="font-display text-[10px] font-bold uppercase tracking-wider">Profil</span>
+              <span class="font-display text-[10px] font-bold uppercase tracking-wider" data-i18n="tabNav.profile">Profil</span>
             </button>
 
             <!-- Unsichtbares Gegengewicht für perfekte Symmetrie (3 links, 3 rechts) -->

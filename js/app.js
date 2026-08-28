@@ -6628,7 +6628,11 @@ window.selectFoundFlight = async function(flightNum, encodedData, airlineNameStr
 
         // 2. Dem Nutzer Feedback geben
         if (typeof showMessage === 'function') {
-            showMessage("Lade Flugdaten...", `Kopple Radar an Flug ${flightNum}...`, "info");
+            showMessage(
+                getTranslation("toastRadar.loadingFlightData") || "Lade Flugdaten...", 
+                (getTranslation("toastRadar.linkingRadar") || "Kopple Radar an Flug {flight}...").replace("{flight}", flightNum), 
+                "info"
+            );
         }
 
         // 3. Das gewünschte Datum auslesen (aus dem Formular oder heute)
@@ -6657,7 +6661,11 @@ window.selectFoundFlight = async function(flightNum, encodedData, airlineNameStr
     } catch (e) {
         console.error("Fehler beim Übernehmen der Flugdaten:", e);
         if (typeof showMessage === 'function') {
-            showMessage("Fehler", "Flugdaten konnten nicht geladen werden.", "error");
+            showMessage(
+                getTranslation("toast.errorTitle") || "Fehler", 
+                getTranslation("toastRadar.flightDataError") || "Flugdaten konnten nicht geladen werden.", 
+                "error"
+            );
         }
     }
 };
@@ -6976,11 +6984,11 @@ async function loadAirportRadar() {
                 // Direkt "Stadt/Name (CODE)" ins Feld schreiben!
                 inputEl.value = `${foundAirport.name} (${targetIata})`; 
             } else {
-                showMessage("Nicht gefunden", "Flughafen konnte nicht ermittelt werden.", "error");
+                showMessage(getTranslation("toast.errorTitle") || "Fehler", getTranslation("toastRadar.airportNotDetermined") || "Flughafen konnte nicht ermittelt werden.", "error");
                 return;
             }
         } else {
-            showMessage("Fehler", "Bitte wähle den Flughafen aus der Liste aus.", "error");
+            showMessage(getTranslation("toast.errorTitle") || "Fehler", getTranslation("toastRadar.selectFromList") || "Bitte wähle den Flughafen aus der Liste aus.", "error");
             return;
         }
     } else {
@@ -7006,7 +7014,13 @@ async function loadAirportRadar() {
         renderRadarFlights(radarDataCache[cacheKey].data, iata);
         
         const remaining = Math.ceil((RADAR_CACHE_TTL - (now - radarDataCache[cacheKey].timestamp)) / 1000);
-        showMessage("Daten aktuell", `Signale für ${iata} wurden gerade erst abgerufen. Ein erneuter Such-Ping ist in ${remaining}s möglich.`, "info");
+        showMessage(
+            getTranslation("toastRadar.dataUpToDate") || "Daten aktuell", 
+            (getTranslation("toastRadar.radarCooldown") || "Signale für {iata} wurden gerade erst abgerufen. Ein erneuter Such-Ping ist in {remaining}s möglich.")
+                .replace("{iata}", iata)
+                .replace("{remaining}", remaining), 
+            "info"
+        );
         return;
     }
 
@@ -7014,7 +7028,7 @@ async function loadAirportRadar() {
     listEl.innerHTML = `
         <div class="flex flex-col items-center justify-center py-12 text-center opacity-70">
             <div class="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin mb-4"></div>
-            <p class="font-bold text-sm">Fange Radar-Signale für ${iata} auf...</p>
+            <p class="font-bold text-sm">${(getTranslation("airportRadar.loading") || "Fange Radar-Signale für {iata} auf...").replace("{iata}", iata)}</p>
         </div>
     `;
 
@@ -7044,8 +7058,8 @@ async function loadAirportRadar() {
         listEl.innerHTML = `
             <div class="flex flex-col items-center justify-center py-12 text-center px-4 bg-red-500/10 rounded-[2rem] border border-red-500/20">
                 <span class="material-symbols-outlined text-4xl mb-4 text-red-500">signal_disconnected</span>
-                <p class="font-bold text-sm text-red-500">Radar-Verbindung fehlgeschlagen.</p>
-                <p class="text-xs mt-2 text-on-surface/60 dark:text-slate-400">Prüfe den Flughafen-Code oder versuche es später noch einmal.</p>
+                <p class="font-bold text-sm text-red-500">${getTranslation("airportRadar.errorTitle") || "Radar-Verbindung fehlgeschlagen."}</p>
+                <p class="text-xs mt-2 text-on-surface/60 dark:text-slate-400">${getTranslation("airportRadar.errorDesc") || "Prüfe den Flughafen-Code oder versuche es später noch einmal."}</p>
             </div>
         `;
     }
@@ -7058,7 +7072,7 @@ function renderRadarFlights(flights, airportIata) {
         listEl.innerHTML = `
             <div class="flex flex-col items-center justify-center py-12 text-center opacity-50 px-4 bg-surface-container-lowest dark:bg-slate-800 rounded-[2rem] border border-dashed border-outline-variant/30 dark:border-slate-700">
                 <span class="material-symbols-outlined text-4xl mb-4">flight_off</span>
-                <p class="font-bold text-sm">Keine aktuellen Flüge gefunden.</p>
+                <p class="font-bold text-sm">${getTranslation("airportRadar.noFlights") || "Keine aktuellen Flüge gefunden."}</p>
             </div>
         `;
         return;
@@ -7085,7 +7099,9 @@ function renderRadarFlights(flights, airportIata) {
                 // Nur anzeigen, wenn die Zeit um mehr als 1 Minute abweicht
                 if (mainTimeStr !== compareStr) {
                     subTimeStr = compareStr;
-                    subTimeLabel = f.actual_time ? "Tatsächlich" : "Erwartet";
+                    subTimeLabel = f.actual_time 
+                        ? (getTranslation("airportRadar.timeActual") || "Tatsächlich") 
+                        : (getTranslation("airportRadar.timeEstimated") || "Erwartet");
                     
                     // Verspätung in Rot anzeigen!
                     if (cd.getTime() > sd.getTime() + 60000) {
@@ -7101,25 +7117,25 @@ function renderRadarFlights(flights, airportIata) {
 
         // 2. Status-Farben (bleibt gleich)
         let statusColor = "bg-slate-500 dark:bg-slate-700";
-        let statusText = "Geplant";
+        let statusText = getTranslation("airportRadar.statusScheduled") || "Geplant";
         let statusIcon = "schedule";
         const rawStatus = (f.status || "").toLowerCase();
-        
+
         if (rawStatus.includes('cancel')) {
             statusColor = "bg-red-500";
-            statusText = "Annulliert";
+            statusText = getTranslation("airportRadar.statusCancelled") || "Annulliert";
             statusIcon = "cancel";
         } else if (rawStatus.includes('land') || rawStatus.includes('arriv') || rawStatus.includes('taxii')) {
             statusColor = "bg-emerald-500";
-            statusText = "Gelandet";
+            statusText = getTranslation("airportRadar.statusLanded") || "Gelandet";
             statusIcon = "flight_land";
         } else if (rawStatus.includes('en route') || rawStatus.includes('departed')) {
             statusColor = "bg-blue-500";
-            statusText = "In der Luft";
+            statusText = getTranslation("airportRadar.statusInAir") || "In der Luft";
             statusIcon = "flight_takeoff";
         } else if (rawStatus.includes('gate') || rawStatus.includes('sched')) {
             statusColor = "bg-amber-500";
-            statusText = "Geplant";
+            statusText = getTranslation("airportRadar.statusScheduled") || "Geplant";
             statusIcon = "airport_shuttle";
         }
 
@@ -7183,7 +7199,7 @@ function renderRadarFlights(flights, airportIata) {
                             ${routeText}
                         </div>
                         <div class="text-right">
-                            <p class="text-[9px] uppercase tracking-widest font-bold text-on-surface/40 dark:text-slate-500 mb-0.5">Geplant</p>
+                            <p class="text-[9px] uppercase tracking-widest font-bold text-on-surface/40 dark:text-slate-500 mb-0.5">${getTranslation("airportRadar.statusScheduled") || "Geplant"}</p>
                             <p class="font-black text-lg text-on-surface dark:text-white leading-none">${mainTimeStr}</p>
                             ${subTimeStr ? `<p class="text-[10px] font-bold mt-1 text-on-surface/60 dark:text-slate-400 uppercase tracking-widest">${subTimeLabel}: ${subTimeStr}</p>` : ''}
                         </div>
@@ -7193,13 +7209,13 @@ function renderRadarFlights(flights, airportIata) {
                 <div class="p-4 border-t border-outline-variant/10 dark:border-slate-700/50 bg-surface-container-low/30 dark:bg-slate-900/30 flex flex-col gap-4">
                     <div class="grid grid-cols-2 gap-3">
                         <div class="bg-surface-container-lowest dark:bg-slate-800 p-3 rounded-xl border border-outline-variant/10 shadow-sm">
-                            <p class="text-[9px] uppercase tracking-widest font-bold text-on-surface/50 dark:text-slate-400 mb-1">Abflug (${f.origin_name || orig})</p>
-                            <p class="text-sm font-bold text-on-surface dark:text-white">Term. ${f.dep_terminal || "-"} | Gate ${f.dep_gate || "-"}</p>
+                            <p class="text-[9px] uppercase tracking-widest font-bold text-on-surface/50 dark:text-slate-400 mb-1">${getTranslation("weather.departure") || "Abflug"} (${f.origin_name || orig})</p>
+                            <p class="text-sm font-bold text-on-surface dark:text-white">${(getTranslation("airportRadar.termGate") || "Term. {terminal} | Gate {gate}").replace("{terminal}", f.dep_terminal || "-").replace("{gate}", f.dep_gate || "-")}</p>
                         </div>
                         <div class="bg-surface-container-lowest dark:bg-slate-800 p-3 rounded-xl border border-outline-variant/10 shadow-sm">
-                            <p class="text-[9px] uppercase tracking-widest font-bold text-on-surface/50 dark:text-slate-400 mb-1">Ankunft (${f.destination_name || dest})</p>
-                            <p class="text-sm font-bold text-on-surface dark:text-white">Term. ${f.arr_terminal || "-"} | Gate ${f.arr_gate || "-"}</p>
-                            ${currentRadarType === 'arrivals' ? `<p class="text-[10px] font-bold text-primary mt-1">Gepäckband: ${f.baggage_claim || "TBD"}</p>` : ''}
+                            <p class="text-[9px] uppercase tracking-widest font-bold text-on-surface/50 dark:text-slate-400 mb-1">${getTranslation("weather.arrival") || "Ankunft"} (${f.destination_name || dest})</p>
+                            <p class="text-sm font-bold text-on-surface dark:text-white">${(getTranslation("airportRadar.termGate") || "Term. {terminal} | Gate {gate}").replace("{terminal}", f.arr_terminal || "-").replace("{gate}", f.arr_gate || "-")}</p>
+                            ${currentRadarType === 'arrivals' ? `<p class="text-[10px] font-bold text-primary mt-1">${(getTranslation("airportRadar.baggage") || "Gepäckband: {baggage}").replace("{baggage}", f.baggage_claim || (getTranslation("airportRadar.tbd") || "TBD"))}</p>` : ''}
                         </div>
                     </div>
                 </div>
