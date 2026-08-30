@@ -824,7 +824,11 @@
     "share": "分享",
     "stats": "统计",
     "trips": "我的旅行",
-    "profile": "个人资料fil"
+    "profile": "个人资料",
+    "radar": "雷达",
+    "live": "实时",
+    "timeline": "时间轴",
+    "analytics": "统计"
   },
   "toast": {
     "airportNotFound": "未找到机场代码。",

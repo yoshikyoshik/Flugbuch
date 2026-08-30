@@ -828,7 +828,11 @@
     "share": "Share",
     "stats": "Statistics",
     "trips": "My Trips",
-    "profile": "Profile"
+    "profile": "Profile",
+    "radar": "Radar",
+    "live": "Live",
+    "timeline": "Timeline",
+    "analytics": "Analytics"
   },
   "toast": {
     "airportNotFound": "Airport code not found.",

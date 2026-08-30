@@ -1059,41 +1059,45 @@
         <div class="fixed bottom-0 left-0 right-0 z-[100] bg-surface-container-lowest/90 dark:bg-slate-900/90 backdrop-blur-2xl border-t border-outline-variant/20 dark:border-slate-700/50 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] pb-[max(0.5rem,env(safe-area-inset-bottom))]">
           <nav class="flex items-end justify-between px-2 sm:px-8 max-w-md mx-auto relative h-16" aria-label="Tabs">
             
-            <button onclick="showTab('radar')" id="tab-btn-radar" class="tab-btn flex-1 flex flex-col items-center justify-center text-primary dark:text-indigo-400 pb-2 transition-all">
-              <span class="material-symbols-outlined text-[24px] mb-1">radar</span>
-              <span class="font-display text-[10px] font-bold uppercase tracking-wider" data-i18n="tabNav.radar">Radar</span>
-            </button>
+            <!-- LINKE SEITE (3 Buttons) -->
+            <div class="flex flex-1 h-full items-end">
+                <button onclick="showTab('radar')" id="tab-btn-radar" class="tab-btn flex-1 flex flex-col items-center justify-center text-primary dark:text-indigo-400 pb-2 transition-all">
+                    <span class="material-symbols-outlined text-[24px] mb-1">radar</span>
+                    <span class="font-display text-[10px] font-bold uppercase tracking-wider" data-i18n="tabs.radar">Radar</span>
+                </button>
 
-            <button onclick="showTab('airport-radar')" id="tab-btn-airport-radar" class="tab-btn flex-1 flex flex-col items-center justify-center text-on-surface/40 dark:text-slate-500 hover:text-on-surface/80 dark:hover:text-slate-300 pb-2 transition-all">
-              <span class="material-symbols-outlined text-[24px] mb-1">flight_land</span>
-              <span class="font-display text-[10px] font-bold uppercase tracking-wider" data-i18n="tabNav.live">Live</span>
-            </button>
-            
-            <button onclick="showTab('timeline')" id="tab-btn-timeline" class="tab-btn flex-1 flex flex-col items-center justify-center text-on-surface/40 dark:text-slate-500 hover:text-on-surface/80 dark:hover:text-slate-300 pb-2 transition-all">
-              <span class="material-symbols-outlined text-[24px] mb-1">history</span>
-              <span class="font-display text-[10px] font-bold uppercase tracking-wider" data-i18n="tabNav.timeline">Timeline</span>
-            </button>
+                <button onclick="showTab('airport-radar')" id="tab-btn-airport-radar" class="tab-btn flex-1 flex flex-col items-center justify-center text-on-surface/40 dark:text-slate-500 hover:text-on-surface/80 dark:hover:text-slate-300 pb-2 transition-all">
+                    <span class="material-symbols-outlined text-[24px] mb-1">flight_land</span>
+                    <span class="font-display text-[10px] font-bold uppercase tracking-wider" data-i18n="tabs.live">Live</span>
+                </button>
+                
+                <button onclick="showTab('timeline')" id="tab-btn-timeline" class="tab-btn flex-1 flex flex-col items-center justify-center text-on-surface/40 dark:text-slate-500 hover:text-on-surface/80 dark:hover:text-slate-300 pb-2 transition-all">
+                    <span class="material-symbols-outlined text-[24px] mb-1">history</span>
+                    <span class="font-display text-[10px] font-bold uppercase tracking-wider" data-i18n="tabs.timeline">Timeline</span>
+                </button>
+            </div>
 
-            <div class="flex-shrink-0 flex justify-center relative -top-6 px-2">
+            <!-- ZENTRIERTER PLUS-BUTTON -->
+            <div class="flex-shrink-0 flex justify-center relative -top-6 px-1 sm:px-2">
                 <button onclick="openAddMenu()" class="w-14 h-14 bg-primary text-white rounded-full flex items-center justify-center shadow-xl hover:scale-105 transition-transform border-4 border-background dark:border-gray-900">
                     <span class="material-symbols-outlined text-3xl">add</span>
                 </button>
             </div>
             
-            <button onclick="showTab('analytics')" id="tab-btn-analytics" class="tab-btn flex-1 flex flex-col items-center justify-center text-on-surface/40 dark:text-slate-500 hover:text-on-surface/80 dark:hover:text-slate-300 pb-2 transition-all">
-              <span class="material-symbols-outlined text-[24px] mb-1">analytics</span>
-              <span class="font-display text-[10px] font-bold uppercase tracking-wider" data-i18n="tabNav.analytics">Analytics</span>
-            </button>
-            
-            <button onclick="showTab('profil')" id="tab-btn-profil" class="tab-btn flex-1 flex flex-col items-center justify-center text-on-surface/40 dark:text-slate-500 hover:text-on-surface/80 dark:hover:text-slate-300 pb-2 transition-all">
-              <span class="material-symbols-outlined text-[24px] mb-1">person</span>
-              <span class="font-display text-[10px] font-bold uppercase tracking-wider" data-i18n="tabNav.profile">Profil</span>
-            </button>
+            <!-- RECHTE SEITE (2 Buttons, symmetrisch verteilt) -->
+            <div class="flex flex-1 h-full items-end">
+                <button onclick="showTab('analytics')" id="tab-btn-analytics" class="tab-btn flex-1 flex flex-col items-center justify-center text-on-surface/40 dark:text-slate-500 hover:text-on-surface/80 dark:hover:text-slate-300 pb-2 transition-all">
+                    <span class="material-symbols-outlined text-[24px] mb-1">analytics</span>
+                    <span class="font-display text-[10px] font-bold uppercase tracking-wider" data-i18n="tabs.analytics">Analytics</span>
+                </button>
+                
+                <button onclick="showTab('profil')" id="tab-btn-profil" class="tab-btn flex-1 flex flex-col items-center justify-center text-on-surface/40 dark:text-slate-500 hover:text-on-surface/80 dark:hover:text-slate-300 pb-2 transition-all">
+                    <span class="material-symbols-outlined text-[24px] mb-1">person</span>
+                    <span class="font-display text-[10px] font-bold uppercase tracking-wider" data-i18n="tabs.profile">Profil</span>
+                </button>
+            </div>
 
-            <!-- Unsichtbares Gegengewicht für perfekte Symmetrie (3 links, 3 rechts) -->
-            <div class="flex-1 pointer-events-none opacity-0"></div>
-
-          </nav>
+        </nav>
         </div>
     <div id="password-change-modal" class="fixed inset-0 z-[110] hidden items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md transition-opacity duration-300">
       <div class="bg-surface-container-lowest dark:bg-slate-900 rounded-[2.5rem] overflow-hidden shadow-2xl w-full max-w-sm relative flex flex-col border border-outline-variant/20 dark:border-white/10 p-6 md:p-8">

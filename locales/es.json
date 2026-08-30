@@ -824,7 +824,11 @@
     "share": "Compartir",
     "stats": "Estadísticas",
     "trips": "Mis Viajes",
-    "profile": "Perfil"
+    "profile": "Perfil",
+    "radar": "Radar",
+    "live": "Vivo",
+    "timeline": "Cronología",
+    "analytics": "Analítica"
   },
   "toast": {
     "airportNotFound": "Código de aeropuerto no encontrado.",
@@ -1189,7 +1193,7 @@
   },
   "tabNav": {
     "radar": "Radar",
-    "live": "En Vivo",
+    "live": "Vivo",
     "timeline": "Cronología",
     "analytics": "Analítica",
     "profile": "Perfil"

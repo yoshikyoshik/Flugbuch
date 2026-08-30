@@ -829,7 +829,11 @@
     "share": "Teilen",
     "stats": "Statistiken",
     "trips": "Meine Reisen",
-    "profile": "Profil"
+    "profile": "Profil",
+    "radar": "Radar",
+    "live": "Live",
+    "timeline": "Timeline",
+    "analytics": "Analytics"
   },
   "toast": {
     "airportNotFound": "Flughafencode nicht gefunden.",
