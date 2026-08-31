@@ -2917,7 +2917,22 @@ window.autoSyncMissingFlightData = async function() {
 // DOMContentLoaded
 document.addEventListener("DOMContentLoaded", async function () {
 
-// 🚀 NEU: Smartes App-Install-Routing (Nur im Webbrowser)
+    // 🚀 NEU: Rückkehrer von der CO2-Kompensation abfangen!
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('co2_success') === 'true') {
+        setTimeout(() => {
+            if (typeof showMessage === 'function') {
+                showMessage(
+                    getTranslation("co2.successTitle") || "🌱 Danke, Climate Hero!", 
+                    getTranslation("co2.successMsg") || "Deine CO₂-Kompensation war erfolgreich. Die Daten werden in Kürze aktualisiert.", 
+                    "success"
+                );
+            }
+        }, 1500);
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
+    // 🚀 NEU: Smartes App-Install-Routing (Nur im Webbrowser)
     if (typeof Capacitor === 'undefined' || !Capacitor.isNativePlatform()) {
         const urlParams = new URLSearchParams(window.location.search);
         const inviteId = urlParams.get('invite');
@@ -4034,6 +4049,52 @@ window.viewFlightDetails = async function(id, isSwitching = false, customScope =
     document.getElementById('fd-distance').textContent = flight.distance ? `${flight.distance.toLocaleString()} km` : "-";
     document.getElementById('fd-duration').textContent = flight.time || "-";
     document.getElementById('fd-co2').textContent = flight.co2_kg ? `${flight.co2_kg.toLocaleString()} kg` : "-";
+
+    // =========================================================
+    // 🌱 CO2 KOMPENSATION: Button & Badge Logik
+    // ==========================================
+    let co2ActionContainer = document.getElementById('fd-co2-action-container');
+    
+    if (!co2ActionContainer) {
+        co2ActionContainer = document.createElement('div');
+        co2ActionContainer.id = 'fd-co2-action-container';
+        co2ActionContainer.className = 'w-full mb-8 px-2';
+        const statsGrid = document.getElementById('fd-co2').closest('.flex.justify-between');
+        if (statsGrid && statsGrid.parentNode) {
+            statsGrid.parentNode.insertBefore(co2ActionContainer, statsGrid.nextSibling);
+        }
+    }
+
+    const co2El = document.getElementById('fd-co2');
+
+    if (flight.co2_compensated) {
+        const titleText = getTranslation("co2.neutral") || "Klimaneutral";
+        const descText = (getTranslation("co2.compensated") || "{kg} kg CO₂ wurden kompensiert.").replace("{kg}", (flight.co2_kg || 0).toLocaleString("de-DE"));
+        
+        // 🚀 NEU: Den Zertifikats-Link einbauen, falls vorhanden
+        let certHtml = "";
+        if (flight.co2_certificate_url) {
+            const certText = getTranslation("co2.viewCertificate") || "Zertifikat ansehen";
+            certHtml = `
+                <a href="${flight.co2_certificate_url}" target="_blank" class="mt-2 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-emerald-600/70 hover:text-emerald-500 transition-colors">
+                    <span class="material-symbols-outlined text-[14px]">verified</span> ${certText}
+                </a>
+            `;
+        }
+
+        co2ActionContainer.innerHTML = `
+            <div class="mt-2 bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-2xl flex items-center gap-4">
+                <div class="w-12 h-12 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-500 text-2xl shadow-inner shrink-0">🌱</div>
+                <div class="flex-1">
+                    <p class="text-sm font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">${titleText}</p>
+                    <p class="text-xs font-bold text-emerald-600/70 dark:text-emerald-400/80 mt-0.5">${descText}</p>
+                    ${certHtml}
+                </div>
+            </div>
+        `;
+        if (co2El) co2El.className = "font-display font-black text-xl text-emerald-500";
+    }
+    // =========================================================
 
     // 4. Airline Logo & Notizen
     const logoEl = document.getElementById('fd-airline-logo');
@@ -7322,5 +7383,56 @@ window.initPushNotifications = async function() {
 
     } catch (e) {
         console.error("🔔 Genereller Fehler beim Initialisieren der Push Notifications:", e);
+    }
+};
+
+// ==========================================
+// 🌱 CO2 CHECKOUT LOGIC
+// ==========================================
+window.startCo2Checkout = async function(flightId, co2Kg) {
+    if (!flightId || !co2Kg) return;
+
+    if (typeof isDemoMode !== 'undefined' && isDemoMode) {
+        showMessage("Demo", getTranslation("co2.demoDisabled") || "CO₂-Kompensation ist im Demo-Modus nicht verfügbar.", "info");
+        return;
+    }
+
+    const btn = document.querySelector('#fd-co2-action-container button');
+    const originalText = btn.innerHTML;
+    
+    btn.disabled = true;
+    btn.innerHTML = `<span class="material-symbols-outlined animate-spin text-[18px]">sync</span> ${getTranslation("co2.loadingCheckout") || "Lade Checkout..."}`;
+    btn.classList.add('opacity-80', 'cursor-not-allowed');
+
+    try {
+        const { data: { user }, error } = await supabaseClient.auth.getUser();
+        if (error || !user) throw new Error(getTranslation("co2.loginRequired") || "Du musst eingeloggt sein, um CO₂ auszugleichen.");
+
+        const response = await fetch(`${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/create-co2-checkout`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                flightId: flightId,
+                co2Kg: co2Kg,
+                userId: user.id,
+                userEmail: user.email
+            })
+        });
+
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || getTranslation("co2.paymentError") || "Fehler beim Erstellen der Zahlung.");
+        
+        if (result.url) {
+            window.location.href = result.url;
+        } else {
+            throw new Error(getTranslation("co2.noUrl") || "Keine URL von Stripe erhalten.");
+        }
+
+    } catch (err) {
+        console.error("CO2 Checkout Fehler:", err);
+        showMessage("Fehler", err.message, "error");
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        btn.classList.remove('opacity-80', 'cursor-not-allowed');
     }
 };

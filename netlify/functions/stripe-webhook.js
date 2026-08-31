@@ -19,43 +19,71 @@ exports.handler = async (event, context) => {
     return { statusCode: 400, body: `Webhook Error: ${err.message}` };
   }
 
-  // Log zur Diagnose
   console.log(`Empfange Event: ${stripeEvent.type}`);
 
   if (stripeEvent.type === 'checkout.session.completed' || stripeEvent.type === 'invoice.payment_succeeded') {
+    
+    // ==========================================
+    // 🌱 CO2-Kompensation (Einmalzahlung)
+    // ==========================================
+    if (stripeEvent.type === 'checkout.session.completed') {
+        const sessionObj = stripeEvent.data.object;
+        
+        // Wir prüfen unsere Metadaten aus dem neuen Checkout-Skript
+        if (sessionObj.metadata && sessionObj.metadata.type === 'co2_offset') {
+            const flightId = sessionObj.metadata.flight_id;
+            const co2Kg = sessionObj.metadata.co2_kg;
+            const userId = sessionObj.metadata.user_id;
+
+            console.log(`✅ CO2-Zahlung erhalten! Flug: ${flightId}, Menge: ${co2Kg}kg`);
+
+            // 🚀 ECHTES SUPABASE UPDATE FÜR DEN FLUG
+            const { error } = await supabaseAdmin
+                .from('flights')
+                .update({ co2_compensated: true })
+                .eq('flight_id', flightId)
+                .eq('user_id', userId);
+
+            if (error) {
+                console.error("Fehler beim Supabase Update (CO2):", error);
+                return { statusCode: 500, body: 'Database Error' };
+            }
+
+            console.log('✅ Supabase Update erfolgreich (CO2)!');
+            
+            // TODO für später: Wenn Patch.io freigeschaltet ist, 
+            // kommt hier der API-Call zum Kauf des Zertifikats hin!
+            
+            return { statusCode: 200, body: 'Received CO2 Offset' }; 
+        }
+    }
+
+    // ==========================================
+    // 🌟 BESTEHEND: PRO-Abo Logik
+    // ==========================================
     let session, subscriptionId, customerId, userId;
 
-    // Daten normalisieren je nach Event-Typ
     if (stripeEvent.type === 'checkout.session.completed') {
         session = stripeEvent.data.object;
         subscriptionId = session.subscription;
         customerId = session.customer;
-        userId = session.client_reference_id; // UserID kommt hier direkt mit
+        userId = session.client_reference_id; 
     } else {
-        // invoice.payment_succeeded
         const invoice = stripeEvent.data.object;
         subscriptionId = invoice.subscription;
         customerId = invoice.customer;
-        // Bei Invoice haben wir die UserID nicht direkt, wir suchen sie später über CustomerID oder Metadata
-        // Für den Moment verlassen wir uns auf den Checkout-Flow für das Update
     }
 
     if (subscriptionId && typeof subscriptionId === 'string') {
         try {
-            // Abo-Details holen
             const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-            
-            // ✅ FIX: Fallback, falls current_period_end fehlt
             let periodEnd = subscription.current_period_end;
             
             if (!periodEnd) {
                 console.warn("ACHTUNG: Kein current_period_end von Stripe erhalten! Nutze Fallback (30 Tage).");
-                // Fallback: Jetzt + 30 Tage (in Sekunden)
                 periodEnd = Math.floor(Date.now() / 1000) + (30 * 24 * 60 * 60);
             }
 
-            // Wenn wir im Invoice-Event sind, haben wir keine userId. 
-            // Wir versuchen sie aus den Subscription-Metadaten zu lesen (die wir im Checkout gesetzt haben)
             if (!userId && subscription.metadata && subscription.metadata.supabase_user_id) {
                 userId = subscription.metadata.supabase_user_id;
             }
@@ -67,17 +95,14 @@ exports.handler = async (event, context) => {
                   user_metadata: {
                     subscription_status: 'pro',
                     subscription_source: 'stripe',
-                    subscription_end: periodEnd, // Jetzt garantiert eine Zahl!
+                    subscription_end: periodEnd, 
                     stripe_customer_id: customerId,
                     stripe_subscription_id: subscriptionId
                   }
                 });
 
-                if (error) {
-                    console.error('Supabase Update Error:', error);
-                } else {
-                    console.log('Supabase Update erfolgreich!');
-                }
+                if (error) console.error('Supabase Update Error:', error);
+                else console.log('Supabase Update erfolgreich!');
             } else {
                 console.log('Keine UserID gefunden - Überspringe Supabase Update.');
             }

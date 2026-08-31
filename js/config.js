@@ -508,6 +508,22 @@ const achievements = {
     { milestone: 50000, emoji: "🏭", key: "50000" },
     { milestone: 100000, emoji: "🚨", key: "100000" },
   ],
+  co2_offset_flights: [
+    { milestone: 1, emoji: "🌱", key: "1" },
+    { milestone: 5, emoji: "🌿", key: "5" },
+    { milestone: 10, emoji: "🌳", key: "10" },
+    { milestone: 25, emoji: "🌍", key: "25" },
+    { milestone: 50, emoji: "🌬️", key: "50" },
+    { milestone: 100, emoji: "🦸‍♂️", key: "100" },
+  ],
+  co2_offset_kg: [
+    { milestone: 100, emoji: "⚖️", key: "100" },
+    { milestone: 500, emoji: "🔋", key: "500" },
+    { milestone: 1000, emoji: "🛡️", key: "1000" },
+    { milestone: 5000, emoji: "🌎", key: "5000" },
+    { milestone: 10000, emoji: "💎", key: "10000" },
+    { milestone: 50000, emoji: "👑", key: "50000" },
+  ],
 };
 
 // Premium Bilder
@@ -588,6 +604,10 @@ async function updateAchievements() {
   const uniqueAirports = new Set(allFlights.flatMap((f) => [f.departure, f.arrival]));
   const longestFlightDistance = allFlights.length > 0 ? Math.max(...allFlights.map((f) => f.distance || 0)) : 0;
   const totalCO2 = allFlights.reduce((sum, flight) => sum + (flight.co2_kg || 0), 0);
+  // 🌱 NEU: Kompensierte Flüge und CO2 berechnen
+  const compensatedFlights = allFlights.filter(f => f.co2_compensated);
+  const totalCompensatedFlights = compensatedFlights.length;
+  const totalCompensatedCO2 = compensatedFlights.reduce((sum, f) => sum + (f.co2_kg || 0), 0);
 
   // 2. Das Array DEFINIEREN
   const allAchievementTypes = [
@@ -597,6 +617,9 @@ async function updateAchievements() {
     { category: "uniqueAirports", value: uniqueAirports.size, unit: getTranslation("achievements.unitAirports") },
     { category: "longestFlight", value: longestFlightDistance, unit: getTranslation("achievements.unitKm") },
     { category: "co2_total", value: totalCO2, unit: getTranslation("achievements.unitCo2") },
+    // 🚀 NEU: Die neuen Kategorien in die Schleife aufnehmen!
+    { category: "co2_offset_flights", value: totalCompensatedFlights, unit: getTranslation("achievements.unitOffsetFlights") || "Flüge" },
+    { category: "co2_offset_kg", value: totalCompensatedCO2, unit: getTranslation("achievements.unitOffsetKg") || "kg CO₂" },
   ];
 
   // 3. Das HTML Grid für die Kacheln aufbauen (mit w-full, damit es sich ausbreitet)
