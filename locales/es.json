@@ -504,6 +504,10 @@
     }
   },
   "import": {
+    "currentSaved": "Actualmente guardados: {count} vuelos.",
+    "freeTierWarning": "Estás en el <b>Plan Gratuito</b> (máximo de 15 vuelos en total).",
+    "unlockPro": "🚀 ¡Desbloquear PRO para todos los vuelos!",
+    "maxShort": "Máx.",
     "cancel": "Cancelar",
     "confirmWarning": "¡ADVERTENCIA! Estás a punto de importar {count} vuelos. Esto reemplazará tus datos actuales en la nube.",
     "errorFileCorrupt": "Archivo corrupto: {error}",
@@ -684,6 +688,7 @@
     "searchFlights": "Buscar vuelos"
   },
   "premium": {
+    "portalError": "No se pudo abrir el portal.",
     "alreadyPremiumDesc": "Tienes una suscripción web activa. Por favor, gestiónala en el sitio web.",
     "alreadyPremiumTitle": "Ya eres Premium",
     "googlePlayConflictDesc2": "Te has suscrito a través de la aplicación Android (Google Play). Gestiona tu suscripción en la aplicación.",
@@ -784,7 +789,8 @@
     "yesButton": "¡Sí, me encantaría! ⭐"
   },
   "scanner": {
-  "title": "Escanear tarjeta de embarque",
+  "generalError": "Error del escáner.",
+    "title": "Escanear tarjeta de embarque",
   "subtitle": "Capturar código QR o de barras con la cámara",
   "onlyMobile": "El escáner solo está disponible en la aplicación móvil.",
   "noPermission": "Acceso a la cámara denegado.",
@@ -942,6 +948,7 @@
   },
 
   "leaderboard": {
+    "inviteError": "No se pudo procesar la invitación.",
     "top100": "Top 100 - Este Mes",
     "loading": "Cargando vuelos de todo el mundo... 🌍",
     "demoDisabled": "La clasificación está desactivada en el modo demo.",
@@ -1100,7 +1107,11 @@
   },
 
 "aircraftFacts": {
-    "model": "Modelo",
+  "noDataTitle": "Sin datos offline",
+    "noDataDesc": "No tenemos datos almacenados en la base de datos para este tipo de avión ({model}).",
+    "searchWiki": "🔍 Buscar en Wikipedia",
+    "moreWiki": "📚 Leer más en Wikipedia",  
+  "model": "Modelo",
     "manufacturer": "Fabricante",
     "engine": "Motor",
     "maxSpeed": "Velocidad Máx.",
@@ -1234,6 +1245,13 @@
     "successMsg": "Tu compensación de CO₂ fue exitosa. Los datos se actualizarán en breve.",
     "demoDisabled": "La compensación de CO₂ no está disponible en modo demo.",
     "viewCertificate": "Ver Certificado"
+  },
+
+  "historical": {
+    "title": "Detalles del Vuelo (Archivo)",
+    "departure": "Salida",
+    "arrival": "Llegada",
+    "noWeather": "🌦️ Los datos meteorológicos históricos no están disponibles para vuelos antiguos."
   }
 
 }

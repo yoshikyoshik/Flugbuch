@@ -504,6 +504,10 @@
     }
   },
   "import": {
+    "currentSaved": "Currently saved: {count} flights.",
+    "freeTierWarning": "You are on the <b>Free Plan</b> (maximum of 15 flights total).",
+    "unlockPro": "🚀 Unlock PRO for all flights!",
+    "maxShort": "Max.",
     "cancel": "Cancel",
     "confirmWarning": "WARNING! You are about to import {count} flights. This will replace your current cloud data.",
     "errorFileCorrupt": "File corrupt: {error}",
@@ -688,6 +692,7 @@
     "searchFlights": "Search flights"
   },
   "premium": {
+    "portalError": "Could not open portal.",
     "alreadyPremiumDesc": "You have an active web subscription. Please manage it on the website.",
     "alreadyPremiumTitle": "Already Premium",
     "googlePlayConflictDesc2": "You subscribed via the Android App (Google Play). Please manage your subscription in the app.",
@@ -788,7 +793,8 @@
     "yesButton": "Yes, I'd love to! ⭐"
   },
   "scanner": {
-  "title": "Scan Boarding Pass",
+  "generalError": "Scanner error.",
+    "title": "Scan Boarding Pass",
   "subtitle": "Capture QR or barcode with your camera",
   "onlyMobile": "The scanner is only available in the mobile app.",
   "noPermission": "Camera access denied.",
@@ -946,6 +952,7 @@
   },
 
   "leaderboard": {
+    "inviteError": "Invitation could not be processed.",
     "top100": "Top 100 - This Month",
     "loading": "Loading flights from around the world... 🌍",
     "demoDisabled": "The leaderboard is disabled in demo mode.",
@@ -1104,7 +1111,11 @@
   },
 
 "aircraftFacts": {
-    "model": "Model",
+  "noDataTitle": "No offline data",
+    "noDataDesc": "We don't have any facts stored in the database for this aircraft type ({model}).",
+    "searchWiki": "🔍 Search on Wikipedia",
+    "moreWiki": "📚 Read more on Wikipedia",  
+  "model": "Model",
     "manufacturer": "Manufacturer",
     "engine": "Engine",
     "maxSpeed": "Max. Speed",
@@ -1238,6 +1249,13 @@
     "successMsg": "Your CO₂ compensation was successful. Data will be updated shortly.",
     "demoDisabled": "CO₂ compensation is not available in demo mode.",
     "viewCertificate": "View Certificate"
+  },
+
+  "historical": {
+    "title": "Flight Details (Archive)",
+    "departure": "Departure",
+    "arrival": "Arrival",
+    "noWeather": "🌦️ Historical weather data is not available for old flights."
   }
 
 }

@@ -504,6 +504,10 @@
     }
   },
   "import": {
+    "currentSaved": "当前已保存：{count} 个航班。",
+    "freeTierWarning": "您当前使用的是<b>免费计划</b>（总共最多 15 个航班）。",
+    "unlockPro": "🚀 解锁 PRO 以记录所有航班！",
+    "maxShort": "最大",
     "cancel": "取消",
     "confirmWarning": "警告！您即将导入 {count} 个航班。这将替换您当前的云数据。",
     "errorFileCorrupt": "文件损坏：{error}",
@@ -684,6 +688,7 @@
     "searchFlights": "搜索航班"
   },
   "premium": {
+    "portalError": "无法打开门户。",
     "alreadyPremiumDesc": "您有一个有效的网络订阅。请在网站上进行管理。",
     "alreadyPremiumTitle": "已经是Premium",
     "googlePlayConflictDesc2": "您通过Android应用 (Google Play) 订阅了该服务。请在应用内管理您的订阅。",
@@ -784,7 +789,8 @@
     "yesButton": "是的，我很乐意！⭐"
   },
   "scanner": {
-  "title": "扫描登机牌",
+  "generalError": "扫描仪错误。",
+    "title": "扫描登机牌",
   "subtitle": "使用相机捕捉二维码或条形码",
   "onlyMobile": "扫描仪仅在移动应用程序中可用。",
   "noPermission": "相机访问被拒绝。",
@@ -942,6 +948,7 @@
   },
 
   "leaderboard": {
+    "inviteError": "无法处理邀请。",
     "top100": "前 100 名 - 本月",
     "loading": "正在加载来自世界各地的航班数据... 🌍",
     "demoDisabled": "在演示模式下排行榜已禁用。",
@@ -1100,7 +1107,11 @@
   },
 
 "aircraftFacts": {
-    "model": "机型",
+  "noDataTitle": "无离线数据",
+    "noDataDesc": "我们的数据库中还没有关于此机型 ({model}) 的信息。",
+    "searchWiki": "🔍 在维基百科上搜索",
+    "moreWiki": "📚 在维基百科上阅读更多",  
+  "model": "机型",
     "manufacturer": "制造商",
     "engine": "引擎类型",
     "maxSpeed": "最大速度",
@@ -1234,6 +1245,13 @@
     "successMsg": "您的 CO₂ 补偿成功。数据即将更新。",
     "demoDisabled": "演示模式下无法进行 CO₂ 补偿。",
     "viewCertificate": "查看证书"
+  },
+
+  "historical": {
+    "title": "航班详情 (存档)",
+    "departure": "出发",
+    "arrival": "到达",
+    "noWeather": "🌦️ 历史天气数据不可用于旧航班。"
   }
 
 }
