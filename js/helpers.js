@@ -376,6 +376,19 @@ async function setLanguage(lang) {
     currentLanguage = lang;
     localStorage.setItem("preferredLanguage", lang);
 
+    // ================================================================
+    // 🚀 NEU: Sprache an Supabase melden, damit der Push-Server sie kennt!
+    // ================================================================
+    if (typeof supabaseClient !== 'undefined') {
+        supabaseClient.auth.getUser().then(({ data: { user } }) => {
+            if (user) {
+                // Speichert das Kürzel (de, en, es...) im Profil des Nutzers
+                supabaseClient.from('profiles').update({ language: lang }).eq('id', user.id).then();
+            }
+        });
+    }
+    // ================================================================
+
     // 1. Alle Texte übersetzen
     translatePage();
 
