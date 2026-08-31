@@ -24,7 +24,7 @@ export default async function handler(request, context) {
 
         // 3. Einmalige Stripe-Checkout-Session generieren
         const session = await stripe.checkout.sessions.create({
-            payment_method_types: ['card', 'paypal'], // Stripe erlaubt hier viele Optionen
+            payment_method_types: ['card'], // Stripe erlaubt hier viele Optionen
             customer_email: userEmail,
             mode: 'payment', // WICHTIG: Einmalzahlung, kein Abo!
             line_items: [{
