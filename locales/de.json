@@ -505,6 +505,10 @@
     }
   },
   "import": {
+    "currentSaved": "Aktuell gespeichert: {count} Flüge.",
+    "freeTierWarning": "Du bist im <b>Free-Tarif</b> (Maximal 15 Flüge gesamt).",
+    "unlockPro": "🚀 PRO freischalten für alle Flüge!",
+    "maxShort": "Max.",
     "cancel": "Abbrechen",
     "confirmWarning": "WARNUNG! Du bist dabei, {count} Flüge zu importieren. Dies wird deine aktuellen Cloud-Daten ersetzen.",
     "errorFileCorrupt": "Datei fehlerhaft: {error}",
@@ -689,6 +693,7 @@
     "searchFlights": "Flüge durchsuchen..."
   },
   "premium": {
+    "portalError": "Konnte Portal nicht öffnen.",
     "alreadyPremiumDesc": "Du hast ein aktives Web-Abo. Bitte verwalte es auf der Webseite.",
     "alreadyPremiumTitle": "Bereits Premium",
     "googlePlayConflictDesc2": "Sie haben sich über die Android-App (Google Play) angemeldet. Bitte verwalten Sie Ihr Abonnement in der App.",
@@ -789,6 +794,7 @@
     "yesButton": "Ja, gerne! ⭐"
   },
   "scanner": {
+  "generalError": "Scanner-Fehler.",
   "title": "Bordkarte scannen",
   "subtitle": "QR- oder Barcode mit der Kamera erfassen",
   "onlyMobile": "Der Scanner ist nur in der mobilen App verfügbar.",
@@ -947,6 +953,7 @@
   },
 
   "leaderboard": {
+    "inviteError": "Einladung konnte nicht verarbeitet werden.",
     "top100": "Top 100 - Diesen Monat",
     "loading": "Lade Flugdaten aus aller Welt... 🌍",
     "demoDisabled": "Im Demo-Modus ist das Leaderboard deaktiviert.",
@@ -1105,6 +1112,10 @@
   },
 
 "aircraftFacts": {
+    "noDataTitle": "Keine Offline-Daten",
+    "noDataDesc": "Für diesen Flugzeugtyp ({model}) haben wir noch keine Fakten in der Datenbank hinterlegt.",
+    "searchWiki": "🔍 Auf Wikipedia suchen",
+    "moreWiki": "📚 Mehr auf Wikipedia lesen",  
     "model": "Modell",
     "manufacturer": "Hersteller",
     "engine": "Triebwerk",
@@ -1239,6 +1250,13 @@
     "successMsg": "Deine CO₂-Kompensation war erfolgreich. Die Daten werden in Kürze aktualisiert.",
     "demoDisabled": "CO₂-Kompensation ist im Demo-Modus nicht verfügbar.",
     "viewCertificate": "Zertifikat ansehen"
+  },
+
+  "historical": {
+    "title": "Flug-Details (Archiv)",
+    "departure": "Abflug",
+    "arrival": "Ankunft",
+    "noWeather": "🌦️ Historische Wetterdaten sind für alte Flüge nicht verfügbar."
   }
 
 }

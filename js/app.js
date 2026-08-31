@@ -2361,10 +2361,10 @@ function showImportDecisionModal(incomingFlights, importedTrips = [], currentDbC
         <div class="mt-4 p-4 bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 dark:border-yellow-800 dark:from-yellow-900/30 dark:to-orange-900/30 rounded-lg">
             <p class="text-sm text-yellow-800 dark:text-yellow-300 font-medium flex items-start gap-2">
                 <span class="text-lg">⚠️</span> 
-                <span>Du bist im <b>Free-Tarif</b> (Maximal 15 Flüge gesamt).</span>
+                <span>${getTranslation("import.freeTierWarning") || "Du bist im <b>Free-Tarif</b> (Maximal 15 Flüge gesamt)."}</span>
             </p>
             <button onclick="closeInfoModal(); openPremiumModal()" class="mt-3 w-full py-2 bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-extrabold rounded-md shadow-sm transition transform hover:scale-[1.02]">
-                🚀 PRO freischalten für alle Flüge!
+                🚀 ${getTranslation("import.unlockPro") || "PRO freischalten für alle Flüge!"}
             </button>
         </div>
       `;
@@ -2387,7 +2387,7 @@ function showImportDecisionModal(incomingFlights, importedTrips = [], currentDbC
     <div class="space-y-4">
       <p class="text-gray-700 dark:text-gray-300">
         ${bodyText}
-        <br><span class="text-sm text-gray-500">Aktuell gespeichert: ${currentDbCount} Flüge.</span>
+        <br><span class="text-sm text-gray-500">${(getTranslation("import.currentSaved") || "Aktuell gespeichert: {count} Flüge.").replace("{count}", currentDbCount)}</span>
       </p>
 
       ${upsellHtml}
@@ -3921,7 +3921,7 @@ window.startBoardingPassScanner = async function() {
     } catch (err) {
         cleanupScannerUI();
         console.error("Scanner Error:", err);
-        showMessage(getTranslation("toast.errorTitle") || "Fehler", "Scanner-Fehler.", "error");
+        showMessage(getTranslation("toast.errorTitle") || "Fehler", getTranslation("scanner.generalError") || "Scanner-Fehler.", "error");
     }
 };
 
@@ -4183,15 +4183,15 @@ window.viewFlightDetails = async function(id, isSwitching = false, customScope =
 
         historicalDataContainer.innerHTML = `
             <div class="bg-surface-container-low dark:bg-slate-900/50 p-4 rounded-xl border border-outline-variant/10 dark:border-slate-700/50 mb-6">
-                <h4 class="text-xs font-bold text-on-surface/50 dark:text-slate-500 uppercase tracking-wider mb-3">Flug-Details (Archiv)</h4>
+                <h4 class="text-xs font-bold text-on-surface/50 dark:text-slate-500 uppercase tracking-wider mb-3">${getTranslation("historical.title") || "Flug-Details (Archiv)"}</h4>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <p class="text-[10px] text-on-surface/40 dark:text-slate-500 uppercase">Abflug (${flight.departure})</p>
+                        <p class="text-[10px] text-on-surface/40 dark:text-slate-500 uppercase">${getTranslation("historical.departure") || "Abflug"} (${flight.departure})</p>
                         <p class="text-sm font-bold text-on-surface dark:text-slate-200">🕒 ${depTime}</p>
                         <p class="text-xs text-on-surface/70 dark:text-slate-400">🚪 ${depTerm} | ${depGate}</p>
                     </div>
                     <div>
-                        <p class="text-[10px] text-on-surface/40 dark:text-slate-500 uppercase">Ankunft (${flight.arrival})</p>
+                        <p class="text-[10px] text-on-surface/40 dark:text-slate-500 uppercase">${getTranslation("historical.arrival") || "Ankunft"} (${flight.arrival})</p>
                         <p class="text-sm font-bold text-on-surface dark:text-slate-200">🕒 ${arrTime}</p>
                         <p class="text-xs text-on-surface/70 dark:text-slate-400">🚪 ${arrTerm} | ${arrGate}</p>
                     </div>
@@ -4238,7 +4238,7 @@ window.viewFlightDetails = async function(id, isSwitching = false, customScope =
              weatherContainer.className = 'w-full mb-6';
              weatherContainer.innerHTML = `
                 <div class="bg-surface-container-low dark:bg-slate-900/30 p-3 rounded-xl border border-outline-variant/5 dark:border-slate-700/30 text-center">
-                    <p class="text-xs text-on-surface/50 dark:text-slate-500">🌦️ Historische Wetterdaten sind für alte Flüge nicht verfügbar.</p>
+                    <p class="text-xs text-on-surface/50 dark:text-slate-500">${getTranslation("historical.noWeather") || "🌦️ Historische Wetterdaten sind für alte Flüge nicht verfügbar."}</p>
                 </div>
              `;
              weatherContainer.style.display = '';
@@ -5183,7 +5183,7 @@ window.handleFriendInvite = async function(friendId, myId) {
         }
     } catch (err) {
         console.error("Fehler bei Freundschaftsanfrage:", err);
-        showMessage(getTranslation("toast.errorTitle") || "Fehler", "Einladung konnte nicht verarbeitet werden.", "error");
+        showMessage(getTranslation("toast.errorTitle") || "Fehler", getTranslation("leaderboard.inviteError") || "Einladung konnte nicht verarbeitet werden.", "error");
     }
 };
 
@@ -5477,7 +5477,7 @@ window.shareWrappedImage = async function() {
     } catch (e) {
         console.error("Wrapped Screenshot Fehler:", e);
         if (typeof showMessage === 'function') {
-            showMessage(getTranslation("toast.errorTitle") || "Fehler", "Konnte Bild nicht erstellen.", "error");
+            showMessage(getTranslation("toast.errorTitle") || "Fehler", getTranslation("share.imageError") || "Konnte Bild nicht erstellen.", "error");
         }
     }
 };
@@ -7354,9 +7354,9 @@ window.initPushNotifications = async function() {
             
             // OPTIONAL: Zeigt den Token (bzw. die ersten Zeichen davon) als Pop-up auf dem Handy an!
             // Wenn es dich später nervt, kannst du diese Zeile einfach löschen oder auskommentieren.
-            if (typeof showMessage === 'function') {
-                showMessage("Push Token", "Erfolgreich generiert: " + token.value.substring(0, 15) + "...", "success");
-            }
+            //if (typeof showMessage === 'function') {
+            //    showMessage("Push Token", "Erfolgreich generiert: " + token.value.substring(0, 15) + "...", "success");
+            //}
 
             // 🚀 DIREKT IN SUPABASE SPEICHERN
             try {

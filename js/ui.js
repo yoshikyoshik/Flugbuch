@@ -326,7 +326,7 @@ async function showAircraftDetails(modelCode) {
 
                 <div class="mt-6 pt-4 border-t border-outline-variant/20 dark:border-slate-700 text-center">
                     <a href="${aircraft.wiki}" target="_blank" class="inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-primary hover:bg-primary/90 text-white rounded-full text-sm font-bold transition shadow-md w-full sm:w-auto">
-                        📚 Mehr auf Wikipedia lesen
+                        ${getTranslation("aircraftFacts.moreWiki") || "📚 Mehr auf Wikipedia lesen"}
                     </a>
                 </div>
             </div>
@@ -336,11 +336,11 @@ async function showAircraftDetails(modelCode) {
         contentContainer.innerHTML = `
             <div class="text-center py-8">
                 <div class="text-5xl mb-4 opacity-50">🤷‍♂️</div>
-                <h3 class="text-lg font-bold text-on-surface dark:text-white mb-2">Keine Offline-Daten</h3>
-                <p class="text-sm font-medium text-on-surface/60 dark:text-slate-400 mb-8 px-4">Für diesen Flugzeugtyp (${mappedModel}) haben wir noch keine Fakten in der Datenbank hinterlegt.</p>
+                <h3 class="text-lg font-bold text-on-surface dark:text-white mb-2">${getTranslation("aircraftFacts.noDataTitle") || "Keine Offline-Daten"}</h3>
+                <p class="text-sm font-medium text-on-surface/60 dark:text-slate-400 mb-8 px-4">${(getTranslation("aircraftFacts.noDataDesc") || "Für diesen Flugzeugtyp ({model}) haben wir noch keine Fakten in der Datenbank hinterlegt.").replace("{model}", mappedModel)}</p>
                 
                 <a href="https://de.wikipedia.org/w/index.php?search=${searchQuery}" target="_blank" class="inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-primary hover:bg-primary/90 text-white rounded-full text-sm font-bold transition shadow-md w-full sm:w-auto">
-                    🔍 Auf Wikipedia suchen
+                    ${getTranslation("aircraftFacts.searchWiki") || "🔍 Auf Wikipedia suchen"}
                 </a>
             </div>
         `;

@@ -311,7 +311,7 @@ async function manageSubscription() {
         const customerId = user?.user_metadata?.stripe_customer_id;
 
         if (!customerId) {
-            showMessage("Info", getTranslation("messages.noStripeAccount") || "Aktives Play Store-Abo-Konto gefunden.", "info");
+            showMessage(getTranslation("toast.infoTitle") || "Info", getTranslation("messages.noStripeAccount") || "Aktives Play Store-Abo-Konto gefunden.", "info");
             return;
         }
 
@@ -356,7 +356,7 @@ async function manageSubscription() {
 
     } catch (e) {
         console.error(e);
-        showMessage("Fehler", "Konnte Portal nicht öffnen.", "error");
+        showMessage(getTranslation("toast.errorTitle") || "Fehler", getTranslation("premium.portalError") || "Konnte Portal nicht öffnen.", "error");
     }
 }
 
