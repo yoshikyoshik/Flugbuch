@@ -4940,6 +4940,18 @@ window.loadUserProfile = async function(user) {
             
             const avatarInput = document.getElementById('profile-avatar');
             if (avatarInput && data.avatar_url) avatarInput.value = data.avatar_url;
+
+            // ================================================================
+            // 🚀 NEU: Sprache vom Server mit dem lokalen Gerät synchronisieren
+            // ================================================================
+            // currentLanguage (z.B. 'en') ist die aktuelle lokale Sprache der App.
+            // Wenn in der DB eine andere Sprache (z.B. 'de') steht, überschreiben wir die lokale!
+            if (data.language && data.language !== currentLanguage) {
+                console.log(`🌍 Cloud-Sync: Stelle Sprache auf ${data.language} um.`);
+                setLanguage(data.language);
+            }
+            // ================================================================
+
         }
     } catch (err) {
         console.error("Fehler beim Laden des Profils:", err);
