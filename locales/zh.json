@@ -234,7 +234,27 @@
     "unitCo2": "公斤 CO₂",
     "unitFlights": "航班",
     "unitHours": "小时",
-    "unitKm": "公里"
+    "unitKm": "公里",
+
+      "co2_offset_flights": {
+      "1": { "title": "第一颗种子", "description": "您的第一次补偿航班。基础已奠定。" },
+      "5": { "title": "环保飞行者", "description": "5 次气候中立航班。可持续性成为一种习惯。" },
+      "10": { "title": "气候英雄", "description": "10 次补偿航班。云端之上的真正榜样。" },
+      "25": { "title": "地球守护者", "description": "25 次绿色航班！您承担了重大的责任。" },
+      "50": { "title": "大气拯救者", "description": "50 次补偿航班。巨大的贡献。" },
+      "100": { "title": "零排放传奇", "description": "100 次航班已抵消。绝对的传奇地位。" }
+    },
+    "co2_offset_kg": {
+      "100": { "title": "有意识的飞行者", "description": "已抵消 100 公斤 CO₂。" },
+      "500": { "title": "气候保护者", "description": "已中和 500 公斤 CO₂。" },
+      "1000": { "title": "1 吨里程碑", "description": "补偿了整整一吨 CO₂ (1,000 公斤)！" },
+      "5000": { "title": "5 吨护盾", "description": "已抵消 5,000 公斤 CO₂。" },
+      "10000": { "title": "气候巨人", "description": "不可思议地抵消了 10 吨 CO₂。" },
+      "50000": { "title": "星球拯救者", "description": "中和了 50 吨 CO₂。谢谢！" }
+    },
+    "unitOffsetFlights": "航班",
+    "unitOffsetKg": "公斤 CO₂"
+
   },
   "anim": {
     "finished": "旅行历史结束。显示了{count}个航班。",
@@ -1214,25 +1234,6 @@
     "successMsg": "您的 CO₂ 补偿成功。数据即将更新。",
     "demoDisabled": "演示模式下无法进行 CO₂ 补偿。",
     "viewCertificate": "查看证书"
-  },
-
-  "co2_offset_flights": {
-      "1": { "title": "第一颗种子", "description": "您的第一次补偿航班。基础已奠定。" },
-      "5": { "title": "环保飞行者", "description": "5 次气候中立航班。可持续性成为一种习惯。" },
-      "10": { "title": "气候英雄", "description": "10 次补偿航班。云端之上的真正榜样。" },
-      "25": { "title": "地球守护者", "description": "25 次绿色航班！您承担了重大的责任。" },
-      "50": { "title": "大气拯救者", "description": "50 次补偿航班。巨大的贡献。" },
-      "100": { "title": "零排放传奇", "description": "100 次航班已抵消。绝对的传奇地位。" }
-    },
-    "co2_offset_kg": {
-      "100": { "title": "有意识的飞行者", "description": "已抵消 100 公斤 CO₂。" },
-      "500": { "title": "气候保护者", "description": "已中和 500 公斤 CO₂。" },
-      "1000": { "title": "1 吨里程碑", "description": "补偿了整整一吨 CO₂ (1,000 公斤)！" },
-      "5000": { "title": "5 吨护盾", "description": "已抵消 5,000 公斤 CO₂。" },
-      "10000": { "title": "气候巨人", "description": "不可思议地抵消了 10 吨 CO₂。" },
-      "50000": { "title": "星球拯救者", "description": "中和了 50 吨 CO₂。谢谢！" }
-    },
-    "unitOffsetFlights": "航班",
-    "unitOffsetKg": "公斤 CO₂"
+  }
 
 }

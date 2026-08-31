@@ -234,7 +234,27 @@
     "unitCo2": "kg CO₂",
     "unitFlights": "Vuelos",
     "unitHours": "Hrs.",
-    "unitKm": "km"
+    "unitKm": "km",
+
+      "co2_offset_flights": {
+      "1": { "title": "Primera Semilla", "description": "Tu primer vuelo compensado. Las bases están sentadas." },
+      "5": { "title": "Eco Flyer", "description": "5 vuelos climáticamente neutros. La sostenibilidad se convierte en un hábito." },
+      "10": { "title": "Héroe del Clima", "description": "10 vuelos compensados. Un verdadero modelo a seguir sobre las nubes." },
+      "25": { "title": "Guardián de la Tierra", "description": "¡25 vuelos verdes! Estás asumiendo una gran responsabilidad." },
+      "50": { "title": "Salvador de la Atmósfera", "description": "50 vuelos compensados. Una contribución monumental." },
+      "100": { "title": "Leyenda Cero Emisiones", "description": "100 vuelos compensados. Estado legendario absoluto." }
+    },
+    "co2_offset_kg": {
+      "100": { "title": "Viajero Consciente", "description": "100 kg de CO₂ compensados." },
+      "500": { "title": "Protector del Clima", "description": "500 kg de CO₂ neutralizados." },
+      "1000": { "title": "Hito de 1 Tonelada", "description": "¡Toda una tonelada de CO₂ (1.000 kg) compensada!" },
+      "5000": { "title": "Escudo de 5 Toneladas", "description": "5.000 kg de CO₂ compensados." },
+      "10000": { "title": "Titán del Clima", "description": "Unos increíbles 10 toneladas de CO₂ compensados." },
+      "50000": { "title": "Salvador del Planeta", "description": "50 toneladas de CO₂ neutralizadas. ¡Gracias!" }
+    },
+    "unitOffsetFlights": "Vuelos",
+    "unitOffsetKg": "kg CO₂"
+
   },
   "anim": {
     "finished": "Crónica de viaje finalizada. {count} vuelos mostrados.",
@@ -1214,25 +1234,6 @@
     "successMsg": "Tu compensación de CO₂ fue exitosa. Los datos se actualizarán en breve.",
     "demoDisabled": "La compensación de CO₂ no está disponible en modo demo.",
     "viewCertificate": "Ver Certificado"
-  },
-
-  "co2_offset_flights": {
-      "1": { "title": "Primera Semilla", "description": "Tu primer vuelo compensado. Las bases están sentadas." },
-      "5": { "title": "Eco Flyer", "description": "5 vuelos climáticamente neutros. La sostenibilidad se convierte en un hábito." },
-      "10": { "title": "Héroe del Clima", "description": "10 vuelos compensados. Un verdadero modelo a seguir sobre las nubes." },
-      "25": { "title": "Guardián de la Tierra", "description": "¡25 vuelos verdes! Estás asumiendo una gran responsabilidad." },
-      "50": { "title": "Salvador de la Atmósfera", "description": "50 vuelos compensados. Una contribución monumental." },
-      "100": { "title": "Leyenda Cero Emisiones", "description": "100 vuelos compensados. Estado legendario absoluto." }
-    },
-    "co2_offset_kg": {
-      "100": { "title": "Viajero Consciente", "description": "100 kg de CO₂ compensados." },
-      "500": { "title": "Protector del Clima", "description": "500 kg de CO₂ neutralizados." },
-      "1000": { "title": "Hito de 1 Tonelada", "description": "¡Toda una tonelada de CO₂ (1.000 kg) compensada!" },
-      "5000": { "title": "Escudo de 5 Toneladas", "description": "5.000 kg de CO₂ compensados." },
-      "10000": { "title": "Titán del Clima", "description": "Unos increíbles 10 toneladas de CO₂ compensados." },
-      "50000": { "title": "Salvador del Planeta", "description": "50 toneladas de CO₂ neutralizadas. ¡Gracias!" }
-    },
-    "unitOffsetFlights": "Vuelos",
-    "unitOffsetKg": "kg CO₂"
+  }
 
 }

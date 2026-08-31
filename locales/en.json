@@ -234,7 +234,27 @@
     "unitCo2": "kg CO₂",
     "unitFlights": "Flights",
     "unitHours": "Hrs.",
-    "unitKm": "km"
+    "unitKm": "km",
+
+      "co2_offset_flights": {
+      "1": { "title": "First Seed", "description": "Your first compensated flight. The foundation is laid." },
+      "5": { "title": "Eco Flyer", "description": "5 climate-neutral flights. Sustainability becomes a habit." },
+      "10": { "title": "Climate Hero", "description": "10 compensated flights. A true role model above the clouds." },
+      "25": { "title": "Earth Guardian", "description": "25 green flights! You are taking serious responsibility." },
+      "50": { "title": "Atmosphere Savior", "description": "50 compensated flights. A monumental contribution." },
+      "100": { "title": "Zero Emission Legend", "description": "100 flights offset. Absolute legendary status." }
+    },
+    "co2_offset_kg": {
+      "100": { "title": "Conscious Flyer", "description": "100 kg of CO₂ offset." },
+      "500": { "title": "Climate Protector", "description": "500 kg of CO₂ neutralized." },
+      "1000": { "title": "1-Ton Milestone", "description": "A whole ton of CO₂ (1,000 kg) compensated!" },
+      "5000": { "title": "5-Ton Shield", "description": "5,000 kg of CO₂ made good." },
+      "10000": { "title": "Climate Titan", "description": "An incredible 10 tons of CO₂ offset." },
+      "50000": { "title": "Savior of the Planet", "description": "50 tons of CO₂ neutralized. Thank you!" }
+    },
+    "unitOffsetFlights": "Flights",
+    "unitOffsetKg": "kg CO₂"
+
   },
   "anim": {
     "finished": "Travel chronicle finished. {count} flights displayed.",
@@ -1218,25 +1238,6 @@
     "successMsg": "Your CO₂ compensation was successful. Data will be updated shortly.",
     "demoDisabled": "CO₂ compensation is not available in demo mode.",
     "viewCertificate": "View Certificate"
-  },
-
-  "co2_offset_flights": {
-      "1": { "title": "First Seed", "description": "Your first compensated flight. The foundation is laid." },
-      "5": { "title": "Eco Flyer", "description": "5 climate-neutral flights. Sustainability becomes a habit." },
-      "10": { "title": "Climate Hero", "description": "10 compensated flights. A true role model above the clouds." },
-      "25": { "title": "Earth Guardian", "description": "25 green flights! You are taking serious responsibility." },
-      "50": { "title": "Atmosphere Savior", "description": "50 compensated flights. A monumental contribution." },
-      "100": { "title": "Zero Emission Legend", "description": "100 flights offset. Absolute legendary status." }
-    },
-    "co2_offset_kg": {
-      "100": { "title": "Conscious Flyer", "description": "100 kg of CO₂ offset." },
-      "500": { "title": "Climate Protector", "description": "500 kg of CO₂ neutralized." },
-      "1000": { "title": "1-Ton Milestone", "description": "A whole ton of CO₂ (1,000 kg) compensated!" },
-      "5000": { "title": "5-Ton Shield", "description": "5,000 kg of CO₂ made good." },
-      "10000": { "title": "Climate Titan", "description": "An incredible 10 tons of CO₂ offset." },
-      "50000": { "title": "Savior of the Planet", "description": "50 tons of CO₂ neutralized. Thank you!" }
-    },
-    "unitOffsetFlights": "Flights",
-    "unitOffsetKg": "kg CO₂"
+  }
 
 }

@@ -4052,13 +4052,15 @@ window.viewFlightDetails = async function(id, isSwitching = false, customScope =
 
     // =========================================================
     // 🌱 CO2 KOMPENSATION: Button & Badge Logik
-    // ==========================================
+    // =========================================================
     let co2ActionContainer = document.getElementById('fd-co2-action-container');
     
+    // Falls der Container noch nicht da ist, erstellen wir ihn unter den Stats
     if (!co2ActionContainer) {
         co2ActionContainer = document.createElement('div');
         co2ActionContainer.id = 'fd-co2-action-container';
         co2ActionContainer.className = 'w-full mb-8 px-2';
+        
         const statsGrid = document.getElementById('fd-co2').closest('.flex.justify-between');
         if (statsGrid && statsGrid.parentNode) {
             statsGrid.parentNode.insertBefore(co2ActionContainer, statsGrid.nextSibling);
@@ -4067,11 +4069,11 @@ window.viewFlightDetails = async function(id, isSwitching = false, customScope =
 
     const co2El = document.getElementById('fd-co2');
 
+    // Prüfen, ob der Flug bereits kompensiert wurde
     if (flight.co2_compensated) {
         const titleText = getTranslation("co2.neutral") || "Klimaneutral";
         const descText = (getTranslation("co2.compensated") || "{kg} kg CO₂ wurden kompensiert.").replace("{kg}", (flight.co2_kg || 0).toLocaleString("de-DE"));
         
-        // 🚀 NEU: Den Zertifikats-Link einbauen, falls vorhanden
         let certHtml = "";
         if (flight.co2_certificate_url) {
             const certText = getTranslation("co2.viewCertificate") || "Zertifikat ansehen";
@@ -4093,6 +4095,20 @@ window.viewFlightDetails = async function(id, isSwitching = false, customScope =
             </div>
         `;
         if (co2El) co2El.className = "font-display font-black text-xl text-emerald-500";
+        
+    } else {
+        // 🚀 HIER IST DER FEHLENDE BUTTON!
+        let price = (flight.co2_kg || 0) * 0.03;
+        if (price < 1.00) price = 1.00;
+        const priceStr = price.toFixed(2).replace('.', ',');
+        const btnText = (getTranslation("co2.compensateBtn") || "CO₂ ausgleichen (ca. {price})").replace("{price}", priceStr + " €");
+
+        co2ActionContainer.innerHTML = `
+            <button onclick="startCo2Checkout('${flight.id || flight.flight_id}', ${flight.co2_kg})" class="w-full mt-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-bold py-4 px-4 rounded-2xl shadow-lg transition-transform transform hover:-translate-y-0.5 flex justify-center items-center gap-2 border border-emerald-400/50">
+                🌱 <span>${btnText}</span>
+            </button>
+        `;
+        if (co2El) co2El.className = "font-display font-black text-xl text-orange-500";
     }
     // =========================================================
 

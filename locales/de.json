@@ -234,7 +234,27 @@
     "unitCo2": "kg CO₂",
     "unitFlights": "Flüge",
     "unitHours": "Std.",
-    "unitKm": "km"
+    "unitKm": "km",
+
+  "co2_offset_flights": {
+      "1": { "title": "First Seed", "description": "Dein erster kompensierter Flug. Der Grundstein ist gelegt." },
+      "5": { "title": "Eco Flyer", "description": "5 klimaneutrale Flüge. Nachhaltigkeit wird zur Gewohnheit." },
+      "10": { "title": "Climate Hero", "description": "10 Flüge kompensiert. Ein echtes Vorbild über den Wolken." },
+      "25": { "title": "Earth Guardian", "description": "25 grüne Flüge! Du übernimmst ernsthaft Verantwortung." },
+      "50": { "title": "Atmosphere Savior", "description": "50 kompensierte Flüge. Ein monumentaler Beitrag." },
+      "100": { "title": "Zero Emission Legend", "description": "100 Flüge ausgeglichen. Absolute Legendenklasse." }
+    },
+    "co2_offset_kg": {
+      "100": { "title": "Bewusster Flieger", "description": "100 kg CO₂ ausgeglichen." },
+      "500": { "title": "Klimaschützer", "description": "500 kg CO₂ neutralisiert." },
+      "1000": { "title": "1-Tonnen-Meilenstein", "description": "Eine ganze Tonne CO₂ (1.000 kg) kompensiert!" },
+      "5000": { "title": "5-Tonnen-Schild", "description": "5.000 kg CO₂ wieder gutgemacht." },
+      "10000": { "title": "Klima-Titan", "description": "Unglaubliche 10 Tonnen CO₂ ausgeglichen." },
+      "50000": { "title": "Retter des Planeten", "description": "50 Tonnen CO₂ neutralisiert. Danke!" }
+    },
+    "unitOffsetFlights": "Flüge",
+    "unitOffsetKg": "kg CO₂"
+
   },
   "anim": {
     "finished": "Reisechronik beendet. {count} Flüge angezeigt.",
@@ -1219,25 +1239,6 @@
     "successMsg": "Deine CO₂-Kompensation war erfolgreich. Die Daten werden in Kürze aktualisiert.",
     "demoDisabled": "CO₂-Kompensation ist im Demo-Modus nicht verfügbar.",
     "viewCertificate": "Zertifikat ansehen"
-  },
-
-  "co2_offset_flights": {
-      "1": { "title": "First Seed", "description": "Dein erster kompensierter Flug. Der Grundstein ist gelegt." },
-      "5": { "title": "Eco Flyer", "description": "5 klimaneutrale Flüge. Nachhaltigkeit wird zur Gewohnheit." },
-      "10": { "title": "Climate Hero", "description": "10 Flüge kompensiert. Ein echtes Vorbild über den Wolken." },
-      "25": { "title": "Earth Guardian", "description": "25 grüne Flüge! Du übernimmst ernsthaft Verantwortung." },
-      "50": { "title": "Atmosphere Savior", "description": "50 kompensierte Flüge. Ein monumentaler Beitrag." },
-      "100": { "title": "Zero Emission Legend", "description": "100 Flüge ausgeglichen. Absolute Legendenklasse." }
-    },
-    "co2_offset_kg": {
-      "100": { "title": "Bewusster Flieger", "description": "100 kg CO₂ ausgeglichen." },
-      "500": { "title": "Klimaschützer", "description": "500 kg CO₂ neutralisiert." },
-      "1000": { "title": "1-Tonnen-Meilenstein", "description": "Eine ganze Tonne CO₂ (1.000 kg) kompensiert!" },
-      "5000": { "title": "5-Tonnen-Schild", "description": "5.000 kg CO₂ wieder gutgemacht." },
-      "10000": { "title": "Klima-Titan", "description": "Unglaubliche 10 Tonnen CO₂ ausgeglichen." },
-      "50000": { "title": "Retter des Planeten", "description": "50 Tonnen CO₂ neutralisiert. Danke!" }
-    },
-    "unitOffsetFlights": "Flüge",
-    "unitOffsetKg": "kg CO₂"
+  }
 
 }
