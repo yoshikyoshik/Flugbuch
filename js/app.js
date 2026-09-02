@@ -6599,10 +6599,10 @@ window.updateUpcomingFlightDetails = async function(flight) {
 
 // Sucht heutige und zukünftige Flüge basierend auf IATA-Codes via FlightAware
 async function searchFlightByRoute() {
-    const dep = document.getElementById('departure').value.trim().toUpperCase();
-    const arr = document.getElementById('arrival').value.trim().toUpperCase();
+    const depRaw = document.getElementById('departure').value.trim().toUpperCase();
+    const arrRaw = document.getElementById('arrival').value.trim().toUpperCase();
 
-    if(!dep || !arr) {
+    if(!depRaw || !arrRaw) {
         showMessage(getTranslation("flightSearch.errorTitle") || "Fehler", getTranslation("flightSearch.errorMissingRoute") || "Bitte gib zuerst den Abflug- und Zielort (IATA) ein.", "error");
         return;
     }
@@ -6616,7 +6616,7 @@ async function searchFlightByRoute() {
 
     let targetDate = todayStr;
     let isFuture = false;
-    let isPast = false; // 🚀 NEU: Zeitreise-Modus!
+    let isPast = false; 
 
     if (dateInput) {
         targetDate = dateInput;
@@ -6631,13 +6631,11 @@ async function searchFlightByRoute() {
     const content = document.getElementById('fs-modal-content');
     const list = document.getElementById('flight-selector-list');
 
-    // 🚀 BUGHUNT FIX: Zwingt das Modal dazu, einen Scrollbalken zu zeigen!
     list.style.maxHeight = "60vh"; 
     list.style.overflowY = "auto"; 
 
     const modalTitleEl = content.querySelector('h3');
     
-    // 🚀 BUGHUNT FIX: Titel dynamisch an die Zeitreise anpassen!
     if (isPast) {
         modalTitleEl.textContent = (typeof getTranslation === 'function' ? getTranslation('flightSearch.modalTitlePast') : null) || 'Vergangene Flüge';
     } else if (isFuture) {
@@ -6656,7 +6654,15 @@ async function searchFlightByRoute() {
         </div>`;
 
     try {
-        const url = `${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-fa-flight?dep=${dep}&arr=${arr}&date=${targetDate}`;
+        // 🚀 BUGHUNT FIX: FlightAware liebt ICAO-Codes! Wir übersetzen beide Eingaben.
+        let depIcao = depRaw;
+        let arrIcao = arrRaw;
+        if (typeof window.getIcaoCode === 'function') {
+            depIcao = await window.getIcaoCode(depRaw) || depRaw;
+            arrIcao = await window.getIcaoCode(arrRaw) || arrRaw;
+        }
+
+        const url = `${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-fa-flight?dep=${depIcao}&arr=${arrIcao}&date=${targetDate}`;
         const response = await fetch(url);
         const flights = await response.json();
 
@@ -6679,7 +6685,6 @@ async function searchFlightByRoute() {
                 }
             }
 
-            // Zeit formatieren
             let timeStr = '--:--';
             if (f.dep_time_iso) {
                 const dateObj = new Date(f.dep_time_iso);
