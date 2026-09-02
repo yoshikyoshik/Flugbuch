@@ -57,8 +57,6 @@ exports.handler = async (event, context) => {
                 }
                 
                 const requiredTonnes = Number(tonnes);
-                
-                // Wir durchsuchen die Liste nach einem Angebot, das genug CO2 auf Lager hat
                 const validListing = prices.find(p => p.supply >= requiredTonnes);
 
                 if (!validListing) {
@@ -78,7 +76,7 @@ exports.handler = async (event, context) => {
                     },
                     body: JSON.stringify({
                         asset_price_source_id: sourceId,
-                        quantity_tonnes: Number(tonnes) // Doku erfordert eine Zahl
+                        quantity_tonnes: requiredTonnes
                     })
                 });
                 const quoteData = await quoteRes.json();
@@ -105,21 +103,22 @@ exports.handler = async (event, context) => {
                 const orderData = await orderRes.json();
                 
                 if (!orderRes.ok) throw new Error("Schritt 3 (Orders) fehlgeschlagen: " + JSON.stringify(orderData));
+
                 console.log(`✅ Schritt 3: Order erfolgreich eingereicht! Status: ${orderData.status}`);
 
                 // --- SCHRITT 4: Auf die Blockchain warten (Zertifikat abholen) ---
                 let certUrl = null;
                 let attempts = 0;
-                const maxAttempts = 5;
+                const maxAttempts = 3; // Reduziert, um Netlify-Timeouts (10s) zu vermeiden
 
                 while (attempts < maxAttempts && !certUrl) {
                     attempts++;
                     console.log(`⏳ Warte auf Zertifikat (Versuch ${attempts}/${maxAttempts})...`);
                     
-                    // 2 Sekunden warten
-                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    // 1,5 Sekunden warten
+                    await new Promise(resolve => setTimeout(resolve, 1500));
                     
-                    // Status bei Carbonmark abfragen (Doku: GET /orders?quote_uuid=...)
+                    // Status bei Carbonmark abfragen
                     const checkRes = await fetch(`https://v20.api.carbonmark.com/orders?quote_uuid=${quoteUuid}`, {
                         headers: {
                             "Accept": "application/json",
@@ -129,19 +128,25 @@ exports.handler = async (event, context) => {
                     
                     const checkData = await checkRes.json();
                     
-                    if (checkRes.ok && checkData.status === "COMPLETED" && checkData.view_retirement_url) {
-                        certUrl = checkData.view_retirement_url;
-                        console.log(`✅ Zertifikat erfolgreich geprägt! URL: ${certUrl}`);
+                    // Sicherheit: Falls die API ein Array zurückgibt
+                    const orderObj = Array.isArray(checkData) ? checkData[0] : checkData;
+                    
+                    if (checkRes.ok && orderObj) {
+                        // Wir nehmen die Zertifikats-URL ODER den Blockchain-Beweis (Polygonscan)
+                        certUrl = orderObj.view_retirement_url || orderObj.polygonscan_url;
+                        if (certUrl) {
+                            console.log(`✅ Link gefunden! URL: ${certUrl}`);
+                            break; // Schleife abbrechen, wir haben den Link!
+                        }
                     }
                 }
 
                 if (!certUrl) {
-                     console.warn("⚠️ Blockchain war zu langsam. Zertifikat wird später im Carbonmark-Dashboard sichtbar sein.");
-                     // Besserer Fallback, falls es mal länger als 10 Sekunden dauert
-                     certUrl = `https://app.carbonmark.com`; 
+                     console.warn("⚠️ Blockchain zu langsam. Nehme Fallback-Portfolio-Link.");
+                     certUrl = `https://app.carbonmark.com/portfolio`; 
                 }
 
-                // 5. ECHTES SUPABASE UPDATE
+                // 3. ECHTES SUPABASE UPDATE (Nur wenn der API-Kauf geklappt hat!)
                 const { error } = await supabaseAdmin
                     .from('flights')
                     .update({ 
