@@ -41,13 +41,12 @@ exports.handler = async (event, context) => {
             let tonnes = (parseFloat(co2Kg) / 1000).toFixed(3);
             if (parseFloat(tonnes) <= 0) tonnes = "0.001"; // Sicherheits-Minimum
 
-            let certUrl = null;
-
             // 2. Zertifikat bei Carbonmark kaufen
             try {
                 console.log(`🌱 Kaufe ${tonnes}t CO2 bei Carbonmark für Flug ${flightId}...`);
                 
-                const carbonmarkRes = await fetch('https://api.carbonmark.com/api/retirements', {
+                // 🛑 FEHLER BEHOBEN: Korrekte URL ohne das doppelte /api/
+                const carbonmarkRes = await fetch('https://api.carbonmark.com/retirements', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -62,35 +61,39 @@ exports.handler = async (event, context) => {
 
                 const data = await carbonmarkRes.json();
 
-                if (!carbonmarkRes.ok) throw new Error(JSON.stringify(data));
+                // Wenn Carbonmark die Zahlung ablehnt, werfen wir einen Fehler (der vom catch-Block gefangen wird)
+                if (!carbonmarkRes.ok) {
+                    throw new Error(JSON.stringify(data));
+                }
 
                 // Link zur öffentlichen Urkunde sichern
-                certUrl = data.certificateUrl || data.receiptUrl || `https://www.carbonmark.com/retirements/${data.id}`;
-                console.log("✅ Carbonmark Zertifikat erfolgreich generiert!");
+                const certUrl = data.certificateUrl || data.receiptUrl || `https://www.carbonmark.com/retirements/${data.id}`;
+                console.log(`✅ Carbonmark Zertifikat generiert! URL: ${certUrl}`);
+
+                // 3. ECHTES SUPABASE UPDATE (Wird jetzt NUR ausgeführt, wenn Carbonmark erfolgreich war!)
+                const { error } = await supabaseAdmin
+                    .from('flights')
+                    .update({ 
+                        co2_compensated: true,
+                        co2_certificate_url: certUrl
+                    })
+                    .eq('flight_id', flightId)
+                    .eq('user_id', userId);
+
+                if (error) {
+                    console.error("❌ Fehler beim Supabase Update (CO2):", error);
+                    return { statusCode: 500, body: 'Database Error' };
+                }
+
+                console.log('✅ Supabase Update erfolgreich (CO2)!');
+                return { statusCode: 200, body: 'Received CO2 Offset' }; 
 
             } catch (error) {
-                console.error("❌ Fehler beim Carbonmark-Kauf:", error);
-            }
-
-            // 3. ECHTES SUPABASE UPDATE FÜR DEN FLUG (Kompensiert + Urkunden-Link)
-            const updatePayload = { co2_compensated: true };
-            if (certUrl) {
-                updatePayload.co2_certificate_url = certUrl;
-            }
-
-            const { error } = await supabaseAdmin
-                .from('flights')
-                .update(updatePayload)
-                .eq('flight_id', flightId)
-                .eq('user_id', userId);
-
-            if (error) {
-                console.error("Fehler beim Supabase Update (CO2):", error);
-                return { statusCode: 500, body: 'Database Error' };
-            }
-
-            console.log('✅ Supabase Update erfolgreich (CO2)!');
-            return { statusCode: 200, body: 'Received CO2 Offset' }; 
+                // 🛑 Wenn Carbonmark fehlschlägt, landet der Code hier. 
+                // Supabase wird NICHT geupdatet, der Flug bleibt unkompensiert (kein "Fake-Grün" mehr).
+                console.error("❌ Fehler beim Carbonmark-Kauf:", error.message);
+                return { statusCode: 500, body: 'Carbonmark API Error' };
+            } 
         }
     }
 
