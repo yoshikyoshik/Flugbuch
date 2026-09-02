@@ -29,7 +29,7 @@ exports.handler = async (event, context) => {
     if (stripeEvent.type === 'checkout.session.completed') {
         const sessionObj = stripeEvent.data.object;
         
-        // Wir prüfen unsere Metadaten aus dem neuen Checkout-Skript
+        // Wir prüfen unsere Metadaten aus dem Checkout-Skript
         if (sessionObj.metadata && sessionObj.metadata.type === 'co2_offset') {
             const flightId = sessionObj.metadata.flight_id;
             const co2Kg = sessionObj.metadata.co2_kg;
@@ -37,10 +37,50 @@ exports.handler = async (event, context) => {
 
             console.log(`✅ CO2-Zahlung erhalten! Flug: ${flightId}, Menge: ${co2Kg}kg`);
 
-            // 🚀 ECHTES SUPABASE UPDATE FÜR DEN FLUG
+            // 1. Carbonmark Menge berechnen (Tonnen)
+            let tonnes = (parseFloat(co2Kg) / 1000).toFixed(3);
+            if (parseFloat(tonnes) <= 0) tonnes = "0.001"; // Sicherheits-Minimum
+
+            let certUrl = null;
+
+            // 2. Zertifikat bei Carbonmark kaufen
+            try {
+                console.log(`🌱 Kaufe ${tonnes}t CO2 bei Carbonmark für Flug ${flightId}...`);
+                
+                const carbonmarkRes = await fetch('https://api.carbonmark.com/api/retirements', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${process.env.CARBONMARK_API_KEY}`
+                    },
+                    body: JSON.stringify({
+                        quantity: tonnes,
+                        beneficiaryName: sessionObj.customer_details?.name || "AvioSphere Pilot", 
+                        retirementMessage: "Flugkompensation via AvioSphere"
+                    })
+                });
+
+                const data = await carbonmarkRes.json();
+
+                if (!carbonmarkRes.ok) throw new Error(JSON.stringify(data));
+
+                // Link zur öffentlichen Urkunde sichern
+                certUrl = data.certificateUrl || data.receiptUrl || `https://www.carbonmark.com/retirements/${data.id}`;
+                console.log("✅ Carbonmark Zertifikat erfolgreich generiert!");
+
+            } catch (error) {
+                console.error("❌ Fehler beim Carbonmark-Kauf:", error);
+            }
+
+            // 3. ECHTES SUPABASE UPDATE FÜR DEN FLUG (Kompensiert + Urkunden-Link)
+            const updatePayload = { co2_compensated: true };
+            if (certUrl) {
+                updatePayload.co2_certificate_url = certUrl;
+            }
+
             const { error } = await supabaseAdmin
                 .from('flights')
-                .update({ co2_compensated: true })
+                .update(updatePayload)
                 .eq('flight_id', flightId)
                 .eq('user_id', userId);
 
@@ -50,10 +90,6 @@ exports.handler = async (event, context) => {
             }
 
             console.log('✅ Supabase Update erfolgreich (CO2)!');
-            
-            // TODO für später: Wenn Patch.io freigeschaltet ist, 
-            // kommt hier der API-Call zum Kauf des Zertifikats hin!
-            
             return { statusCode: 200, body: 'Received CO2 Offset' }; 
         }
     }

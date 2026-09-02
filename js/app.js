@@ -2917,18 +2917,31 @@ window.autoSyncMissingFlightData = async function() {
 // DOMContentLoaded
 document.addEventListener("DOMContentLoaded", async function () {
 
-    // 🚀 NEU: Rückkehrer von der CO2-Kompensation abfangen!
+    // 🚀 NEU: Rückkehrer von der Stripe CO2-Kompensation abfangen!
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('co2_success') === 'true') {
+        
+        // Wir geben dem Webhook im Hintergrund 1,5 Sekunden Zeit, 
+        // um den Kauf bei Carbonmark abzuschließen und in Supabase zu speichern.
         setTimeout(() => {
+            
+            // 1. Liste und UI frisch aus der DB laden (damit die Urkunde erscheint!)
+            if (typeof renderFlights === 'function') {
+                currentlyFilteredFlights = null; // Cache zwingend leeren
+                renderFlights();
+            }
+            
+            // 2. Dem Nutzer die Erfolgsmeldung zeigen
             if (typeof showMessage === 'function') {
                 showMessage(
                     getTranslation("co2.successTitle") || "🌱 Danke, Climate Hero!", 
-                    getTranslation("co2.successMsg") || "Deine CO₂-Kompensation war erfolgreich. Die Daten werden in Kürze aktualisiert.", 
+                    getTranslation("co2.successMsg") || "Deine CO₂-Kompensation war erfolgreich. Die Urkunde ist ab sofort in deinem Logbuch abrufbar!", 
                     "success"
                 );
             }
         }, 1500);
+
+        // URL wieder aufräumen, damit der Toast beim Neuladen nicht nochmal kommt
         window.history.replaceState({}, document.title, window.location.pathname);
     }
 
