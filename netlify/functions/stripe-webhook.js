@@ -45,8 +45,8 @@ exports.handler = async (event, context) => {
             try {
                 console.log(`🌱 Starte Carbonmark-Kauf für ${tonnes}t (Flug ${flightId})...`);
                 
-                // --- SCHRITT 1: Preis-ID abrufen (Wir nutzen das Beispielprojekt ICR-112) ---
-                const priceRes = await fetch('https://v20.api.carbonmark.com/prices?projectIds=ICR-112', {
+                // --- SCHRITT 1: Preis-ID abrufen (Bestand prüfen!) ---
+                const priceRes = await fetch('https://v20.api.carbonmark.com/prices', {
                     method: 'GET',
                     headers: { "Accept": "application/json" }
                 });
@@ -56,9 +56,17 @@ exports.handler = async (event, context) => {
                      throw new Error("Schritt 1 (Prices) fehlgeschlagen: " + JSON.stringify(prices));
                 }
                 
-                // Wir nehmen die erste verfügbare Listing-ID
-                const sourceId = prices[0].sourceId; 
-                console.log(`✅ Schritt 1: Price Source ID gefunden (${sourceId})`);
+                const requiredTonnes = Number(tonnes);
+                
+                // Wir durchsuchen die Liste nach einem Angebot, das genug CO2 auf Lager hat
+                const validListing = prices.find(p => p.supply >= requiredTonnes);
+
+                if (!validListing) {
+                    throw new Error(`Kein Projekt mit mindestens ${requiredTonnes}t auf Lager gefunden.`);
+                }
+                
+                const sourceId = validListing.sourceId; 
+                console.log(`✅ Schritt 1: Price Source ID gefunden (${sourceId}) | Auf Lager: ${validListing.supply}t`);
 
                 // --- SCHRITT 2: Angebot (Quote) generieren ---
                 const quoteRes = await fetch('https://v20.api.carbonmark.com/quotes', {
