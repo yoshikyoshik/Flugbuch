@@ -161,20 +161,28 @@ window.drawRouteOnMap = async function (
   );
 
   // ==========================================
-  // 🚀 NEU: DIE LÜCKENFÜLLER-LINIE FÜR ABGEBROCHENE GPS-TRACKS
+  // 🚀 NEU: DIE LÜCKENFÜLLER-LINIEN (START & ENDE)
   // ==========================================
-  let missingLinkPath = null;
-  // Wenn wir echte GPS-Daten haben, bauen wir eine Brücke vom letzten GPS-Punkt zum Flughafen
+  const missingLinks = [];
   if (gpsCoords && gpsCoords.length > 0) {
+      const firstGpsPoint = gpsCoords[0];
       const lastGpsPoint = gpsCoords[gpsCoords.length - 1];
-      const destPoint = [arrLat, arrLon];
-      
-      missingLinkPath = L.polyline([lastGpsPoint, destPoint], {
-          color: "#ef4444",    // Rote Signal-Farbe
-          weight: 2,           // Minimal dünner als der echte Track
-          dashArray: "8, 8",   // Macht die Linie gestrichelt (8px Strich, 8px Lücke)
+
+      // 1. Lücke am Start (Abflughafen -> Erster GPS Punkt)
+      missingLinks.push(L.polyline([[depLat, depLon], firstGpsPoint], {
+          color: "#ef4444",
+          weight: 2,
+          dashArray: "6, 6",
           opacity: 0.8
-      });
+      }));
+
+      // 2. Lücke am Ende (Letzter GPS Punkt -> Zielflughafen)
+      missingLinks.push(L.polyline([lastGpsPoint, [arrLat, arrLon]], {
+          color: "#ef4444",
+          weight: 2,
+          dashArray: "6, 6",
+          opacity: 0.8
+      }));
   }
   // ==========================================
 
@@ -192,15 +200,14 @@ window.drawRouteOnMap = async function (
   routeLayer.addLayer(arrMarker);
   routeLayer.addLayer(flightPath);
   
-  // 🚀 NEU: Die gestrichelte rote Linie auf die Karte werfen (falls vorhanden)
-  if (missingLinkPath) {
-      routeLayer.addLayer(missingLinkPath);
-  }
-  
+  // 🚀 Die roten Lückenfüller hinzufügen
+  missingLinks.forEach(link => routeLayer.addLayer(link));
+
   routeLayer.addLayer(hitBox); 
 
-  // Karte passgenau zoomen (Wir nutzen hier sicherheitshalber auch die Koordinaten des Zielflughafens)
-  const bounds = flightPath.getBounds().extend([arrLat, arrLon]);
+  // 🚀 FIX: Kamera zwingen, beide Flughäfen UND den Track anzuzeigen!
+  const bounds = L.latLngBounds([depLat, depLon], [arrLat, arrLon]);
+  bounds.extend(flightPath.getBounds());
   map.fitBounds(bounds, { padding: [50, 50] });
 
   mapInfo.setAttribute("data-dynamic-depName", depName);
