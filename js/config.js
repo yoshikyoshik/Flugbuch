@@ -1350,7 +1350,8 @@ async function updateAutocompleteList(inputId, listId) {
     const airport = airportData[code];
     if (
       code.includes(upperCaseValue) ||
-      airport.name.toUpperCase().includes(upperCaseValue)
+      airport.name.toUpperCase().includes(upperCaseValue) ||
+      (airport.icao && airport.icao.toUpperCase() === upperCaseValue)
     ) {
       matches.push({ code, ...airport });
     }
@@ -1364,21 +1365,59 @@ async function updateAutocompleteList(inputId, listId) {
     const existingCodes = new Set(matches.map((m) => m.code));
     apiResults.forEach((result) => {
       if (!existingCodes.has(result.code)) {
-        matches.push(result);
+        
+        // 🚀 BUGHUNT FIX: Blockiere Fuzzy-Fallen von Kiwi!
+        // Wenn der Nutzer einen 3- oder 4-stelligen Code tippt,
+        // erlauben wir das Ergebnis NUR, wenn der Code übereinstimmt
+        // ODER der Name diese exakte Zeichenfolge enthält.
+        if (upperCaseValue.length === 3 || upperCaseValue.length === 4) {
+            const nameUpper = result.name ? result.name.toUpperCase() : "";
+            if (result.code === upperCaseValue || nameUpper.includes(upperCaseValue)) {
+                matches.push(result);
+            }
+        } else {
+            // Bei längeren Namen (z.B. "Frankfurt") erlauben wir die weiche Suche
+            matches.push(result);
+        }
+        
       }
     });
   }
 
-  // 4. Ergebnisse alphabetisch sortieren
+  // 🚀 4. REVERSE ICAO-LOOKUP (Die extra Portion Magie)
+  // Wenn der Nutzer exakt 4 Buchstaben tippt und Kiwi keinen sauberen Treffer liefert
+  if (upperCaseValue.length === 4 && matches.length === 0) {
+      try {
+          // Wir fragen unser Schwarmwissen in Supabase!
+          const { data: sbData } = await supabaseClient
+              .from('icao_cache')
+              .select('iata_code')
+              .eq('icao_code', upperCaseValue)
+              .maybeSingle();
+
+          if (sbData && sbData.iata_code) {
+              const iata = sbData.iata_code;
+              // Wir haben den IATA! Holen wir uns schnell die hübschen Daten dazu
+              const reverseResults = await window.fetchExternalAirport(iata);
+              if (reverseResults && reverseResults.length > 0) {
+                  matches.push(reverseResults[0]);
+              }
+          }
+      } catch(e) {
+          console.warn("Reverse ICAO Lookup fehlgeschlagen:", e);
+      }
+  }
+
+  // 5. Ergebnisse alphabetisch sortieren
   matches.sort((a, b) => a.name.localeCompare(b.name));
 
-  // 5. Ergebnisse anzeigen
+  // 6. Ergebnisse anzeigen
   if (matches.length > 0) {
     matches.slice(0, 10).forEach((match) => {
       // Begrenze auf 10 Ergebnisse zur Übersicht
       const item = document.createElement("div");
-      item.className =
-        "p-2 cursor-pointer text-gray-700 dark:text-gray-300 autocomplete-item";
+      // Leichtes Hover-Styling hinzugefügt für bessere Optik
+      item.className = "p-3 cursor-pointer text-gray-700 dark:text-gray-300 autocomplete-item hover:bg-primary/10 transition-colors rounded-lg font-medium";
       item.textContent = `${match.name} (${match.code})`;
       item.addEventListener("click", () => {
         selectAutocompleteItem(input, list, match); // Übergib das komplette Objekt
