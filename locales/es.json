@@ -408,6 +408,7 @@
     "aircraft": "Tipo de avión (Opcional)",
     "airline": "Aerolínea (Opcional)",
     "autopilotTitle": "Piloto automático: Cargar datos por número de vuelo",
+    "autopilotSuccess": "¡Datos del vuelo cargados con éxito!",
     "buttonCancel": "Cancelar",
     "buttonFetch": "Obtener datos",
     "buttonFetching": "Buscando...",
@@ -1056,6 +1057,7 @@
 
 "flightSearch": {
   "modalTitle": "Vuelos de hoy",
+  "modalTitlePast": "Vuelos",
   "loading": "Buscando vuelos...",
   "noResults": "No se encontraron vuelos directos para hoy.",
   "error": "Error en la búsqueda.",

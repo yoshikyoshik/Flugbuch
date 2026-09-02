@@ -409,6 +409,7 @@
     "aircraft": "Flugzeugtyp (Optional)",
     "airline": "Airline (Optional)",
     "autopilotTitle": "Autopilot: Flugdaten per Flugnummer laden",
+    "autopilotSuccess": "Flugdaten erfolgreich geladen!",
     "buttonCancel": "Abbrechen",
     "buttonFetch": "Daten abrufen",
     "buttonFetching": "Suche...",
@@ -1061,6 +1062,7 @@
 
 "flightSearch": {
   "modalTitle": "Heutige Flüge",
+  "modalTitlePast": "Flüge",
   "loading": "Suche Flüge...",
   "noResults": "Keine direkten Flüge für heute gefunden.",
   "error": "Fehler bei der Abfrage.",

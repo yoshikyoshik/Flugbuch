@@ -408,6 +408,7 @@
     "aircraft": "机型 (可选)",
     "airline": "航空公司 (可选)",
     "autopilotTitle": "自动驾驶仪：通过航班号加载数据",
+    "autopilotSuccess": "航班数据加载成功！",
     "buttonCancel": "取消",
     "buttonFetch": "获取数据",
     "buttonFetching": "搜索中...",
@@ -1056,6 +1057,7 @@
 
   "flightSearch": {
   "modalTitle": "今日航班",
+  "modalTitlePast": "今日航班",
   "loading": "正在搜索航班...",
   "noResults": "今天没有找到直达航班。",
   "error": "搜索时出错。",
