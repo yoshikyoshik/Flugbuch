@@ -105,14 +105,43 @@ exports.handler = async (event, context) => {
                 const orderData = await orderRes.json();
                 
                 if (!orderRes.ok) throw new Error("Schritt 3 (Orders) fehlgeschlagen: " + JSON.stringify(orderData));
-
                 console.log(`✅ Schritt 3: Order erfolgreich eingereicht! Status: ${orderData.status}`);
 
-                // Da die Blockchain ein paar Sekunden braucht, ist der Status initial meist "SUBMITTED".
-                // Carbonmark liefert später eine `view_retirement_url`.
-                const certUrl = orderData.view_retirement_url || `https://app.carbonmark.com/retirements`;
+                // --- SCHRITT 4: Auf die Blockchain warten (Zertifikat abholen) ---
+                let certUrl = null;
+                let attempts = 0;
+                const maxAttempts = 5;
 
-                // 3. ECHTES SUPABASE UPDATE (Nur wenn der API-Kauf geklappt hat!)
+                while (attempts < maxAttempts && !certUrl) {
+                    attempts++;
+                    console.log(`⏳ Warte auf Zertifikat (Versuch ${attempts}/${maxAttempts})...`);
+                    
+                    // 2 Sekunden warten
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    
+                    // Status bei Carbonmark abfragen (Doku: GET /orders?quote_uuid=...)
+                    const checkRes = await fetch(`https://v20.api.carbonmark.com/orders?quote_uuid=${quoteUuid}`, {
+                        headers: {
+                            "Accept": "application/json",
+                            "Authorization": `Bearer ${process.env.CARBONMARK_API_KEY}`
+                        }
+                    });
+                    
+                    const checkData = await checkRes.json();
+                    
+                    if (checkRes.ok && checkData.status === "COMPLETED" && checkData.view_retirement_url) {
+                        certUrl = checkData.view_retirement_url;
+                        console.log(`✅ Zertifikat erfolgreich geprägt! URL: ${certUrl}`);
+                    }
+                }
+
+                if (!certUrl) {
+                     console.warn("⚠️ Blockchain war zu langsam. Zertifikat wird später im Carbonmark-Dashboard sichtbar sein.");
+                     // Besserer Fallback, falls es mal länger als 10 Sekunden dauert
+                     certUrl = `https://app.carbonmark.com`; 
+                }
+
+                // 5. ECHTES SUPABASE UPDATE
                 const { error } = await supabaseAdmin
                     .from('flights')
                     .update({ 
