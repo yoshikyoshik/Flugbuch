@@ -46,19 +46,22 @@ exports.handler = async (event, context) => {
                 console.log(`🌱 Starte Carbonmark-Kauf für ${tonnes}t (Flug ${flightId})...`);
                 
                 // --- SCHRITT 1: Preis-ID abrufen (Wir nutzen das Beispielprojekt ICR-112) ---
-                const priceRes = await fetch('https://v1.api.carbonmark.com/prices?projectIds=ICR-112', {
+                const priceRes = await fetch('https://v20.api.carbonmark.com/prices?projectIds=ICR-112', {
                     method: 'GET',
                     headers: { "Accept": "application/json" }
                 });
                 const prices = await priceRes.json();
-                if (!prices || prices.length === 0) throw new Error("Kein Preis-Listing bei Carbonmark gefunden.");
+                
+                if (!priceRes.ok || !prices || prices.length === 0) {
+                     throw new Error("Schritt 1 (Prices) fehlgeschlagen: " + JSON.stringify(prices));
+                }
                 
                 // Wir nehmen die erste verfügbare Listing-ID
                 const sourceId = prices[0].sourceId; 
                 console.log(`✅ Schritt 1: Price Source ID gefunden (${sourceId})`);
 
                 // --- SCHRITT 2: Angebot (Quote) generieren ---
-                const quoteRes = await fetch('https://v1.api.carbonmark.com/quotes', {
+                const quoteRes = await fetch('https://v20.api.carbonmark.com/quotes', {
                     method: 'POST',
                     headers: {
                         "Accept": "application/json",
@@ -71,13 +74,14 @@ exports.handler = async (event, context) => {
                     })
                 });
                 const quoteData = await quoteRes.json();
-                if (!quoteRes.ok) throw new Error("Quote API Fehler: " + JSON.stringify(quoteData));
+                
+                if (!quoteRes.ok) throw new Error("Schritt 2 (Quotes) fehlgeschlagen: " + JSON.stringify(quoteData));
                 
                 const quoteUuid = quoteData.uuid;
                 console.log(`✅ Schritt 2: Quote generiert (UUID: ${quoteUuid})`);
 
                 // --- SCHRITT 3: Kauf (Order) verbindlich abschicken ---
-                const orderRes = await fetch('https://v1.api.carbonmark.com/orders', {
+                const orderRes = await fetch('https://v20.api.carbonmark.com/orders', {
                     method: 'POST',
                     headers: {
                         "Accept": "application/json",
@@ -91,13 +95,13 @@ exports.handler = async (event, context) => {
                     })
                 });
                 const orderData = await orderRes.json();
-                if (!orderRes.ok) throw new Error("Order API Fehler: " + JSON.stringify(orderData));
+                
+                if (!orderRes.ok) throw new Error("Schritt 3 (Orders) fehlgeschlagen: " + JSON.stringify(orderData));
 
                 console.log(`✅ Schritt 3: Order erfolgreich eingereicht! Status: ${orderData.status}`);
 
                 // Da die Blockchain ein paar Sekunden braucht, ist der Status initial meist "SUBMITTED".
-                // Carbonmark liefert später eine `view_retirement_url`. Für den Moment speichern 
-                // wir einen Fallback-Link auf deren Plattform, damit dein Frontend grün wird!
+                // Carbonmark liefert später eine `view_retirement_url`.
                 const certUrl = orderData.view_retirement_url || `https://app.carbonmark.com/retirements`;
 
                 // 3. ECHTES SUPABASE UPDATE (Nur wenn der API-Kauf geklappt hat!)
@@ -119,9 +123,9 @@ exports.handler = async (event, context) => {
                 return { statusCode: 200, body: 'Received CO2 Offset' }; 
 
             } catch (error) {
-                console.error("❌ Fehler beim Carbonmark-Kauf:", error.message);
+                console.error("❌ Fehler beim Carbonmark-Kauf:", error.cause || error.message);
                 return { statusCode: 500, body: 'Carbonmark API Error' };
-            } 
+            }
         }
     }
 
