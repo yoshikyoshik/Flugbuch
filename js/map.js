@@ -160,6 +160,24 @@ window.drawRouteOnMap = async function (
     { color: "transparent", weight: 30, opacity: 0 } 
   );
 
+  // ==========================================
+  // 🚀 NEU: DIE LÜCKENFÜLLER-LINIE FÜR ABGEBROCHENE GPS-TRACKS
+  // ==========================================
+  let missingLinkPath = null;
+  // Wenn wir echte GPS-Daten haben, bauen wir eine Brücke vom letzten GPS-Punkt zum Flughafen
+  if (gpsCoords && gpsCoords.length > 0) {
+      const lastGpsPoint = gpsCoords[gpsCoords.length - 1];
+      const destPoint = [arrLat, arrLon];
+      
+      missingLinkPath = L.polyline([lastGpsPoint, destPoint], {
+          color: "#ef4444",    // Rote Signal-Farbe
+          weight: 2,           // Minimal dünner als der echte Track
+          dashArray: "8, 8",   // Macht die Linie gestrichelt (8px Strich, 8px Lücke)
+          opacity: 0.8
+      });
+  }
+  // ==========================================
+
   if (flightData) {
       const popupHtml = window.buildMapTooltipHtml(flightData, 1);
       hitBox.bindTooltip(popupHtml, { sticky: true, className: 'custom-map-tooltip' });
@@ -173,9 +191,17 @@ window.drawRouteOnMap = async function (
   routeLayer.addLayer(depMarker);
   routeLayer.addLayer(arrMarker);
   routeLayer.addLayer(flightPath);
+  
+  // 🚀 NEU: Die gestrichelte rote Linie auf die Karte werfen (falls vorhanden)
+  if (missingLinkPath) {
+      routeLayer.addLayer(missingLinkPath);
+  }
+  
   routeLayer.addLayer(hitBox); 
 
-  map.fitBounds(flightPath.getBounds(), { padding: [50, 50] });
+  // Karte passgenau zoomen (Wir nutzen hier sicherheitshalber auch die Koordinaten des Zielflughafens)
+  const bounds = flightPath.getBounds().extend([arrLat, arrLon]);
+  map.fitBounds(bounds, { padding: [50, 50] });
 
   mapInfo.setAttribute("data-dynamic-depName", depName);
   mapInfo.setAttribute("data-dynamic-depCode", depCode);
