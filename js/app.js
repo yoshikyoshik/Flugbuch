@@ -7166,7 +7166,7 @@ async function loadAirportRadar() {
             // Nutzer versucht heute einen ZWEITEN Flughafen abzufragen
             showMessage(
                 getTranslation("premium.title") || "PRO Feature 🚀", 
-                `Im Free-Tarif kannst du pro Tag nur 1 Flughafen live beobachten (${savedLimit.iata}). Upgrade auf PRO für unbegrenztes Radar aller Airports!`, 
+                (getTranslation("premium.radarLimitFree") || "Im Free-Tarif kannst du pro Tag nur 1 Flughafen live beobachten ({iata}). Upgrade auf PRO für unbegrenztes Radar aller Airports!").replace("{iata}", savedLimit.iata), 
                 "info"
             );
             if (typeof openPremiumModal === 'function') {

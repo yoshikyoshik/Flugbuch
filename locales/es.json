@@ -689,6 +689,7 @@
     "searchFlights": "Buscar vuelos"
   },
   "premium": {
+    "radarLimitFree": "En el plan gratuito solo puedes seguir 1 aeropuerto en vivo por día ({iata}). ¡Actualiza a PRO para obtener radar ilimitado en todos los aeropuertos!",
     "portalError": "No se pudo abrir el portal.",
     "alreadyPremiumDesc": "Tienes una suscripción web activa. Por favor, gestiónala en el sitio web.",
     "alreadyPremiumTitle": "Ya eres Premium",
@@ -1148,52 +1149,58 @@
  "tour": {
     "title": "Descubre AvioSphere",
     "header": "Tu Viaje",
-    "subheader": "Haz clic en las estaciones para descubrir todas las funciones de tu app.",
+    "subheader": "Haz clic en las etapas para descubrir todas las funciones de tu app.",
     "step1": {
-        "title": "1. Registrar Vuelos",
-        "desc": "Simplemente busca los aeropuertos de salida y llegada. ¡Encontraremos tu vuelo automáticamente!",
-        "b1_strong": "Modo Offline:",
-        "b1_text": "Registra vuelos incluso sobre las nubes sin internet.",
-        "b2_strong": "Info del Aeropuerto:",
-        "b2_text": "Haz clic en el globo para abrir el sitio web del aeropuerto."
+      "title": "1. Registrar Vuelos",
+      "desc": "Relájate, nosotros hacemos el trabajo:",
+      "b1Title": "Autopilot (PRO):",
+      "b1Desc": "Introduce el número de vuelo y nosotros completamos el resto.",
+      "b2Title": "Escáner de Tarjeta de Embarque (PRO):",
+      "b2Desc": "Simplemente escanea el código de barras en el aeropuerto.",
+      "b3Title": "Fotos de Aviones:",
+      "b3Desc": "Cargamos fotos reales de planespotters de tu aeronave automáticamente."
     },
     "step2": {
-        "title": "2. Antes de la Salida",
-        "desc": "Tu app trabaja en segundo plano mientras haces la maleta.",
-        "b1_strong": "Cuenta Regresiva Inteligente:",
-        "b1_text": "Te muestra exactamente cuándo es hora de irse.",
-        "b2_strong": "Auto-Puertas:",
-        "b2_text": "¡Obtenemos automáticamente la terminal y la puerta por ti antes de que llegues al aeropuerto!"
+      "title": "2. Antes de la Salida",
+      "desc": "Tu app trabaja en segundo plano mientras haces la maleta.",
+      "b1Title": "Cuenta Regresiva Inteligente:",
+      "b1Desc": "Te muestra exactamente cuándo despegas.",
+      "b2Title": "Clima en Vivo (METAR):",
+      "b2Desc": "Consulta datos meteorológicos de pilotos para salida y llegada.",
+      "b3Title": "Alertas Push (PRO):",
+      "b3Desc": "Recibe cambios de puerta y retrasos al instante en tu móvil."
     },
     "step3": {
-        "title": "3. En el Aeropuerto (En Vivo)",
-        "desc": "Tu compañero definitivo el día del viaje con actualizaciones en tiempo real.",
-        "b1_strong": "Alerta de Retraso:",
-        "b1_text": "Los retrasos parpadean en rojo al instante.",
-        "b2_strong": "Reclamo de Equipaje:",
-        "b2_text": "Te mostramos dónde llegará tu maleta.",
-        "b3_strong": "Escudo Offline:",
-        "b3_text": "El widget almacena datos para ahorrar tu batería y plan de datos."
+      "title": "3. En el Aeropuerto (Live)",
+      "desc": "Nunca más pierdas el embarque.",
+      "b1Title": "Modo Viaje:",
+      "b1Desc": "Tu vuelo se fija automáticamente en la parte superior del radar.",
+      "b2Title": "Equipaje y Puertas:",
+      "b2Desc": "Mira al instante a qué cinta de equipaje debes ir.",
+      "b3Title": "Radar en Vivo:",
+      "b3Desc": "Observa llegadas y salidas de tu aeropuerto (PRO: ilimitado)."
     },
     "step4": {
-        "title": "4. Archivo y Estadísticas",
-        "desc": "¡Bienvenido a tu destino! Tus datos están seguros con nosotros.",
-        "b1_strong": "Clima de Aterrizaje:",
-        "b1_text": "Archivamos el clima exacto del aterrizaje en el aeropuerto para ti.",
-        "b2_strong": "Auto-Limpieza:",
-        "b2_text": "Los vuelos antiguos se mueven automáticamente al archivo.",
-        "b3_strong": "Tu Perfil:",
-        "b3_text": "Haz un seguimiento de tu huella de carbono y descubre tu rango."
+      "title": "4. Archivo e Impacto",
+      "desc": "Tu diario personal de viajero frecuente.",
+      "b1Title": "Compensación de CO₂:",
+      "b1Desc": "Haz vuelos neutros en carbono y recibe certificados blockchain.",
+      "b2Title": "GPS Real (PRO):",
+      "b2Desc": "Experimenta las curvas exactas del vuelo en lugar de líneas rectas.",
+      "b3Title": "Diario PDF (PRO):",
+      "b3Desc": "Imprime tus viajes recopilados como un hermoso libro."
     },
     "step5": {
-        "title": "5. Globo 3D e Historia",
-        "desc": "Experimenta tus viajes de una manera completamente nueva en un globo 3D interactivo.",
-        "b1_strong": "Interactivo:",
-        "b1_text": "Gira y haz zoom en tu red personal de vuelos.",
-        "b2_strong": "Modo Historia:",
-        "b2_text": "Ponte cómodo y disfruta de una repetición cinematográfica de tus viajes."
+      "title": "5. Globo y Comunidad",
+      "desc": "Comparte tu viaje con el mundo.",
+      "b1Title": "Globo 3D:",
+      "b1Desc": "Reproduce tus vuelos en una animación interactiva de historia.",
+      "b2Title": "Tabla de Clasificación:",
+      "b2Desc": "Añade amigos y ascended juntos a Sky Legend.",
+      "b3Title": "AvioSphere Wrapped:",
+      "b3Desc": "Genera tu resumen personalizado al final del año."
     }
-},
+  },
 
 "airportRadar": {
     "title": "Aeropuerto en Vivo",

@@ -693,6 +693,7 @@
     "searchFlights": "Search flights"
   },
   "premium": {
+    "radarLimitFree": "In the Free plan, you can only track 1 airport live per day ({iata}). Upgrade to PRO for unlimited radar at all airports!",
     "portalError": "Could not open portal.",
     "alreadyPremiumDesc": "You have an active web subscription. Please manage it on the website.",
     "alreadyPremiumTitle": "Already Premium",
@@ -1152,52 +1153,58 @@
 "tour": {
     "title": "Discover AvioSphere",
     "header": "Your Journey",
-    "subheader": "Click on the stations to discover all features of your app.",
+    "subheader": "Click on the stages to discover all features of your app.",
     "step1": {
-        "title": "1. Log Flights",
-        "desc": "Simply search for departure and arrival airports. We'll find your flight automatically!",
-        "b1_strong": "Offline Mode:",
-        "b1_text": "Log flights even above the clouds without internet.",
-        "b2_strong": "Airport Info:",
-        "b2_text": "Click the globe to open the airport's website."
+      "title": "1. Log Flights",
+      "desc": "Sit back, we'll do the typing:",
+      "b1Title": "Autopilot (PRO):",
+      "b1Desc": "Enter flight number, we'll fill in the rest.",
+      "b2Title": "Boarding Pass Scanner (PRO):",
+      "b2Desc": "Simply scan the barcode at the airport.",
+      "b3Title": "Aircraft Photos:",
+      "b3Desc": "We automatically load real planespotter photos of your aircraft."
     },
     "step2": {
-        "title": "2. Before Departure",
-        "desc": "Your app works in the background while you pack.",
-        "b1_strong": "Smart Countdown:",
-        "b1_text": "Shows you exactly when it's time to go.",
-        "b2_strong": "Auto-Gates:",
-        "b2_text": "We automatically fetch terminal and gate for you before you arrive at the airport!"
+      "title": "2. Before Departure",
+      "desc": "Your app works in the background while you pack.",
+      "b1Title": "Smart Countdown:",
+      "b1Desc": "Shows you exactly when you're taking off.",
+      "b2Title": "Live Weather (METAR):",
+      "b2Desc": "Check pilot weather data for departure and arrival.",
+      "b3Title": "Push Alerts (PRO):",
+      "b3Desc": "Get gate changes & delays instantly on your phone."
     },
     "step3": {
-        "title": "3. At the Airport (Live)",
-        "desc": "Your ultimate companion on travel day with real-time updates.",
-        "b1_strong": "Delay Alert:",
-        "b1_text": "Delays instantly blink red.",
-        "b2_strong": "Baggage Claim:",
-        "b2_text": "We show you where your suitcase will arrive.",
-        "b3_strong": "Offline Shield:",
-        "b3_text": "The widget buffers data to save your battery and data allowance."
+      "title": "3. At the Airport (Live)",
+      "desc": "Never miss boarding again.",
+      "b1Title": "Travel Mode:",
+      "b1Desc": "Your flight automatically pins to the top of the radar.",
+      "b2Title": "Baggage & Gates:",
+      "b2Desc": "See instantly which baggage carousel you need to go to.",
+      "b3Title": "Live Radar:",
+      "b3Desc": "Monitor all arrivals & departures of your airport (PRO: unlimited)."
     },
     "step4": {
-        "title": "4. Archive & Stats",
-        "desc": "Welcome to your destination! Your data is safe with us.",
-        "b1_strong": "Touchdown Weather:",
-        "b1_text": "We archive the exact landing weather at the airport for you.",
-        "b2_strong": "Auto-Clean:",
-        "b2_text": "Old flights automatically move to the archive.",
-        "b3_strong": "Your Profile:",
-        "b3_text": "Track your carbon footprint and discover your rank."
+      "title": "4. Archive & Impact",
+      "desc": "Your personal frequent flyer logbook.",
+      "b1Title": "CO₂ Offset:",
+      "b1Desc": "Make flights carbon-neutral and receive blockchain certificates.",
+      "b2Title": "True GPS (PRO):",
+      "b2Desc": "Experience exact flown curves instead of straight lines.",
+      "b3Title": "PDF Logbook (PRO):",
+      "b3Desc": "Print your collected trips as a beautiful book."
     },
     "step5": {
-        "title": "5. 3D Globe & Story",
-        "desc": "Experience your travels in a whole new way on an interactive 3D globe.",
-        "b1_strong": "Interactive:",
-        "b1_text": "Spin and zoom through your personal flight network.",
-        "b2_strong": "Story Mode:",
-        "b2_text": "Sit back and enjoy a cinematic replay of your journeys."
+      "title": "5. Globe & Community",
+      "desc": "Share your journey with the world.",
+      "b1Title": "3D Globe:",
+      "b1Desc": "Play all your flights as an interactive story animation.",
+      "b2Title": "Leaderboard:",
+      "b2Desc": "Add friends and rise together to become a Sky Legend.",
+      "b3Title": "AvioSphere Wrapped:",
+      "b3Desc": "Generate your personalized recap at the end of the year."
     }
-},
+  },
 
 "airportRadar": {
     "title": "Airport Live",
