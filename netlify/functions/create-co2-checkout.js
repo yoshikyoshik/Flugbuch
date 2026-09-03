@@ -36,7 +36,7 @@ export default async function handler(request, context) {
         const baseUrl = process.env.URL || 'https://aviosphere.com';
         
         const successUrl = isNative 
-            ? `aviosphere://return?co2_success=true` 
+            ? `aviosphere://return?co2_success=true&flight=${flightId}` // <-- HIER DIE FLUG-ID ANGEHÄNGT!
             : `${baseUrl}?co2_success=true&flight=${flightId}`;
             
         const cancelUrl = isNative 

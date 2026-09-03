@@ -29,7 +29,6 @@ exports.handler = async (event, context) => {
     if (stripeEvent.type === 'checkout.session.completed') {
         const sessionObj = stripeEvent.data.object;
         
-        // Wir prüfen unsere Metadaten aus dem Checkout-Skript
         if (sessionObj.metadata && sessionObj.metadata.type === 'co2_offset') {
             const flightId = sessionObj.metadata.flight_id;
             const co2Kg = sessionObj.metadata.co2_kg;
@@ -37,140 +36,99 @@ exports.handler = async (event, context) => {
 
             console.log(`✅ CO2-Zahlung erhalten! Flug: ${flightId}, Menge: ${co2Kg}kg`);
 
-            // 1. Carbonmark Menge berechnen (Tonnen)
-            let tonnes = (parseFloat(co2Kg) / 1000).toFixed(3);
-            if (parseFloat(tonnes) <= 0) tonnes = "0.001"; // Sicherheits-Minimum
+            // 🚨 DER SCHUTZSCHILD: Verhindert doppelte Käufe bei Stripe-Retrys!
+            const { data: existingFlight } = await supabaseAdmin
+                .from('flights')
+                .select('co2_compensated')
+                .eq('flight_id', flightId)
+                .eq('user_id', userId)
+                .single();
 
-            // 2. Zertifikat bei Carbonmark kaufen (Der offizielle 3-Schritte-Flow)
+            if (existingFlight && existingFlight.co2_compensated) {
+                console.log(`🛡️ Schutzschild aktiv: Flug ${flightId} ist bereits kompensiert! (Ignoriere Retry)`);
+                return { statusCode: 200, body: 'Already compensated' };
+            }
+
+            let tonnes = (parseFloat(co2Kg) / 1000).toFixed(3);
+            if (parseFloat(tonnes) <= 0) tonnes = "0.001"; 
+
             try {
                 console.log(`🌱 Starte Carbonmark-Kauf für ${tonnes}t (Flug ${flightId})...`);
                 
-                // --- SCHRITT 1: Preis-ID abrufen (Bestand prüfen!) ---
-                const priceRes = await fetch('https://v20.api.carbonmark.com/prices', {
-                    method: 'GET',
-                    headers: { "Accept": "application/json" }
-                });
+                const priceRes = await fetch('https://v20.api.carbonmark.com/prices', { headers: { "Accept": "application/json" } });
                 const prices = await priceRes.json();
-                
-                if (!priceRes.ok || !prices || prices.length === 0) {
-                     throw new Error("Schritt 1 (Prices) fehlgeschlagen: " + JSON.stringify(prices));
-                }
                 
                 const requiredTonnes = Number(tonnes);
                 const validListing = prices.find(p => p.supply >= requiredTonnes);
-
-                if (!validListing) {
-                    throw new Error(`Kein Projekt mit mindestens ${requiredTonnes}t auf Lager gefunden.`);
-                }
+                if (!validListing) throw new Error(`Kein Projekt mit >= ${requiredTonnes}t auf Lager gefunden.`);
                 
                 const sourceId = validListing.sourceId; 
-                console.log(`✅ Schritt 1: Price Source ID gefunden (${sourceId}) | Auf Lager: ${validListing.supply}t`);
-
-                // --- SCHRITT 2: Angebot (Quote) generieren ---
+                
                 const quoteRes = await fetch('https://v20.api.carbonmark.com/quotes', {
                     method: 'POST',
-                    headers: {
-                        "Accept": "application/json",
-                        "Authorization": `Bearer ${process.env.CARBONMARK_API_KEY}`,
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        asset_price_source_id: sourceId,
-                        quantity_tonnes: requiredTonnes
-                    })
+                    headers: { "Accept": "application/json", "Authorization": `Bearer ${process.env.CARBONMARK_API_KEY}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({ asset_price_source_id: sourceId, quantity_tonnes: requiredTonnes })
                 });
                 const quoteData = await quoteRes.json();
-                
-                if (!quoteRes.ok) throw new Error("Schritt 2 (Quotes) fehlgeschlagen: " + JSON.stringify(quoteData));
-                
                 const quoteUuid = quoteData.uuid;
-                console.log(`✅ Schritt 2: Quote generiert (UUID: ${quoteUuid})`);
 
-                // --- SCHRITT 3: Kauf (Order) verbindlich abschicken ---
                 const orderRes = await fetch('https://v20.api.carbonmark.com/orders', {
                     method: 'POST',
-                    headers: {
-                        "Accept": "application/json",
-                        "Authorization": `Bearer ${process.env.CARBONMARK_API_KEY}`,
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        quote_uuid: quoteUuid,
-                        beneficiary_name: sessionObj.customer_details?.name || "AvioSphere Pilot",
-                        retirement_message: "Flugkompensation via AvioSphere"
-                    })
+                    headers: { "Accept": "application/json", "Authorization": `Bearer ${process.env.CARBONMARK_API_KEY}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({ quote_uuid: quoteUuid, beneficiary_name: sessionObj.customer_details?.name || "AvioSphere Pilot", retirement_message: "Flugkompensation via AvioSphere" })
                 });
                 const orderData = await orderRes.json();
-                
-                if (!orderRes.ok) throw new Error("Schritt 3 (Orders) fehlgeschlagen: " + JSON.stringify(orderData));
 
-                console.log(`✅ Schritt 3: Order erfolgreich eingereicht! Status: ${orderData.status}`);
-
-                // --- SCHRITT 4: Auf die Blockchain warten (Zertifikat abholen) ---
+                // --- SCHRITT 4: Auf die Blockchain warten (TIME-OUT SICHER!) ---
                 let certUrl = null;
                 let attempts = 0;
-                const maxAttempts = 6; // 6 Versuche = max. ~21 Sekunden Puffer
+                const maxAttempts = 3; // Max 3x2s = 6 Sekunden. So rennt Stripe nicht in den Timeout!
 
                 while (attempts < maxAttempts && !certUrl) {
                     attempts++;
-                    console.log(`⏳ Warte auf Zertifikat (Versuch ${attempts}/${maxAttempts})...`);
+                    await new Promise(resolve => setTimeout(resolve, 2000));
                     
-                    // 3,5 Sekunden warten pro Durchlauf
-                    await new Promise(resolve => setTimeout(resolve, 3500));
-                    
-                    // Status bei Carbonmark abfragen
                     const checkRes = await fetch(`https://v20.api.carbonmark.com/orders?quote_uuid=${quoteUuid}`, {
-                        headers: {
-                            "Accept": "application/json",
-                            "Authorization": `Bearer ${process.env.CARBONMARK_API_KEY}`
-                        }
+                        headers: { "Accept": "application/json", "Authorization": `Bearer ${process.env.CARBONMARK_API_KEY}` }
                     });
-                    
                     const checkData = await checkRes.json();
-                    
-                    // Sicherheit: Falls die API ein Array zurückgibt
                     const orderObj = Array.isArray(checkData) ? checkData[0] : checkData;
                     
                     if (checkRes.ok && orderObj) {
-                        console.log(`ℹ️ Aktueller Order-Status: ${orderObj.status}`);
+                        console.log(`ℹ️ Order-Status: ${orderObj.status}`);
                         
-                        // Wenn COMPLETED, greifen wir die URLs aus der Dokumentation ab
-                        if (orderObj.status === 'COMPLETED') {
-                            certUrl = orderObj.view_retirement_url || orderObj.on_chain_explorer_url || orderObj.polygonscan_url;
-                            if (certUrl) {
-                                console.log(`✅ Link gefunden! URL: ${certUrl}`);
-                                break; // Schleife abbrechen!
+                        // 🚀 DER LINK-HACK: Wenn die API den Link noch nicht hat, bauen wir ihn aus dem Hash!
+                        if (orderObj.status === 'COMPLETED' || orderObj.transaction_hash) {
+                            certUrl = orderObj.view_retirement_url || orderObj.on_chain_explorer_url;
+                            
+                            if (!certUrl && orderObj.transaction_hash) {
+                                console.log("🔧 Baue Polygonscan-Link manuell aus TxHash...");
+                                certUrl = `https://polygonscan.com/tx/${orderObj.transaction_hash}`;
                             }
+
+                            if (certUrl) break;
                         }
                     }
                 }
 
                 if (!certUrl) {
-                     console.warn("⚠️ Blockchain zu langsam. Nehme Fallback-Portfolio-Link.");
+                     console.warn("⚠️ Fallback auf Portfolio.");
                      certUrl = `https://app.carbonmark.com/portfolio`; 
                 }
 
-                // 3. ECHTES SUPABASE UPDATE (Nur wenn der API-Kauf geklappt hat!)
                 const { error } = await supabaseAdmin
                     .from('flights')
-                    .update({ 
-                        co2_compensated: true,
-                        co2_certificate_url: certUrl
-                    })
+                    .update({ co2_compensated: true, co2_certificate_url: certUrl })
                     .eq('flight_id', flightId)
                     .eq('user_id', userId);
 
-                if (error) {
-                    console.error("❌ Fehler beim Supabase Update (CO2):", error);
-                    return { statusCode: 500, body: 'Database Error' };
-                }
-
-                console.log('✅ Supabase Update erfolgreich (CO2)! Flug ist jetzt grün.');
+                if (error) throw error;
+                console.log('✅ Supabase Update erfolgreich (CO2)!');
                 return { statusCode: 200, body: 'Received CO2 Offset' }; 
 
             } catch (error) {
-                console.error("❌ Fehler beim Carbonmark-Kauf:", error.cause || error.message);
-                return { statusCode: 500, body: 'Carbonmark API Error' };
+                console.error("❌ Fehler Carbonmark:", error.message);
+                return { statusCode: 500, body: 'Error' }; // Stripe darf Retry machen, aber unser Schutzschild fängt es auf!
             }
         }
     }

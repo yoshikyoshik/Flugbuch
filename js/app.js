@@ -3366,23 +3366,32 @@ document.getElementById("buy-pro-btn").addEventListener("click", async () => {
             if (data.url.includes('aviosphere://')) {
                 if (Capacitor.Plugins.Browser) Capacitor.Plugins.Browser.close();
                 
-                // 🚀 BUGHUNT FIX: Prüfen, ob wir erfolgreich von Stripe kommen
+                // 🚀 UI-UPDATE: Parameter auslesen und Modal erneuern
                 if (data.url.includes('co2_success=true')) {
+                    const urlObj = new URL(data.url);
+                    const flightIdToRefresh = urlObj.searchParams.get('flight');
+
                     setTimeout(() => {
-                        // 1. Liste und UI frisch aus der DB laden (damit die Urkunde erscheint!)
+                        // 1. Liste frisch laden
                         if (typeof renderFlights === 'function') {
-                            currentlyFilteredFlights = null; // Cache zwingend leeren
+                            currentlyFilteredFlights = null; 
                             renderFlights();
                         }
-                        // 2. Dem Nutzer die Erfolgsmeldung zeigen
+                        
+                        // 2. DAS MODAL AKTUALISIEREN, falls es offen ist!
+                        if (flightIdToRefresh && typeof viewFlightDetails === 'function') {
+                            viewFlightDetails(flightIdToRefresh);
+                        }
+
+                        // 3. Erfolgsmeldung
                         if (typeof showMessage === 'function') {
                             showMessage(
                                 getTranslation("co2.successTitle") || "🌱 Danke, Climate Hero!", 
-                                getTranslation("co2.successMsg") || "Deine CO₂-Kompensation war erfolgreich. Die Urkunde ist ab sofort in deinem Logbuch abrufbar!", 
+                                getTranslation("co2.successMsg") || "Deine CO₂-Kompensation war erfolgreich. Die Urkunde ist ab sofort abrufbar!", 
                                 "success"
                             );
                         }
-                    }, 1500);
+                    }, 1500); // 1,5 Sekunden warten, damit Supabase das Update sicher verarbeitet hat
                 }
                 
                 initializeApp(); 
@@ -4150,10 +4159,11 @@ window.viewFlightDetails = async function(id, isSwitching = false, customScope =
         let certHtml = "";
         if (flight.co2_certificate_url) {
             const certText = getTranslation("co2.viewCertificate") || "Zertifikat ansehen";
+            // 🚀 BUGHUNT FIX: Statischen Link durch Aufruf unserer Upgrade-Funktion ersetzt!
             certHtml = `
-                <a href="${flight.co2_certificate_url}" target="_blank" class="mt-2 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-emerald-600/70 hover:text-emerald-500 transition-colors">
+                <button onclick="openCertificate('${flight.id || flight.flight_id}', '${flight.co2_certificate_url}')" class="mt-2 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-emerald-600/70 hover:text-emerald-500 transition-colors cursor-pointer">
                     <span class="material-symbols-outlined text-[14px]">verified</span> ${certText}
-                </a>
+                </button>
             `;
         }
 
@@ -7570,5 +7580,62 @@ window.startCo2Checkout = async function(flightId, co2Kg) {
         btn.innerHTML = originalText;
         btn.disabled = false;
         btn.classList.remove('opacity-80', 'cursor-not-allowed');
+    }
+};
+
+// Neue Funktion zum Öffnen und automatischen Upgraden des Zertifikats
+window.openCertificate = async function(flightId, currentUrl) {
+    const isNative = typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform();
+    let finalUrl = currentUrl;
+    let didUpgrade = false;
+
+    // Optional: Visuelles Feedback, dass wir laden
+    if (typeof showMessage === 'function') {
+         showMessage("Zertifikat", "Öffne Urkunde...", "info");
+    }
+
+    // Nur wenn es ein Polygon-Link ist, versuchen wir das Upgrade im Hintergrund
+    if (currentUrl.includes('polygonscan.com')) {
+        try {
+            const response = await fetch(`${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/update-co2-pdf`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    flightId: flightId,
+                    userId: (await supabaseClient.auth.getUser()).data.user.id
+                })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                finalUrl = data.url; 
+                didUpgrade = data.upgraded;
+                
+                if (didUpgrade) {
+                    // Cache updaten, ohne sofort alles hart neu zu zeichnen!
+                    if (window.currentlyFilteredFlights) {
+                        const idx = window.currentlyFilteredFlights.findIndex(f => f.id == flightId || f.flight_id == flightId);
+                        if (idx > -1) window.currentlyFilteredFlights[idx].co2_certificate_url = finalUrl;
+                    }
+                }
+            }
+        } catch (err) {
+            console.warn("PDF-Upgrade fehlgeschlagen, öffne Polygon-Link:", err);
+        }
+    }
+
+    // URL öffnen (App vs Web)
+    if (isNative && Capacitor.Plugins && Capacitor.Plugins.Browser) {
+        await Capacitor.Plugins.Browser.open({ url: finalUrl });
+    } else {
+        window.open(finalUrl, '_blank');
+    }
+    
+    // NACHDEM das Fenster offen ist (z.B. wenn der User aus dem Browser zurückkommt),
+    // zeichnen wir die UI neu, damit der Link für's nächste Mal aktuell ist.
+    if (didUpgrade) {
+         setTimeout(() => {
+             if (typeof renderFlights === 'function') renderFlights();
+         }, 1000);
     }
 };
