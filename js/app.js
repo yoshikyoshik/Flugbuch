@@ -3365,6 +3365,26 @@ document.getElementById("buy-pro-btn").addEventListener("click", async () => {
             // Fall 1: Rückkehr von Stripe (Custom Scheme)
             if (data.url.includes('aviosphere://')) {
                 if (Capacitor.Plugins.Browser) Capacitor.Plugins.Browser.close();
+                
+                // 🚀 BUGHUNT FIX: Prüfen, ob wir erfolgreich von Stripe kommen
+                if (data.url.includes('co2_success=true')) {
+                    setTimeout(() => {
+                        // 1. Liste und UI frisch aus der DB laden (damit die Urkunde erscheint!)
+                        if (typeof renderFlights === 'function') {
+                            currentlyFilteredFlights = null; // Cache zwingend leeren
+                            renderFlights();
+                        }
+                        // 2. Dem Nutzer die Erfolgsmeldung zeigen
+                        if (typeof showMessage === 'function') {
+                            showMessage(
+                                getTranslation("co2.successTitle") || "🌱 Danke, Climate Hero!", 
+                                getTranslation("co2.successMsg") || "Deine CO₂-Kompensation war erfolgreich. Die Urkunde ist ab sofort in deinem Logbuch abrufbar!", 
+                                "success"
+                            );
+                        }
+                    }, 1500);
+                }
+                
                 initializeApp(); 
             }
             
@@ -7531,6 +7551,11 @@ window.startCo2Checkout = async function(flightId, co2Kg) {
             if (isNative && Capacitor.Plugins && Capacitor.Plugins.Browser) {
                 // In der App: Öffnet den sicheren nativen In-App-Browser
                 await Capacitor.Plugins.Browser.open({ url: result.url });
+                
+                // 🚀 BUGHUNT FIX: Button sofort wieder entriegeln, da der Browser im Overlay läuft!
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                btn.classList.remove('opacity-80', 'cursor-not-allowed');
             } else {
                 // Am PC: Normale Weiterleitung
                 window.location.href = result.url;

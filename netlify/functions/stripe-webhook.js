@@ -109,15 +109,14 @@ exports.handler = async (event, context) => {
                 // --- SCHRITT 4: Auf die Blockchain warten (Zertifikat abholen) ---
                 let certUrl = null;
                 let attempts = 0;
-                // Wir erhöhen auf 4 Versuche, um Polygon genug Zeit für das Indexing zu geben
-                const maxAttempts = 4; 
+                const maxAttempts = 6; // 6 Versuche = max. ~21 Sekunden Puffer
 
                 while (attempts < maxAttempts && !certUrl) {
                     attempts++;
                     console.log(`⏳ Warte auf Zertifikat (Versuch ${attempts}/${maxAttempts})...`);
                     
-                    // 2,5 Sekunden warten (Ergibt 10 Sekunden Gesamt-Puffer, passt perfekt in Netlify-Limits)
-                    await new Promise(resolve => setTimeout(resolve, 2500));
+                    // 3,5 Sekunden warten pro Durchlauf
+                    await new Promise(resolve => setTimeout(resolve, 3500));
                     
                     // Status bei Carbonmark abfragen
                     const checkRes = await fetch(`https://v20.api.carbonmark.com/orders?quote_uuid=${quoteUuid}`, {
@@ -133,11 +132,15 @@ exports.handler = async (event, context) => {
                     const orderObj = Array.isArray(checkData) ? checkData[0] : checkData;
                     
                     if (checkRes.ok && orderObj) {
-                        // Wir nehmen die Zertifikats-URL ODER den Blockchain-Beweis (Polygonscan)
-                        certUrl = orderObj.view_retirement_url || orderObj.polygonscan_url;
-                        if (certUrl) {
-                            console.log(`✅ Link gefunden! URL: ${certUrl}`);
-                            break; // Schleife abbrechen, wir haben den Link!
+                        console.log(`ℹ️ Aktueller Order-Status: ${orderObj.status}`);
+                        
+                        // Wenn COMPLETED, greifen wir die URLs aus der Dokumentation ab
+                        if (orderObj.status === 'COMPLETED') {
+                            certUrl = orderObj.view_retirement_url || orderObj.on_chain_explorer_url || orderObj.polygonscan_url;
+                            if (certUrl) {
+                                console.log(`✅ Link gefunden! URL: ${certUrl}`);
+                                break; // Schleife abbrechen!
+                            }
                         }
                     }
                 }
