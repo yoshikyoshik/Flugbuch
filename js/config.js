@@ -11,7 +11,7 @@ const SUPABASE_ANON_KEY =
 // Wenn wir im Web sind, nutzen wir relative Pfade (leerer String).
 // BITTE HIER DEINE ECHTE NETLIFY-URL ODER AVIOSPHERE-DOMAIN EINTRAGEN:
 const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.protocol === 'file:')
-    ? 'https://aviosphere.com/' // <-- DEINE LIVE URL HIER!
+    ? 'https://aviosphere.com' // <-- DEINE LIVE URL HIER!
     : '';
 
 // Konstanten

@@ -7508,6 +7508,9 @@ window.startCo2Checkout = async function(flightId, co2Kg) {
         const { data: { user }, error } = await supabaseClient.auth.getUser();
         if (error || !user) throw new Error(getTranslation("co2.loginRequired") || "Du musst eingeloggt sein, um CO₂ auszugleichen.");
 
+        // 1. Herausfinden, ob der Nutzer in der App ist
+        const isNativeApp = typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform();
+
         const response = await fetch(`${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/create-co2-checkout`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -7515,7 +7518,8 @@ window.startCo2Checkout = async function(flightId, co2Kg) {
                 flightId: flightId,
                 co2Kg: co2Kg,
                 userId: user.id,
-                userEmail: user.email
+                userEmail: user.email,
+                isNative: isNativeApp // <-- HIER: Wir senden diese Info ans Backend!
             })
         });
 
@@ -7523,7 +7527,14 @@ window.startCo2Checkout = async function(flightId, co2Kg) {
         if (!response.ok) throw new Error(result.error || getTranslation("co2.paymentError") || "Fehler beim Erstellen der Zahlung.");
         
         if (result.url) {
-            window.location.href = result.url;
+            const isNative = typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform();
+            if (isNative && Capacitor.Plugins && Capacitor.Plugins.Browser) {
+                // In der App: Öffnet den sicheren nativen In-App-Browser
+                await Capacitor.Plugins.Browser.open({ url: result.url });
+            } else {
+                // Am PC: Normale Weiterleitung
+                window.location.href = result.url;
+            }
         } else {
             throw new Error(getTranslation("co2.noUrl") || "Keine URL von Stripe erhalten.");
         }

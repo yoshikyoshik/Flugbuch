@@ -109,14 +109,15 @@ exports.handler = async (event, context) => {
                 // --- SCHRITT 4: Auf die Blockchain warten (Zertifikat abholen) ---
                 let certUrl = null;
                 let attempts = 0;
-                const maxAttempts = 3; // Reduziert, um Netlify-Timeouts (10s) zu vermeiden
+                // Wir erhöhen auf 4 Versuche, um Polygon genug Zeit für das Indexing zu geben
+                const maxAttempts = 4; 
 
                 while (attempts < maxAttempts && !certUrl) {
                     attempts++;
                     console.log(`⏳ Warte auf Zertifikat (Versuch ${attempts}/${maxAttempts})...`);
                     
-                    // 1,5 Sekunden warten
-                    await new Promise(resolve => setTimeout(resolve, 1500));
+                    // 2,5 Sekunden warten (Ergibt 10 Sekunden Gesamt-Puffer, passt perfekt in Netlify-Limits)
+                    await new Promise(resolve => setTimeout(resolve, 2500));
                     
                     // Status bei Carbonmark abfragen
                     const checkRes = await fetch(`https://v20.api.carbonmark.com/orders?quote_uuid=${quoteUuid}`, {
