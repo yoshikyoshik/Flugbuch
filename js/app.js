@@ -2960,28 +2960,61 @@ document.addEventListener("DOMContentLoaded", async function () {
     // 🚀 NEU: Rückkehrer von der Stripe CO2-Kompensation abfangen!
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('co2_success') === 'true') {
+        const flightIdToRefresh = urlParams.get('flight');
         
-        // Wir geben dem Webhook im Hintergrund 1,5 Sekunden Zeit, 
-        // um den Kauf bei Carbonmark abzuschließen und in Supabase zu speichern.
+        // 1. OPTIMISTIC UI: Sofort visuelles Feedback geben!
+        if (typeof showMessage === 'function') {
+            showMessage(
+                getTranslation("co2.successTitle") || "🌱 Danke, Climate Hero!", 
+                getTranslation("co2.successMsg") || "Deine CO₂-Kompensation war erfolgreich. Die Urkunde wird generiert...", 
+                "success"
+            );
+        }
+
+        // 2. DOM-Manipulation, um den langsamen Webhook zu überbrücken
         setTimeout(() => {
-            
-            // 1. Liste und UI frisch aus der DB laden (damit die Urkunde erscheint!)
+            if (flightIdToRefresh && typeof viewFlightDetails === 'function') {
+                viewFlightDetails(flightIdToRefresh).then(() => {
+                    const co2ActionContainer = document.getElementById('fd-co2-action-container');
+                    const co2El = document.getElementById('fd-co2');
+
+                    if (co2ActionContainer) {
+                        const titleText = (typeof getTranslation === 'function' ? getTranslation("co2.neutral") : null) || "Klimaneutral";
+                        const descText = (typeof getTranslation === 'function' ? getTranslation("co2.generating") : null) || "Blockchain-Urkunde wird erstellt...";
+                        
+                        co2ActionContainer.innerHTML = `
+                            <div class="mt-2 bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-2xl flex items-center gap-4">
+                                <div class="w-12 h-12 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-500 text-2xl shadow-inner shrink-0">🌱</div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">${titleText}</p>
+                                    <p class="text-xs font-bold text-emerald-600/70 dark:text-emerald-400/80 mt-0.5">${descText}</p>
+                                    <p class="mt-2 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-emerald-600/70 animate-pulse">
+                                        <span class="material-symbols-outlined text-[14px]">sync</span> In Bearbeitung
+                                    </p>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    if (co2El) {
+                        co2El.className = "font-display font-black text-xl text-emerald-500";
+                    }
+                });
+            }
+        }, 300);
+
+        // 3. Webhook absichern und nach 14 Sekunden final in der DB prüfen
+        setTimeout(() => {
             if (typeof renderFlights === 'function') {
-                currentlyFilteredFlights = null; // Cache zwingend leeren
+                currentlyFilteredFlights = null; 
                 renderFlights();
             }
-            
-            // 2. Dem Nutzer die Erfolgsmeldung zeigen
-            if (typeof showMessage === 'function') {
-                showMessage(
-                    getTranslation("co2.successTitle") || "🌱 Danke, Climate Hero!", 
-                    getTranslation("co2.successMsg") || "Deine CO₂-Kompensation war erfolgreich. Die Urkunde ist ab sofort in deinem Logbuch abrufbar!", 
-                    "success"
-                );
+            const modal = document.getElementById('flight-details-modal');
+            if (modal && !modal.classList.contains('hidden') && flightIdToRefresh) {
+                viewFlightDetails(flightIdToRefresh);
             }
-        }, 1500);
+        }, 14000);
 
-        // URL wieder aufräumen, damit der Toast beim Neuladen nicht nochmal kommt
+        // URL wieder aufräumen
         window.history.replaceState({}, document.title, window.location.pathname);
     }
 
@@ -3371,30 +3404,58 @@ document.getElementById("buy-pro-btn").addEventListener("click", async () => {
                     const urlObj = new URL(data.url);
                     const flightIdToRefresh = urlObj.searchParams.get('flight');
 
+                    // 1. Erfolgsmeldung sofort zeigen
+                    if (typeof showMessage === 'function') {
+                        showMessage(
+                            getTranslation("co2.successTitle") || "🌱 Danke, Climate Hero!", 
+                            getTranslation("co2.successMsg") || "Deine CO₂-Kompensation war erfolgreich. Die Urkunde wird generiert...", 
+                            "success"
+                        );
+                    }
+
+                    // 2. OPTIMISTIC UI: Das Modal sofort "grün" machen, ohne auf Supabase zu warten!
                     setTimeout(() => {
-                        // 1. Liste frisch laden
+                        const co2ActionContainer = document.getElementById('fd-co2-action-container');
+                        const co2El = document.getElementById('fd-co2');
+
+                        if (co2ActionContainer) {
+                            const titleText = (typeof getTranslation === 'function' ? getTranslation("co2.neutral") : null) || "Klimaneutral";
+                            const descText = (typeof getTranslation === 'function' ? getTranslation("co2.generating") : null) || "Blockchain-Urkunde wird erstellt...";
+                            
+                            co2ActionContainer.innerHTML = `
+                                <div class="mt-2 bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-2xl flex items-center gap-4">
+                                    <div class="w-12 h-12 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-500 text-2xl shadow-inner shrink-0">🌱</div>
+                                    <div class="flex-1">
+                                        <p class="text-sm font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">${titleText}</p>
+                                        <p class="text-xs font-bold text-emerald-600/70 dark:text-emerald-400/80 mt-0.5">${descText}</p>
+                                        <p class="mt-2 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-emerald-600/70 animate-pulse">
+                                            <span class="material-symbols-outlined text-[14px]">sync</span> In Bearbeitung
+                                        </p>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                        if (co2El) {
+                            co2El.className = "font-display font-black text-xl text-emerald-500";
+                        }
+                    }, 200);
+
+                    // 3. Im Hintergrund auf den langsamen Webhook warten (14s) und still aktualisieren
+                    setTimeout(() => {
                         if (typeof renderFlights === 'function') {
                             currentlyFilteredFlights = null; 
                             renderFlights();
                         }
-                        
-                        // 2. DAS MODAL AKTUALISIEREN, falls es offen ist!
-                        if (flightIdToRefresh && typeof viewFlightDetails === 'function') {
+                        // Wenn die Flugkarte noch offen ist, laden wir sie jetzt mit dem ECHTEN Link neu
+                        const modal = document.getElementById('flight-details-modal');
+                        if (modal && !modal.classList.contains('hidden') && flightIdToRefresh) {
                             viewFlightDetails(flightIdToRefresh);
                         }
-
-                        // 3. Erfolgsmeldung
-                        if (typeof showMessage === 'function') {
-                            showMessage(
-                                getTranslation("co2.successTitle") || "🌱 Danke, Climate Hero!", 
-                                getTranslation("co2.successMsg") || "Deine CO₂-Kompensation war erfolgreich. Die Urkunde ist ab sofort abrufbar!", 
-                                "success"
-                            );
-                        }
-                    }, 1500); // 1,5 Sekunden warten, damit Supabase das Update sicher verarbeitet hat
+                    }, 14000); 
                 }
                 
-                initializeApp(); 
+                // 🛑 WICHTIG: initializeApp() wurde hier absichtlich entfernt, 
+                // da es den grauen Boot-Screen-Bug verursacht hat!
             }
             
             // Fall 2: Einladungslink (App Links / Universal Links)
