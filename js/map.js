@@ -101,30 +101,33 @@ window.drawRouteOnMap = async function (
   }
 
   let gpsCoords = null; 
+  const isPro = (typeof currentUserSubscription !== 'undefined' && currentUserSubscription === "pro");
 
-  if (flightData && flightData.gps_track && flightData.gps_track.length > 0) {
-      // 🚀 TURBO: GPS-Track liegt schon lokal in Supabase! Kein API-Aufruf nötig!
-      gpsCoords = flightData.gps_track;
-      console.log("⚡ Turbo-Draw: Route direkt aus der Datenbank geladen!");
-  } else if (flightData && flightData.fa_flight_id) {
-      try {
-          const url = `${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-fa-track?fa_flight_id=${encodeURIComponent(flightData.fa_flight_id)}`;
-          const response = await fetch(url);
-          
-          // 🛑 SICHERHEITS-CHECK 1: Abbruch, falls zwischenzeitlich ein anderer Flug geklickt wurde!
-          if (thisDrawId !== window.currentDrawRouteId) return; 
+  // 🔒 GPS-Track wird auf der 2D-Karte NUR geladen/gezeichnet, wenn der User PRO ist!
+  if (isPro) {
+      if (flightData && flightData.gps_track && flightData.gps_track.length > 0) {
+          gpsCoords = flightData.gps_track;
+          console.log("⚡ Turbo-Draw (PRO): GPS-Route aus DB geladen.");
+      } else if (flightData && flightData.fa_flight_id) {
+          try {
+              const url = `${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-fa-track?fa_flight_id=${encodeURIComponent(flightData.fa_flight_id)}`;
+              const response = await fetch(url);
+              if (thisDrawId !== window.currentDrawRouteId) return; 
 
-          if (response.ok) {
-              const data = await response.json();
-              if (data.positions && data.positions.length > 1) {
-                  gpsCoords = data.positions
-                      .filter(p => p.latitude && p.longitude)
-                      .map(p => [p.latitude, p.longitude]);
+              if (response.ok) {
+                  const data = await response.json();
+                  if (data.positions && data.positions.length > 1) {
+                      gpsCoords = data.positions
+                          .filter(p => p.latitude && p.longitude)
+                          .map(p => [p.latitude, p.longitude]);
+                  }
               }
+          } catch (err) {
+              console.warn("Konnte GPS-Track nicht laden.");
           }
-      } catch (err) {
-          console.warn("Konnte GPS-Track nicht laden, nutze Fallback-Kurve.");
       }
+  } else if (flightData && flightData.gps_track && flightData.gps_track.length > 0) {
+      console.log("ℹ️ Free-Nutzer: GPS-Track vorhanden, aber auf 2D-Karte gesperrt (Luftlinie wird genutzt).");
   }
 
   // 🛑 DER ULTIMATIVE SICHERHEITS-CHECK

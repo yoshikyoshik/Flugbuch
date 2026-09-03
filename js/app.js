@@ -1104,8 +1104,11 @@ window.logFlight = async function () {
     const targetFlightDate = newFlightForSupabase.date;
     const todayStrAlert = new Date().toISOString().split('T')[0];
     
-    if (newFlightForSupabase.fa_flight_id && targetFlightDate >= todayStrAlert) {
-        console.log("✈️ Sende Alert-Auftrag an FlightAware...");
+    // 🔔 PUSH-ALERT BEI FLIGHTAWARE REGISTRIEREN (NUR PRO)
+    const isPro = (typeof currentUserSubscription !== 'undefined' && currentUserSubscription === "pro");
+
+    if (isPro && newFlightForSupabase.fa_flight_id && targetFlightDate >= todayStrAlert) {
+        console.log("✈️ PRO-User: Sende Alert-Auftrag an FlightAware...");
         try {
             const alertUrl = `${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fa-create-alert`;
             fetch(alertUrl, {
@@ -1114,9 +1117,6 @@ window.logFlight = async function () {
                 body: JSON.stringify({ 
                     fa_flight_id: newFlightForSupabase.fa_flight_id 
                 })
-            }).then(res => {
-                if (res.ok) console.log("✅ FlightAware wird dich ab sofort über diesen Flug benachrichtigen!");
-                else console.warn("⚠️ Alert konnte nicht registriert werden (evtl. Limit erreicht?).");
             });
         } catch(e) {
             console.error("Fehler beim Alert-Auftrag:", e);
@@ -2070,7 +2070,16 @@ window.exportData = async function (format) {
       "distance", "time", "class", "flightNumber", 
       "airline", "airline_logo", "aircraftType", "registration",
       "price", "currency", "notes", "flight_id", "photo_url",
-      "trip_name" // ✅ NEU: Name der Reise
+      "trip_name",
+      // 🌱 CO2 & Zertifikate
+      "co2_kg", "co2_compensated", "co2_certificate_url",
+      // 📸 Planespotters
+      "planespotters_url", "planespotters_photographer",
+      // ⏱️ Radar, Gates & Status
+      "status", "fa_flight_id", "dep_terminal", "dep_gate", "arr_terminal", "arr_gate",
+      "dep_time_ts", "arr_time_ts", "dep_estimated_ts", "arr_estimated_ts",
+      // 📍 GPS Track & Wetter
+      "gps_track", "weather_dep", "weather_arr"
     ];
 
     const headers = flightKeys.join(separator);
@@ -2285,7 +2294,13 @@ async function handleImport(event) {
             co2_kg = calculateCO2(distance, flightClass);
         }
 
-        // Flug dem finalen Array hinzufügen
+        // JSON-Objekte / Booleans absichern
+        const parseJsonField = (val) => {
+            if (!val) return null;
+            if (typeof val === 'object') return val;
+            try { return JSON.parse(val); } catch(e) { return null; }
+        };
+
         cleanFlights.push({
             user_id: userId,
             flight_id: f.flight_id ? parseInt(f.flight_id) : (new Date().getTime() + Math.floor(Math.random()*10000)),
@@ -2301,7 +2316,6 @@ async function handleImport(event) {
             distance: distance,
             notes: f.notes || f.note || "",
             class: flightClass,
-            co2_kg: co2_kg,
             price: f.price ? parseFloat(f.price) : null,
             currency: f.currency || null,
             depLat: depLat,
@@ -2311,7 +2325,33 @@ async function handleImport(event) {
             depName: depName,
             arrName: arrName,
             photo_url: parsedPhotos,
-            _tempTripName: tripName 
+            _tempTripName: tripName,
+
+            // 🌱 CO2 & Zertifikate (Abwärtskompatibel: Fallback auf false / null)
+            co2_kg: co2_kg,
+            co2_compensated: f.co2_compensated === true || f.co2_compensated === "true" || false,
+            co2_certificate_url: f.co2_certificate_url || null,
+
+            // 📸 Planespotters
+            planespotters_url: f.planespotters_url || null,
+            planespotters_photographer: f.planespotters_photographer || null,
+
+            // ⏱️ Radar, Gates & Status
+            status: f.status || "archived",
+            fa_flight_id: f.fa_flight_id || null,
+            dep_terminal: f.dep_terminal || null,
+            dep_gate: f.dep_gate || null,
+            arr_terminal: f.arr_terminal || null,
+            arr_gate: f.arr_gate || null,
+            dep_time_ts: f.dep_time_ts ? parseInt(f.dep_time_ts) : null,
+            arr_time_ts: f.arr_time_ts ? parseInt(f.arr_time_ts) : null,
+            dep_estimated_ts: f.dep_estimated_ts ? parseInt(f.dep_estimated_ts) : null,
+            arr_estimated_ts: f.arr_estimated_ts ? parseInt(f.arr_estimated_ts) : null,
+
+            // 📍 GPS Track & Wetter
+            gps_track: parseJsonField(f.gps_track),
+            weather_dep: parseJsonField(f.weather_dep),
+            weather_arr: parseJsonField(f.weather_arr)
         });
       }
 
@@ -7115,6 +7155,32 @@ async function loadAirportRadar() {
     const cacheKey = `${iata}_${currentRadarType}`;
     const now = Date.now();
 
+    const isPro = (typeof currentUserSubscription !== 'undefined' && currentUserSubscription === "pro");
+
+    // 🔒 FREE-LIMIT: Maximal 1 gewählter Flughafen pro Kalendertag
+    if (!isPro) {
+        const todayStr = new Date().toISOString().split('T')[0];
+        const savedLimit = JSON.parse(localStorage.getItem('aviosphere_free_radar_day') || '{}');
+
+        if (savedLimit.date === todayStr && savedLimit.iata && savedLimit.iata !== iata) {
+            // Nutzer versucht heute einen ZWEITEN Flughafen abzufragen
+            showMessage(
+                getTranslation("premium.title") || "PRO Feature 🚀", 
+                `Im Free-Tarif kannst du pro Tag nur 1 Flughafen live beobachten (${savedLimit.iata}). Upgrade auf PRO für unbegrenztes Radar aller Airports!`, 
+                "info"
+            );
+            if (typeof openPremiumModal === 'function') {
+                openPremiumModal('default');
+            }
+            return;
+        }
+
+        // Erster Flughafen des Tages: Merken
+        if (savedLimit.date !== todayStr || !savedLimit.iata) {
+            localStorage.setItem('aviosphere_free_radar_day', JSON.stringify({ date: todayStr, iata: iata }));
+        }
+    }
+    
     // 🛡️ BUGHUNT & KOSTENSCHUTZ: Der intelligente Cache
     if (radarDataCache[cacheKey] && (now - radarDataCache[cacheKey].timestamp < RADAR_CACHE_TTL)) {
         console.log(`📡 Lade ${cacheKey} aus dem lokalen Cache (spart API-Calls!)...`);
