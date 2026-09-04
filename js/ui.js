@@ -10,6 +10,8 @@ function showMessage(title, message, type = "info") {
   if (type === "success") typeClass = "toast-success";
   if (type === "error") typeClass = "toast-error";
   if (type === "easter-egg") typeClass = "toast-easteregg";
+  // HIER IST DIE ÄNDERUNG: pointer-events-auto hinzugefügt
+  toast.className = `toast ${typeClass} pointer-events-auto`;
   toast.className = `toast ${typeClass}`;
   toast.innerHTML = `<strong class="block">${title}</strong> ${message}`;
   container.appendChild(toast);

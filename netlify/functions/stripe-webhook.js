@@ -59,6 +59,11 @@ exports.handler = async (event, context) => {
                 const prices = await priceRes.json();
                 
                 const requiredTonnes = Number(tonnes);
+
+                // 🚀 MARGEN-SCHUTZ: Projekte nach Preis (aufsteigend) sortieren!
+                // So kaufst du immer das günstigste Projekt ein und maximierst deinen Gewinn.
+                prices.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
+
                 const validListing = prices.find(p => p.supply >= requiredTonnes);
                 if (!validListing) throw new Error(`Kein Projekt mit >= ${requiredTonnes}t auf Lager gefunden.`);
                 
