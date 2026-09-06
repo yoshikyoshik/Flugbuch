@@ -253,7 +253,7 @@ async function buyNative(planKey) {
 }
 
 /**
- * Restore
+ * Restore (Käufe wiederherstellen)
  */
 async function restorePurchases() {
     if (typeof Capacitor === 'undefined' || !Capacitor.isNativePlatform()) return;
@@ -262,16 +262,22 @@ async function restorePurchases() {
 
     try {
         const { Purchases } = Capacitor.Plugins;
-        const customerInfo = await Purchases.restorePurchases();
         
-        // Listener erledigt den Rest, aber wir geben Feedback
-        if (customerInfo.entitlements.all["pro_access"]?.isActive) {
+        // 🚀 FIX 1: Robustes Abfangen (RevenueCat packt es manchmal in ein Unterobjekt)
+        const result = await Purchases.restorePurchases();
+        const customerInfo = result.customerInfo || result;
+
+        // 🚀 FIX 2: Status sofort verarbeiten, damit Supabase & das UI updaten!
+        await handleCustomerInfo(customerInfo);
+
+        // 🚀 FIX 3: Option Chaining (?.) schützt vor Abstürzen, wenn Felder fehlen
+        if (customerInfo?.entitlements?.all?.["pro_access"]?.isActive) {
             showMessage(
                 getTranslation("billing.restoreSuccessTitle") || "Erfolg",
                 getTranslation("billing.restoreSuccessDesc") || "Einkäufe wiederhergestellt.",
                 "success"
             );
-            closePremiumModal();
+            if (typeof closePremiumModal === 'function') closePremiumModal();
         } else {
             showMessage(
                 getTranslation("billing.restoreInfoTitle") || "Info",
@@ -280,12 +286,15 @@ async function restorePurchases() {
             );
         }
     } catch (e) {
+        console.error("Restore Error:", e);
+        // 🚀 FIX 4: Echten Fehler anzeigen (Hilft extrem beim Debuggen!)
         showMessage(
             getTranslation("toast.errorTitle") || "Fehler",
-            getTranslation("billing.restoreFailed") || "Wiederherstellung fehlgeschlagen.",
+            e.message || getTranslation("billing.restoreFailed") || "Wiederherstellung fehlgeschlagen.",
             "error"
         );
     }
+    
     if(btn) btn.textContent = getTranslation("premium.restoreBtn") || "Einkäufe wiederherstellen";
 }
 
