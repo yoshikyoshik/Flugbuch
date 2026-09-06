@@ -363,6 +363,7 @@
     "continueChronicle": "▶️ Продолжить",
     "createBook": "Создать книгу (PDF)",
     "deleteTitle": "Удалить рейс",
+    "delete": "Удалить",
     "editTitle": "Редактировать рейс",
     "filterArrival": "Место прибытия (IATA)",
     "filterButton": "Фильтр",
@@ -883,7 +884,8 @@
     "updateErrorTitle": "Ошибка обновления",
     "uploadErrorTitle": "Ошибка загрузки",
     "uploadLimitTitle": "Лимит загрузки",
-    "flightDeleted": "Рейс удален"
+    "flightDeleted": "Рейс удален",
+    "warningTitle": "Внимание"
   },
   "trips": {
     "createError": "Не удалось создать поездку.",

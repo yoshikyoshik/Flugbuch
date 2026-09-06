@@ -363,6 +363,7 @@
     "continueChronicle": "▶️ Continuar",
     "createBook": "Crear Libro (PDF)",
     "deleteTitle": "Eliminar vuelo",
+    "delete": "Eliminar",
     "editTitle": "Editar vuelo",
     "filterArrival": "Destino (IATA)",
     "filterButton": "Filtrar",
@@ -883,7 +884,8 @@
     "updateErrorTitle": "Error de Actualización",
     "uploadErrorTitle": "Error de Subida",
     "uploadLimitTitle": "Límite de Subida",
-    "flightDeleted": "Vuelo eliminado"
+    "flightDeleted": "Vuelo eliminado",
+    "warningTitle": "Atención"
   },
   "trips": {
     "createError": "El viaje no pudo ser creado.",

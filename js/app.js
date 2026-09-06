@@ -1591,9 +1591,12 @@ window.deleteFlight = async function (id) {
     // -----------------------
 
   // 1. Sicherheitsabfrage (mit Übersetzung)
-  if (!confirm(getTranslation("messages.confirmDelete") || "Sind Sie sicher, dass Sie diesen Flug endgültig löschen möchten?")) {
-    return;
-  }
+  const confirmed = await customConfirm(
+      getTranslation("toast.warningTitle") || "Achtung", 
+      getTranslation("messages.confirmDelete") || "Möchtest du diesen Flug wirklich endgültig löschen?",
+      getTranslation("flights.delete") || "Löschen"
+  );
+  if (!confirmed) return;
 
   // 🚀 NEU: Wir müssen die FlightAware ID (fa_flight_id) aus dem lokalen Speicher retten,
   // BEVOR der Flug gleich aus der Datenbank gelöscht wird!
@@ -6416,7 +6419,7 @@ window.finishLiveFlight = async function() {
     }
 
     const successMsg = (typeof getTranslation === 'function' ? getTranslation("live.flightArchivedSuccess") : null) || "Flug erfolgreich ins Logbuch verschoben! 📖";
-    alert(successMsg);
+    showMessage(getTranslation("toast.successTitle") || "Erfolg", successMsg, "success");
 
     window.initLiveWidget();
 };
@@ -7699,4 +7702,35 @@ window.openCertificate = async function(flightId, currentUrl) {
              if (typeof renderFlights === 'function') renderFlights();
          }, 1000);
     }
+};
+
+window.customConfirm = function(title, message, confirmBtnText = "OK") {
+    return new Promise((resolve) => {
+        const modal = document.getElementById("custom-confirm-modal");
+        const content = document.getElementById("custom-confirm-content");
+        
+        // Texte setzen
+        document.getElementById("confirm-title").textContent = title;
+        document.getElementById("confirm-message").textContent = message;
+        document.getElementById("confirm-ok-btn").textContent = confirmBtnText;
+        
+        // 🚀 NEU: Hier wird "Abbrechen" dynamisch übersetzt!
+        document.getElementById("confirm-cancel-btn").textContent = getTranslation("form.cancel") || "Abbrechen";
+
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+        setTimeout(() => { modal.classList.remove("opacity-0"); content.classList.remove("scale-95"); }, 10);
+
+        const cleanup = (result) => {
+            modal.classList.add("opacity-0");
+            content.classList.add("scale-95");
+            setTimeout(() => { modal.classList.add("hidden"); modal.classList.remove("flex"); }, 200);
+            document.getElementById("confirm-ok-btn").onclick = null;
+            document.getElementById("confirm-cancel-btn").onclick = null;
+            resolve(result);
+        };
+
+        document.getElementById("confirm-ok-btn").onclick = () => cleanup(true);
+        document.getElementById("confirm-cancel-btn").onclick = () => cleanup(false);
+    });
 };

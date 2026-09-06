@@ -364,6 +364,7 @@
     "continueChronicle": "▶️ Fortsetzen",
     "createBook": "Buch erstellen (PDF)",
     "deleteTitle": "Flug löschen",
+    "delete": "Löschen",
     "editTitle": "Flug bearbeiten",
     "filterArrival": "Zielort (IATA)",
     "filterButton": "Filtern",
@@ -888,7 +889,8 @@
     "updateErrorTitle": "Update-Fehler",
     "uploadErrorTitle": "Upload Fehler",
     "uploadLimitTitle": "Upload-Limit",
-    "flightDeleted": "Flug gelöscht"
+    "flightDeleted": "Flug gelöscht",
+    "warningTitle": "Achtung"
   },
   "trips": {
     "createError": "Reise konnte nicht erstellt werden.",

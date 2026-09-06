@@ -363,6 +363,7 @@
     "continueChronicle": "▶️ Continue",
     "createBook": "Create Book (PDF)",
     "deleteTitle": "Delete flight",
+    "delete": "Delete",
     "editTitle": "Edit flight",
     "filterArrival": "Destination (IATA)",
     "filterButton": "Filter",
@@ -887,7 +888,8 @@
     "updateErrorTitle": "Update Error",
     "uploadErrorTitle": "Upload Error",
     "uploadLimitTitle": "Upload Limit",
-    "flightDeleted": "Flight deleted"
+    "flightDeleted": "Flight deleted",
+    "warningTitle": "Warning"
   },
   "trips": {
     "createError": "Trip could not be created.",

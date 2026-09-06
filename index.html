@@ -378,37 +378,42 @@
             <!-- TAB: FLUGHAFEN LIVE RADAR (NEU)            -->
             <!-- ========================================== -->
             <div id="tab-content-airport-radar" class="hidden">
-              <div class="flex items-center justify-between mb-8 pr-2">
-                <h2 class="text-2xl font-display font-extrabold text-on-surface dark:text-white tracking-tight" data-i18n="airportRadar.title">
-                  Flughafen Live
-                </h2>
-              </div>
+              
+              <!-- STICKY HEADER AIRPORT LIVE -->
+              <div class="sticky top-0 z-30 bg-surface-container-lowest/95 dark:bg-slate-900/95 backdrop-blur-xl pt-2 pb-4 mb-4 -mx-2 px-2">
+                  <div class="flex items-center justify-between mb-4 pr-2">
+                    <h2 class="text-2xl font-display font-extrabold text-on-surface dark:text-white tracking-tight" data-i18n="airportRadar.title">
+                      Flughafen Live
+                    </h2>
+                  </div>
 
-              <!-- Suchfeld & Filter -->
-              <div class="mb-6">
-                  <div class="bg-surface-container-low dark:bg-slate-900 rounded-2xl p-4 shadow-sm border border-outline-variant/10 dark:border-slate-800">
-                      <div class="flex gap-2 mb-3">
-                          <div class="relative flex-1 group autocomplete-container">
-                              <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface/40 group-focus-within:text-primary transition-colors z-10">flight_takeoff</span>
-                              <!-- Das input-Feld: autocomplete="off" verhindert, dass der Browser sein eigenes, hässliches Menü darüberlegt -->
-                              <input type="text" id="radar-airport-input" placeholder="Name, IATA, ICAO..." data-i18n-placeholder="airportRadar.searchPlaceholder" autocomplete="off"
-                                    class="w-full bg-surface-container-lowest dark:bg-slate-800 rounded-xl py-3 pl-12 pr-4 font-bold text-on-surface dark:text-white placeholder:text-on-surface/40 focus:outline-none focus:ring-2 focus:ring-primary/50 transition border-none shadow-inner">
-                              
-                              <!-- Das unsichtbare Container-Dropdown für unsere Ergebnisse -->
-                              <div id="radar-airport-list" class="autocomplete-list hidden absolute left-0 right-0 top-full mt-2 bg-surface-container-lowest dark:bg-slate-800 rounded-xl shadow-xl border border-outline-variant/20 z-[100] max-h-60 overflow-y-auto"></div>
+                  <!-- Suchfeld & Filter -->
+                  <div>
+                      <div class="bg-surface-container-low dark:bg-slate-900 rounded-2xl p-4 shadow-sm border border-outline-variant/10 dark:border-slate-800">
+                          <div class="flex gap-2 mb-3">
+                              <div class="relative flex-1 group autocomplete-container">
+                                  <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface/40 group-focus-within:text-primary transition-colors z-10">flight_takeoff</span>
+                                  <!-- Das input-Feld: autocomplete="off" verhindert, dass der Browser sein eigenes, hässliches Menü darüberlegt -->
+                                  <input type="text" id="radar-airport-input" placeholder="Name, IATA, ICAO..." data-i18n-placeholder="airportRadar.searchPlaceholder" autocomplete="off"
+                                        class="w-full bg-surface-container-lowest dark:bg-slate-800 rounded-xl py-3 pl-12 pr-4 font-bold text-on-surface dark:text-white placeholder:text-on-surface/40 focus:outline-none focus:ring-2 focus:ring-primary/50 transition border-none shadow-inner">
+                                  
+                                  <!-- Das unsichtbare Container-Dropdown für unsere Ergebnisse -->
+                                  <div id="radar-airport-list" class="autocomplete-list hidden absolute left-0 right-0 top-full mt-2 bg-surface-container-lowest dark:bg-slate-800 rounded-xl shadow-xl border border-outline-variant/20 z-[100] max-h-60 overflow-y-auto"></div>
+                              </div>
+                              <button onclick="loadAirportRadar()" class="bg-primary text-white font-bold px-5 rounded-xl hover:bg-primary/90 transition shadow-sm flex items-center justify-center">
+                                  <span class="material-symbols-outlined">search</span>
+                              </button>
                           </div>
-                          <button onclick="loadAirportRadar()" class="bg-primary text-white font-bold px-5 rounded-xl hover:bg-primary/90 transition shadow-sm flex items-center justify-center">
-                              <span class="material-symbols-outlined">search</span>
-                          </button>
-                      </div>
-                      
-                      <!-- Toggle Buttons für Ankünfte/Abflüge -->
-                      <div class="flex bg-surface-container-lowest dark:bg-slate-800 p-1 rounded-xl shadow-inner border border-outline-variant/10 dark:border-slate-700/50">
-                          <button onclick="setRadarType('arrivals')" id="btn-radar-arr" class="flex-1 py-2 text-sm font-bold rounded-lg bg-primary/10 text-primary dark:bg-indigo-900/30 dark:text-indigo-400 transition" data-i18n="airportRadar.arrivals">Ankünfte</button>
-                          <button onclick="setRadarType('departures')" id="btn-radar-dep" class="flex-1 py-2 text-sm font-bold rounded-lg text-on-surface/50 hover:text-on-surface dark:text-slate-400 dark:hover:text-white transition" data-i18n="airportRadar.departures">Abflüge</button>
+                          
+                          <!-- Toggle Buttons für Ankünfte/Abflüge -->
+                          <div class="flex bg-surface-container-lowest dark:bg-slate-800 p-1 rounded-xl shadow-inner border border-outline-variant/10 dark:border-slate-700/50">
+                              <button onclick="setRadarType('arrivals')" id="btn-radar-arr" class="flex-1 py-2 text-sm font-bold rounded-lg bg-primary/10 text-primary dark:bg-indigo-900/30 dark:text-indigo-400 transition" data-i18n="airportRadar.arrivals">Ankünfte</button>
+                              <button onclick="setRadarType('departures')" id="btn-radar-dep" class="flex-1 py-2 text-sm font-bold rounded-lg text-on-surface/50 hover:text-on-surface dark:text-slate-400 dark:hover:text-white transition" data-i18n="airportRadar.departures">Abflüge</button>
+                          </div>
                       </div>
                   </div>
               </div>
+              <!-- END STICKY HEADER -->
 
               <!-- Radar Ergebnis-Liste -->
               <div id="radar-results-list" class="space-y-3 pb-24">
@@ -422,22 +427,26 @@
             
             <div id="tab-content-timeline" class="hidden">
               
-              <div class="flex items-center justify-between mb-6 pr-2">
-                <h2 class="text-2xl font-display font-extrabold text-on-surface dark:text-white tracking-tight">
-                  Timeline
-                </h2>
-              </div>
+              <!-- STICKY HEADER TIMELINE -->
+              <div class="sticky top-0 z-30 bg-surface-container-lowest/95 dark:bg-slate-900/95 backdrop-blur-xl pt-2 pb-4 mb-4 -mx-2 px-2">
+                  <div class="flex items-center justify-between mb-4 pr-2">
+                    <h2 class="text-2xl font-display font-extrabold text-on-surface dark:text-white tracking-tight">
+                      Timeline
+                    </h2>
+                  </div>
 
-              <div class="mb-6 flex flex-col items-center gap-4 w-full">
-                  <div class="flex bg-surface-container-low dark:bg-slate-800/50 p-1.5 rounded-2xl border border-outline-variant/10 dark:border-slate-700/50 shadow-inner gap-1 w-full overflow-x-auto hide-scrollbar">
-                    <button id="timeline-view-flights" onclick="switchTimelineView('flights')" class="flex-1 px-6 py-2.5 text-sm font-bold rounded-xl transition-all bg-surface-container-lowest dark:bg-slate-700 text-on-surface dark:text-white shadow-sm flex items-center justify-center gap-2">
-                      <span class="material-symbols-outlined text-[18px]">flight_takeoff</span> <span data-i18n="singleFlights">Einzelflüge</span>
-                    </button>
-                    <button id="timeline-view-trips" onclick="switchTimelineView('trips')" class="flex-1 px-6 py-2.5 text-sm font-bold rounded-xl transition-all text-on-surface/60 hover:text-on-surface dark:text-slate-400 dark:hover:text-white hover:bg-surface-container-lowest dark:hover:bg-slate-700 flex items-center justify-center gap-2">
-                      <span class="material-symbols-outlined text-[18px]">luggage</span> <span data-i18n="myTrips">Meine Reisen</span>
-                    </button>
+                  <div class="flex flex-col items-center gap-4 w-full">
+                      <div class="flex bg-surface-container-low dark:bg-slate-800/50 p-1.5 rounded-2xl border border-outline-variant/10 dark:border-slate-700/50 shadow-inner gap-1 w-full overflow-x-auto hide-scrollbar">
+                        <button id="timeline-view-flights" onclick="switchTimelineView('flights')" class="flex-1 px-6 py-2.5 text-sm font-bold rounded-xl transition-all bg-surface-container-lowest dark:bg-slate-700 text-on-surface dark:text-white shadow-sm flex items-center justify-center gap-2">
+                          <span class="material-symbols-outlined text-[18px]">flight_takeoff</span> <span data-i18n="singleFlights">Einzelflüge</span>
+                        </button>
+                        <button id="timeline-view-trips" onclick="switchTimelineView('trips')" class="flex-1 px-6 py-2.5 text-sm font-bold rounded-xl transition-all text-on-surface/60 hover:text-on-surface dark:text-slate-400 dark:hover:text-white hover:bg-surface-container-lowest dark:hover:bg-slate-700 flex items-center justify-center gap-2">
+                          <span class="material-symbols-outlined text-[18px]">luggage</span> <span data-i18n="myTrips">Meine Reisen</span>
+                        </button>
+                      </div>
                   </div>
               </div>
+              <!-- END STICKY HEADER -->
 
               <div id="timeline-map-buttons-container" class="grid grid-cols-2 gap-4 mb-4">
                   <button id="toggle-map-view-btn" onclick="toggleAllRoutesView()" class="p-4 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/20 dark:hover:bg-indigo-900/40 border border-indigo-200 dark:border-indigo-800 rounded-2xl flex flex-col items-center justify-center gap-2 transition-all group">
@@ -536,26 +545,31 @@
             </div> 
 
             <div id="tab-content-analytics" class="hidden">
-              <div class="flex items-center justify-between mb-6 pr-2">
-                <h2 class="text-2xl font-display font-extrabold text-on-surface dark:text-white tracking-tight">
-                  Analytics
-                </h2>
-                <button id="analytics-share-btn" onclick="shareStatsScreenshot()" class="flex items-center justify-center gap-2 p-3 bg-surface-container-low dark:bg-slate-800 hover:bg-surface-container-highest dark:hover:bg-slate-700 text-primary dark:text-indigo-300 rounded-xl transition-all shadow-sm border border-outline-variant/20 dark:border-slate-700" title="Teilen">
-                    <span class="material-symbols-outlined text-[20px]">ios_share</span> 
-                </button>
-              </div>
+              
+              <!-- STICKY HEADER ANALYTICS -->
+              <div class="sticky top-0 z-30 bg-surface-container-lowest/95 dark:bg-slate-900/95 backdrop-blur-xl pt-2 pb-4 mb-4 -mx-2 px-2">
+                  <div class="flex items-center justify-between mb-4 pr-2">
+                    <h2 class="text-2xl font-display font-extrabold text-on-surface dark:text-white tracking-tight">
+                      Analytics
+                    </h2>
+                    <button id="analytics-share-btn" onclick="shareStatsScreenshot()" class="flex items-center justify-center gap-2 p-3 bg-surface-container-low dark:bg-slate-800 hover:bg-surface-container-highest dark:hover:bg-slate-700 text-primary dark:text-indigo-300 rounded-xl transition-all shadow-sm border border-outline-variant/20 dark:border-slate-700" title="Teilen">
+                        <span class="material-symbols-outlined text-[20px]">ios_share</span> 
+                    </button>
+                  </div>
 
-              <div class="mb-8 flex bg-surface-container-low dark:bg-slate-800/50 p-1.5 rounded-2xl border border-outline-variant/10 dark:border-slate-700/50 shadow-inner gap-1 w-max max-w-full mx-auto overflow-x-auto hide-scrollbar">
-                <button id="analytics-view-stats" onclick="switchAnalyticsView('stats')" class="flex-shrink-0 px-4 sm:px-6 py-2.5 text-sm font-bold rounded-xl transition-all bg-surface-container-lowest dark:bg-slate-700 text-on-surface dark:text-white shadow-sm flex items-center justify-center gap-2">
-                  <span class="material-symbols-outlined text-[18px]">query_stats</span> <span data-i18n="nav.stats">Statistiken</span>
-                </button>
-                <button id="analytics-view-charts" onclick="switchAnalyticsView('charts')" class="flex-shrink-0 px-4 sm:px-6 py-2.5 text-sm font-bold rounded-xl transition-all text-on-surface/60 hover:text-on-surface dark:text-slate-400 dark:hover:text-white hover:bg-surface-container-lowest dark:hover:bg-slate-700 flex items-center justify-center gap-2">
-                  <span class="material-symbols-outlined text-[18px]">bar_chart</span> <span data-i18n="nav.charts">Charts</span>
-                </button>
-                <button id="analytics-view-logbook" onclick="switchAnalyticsView('logbook')" class="flex-shrink-0 px-4 sm:px-6 py-2.5 text-sm font-bold rounded-xl transition-all text-on-surface/60 hover:text-on-surface dark:text-slate-400 dark:hover:text-white hover:bg-surface-container-lowest dark:hover:bg-slate-700 flex items-center justify-center gap-2">
-                  <span class="material-symbols-outlined text-[18px]">menu_book</span> <span data-i18n="nav.logbook">Logbuch</span>
-                </button>
+                  <div class="flex bg-surface-container-low dark:bg-slate-800/50 p-1.5 rounded-2xl border border-outline-variant/10 dark:border-slate-700/50 shadow-inner gap-1 w-max max-w-full mx-auto overflow-x-auto hide-scrollbar">
+                    <button id="analytics-view-stats" onclick="switchAnalyticsView('stats')" class="flex-shrink-0 px-4 sm:px-6 py-2.5 text-sm font-bold rounded-xl transition-all bg-surface-container-lowest dark:bg-slate-700 text-on-surface dark:text-white shadow-sm flex items-center justify-center gap-2">
+                      <span class="material-symbols-outlined text-[18px]">query_stats</span> <span data-i18n="nav.stats">Statistiken</span>
+                    </button>
+                    <button id="analytics-view-charts" onclick="switchAnalyticsView('charts')" class="flex-shrink-0 px-4 sm:px-6 py-2.5 text-sm font-bold rounded-xl transition-all text-on-surface/60 hover:text-on-surface dark:text-slate-400 dark:hover:text-white hover:bg-surface-container-lowest dark:hover:bg-slate-700 flex items-center justify-center gap-2">
+                      <span class="material-symbols-outlined text-[18px]">bar_chart</span> <span data-i18n="nav.charts">Charts</span>
+                    </button>
+                    <button id="analytics-view-logbook" onclick="switchAnalyticsView('logbook')" class="flex-shrink-0 px-4 sm:px-6 py-2.5 text-sm font-bold rounded-xl transition-all text-on-surface/60 hover:text-on-surface dark:text-slate-400 dark:hover:text-white hover:bg-surface-container-lowest dark:hover:bg-slate-700 flex items-center justify-center gap-2">
+                      <span class="material-symbols-outlined text-[18px]">menu_book</span> <span data-i18n="nav.logbook">Logbuch</span>
+                    </button>
+                  </div>
               </div>
+              <!-- END STICKY HEADER -->
 
               <div id="analytics-stats-container">
                 <div id="statistics-panel" class="flex flex-col gap-4 sm:gap-5">
@@ -675,38 +689,39 @@
             </div>
 
             <div id="tab-content-profil" class="hidden">
-              <div class="flex items-center justify-between mb-6 pr-2">
-                <h2 class="text-2xl font-display font-extrabold text-on-surface dark:text-white tracking-tight">
-                  Profil
-                </h2>
-                <div class="flex items-center gap-2">
-                  <div id="profile-header-status" class="px-3 py-1 bg-surface-container dark:bg-slate-800 rounded-full text-xs font-bold text-on-surface/60 dark:text-slate-400 shadow-sm border border-outline-variant/10">
-                    Lädt...
+              
+              <!-- STICKY HEADER PROFIL -->
+              <div class="sticky top-0 z-30 bg-surface-container-lowest/95 dark:bg-slate-900/95 backdrop-blur-xl pt-2 pb-4 mb-4 -mx-2 px-2">
+                  <div class="flex items-center justify-between mb-4 pr-2">
+                    <h2 class="text-2xl font-display font-extrabold text-on-surface dark:text-white tracking-tight">
+                      Profil
+                    </h2>
+                    <div class="flex items-center gap-2">
+                      <div id="profile-header-status" class="px-3 py-1 bg-surface-container dark:bg-slate-800 rounded-full text-xs font-bold text-on-surface/60 dark:text-slate-400 shadow-sm border border-outline-variant/10">
+                        Lädt...
+                      </div>
+                      <button onclick="openRankInfoModal()" class="w-6 h-6 flex items-center justify-center rounded-full bg-surface-container-low dark:bg-slate-800 text-on-surface/40 dark:text-slate-200 hover:text-primary dark:hover:text-indigo-400 transition-colors border border-outline-variant/10">
+                          <span class="material-symbols-outlined text-sm">help</span>
+                      </button>
+                    </div>
                   </div>
-                  <button onclick="openRankInfoModal()" class="w-6 h-6 flex items-center justify-center rounded-full bg-surface-container-low dark:bg-slate-800 text-on-surface/40 dark:text-slate-200 hover:text-primary dark:hover:text-indigo-400 transition-colors border border-outline-variant/10">
-                      <span class="material-symbols-outlined text-sm">help</span>
-                  </button>
-                </div>
-              </div>
 
-              <div class="mb-8 flex w-full bg-surface-container-low dark:bg-slate-800/50 p-1 rounded-2xl border border-outline-variant/10 dark:border-slate-700/50 shadow-inner gap-1 mx-auto overflow-x-auto hide-scrollbar">
-    
-                  <button id="profil-view-badges" onclick="switchProfileView('badges')" class="flex-auto px-3 py-2 sm:py-2.5 text-[12px] sm:text-sm font-bold rounded-xl transition-all bg-surface-container-lowest dark:bg-slate-700 text-on-surface dark:text-white shadow-sm flex items-center justify-center gap-1.5 whitespace-nowrap">
-                      <span class="material-symbols-outlined text-[16px] sm:text-[18px]">military_tech</span> 
-                      <span data-i18n="nav.badges">Erfolge</span>
-                  </button>
-                  
-                  <button id="profil-view-community" onclick="switchProfileView('community')" class="flex-auto px-3 py-2 sm:py-2.5 text-[12px] sm:text-sm font-bold rounded-xl transition-all text-on-surface/60 hover:text-on-surface dark:text-slate-400 dark:hover:text-white hover:bg-surface-container-lowest dark:hover:bg-slate-700 flex items-center justify-center gap-1.5 whitespace-nowrap">
-                      <span class="material-symbols-outlined text-[16px] sm:text-[18px]">groups</span> 
-                      <span data-i18n="nav.community">Community</span>
-                  </button>
-                  
-                  <button id="profil-view-settings" onclick="switchProfileView('settings')" class="flex-auto px-3 py-2 sm:py-2.5 text-[12px] sm:text-sm font-bold rounded-xl transition-all text-on-surface/60 hover:text-on-surface dark:text-slate-400 dark:hover:text-white hover:bg-surface-container-lowest dark:hover:bg-slate-700 flex items-center justify-center gap-1.5 whitespace-nowrap">
-                      <span class="material-symbols-outlined text-[16px] sm:text-[18px]">settings</span> 
-                      <span data-i18n="nav.account">Account</span>
-                  </button>
-
+                  <div class="flex w-full bg-surface-container-low dark:bg-slate-800/50 p-1 rounded-2xl border border-outline-variant/10 dark:border-slate-700/50 shadow-inner gap-1 mx-auto overflow-x-auto hide-scrollbar">
+                      <button id="profil-view-badges" onclick="switchProfileView('badges')" class="flex-auto px-3 py-2 sm:py-2.5 text-[12px] sm:text-sm font-bold rounded-xl transition-all bg-surface-container-lowest dark:bg-slate-700 text-on-surface dark:text-white shadow-sm flex items-center justify-center gap-1.5 whitespace-nowrap">
+                          <span class="material-symbols-outlined text-[16px] sm:text-[18px]">military_tech</span> 
+                          <span data-i18n="nav.badges">Erfolge</span>
+                      </button>
+                      <button id="profil-view-community" onclick="switchProfileView('community')" class="flex-auto px-3 py-2 sm:py-2.5 text-[12px] sm:text-sm font-bold rounded-xl transition-all text-on-surface/60 hover:text-on-surface dark:text-slate-400 dark:hover:text-white hover:bg-surface-container-lowest dark:hover:bg-slate-700 flex items-center justify-center gap-1.5 whitespace-nowrap">
+                          <span class="material-symbols-outlined text-[16px] sm:text-[18px]">groups</span> 
+                          <span data-i18n="nav.community">Community</span>
+                      </button>
+                      <button id="profil-view-settings" onclick="switchProfileView('settings')" class="flex-auto px-3 py-2 sm:py-2.5 text-[12px] sm:text-sm font-bold rounded-xl transition-all text-on-surface/60 hover:text-on-surface dark:text-slate-400 dark:hover:text-white hover:bg-surface-container-lowest dark:hover:bg-slate-700 flex items-center justify-center gap-1.5 whitespace-nowrap">
+                          <span class="material-symbols-outlined text-[16px] sm:text-[18px]">settings</span> 
+                          <span data-i18n="nav.account">Account</span>
+                      </button>
+                  </div>
               </div>
+              <!-- END STICKY HEADER -->
 
               <div id="profile-badges-content">
                   <div onclick="initWrapped()" class="mb-8 group cursor-pointer bg-gradient-to-br from-primary to-purple-900 rounded-[2rem] p-6 flex items-center justify-between shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 relative overflow-hidden border border-white/10">
@@ -946,113 +961,7 @@
             </div>
             </div>
 
-            <div id="tab-content-profil" class="hidden">
-              <div class="flex items-center justify-between mb-6 pr-2">
-                <h2 class="text-2xl font-display font-extrabold text-on-surface dark:text-white tracking-tight">
-                  Profil
-                </h2>
-                <div id="profile-header-status" class="px-3 py-1 bg-surface-container dark:bg-slate-800 rounded-full text-xs font-bold text-on-surface/60 dark:text-slate-400">
-                  Pilot
-                </div>
-              </div>
-
-              <div class="mb-8 flex bg-surface-container-low dark:bg-slate-800/50 p-1.5 rounded-2xl border border-outline-variant/10 dark:border-slate-700/50 shadow-inner gap-1 w-full sm:w-max">
-                <button id="profil-view-badges" onclick="/* JS folgt */" class="flex-1 sm:flex-none px-6 py-2.5 text-sm font-bold rounded-xl transition-all bg-surface-container-lowest dark:bg-slate-700 text-on-surface dark:text-white shadow-sm flex items-center justify-center gap-2">
-                  <span class="material-symbols-outlined text-[18px]">military_tech</span> Errungenschaften
-                </button>
-                <button id="profil-view-community" onclick="/* JS folgt */" class="flex-1 sm:flex-none px-6 py-2.5 text-sm font-bold rounded-xl transition-all text-on-surface/60 hover:text-on-surface dark:text-slate-400 dark:hover:text-white hover:bg-surface-container-lowest dark:hover:bg-slate-700 flex items-center justify-center gap-2">
-                  <span class="material-symbols-outlined text-[18px]">groups</span> Community
-                </button>
-              </div>
-
-              <div id="profile-badges-content">
-                  </div>
-
-              <div id="profile-community-content" class="hidden">
-                  </div>
-
-              <div class="mt-12 mb-4">
-                  <h3 class="text-xs font-bold uppercase tracking-widest text-on-surface/50 dark:text-slate-500 mb-4 px-2">Einstellungen & Daten</h3>
-                  
-                  <div class="bg-surface-container-lowest dark:bg-slate-800 rounded-3xl border border-outline-variant/20 dark:border-slate-700/50 overflow-hidden shadow-sm">
-                      
-                      <div class="flex items-center justify-between p-4 border-b border-outline-variant/10 dark:border-slate-700/50">
-                          <div class="flex items-center gap-3">
-                              <span class="material-symbols-outlined text-on-surface/60 dark:text-slate-400">dark_mode</span>
-                              <span class="font-bold text-sm text-on-surface dark:text-white">Dark Mode</span>
-                          </div>
-                          <button onclick="toggleDarkMode()" class="w-12 h-6 bg-surface-container-highest dark:bg-slate-700 rounded-full relative transition-colors border border-outline-variant/20 dark:border-slate-600">
-                              <div class="w-5 h-5 bg-white rounded-full absolute top-0.5 left-0.5 dark:translate-x-6 transition-transform shadow-sm"></div>
-                          </button>
-                      </div>
-
-                      <div class="flex items-center justify-between p-4 border-b border-outline-variant/10 dark:border-slate-700/50">
-                          <div class="flex items-center gap-3">
-                              <span class="material-symbols-outlined text-on-surface/60 dark:text-slate-400">language</span>
-                              <span class="font-bold text-sm text-on-surface dark:text-white">Sprache / Language</span>
-                          </div>
-                          <select onchange="setLanguage(this.value)" id="language-select" class="bg-surface-container dark:bg-slate-900 border-none rounded-xl text-xs font-bold py-2 pl-3 pr-8 focus:ring-2 focus:ring-primary/50 dark:text-white cursor-pointer appearance-none text-right">
-                              <option value="de">🇩🇪 Deutsch</option>
-                              <option value="en">🇬🇧 English</option>
-                              <option value="es">🇪🇸 Español</option>
-                              <option value="ru">🇷🇺 Русский</option>
-                              <option value="zh">🇨🇳 中文</option>
-                          </select>
-                      </div>
-
-                      <button onclick="openPremiumModal()" class="w-full flex items-center justify-between p-4 border-b border-outline-variant/10 dark:border-slate-700/50 hover:bg-surface-container-low dark:hover:bg-slate-700/50 transition-colors text-left group">
-                          <div class="flex items-center gap-3">
-                              <span class="material-symbols-outlined text-amber-500 group-hover:scale-110 transition-transform">workspace_premium</span>
-                              <span class="font-bold text-sm text-on-surface dark:text-white">AvioSphere Pro</span>
-                          </div>
-                          <span class="material-symbols-outlined text-on-surface/30 dark:text-slate-500 text-sm">chevron_right</span>
-                      </button>
-
-                      <button onclick="exportData('json')" class="w-full flex items-center justify-between p-4 border-b border-outline-variant/10 dark:border-slate-700/50 hover:bg-surface-container-low dark:hover:bg-slate-700/50 transition-colors text-left">
-                          <div class="flex items-center gap-3">
-                              <span class="material-symbols-outlined text-on-surface/60 dark:text-slate-400">download</span>
-                              <span class="font-bold text-sm text-on-surface dark:text-white" data-i18n="burgerMenu.exportJSON">Exportieren (JSON)</span>
-                          </div>
-                      </button>
-                      <button onclick="exportData('csv')" class="w-full flex items-center justify-between p-4 border-b border-outline-variant/10 dark:border-slate-700/50 hover:bg-surface-container-low dark:hover:bg-slate-700/50 transition-colors text-left">
-                          <div class="flex items-center gap-3">
-                              <span class="material-symbols-outlined text-on-surface/60 dark:text-slate-400">csv</span>
-                              <span class="font-bold text-sm text-on-surface dark:text-white" data-i18n="burgerMenu.exportCSV">Exportieren (CSV)</span>
-                          </div>
-                      </button>
-                      <label for="import-file-input" class="w-full flex items-center justify-between p-4 border-b border-outline-variant/10 dark:border-slate-700/50 hover:bg-surface-container-low dark:hover:bg-slate-700/50 transition-colors text-left cursor-pointer group mb-0">
-                          <div class="flex items-center gap-3">
-                              <span class="material-symbols-outlined text-red-500 dark:text-red-400 group-hover:text-red-600 transition-colors">upload</span>
-                              <div class="flex flex-col">
-                                  <span class="font-bold text-sm text-red-500 dark:text-red-400 group-hover:text-red-600 transition-colors" data-i18n="burgerMenu.import">Daten importieren</span>
-                                  <span class="text-[10px] text-on-surface/40 dark:text-slate-500 mt-0.5" data-i18n="burgerMenu.importSub">JSON, CSV</span>
-                              </div>
-                          </div>
-                      </label>
-
-                      <button onclick="renderHelpContent(); document.getElementById('help-modal-overlay').classList.remove('hidden');" class="w-full flex items-center justify-between p-4 border-b border-outline-variant/10 dark:border-slate-700/50 hover:bg-surface-container-low dark:hover:bg-slate-700/50 transition-colors text-left">
-                          <div class="flex items-center gap-3">
-                              <span class="material-symbols-outlined text-on-surface/60 dark:text-slate-400">support_agent</span>
-                              <span class="font-bold text-sm text-on-surface dark:text-white" data-i18n="help.title">Hilfe & FAQ</span>
-                          </div>
-                      </button>
-
-                      <button id="menu-exit-demo-btn" class="hidden w-full flex items-center justify-between p-4 border-b border-outline-variant/10 dark:border-slate-700/50 hover:bg-surface-container-low dark:hover:bg-slate-700/50 transition-colors text-left">
-                          <div class="flex items-center gap-3">
-                              <span class="material-symbols-outlined text-amber-500">door_open</span>
-                              <span class="font-bold text-sm text-amber-600 dark:text-amber-500" data-i18n="burgerMenu.exitDemo">Demo Beenden</span>
-                          </div>
-                      </button>
-
-                      <button onclick="logout()" class="w-full flex items-center justify-between p-4 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors text-left group">
-                          <div class="flex items-center gap-3">
-                              <span class="material-symbols-outlined text-red-500">logout</span>
-                              <span class="font-bold text-sm text-red-600 dark:text-red-400">Abmelden</span>
-                          </div>
-                      </button>
-                  </div>
-              </div>
-            </div>
+            
 
           </div>
         </div> 
@@ -1697,6 +1606,17 @@
         </div>
     </div>
 
+</div>
+
+<div id="custom-confirm-modal" class="fixed inset-0 z-[9999] hidden items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm opacity-0 transition-opacity font-display">
+    <div class="bg-surface-container-lowest dark:bg-slate-800 rounded-3xl shadow-2xl p-6 max-w-sm w-full border border-outline-variant/20 dark:border-slate-700 transform scale-95 transition-transform" id="custom-confirm-content">
+        <h3 class="text-xl font-black text-on-surface dark:text-white mb-2" id="confirm-title">Titel</h3>
+        <p class="text-sm text-on-surface/70 dark:text-slate-400 mb-6" id="confirm-message">Nachricht</p>
+        <div class="flex gap-3">
+            <button id="confirm-cancel-btn" class="flex-1 py-3 rounded-xl font-bold bg-surface-container-highest dark:bg-slate-700 text-on-surface dark:text-white hover:bg-outline-variant/50 transition">Abbrechen</button>
+            <button id="confirm-ok-btn" class="flex-1 py-3 rounded-xl font-bold bg-red-500 hover:bg-red-600 text-white transition shadow-md">Löschen</button>
+        </div>
+    </div>
 </div>
 
     <script>

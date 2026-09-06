@@ -363,6 +363,7 @@
     "continueChronicle": "▶️ 继续",
     "createBook": "创建日志书 (PDF)",
     "deleteTitle": "删除航班",
+    "delete": "删除",
     "editTitle": "编辑航班",
     "filterArrival": "目的地 (IATA)",
     "filterButton": "过滤",
@@ -883,7 +884,8 @@
     "updateErrorTitle": "更新错误",
     "uploadErrorTitle": "上传错误",
     "uploadLimitTitle": "上传限制",
-    "flightDeleted": "航班已删除"
+    "flightDeleted": "航班已删除",
+    "warningTitle": "警告"
   },
   "trips": {
     "createError": "无法创建行程。",

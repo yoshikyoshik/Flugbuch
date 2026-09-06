@@ -1523,16 +1523,18 @@ function resequenceAndAssignNumbers(flights) {
  * Aktualisiert die UI der Sortier-Buttons, um den aktiven Zustand anzuzeigen.
  */
 function updateSortButtonUI() {
-  // Entferne zuerst alle aktiven Zustände und Pfeile
+  // Entferne zuerst alle aktiven Zustände und Pfeile von ALLEN Buttons
   document.querySelectorAll(".sort-btn").forEach((btn) => {
-    btn.classList.remove("active");
+    btn.classList.remove("active", "bg-primary", "text-white", "dark:bg-indigo-600");
+    btn.classList.add("bg-surface-container", "hover:bg-surface-container-high", "dark:bg-slate-800", "dark:hover:bg-slate-700", "text-on-surface", "dark:text-slate-300");
     btn.textContent = btn.textContent.replace(/ [▲▼]/, "");
   });
 
-  // Setze den aktiven Zustand und Pfeil für den aktuellen Sortier-Button
+  // Setze die blaue Farbe und den Pfeil für den aktuell aktiven Sortier-Button
   const activeButton = document.getElementById(`sort-btn-${currentSort.key}`);
   if (activeButton) {
-    activeButton.classList.add("active");
+    activeButton.classList.remove("bg-surface-container", "hover:bg-surface-container-high", "dark:bg-slate-800", "dark:hover:bg-slate-700", "text-on-surface", "dark:text-slate-300");
+    activeButton.classList.add("active", "bg-primary", "text-white", "dark:bg-indigo-600");
     activeButton.textContent += currentSort.direction === "asc" ? " ▲" : " ▼";
   }
 }
