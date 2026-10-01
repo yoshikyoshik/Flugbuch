@@ -6820,14 +6820,12 @@ async function searchFlightByRoute() {
             const extractIcao = (val) => (typeof val === 'object' && val !== null) ? (val.code_icao || val.code || "") : (val || "");
             let foundAirlineIcao = f.airline_icao || extractIcao(f.operator) || f.carrier;
             
-            // 🚀 BUGHUNT FIX: Filtere rigoros alle Buchstaben aus der Flugnummer!
             let rawFlightNum = f.flight_number || f.ident || '';
-            let flightDigits = rawFlightNum.toString().replace(/[^0-9]/g, ''); // Behält nur die reinen Zahlen (z.B. "62")
+            let flightDigits = rawFlightNum.toString().replace(/[^0-9]/g, ''); 
             
             let airlineName = (typeof foundAirlineIcao === 'string' && foundAirlineIcao) ? foundAirlineIcao : 'Unbekannte Airline';
             let flightNum = f.ident || 'Unbekannt';
             
-            // Hier wird das IATA-Kürzel (LH) sauber mit den Zahlen (62) verbunden
             if (foundAirlineIcao && window.AIRLINE_MAPPING && window.AIRLINE_MAPPING[foundAirlineIcao]) {
                 const mapped = window.AIRLINE_MAPPING[foundAirlineIcao];
                 airlineName = mapped.name;
@@ -6849,7 +6847,8 @@ async function searchFlightByRoute() {
                 timeStr = dateObj.getHours().toString().padStart(2, '0') + ':' + dateObj.getMinutes().toString().padStart(2, '0');
             }
 
-            const flightDataAttr = btoa(JSON.stringify(f)); 
+            // 🚀 BUGHUNT FIX: encodeURIComponent ist kugelsicher gegen Umlaute (z.B. in "München")
+            const flightDataAttr = encodeURIComponent(JSON.stringify(f)); 
             const safeAirlineName = airlineName.replace(/'/g, "\\'");
 
             return `
@@ -6878,44 +6877,82 @@ window.selectFoundFlight = async function(flightNum, encodedData, airlineNameStr
         // 1. Fenster sofort schließen
         if (typeof closeFlightSelector === 'function') closeFlightSelector();
 
-        // 2. Dem Nutzer Feedback geben
+        // 2. 🚀 BUGHUNT FIX: KEIN ZWEITER API CALL MEHR!
+        // Wir nehmen einfach die perfekten Daten, die die Lupe schon gefunden hat!
+        const f = JSON.parse(decodeURIComponent(encodedData));
+
+        const extractIata = (val) => {
+            if (typeof val === 'object' && val !== null) return val.code_iata || val.code_icao || val.code || "";
+            if (typeof val === 'string') return val;
+            return "";
+        };
+
+        const depIata = f.dep_iata || extractIata(f.origin);
+        const arrIata = f.arr_iata || extractIata(f.destination);
+        const aircraftModel = (typeof f.aircraft_type === 'object' && f.aircraft_type !== null) ? f.aircraft_type.code : (f.aircraft_type || f.aircraft || f.type || "");
+
+        // 3. Direkt in die HTML-Felder schreiben
+        if (depIata) document.getElementById("departure").value = depIata.substring(0,3);
+        if (arrIata) document.getElementById("arrival").value = arrIata.substring(0,3);
+        
+        document.getElementById("aircraftType").value = aircraftModel || "";
+        document.getElementById("flightNumber").value = flightNum;
+        document.getElementById("airline").value = airlineNameStr || "";
+        
+        // Das vom User gesuchte Datum beibehalten
+        const targetDate = document.getElementById('flightDate').value || new Date().toISOString().split('T')[0];
+        document.getElementById("flightDate").value = targetDate;
+
+        // 4. Alle Zeitstempel & Terminals für die Supabase-Datenbank (Radar) sichern
+        const schedDepIso = f.dep_time_iso || f.scheduled_out || f.estimated_out;
+        const schedArrIso = f.arr_time_iso || f.scheduled_in || f.estimated_in;
+        const calcDepTs = schedDepIso ? Math.floor(new Date(schedDepIso).getTime()/1000) : null;
+        const calcArrTs = schedArrIso ? Math.floor(new Date(schedArrIso).getTime()/1000) : null;
+
+        let finalStatus = f.status || "scheduled";
+        if (targetDate < new Date().toISOString().split('T')[0]) finalStatus = "archived";
+
+        window.tempSelectedFlightData = {
+            dep_time_ts: f.dep_time_ts || calcDepTs,
+            arr_time_ts: f.arr_time_ts || calcArrTs,
+            dep_estimated_ts: f.dep_estimated_ts || calcDepTs,
+            arr_estimated_ts: f.arr_estimated_ts || calcArrTs,
+            dep_terminal: f.dep_terminal || null,
+            dep_gate: f.dep_gate || null,
+            arr_terminal: f.arr_terminal || null,
+            arr_gate: f.arr_gate || null,
+            status: finalStatus,
+            fa_flight_id: f.fa_flight_id || f.ident || null,
+            gps_track: null
+        };
+
+        // 5. Entfernungen berechnen und visuelles Feedback geben
+        if (typeof showAirportDetails === 'function') {
+            await showAirportDetails(depIata, true); 
+            await showAirportDetails(arrIata, true);
+        }
+        if (typeof updateFlightDetails === 'function') {
+            updateFlightDetails();
+        }
+
         if (typeof showMessage === 'function') {
             showMessage(
-                getTranslation("toastRadar.loadingFlightData") || "Lade Flugdaten...", 
-                (getTranslation("toastRadar.linkingRadar") || "Kopple Radar an Flug {flight}...").replace("{flight}", flightNum), 
-                "info"
+                typeof getTranslation === 'function' ? getTranslation("toast.successTitle") || "Erfolg" : "Erfolg", 
+                "Flugdaten sofort aus der Suche übernommen!", 
+                "success"
             );
         }
 
-        // 3. Das gewünschte Datum auslesen (aus dem Formular oder heute)
-        const todayStr = new Date().toISOString().split('T')[0];
-        const targetDate = document.getElementById('flightDate').value || todayStr;
+        // Scroll zum Speichern-Button
+        const logBtn = document.getElementById("log-button");
+        if (logBtn) logBtn.scrollIntoView({ behavior: "smooth", block: "center" });
 
-        // 4. Den Autopiloten unsichtbar füttern
-        const autoNumInput = document.getElementById("auto-flight-number");
-        const autoDateInput = document.getElementById("auto-flight-date");
-
-        if (autoNumInput && autoDateInput) {
-            autoNumInput.value = flightNum;
-            autoDateInput.value = targetDate;
-            
-            // 5. Autopilot abfeuern! Dieser holt verlässlich die Daten für EXAKT diesen Tag.
-            await autofillFlightData();
-        } else {
-            // Fallback (Falls die Lupe mal isoliert aufgerufen wird)
-            const flightInput = document.getElementById('flightNumber');
-            if (flightInput) flightInput.value = flightNum;
-            if (airlineNameStr) {
-                const airlineInput = document.getElementById('airline');
-                if (airlineInput && !airlineInput.value) airlineInput.value = airlineNameStr;
-            }
-        }
     } catch (e) {
         console.error("Fehler beim Übernehmen der Flugdaten:", e);
         if (typeof showMessage === 'function') {
             showMessage(
-                getTranslation("toast.errorTitle") || "Fehler", 
-                getTranslation("toastRadar.flightDataError") || "Flugdaten konnten nicht geladen werden.", 
+                typeof getTranslation === 'function' ? getTranslation("toast.errorTitle") || "Fehler" : "Fehler", 
+                "Flugdaten konnten nicht übernommen werden.", 
                 "error"
             );
         }
