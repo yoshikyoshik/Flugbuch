@@ -6,7 +6,14 @@ function showMessage(title, message, type = "info") {
   const container = document.getElementById("toast-container");
   if (!container) return;
   
-  // 🚀 FIX 1: Z-Index massiv erhöhen! Zwingt den Toast ÜBER jedes Modal und jeden Blur-Effekt.
+  // 🚀 DER ULTIMATIVE BUGHUNT FIX: Befreiung aus dem CSS-Stacking-Context!
+  // Wir reißen den Container aus seiner aktuellen HTML-Ebene und kleben ihn 
+  // ganz ans Ende des <body>. So entkommt er JEDEM Backdrop-Blur garantiert.
+  if (container.parentNode !== document.body) {
+      document.body.appendChild(container);
+  }
+  
+  // Z-Index zur Sicherheit auf Maximum
   container.style.zIndex = "999999";
   
   const toast = document.createElement("div");
@@ -15,10 +22,9 @@ function showMessage(title, message, type = "info") {
   if (type === "error") typeClass = "toast-error";
   if (type === "easter-egg") typeClass = "toast-easteregg";
   
-  // 🚀 FIX 2: Der Bug (doppelte className-Zuweisung, die sich selbst überschrieb) ist weg!
   toast.className = `toast ${typeClass} pointer-events-auto`;
-  
   toast.innerHTML = `<strong class="block">${title}</strong> ${message}`;
+  
   container.appendChild(toast);
   
   setTimeout(() => {
