@@ -6583,15 +6583,22 @@ window.initUpcomingWidget = async function() {
             const airlineStr = flight.airline || getTranslation("unknownAirline") || "Unbekannte Airline";
             const logoHtml = flight.airline_logo ? `<img src="${flight.airline_logo}" class="w-6 h-6 object-contain">` : `✈️`;
 
+            // 🚀 BUGHUNT FIX: Zeiten SOFORT aus der lokalen Datenbank laden!
+            const formatTs = (ts) => {
+                if (!ts) return "";
+                const d = new Date(ts * 1000);
+                return d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0');
+            };
+            const depTimeFromDB = formatTs(flight.dep_time_ts || flight.dep_estimated_ts);
+            const arrTimeFromDB = formatTs(flight.arr_time_ts || flight.arr_estimated_ts);
+
             // 🚀 SUPABASE TURBO: Gate und Terminal prüfen!
             let depInfoHtml = "";
             if (flight.dep_gate || flight.dep_terminal) {
                 const termText = flight.dep_terminal ? `Terminal ${flight.dep_terminal}` : "";
                 const gateText = flight.dep_gate ? `Gate ${flight.dep_gate}` : "";
-                // Verbinden mit einem Punkt, falls beides da ist
                 const combinedText = [termText, gateText].filter(Boolean).join(" • ");
                 
-                // Wir bauen ein elegantes, halbdurchsichtiges Badge!
                 depInfoHtml = `
                     <div class="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface-container-high dark:bg-slate-700/50 text-xs font-bold text-on-surface/80 dark:text-slate-300 border border-outline-variant/10 cursor-default" onclick="event.stopPropagation()">
                         <span class="material-symbols-outlined text-[14px] text-primary/70">sensor_door</span>
@@ -6625,7 +6632,7 @@ window.initUpcomingWidget = async function() {
                                   title="Flughafen-Webseite öffnen">
                                 ${flight.departure}
                                 <span class="material-symbols-outlined text-sm opacity-40 hover:opacity-100 ml-0.5 mt-0.5">language</span>
-                                <span id="upc-dep-time-${flight.id || flight.flight_id}" class="text-xs font-bold text-on-surface/40 dark:text-slate-500 ml-1 cursor-default" onclick="event.stopPropagation()"></span>
+                                <span id="upc-dep-time-${flight.id || flight.flight_id}" class="text-xs font-bold text-on-surface/40 dark:text-slate-500 ml-1 cursor-default" onclick="event.stopPropagation()">${depTimeFromDB}</span>
                             </span>
                             
                             <span class="text-primary/50 mx-1 cursor-default">➔</span> 
@@ -6635,7 +6642,7 @@ window.initUpcomingWidget = async function() {
                                   title="Flughafen-Webseite öffnen">
                                 ${flight.arrival}
                                 <span class="material-symbols-outlined text-sm opacity-40 hover:opacity-100 ml-0.5 mt-0.5">language</span>
-                                <span id="upc-arr-time-${flight.id || flight.flight_id}" class="text-xs font-bold text-on-surface/40 dark:text-slate-500 ml-1 cursor-default" onclick="event.stopPropagation()"></span>
+                                <span id="upc-arr-time-${flight.id || flight.flight_id}" class="text-xs font-bold text-on-surface/40 dark:text-slate-500 ml-1 cursor-default" onclick="event.stopPropagation()">${arrTimeFromDB}</span>
                             </span>
                         </div>
 
