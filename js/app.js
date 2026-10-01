@@ -6713,8 +6713,9 @@ window.updateUpcomingFlightDetails = async function(flight) {
                  return d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0');
              };
 
-             const depTimeStr = formatTime(match.dep_time_iso);
-             const arrTimeStr = formatTime(match.arr_time_iso);
+             // 🚀 BUGHUNT FIX: Auch hier auf scheduled_out zurückgreifen!
+             const depTimeStr = formatTime(match.dep_time_iso || match.scheduled_out || match.estimated_out);
+             const arrTimeStr = formatTime(match.arr_time_iso || match.scheduled_in || match.estimated_in);
 
              if (depTimeStr) {
                  const depEl = document.getElementById(`upc-dep-time-${flightId}`);
@@ -6725,9 +6726,11 @@ window.updateUpcomingFlightDetails = async function(flight) {
                  if (arrEl) arrEl.textContent = arrTimeStr;
              }
              
-             // Airline updaten (falls noch "Unbekannt"), jetzt via CDN (MIT SCHEDULE FALLBACK)
+             // Airline updaten (falls noch "Unbekannt"), jetzt via CDN
              const isUnknownAirline = !flight.airline || flight.airline.toLowerCase().includes('unbekannt') || flight.airline.toLowerCase().includes('unknown');
-             const foundAirlineIcao = match.airline_icao || match.operator || match.carrier;
+             
+             const extractIcao = (val) => (typeof val === 'object' && val !== null) ? (val.code_icao || val.code || "") : (val || "");
+             const foundAirlineIcao = match.airline_icao || extractIcao(match.operator) || match.carrier;
              
              if (isUnknownAirline && foundAirlineIcao) {
                  const logoCode = foundAirlineIcao.substring(0, 2);
@@ -6822,9 +6825,12 @@ async function searchFlightByRoute() {
 
         // Liste rendern
         list.innerHTML = flights.map(f => {
-            let flightNum = f.flight_number || f.ident || 'Unbekannt';
-            let foundAirlineIcao = f.airline_icao || f.operator || f.carrier;
-            let airlineName = foundAirlineIcao || 'Unbekannte Airline';
+            let flightNum = f.ident || f.flight_number || 'Unbekannt';
+            
+            const extractIcao = (val) => (typeof val === 'object' && val !== null) ? (val.code_icao || val.code || "") : (val || "");
+            let foundAirlineIcao = f.airline_icao || extractIcao(f.operator) || f.carrier;
+            
+            let airlineName = (typeof foundAirlineIcao === 'string' && foundAirlineIcao) ? foundAirlineIcao : 'Unbekannte Airline';
             const depText = getTranslation('flightSearch.departure') || 'Abflug';
             
             if (foundAirlineIcao && window.AIRLINE_MAPPING && window.AIRLINE_MAPPING[foundAirlineIcao]) {
@@ -6836,8 +6842,9 @@ async function searchFlightByRoute() {
             }
 
             let timeStr = '--:--';
-            if (f.dep_time_iso) {
-                const dateObj = new Date(f.dep_time_iso);
+            const rawDepIso = f.dep_time_iso || f.scheduled_out || f.estimated_out;
+            if (rawDepIso) {
+                const dateObj = new Date(rawDepIso);
                 timeStr = dateObj.getHours().toString().padStart(2, '0') + ':' + dateObj.getMinutes().toString().padStart(2, '0');
             }
 

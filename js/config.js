@@ -1192,11 +1192,14 @@ async function autofillFlightData() {
       // Da wir der API das Datum mitgeben, ist der erste Treffer in der Regel der richtige
       const flight = flights[0];
 
-      // --- DATEN EXTRAHIEREN (MIT FALLBACKS FÜR SCHEDULE-FLÜGE > 48H) ---
-      const depIata = flight.dep_iata || flight.origin || "";
-      const arrIata = flight.arr_iata || flight.destination || "";
-      const airlineIata = flight.airline_icao || flight.operator || flight.carrier || ""; 
-      const aircraftModel = flight.aircraft_type || flight.aircraft || flight.type || ""; 
+      // --- DATEN EXTRAHIEREN (BULLETPROOF FALLBACKS FÜR FLIGHTAWARE V4) ---
+      const extractIata = (val) => (typeof val === 'object' && val !== null) ? (val.code_iata || val.code || "") : (val || "");
+      const extractIcao = (val) => (typeof val === 'object' && val !== null) ? (val.code_icao || val.code || "") : (val || "");
+
+      const depIata = flight.dep_iata || extractIata(flight.origin);
+      const arrIata = flight.arr_iata || extractIata(flight.destination);
+      const airlineIata = flight.airline_icao || extractIcao(flight.operator) || flight.carrier || ""; 
+      const aircraftModel = (typeof flight.aircraft_type === 'object' && flight.aircraft_type !== null) ? flight.aircraft_type.code : (flight.aircraft_type || flight.aircraft || flight.type || ""); 
       const registration = flight.registration || flight.reg || "";
       
       if (!depIata || !arrIata) {
@@ -1205,7 +1208,7 @@ async function autofillFlightData() {
 
       // Airline-Namen und saubere Flugnummer abrufen
       let airlineName = airlineIata;
-      let displayFlightNumber = flight.flight_number || flight.ident || flightNumber;
+      let displayFlightNumber = flight.ident || flight.flight_number || flightNumber;
 
       if (airlineIata && typeof fetchAirlineName === 'function') {
           try {
@@ -1232,27 +1235,28 @@ async function autofillFlightData() {
       document.getElementById("registration").value = registration || "";
       document.getElementById("flightDate").value = flightDate;
 
-      // 🚀 HIER IST DER FIX: Die Zeiten, Gates und den Status für das spätere Speichern sichern!
+      // 🚀 NEU: Zeitstempel berechnen, falls es ein Schedule ist!
+      const schedDepIso = flight.dep_time_iso || flight.scheduled_out || flight.estimated_out;
+      const schedArrIso = flight.arr_time_iso || flight.scheduled_in || flight.estimated_in;
+      const calcDepTs = schedDepIso ? Math.floor(new Date(schedDepIso).getTime()/1000) : null;
+      const calcArrTs = schedArrIso ? Math.floor(new Date(schedArrIso).getTime()/1000) : null;
+
       const todayStr = new Date().toISOString().split('T')[0];
       let finalStatus = flight.status || "scheduled";
-      
-      // Historische Flüge direkt als "archived" (Beendet) markieren!
-      if (flightDate < todayStr) {
-          finalStatus = "archived";
-      }
+      if (flightDate < todayStr) finalStatus = "archived";
 
       window.tempSelectedFlightData = {
-          dep_time_ts: flight.dep_time_ts || null,
-          arr_time_ts: flight.arr_time_ts || null,
-          dep_estimated_ts: flight.dep_estimated_ts || null,
-          arr_estimated_ts: flight.arr_estimated_ts || null,
+          dep_time_ts: flight.dep_time_ts || calcDepTs,
+          arr_time_ts: flight.arr_time_ts || calcArrTs,
+          dep_estimated_ts: flight.dep_estimated_ts || calcDepTs,
+          arr_estimated_ts: flight.arr_estimated_ts || calcArrTs,
           dep_terminal: flight.dep_terminal || null,
           dep_gate: flight.dep_gate || null,
           arr_terminal: flight.arr_terminal || null,
           arr_gate: flight.arr_gate || null,
           status: finalStatus,
           fa_flight_id: flight.fa_flight_id || null,
-          gps_track: null // Platzhalter für gleich
+          gps_track: null // Platzhalter
       };
       // 🚀 DER EWIGE FLUGSCHREIBER: GPS-Track direkt beim Autopiloten für die Ewigkeit sichern!
       if (flight.fa_flight_id) {
