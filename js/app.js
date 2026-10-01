@@ -6815,18 +6815,25 @@ async function searchFlightByRoute() {
             return;
         }
 
+        // Liste rendern
         list.innerHTML = flights.map(f => {
             const extractIcao = (val) => (typeof val === 'object' && val !== null) ? (val.code_icao || val.code || "") : (val || "");
             let foundAirlineIcao = f.airline_icao || extractIcao(f.operator) || f.carrier;
             
-            let flightDigits = f.flight_number || (f.ident ? f.ident.replace(/[A-Za-z]/g, '') : '');
+            // 🚀 BUGHUNT FIX: Filtere rigoros alle Buchstaben aus der Flugnummer!
+            let rawFlightNum = f.flight_number || f.ident || '';
+            let flightDigits = rawFlightNum.toString().replace(/[^0-9]/g, ''); // Behält nur die reinen Zahlen (z.B. "62")
+            
             let airlineName = (typeof foundAirlineIcao === 'string' && foundAirlineIcao) ? foundAirlineIcao : 'Unbekannte Airline';
             let flightNum = f.ident || 'Unbekannt';
             
+            // Hier wird das IATA-Kürzel (LH) sauber mit den Zahlen (62) verbunden
             if (foundAirlineIcao && window.AIRLINE_MAPPING && window.AIRLINE_MAPPING[foundAirlineIcao]) {
                 const mapped = window.AIRLINE_MAPPING[foundAirlineIcao];
                 airlineName = mapped.name;
-                if (flightDigits) flightNum = mapped.iata + flightDigits;
+                if (flightDigits) {
+                    flightNum = mapped.iata + flightDigits; 
+                }
             } else if (foundAirlineIcao && typeof foundAirlineIcao === 'string') {
                 if (flightDigits && foundAirlineIcao.length >= 2) {
                     flightNum = foundAirlineIcao.substring(0,2) + flightDigits;

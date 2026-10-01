@@ -1207,8 +1207,11 @@ async function autofillFlightData() {
       const registration = flight.registration || flight.reg || "";
       
       let airlineName = airlineIata;
-      let flightDigits = flight.flight_number || (flight.ident ? flight.ident.replace(/[A-Za-z]/g, '') : '');
-      let displayFlightNumber = flightNumber; // Was der User/die Lupe übergeben hat
+      
+      // 🚀 BUGHUNT FIX: Auch hier konsequent alle Buchstaben filtern!
+      let rawFlightNum = flight.flight_number || flight.ident || '';
+      let flightDigits = rawFlightNum.toString().replace(/[^0-9]/g, '');
+      let displayFlightNumber = flightNumber; 
       
       if (airlineIata && window.AIRLINE_MAPPING && window.AIRLINE_MAPPING[airlineIata]) {
           const mapped = window.AIRLINE_MAPPING[airlineIata];
@@ -1221,7 +1224,7 @@ async function autofillFlightData() {
           } catch (e) {}
       }
 
-      // --- FORMULAR FÜLLEN (Nur wenn es echte IATA-Codes sind!) ---
+      // --- FORMULAR FÜLLEN ---
       if (depIata && depIata.length === 3) document.getElementById("departure").value = depIata;
       if (arrIata && arrIata.length === 3) document.getElementById("arrival").value = arrIata;
       
@@ -1254,7 +1257,7 @@ async function autofillFlightData() {
           fa_flight_id: flight.fa_flight_id || null,
           gps_track: null
       };
-      
+
       // 🚀 DER EWIGE FLUGSCHREIBER: GPS-Track direkt beim Autopiloten für die Ewigkeit sichern!
       if (flight.fa_flight_id) {
           try {
