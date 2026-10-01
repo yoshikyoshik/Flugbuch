@@ -1192,8 +1192,12 @@ async function autofillFlightData() {
       // Da wir der API das Datum mitgeben, ist der erste Treffer in der Regel der richtige
       const flight = flights[0];
 
-      // --- DATEN EXTRAHIEREN (BULLETPROOF FALLBACKS FÜR FLIGHTAWARE V4) ---
-      const extractIata = (val) => (typeof val === 'object' && val !== null) ? (val.code_iata || val.code || "") : (val || "");
+      // --- DATEN EXTRAHIEREN (MIT SAFEGUARDS) ---
+      const extractIata = (val) => {
+          if (typeof val === 'object' && val !== null) return val.code_iata || val.code_icao || val.code || "";
+          if (typeof val === 'string') return val;
+          return "";
+      };
       const extractIcao = (val) => (typeof val === 'object' && val !== null) ? (val.code_icao || val.code || "") : (val || "");
 
       const depIata = flight.dep_iata || extractIata(flight.origin);
@@ -1202,40 +1206,32 @@ async function autofillFlightData() {
       const aircraftModel = (typeof flight.aircraft_type === 'object' && flight.aircraft_type !== null) ? flight.aircraft_type.code : (flight.aircraft_type || flight.aircraft || flight.type || ""); 
       const registration = flight.registration || flight.reg || "";
       
-      if (!depIata || !arrIata) {
-          throw new Error("Flughafencodes fehlen in den API-Daten.");
-      }
-
-      // Airline-Namen und saubere Flugnummer abrufen
       let airlineName = airlineIata;
-      let displayFlightNumber = flight.ident || flight.flight_number || flightNumber;
-
-      if (airlineIata && typeof fetchAirlineName === 'function') {
+      let flightDigits = flight.flight_number || (flight.ident ? flight.ident.replace(/[A-Za-z]/g, '') : '');
+      let displayFlightNumber = flightNumber; // Was der User/die Lupe übergeben hat
+      
+      if (airlineIata && window.AIRLINE_MAPPING && window.AIRLINE_MAPPING[airlineIata]) {
+          const mapped = window.AIRLINE_MAPPING[airlineIata];
+          airlineName = mapped.name;
+          if (flightDigits) displayFlightNumber = mapped.iata + flightDigits;
+      } else if (airlineIata && typeof fetchAirlineName === 'function') {
           try {
               const fetchedAirline = await fetchAirlineName(airlineIata);
-              if (fetchedAirline) {
-                  airlineName = fetchedAirline.name || airlineIata;
-                  
-                  // 🚀 FIX: Wir entfernen das lästige "DLH" und ersetzen es durch "LH" in der Flugnummer!
-                  if (fetchedAirline.iata && displayFlightNumber.startsWith(airlineIata)) {
-                      displayFlightNumber = displayFlightNumber.replace(airlineIata, fetchedAirline.iata);
-                  }
-              }
-          } catch (error) {
-              console.warn("Airline-Name konnte nicht geladen werden, nutze Code-Fallback.", error);
-          }
+              if (fetchedAirline) airlineName = fetchedAirline.name || airlineIata;
+          } catch (e) {}
       }
 
-      // --- FORMULAR FÜLLEN ---
-      document.getElementById("departure").value = depIata;
-      document.getElementById("arrival").value = arrIata;
+      // --- FORMULAR FÜLLEN (Nur wenn es echte IATA-Codes sind!) ---
+      if (depIata && depIata.length === 3) document.getElementById("departure").value = depIata;
+      if (arrIata && arrIata.length === 3) document.getElementById("arrival").value = arrIata;
+      
       document.getElementById("aircraftType").value = aircraftModel || "";
-      document.getElementById("flightNumber").value = displayFlightNumber; // 🚀 Hier steht jetzt "LH400" statt "DLH400"
+      document.getElementById("flightNumber").value = displayFlightNumber;
       document.getElementById("airline").value = airlineName || "";
       document.getElementById("registration").value = registration || "";
       document.getElementById("flightDate").value = flightDate;
 
-      // 🚀 NEU: Zeitstempel berechnen, falls es ein Schedule ist!
+      // 🚀 ZEITSTEMPEL (Auch für Schedule-Flüge > 48h)
       const schedDepIso = flight.dep_time_iso || flight.scheduled_out || flight.estimated_out;
       const schedArrIso = flight.arr_time_iso || flight.scheduled_in || flight.estimated_in;
       const calcDepTs = schedDepIso ? Math.floor(new Date(schedDepIso).getTime()/1000) : null;
@@ -1256,8 +1252,9 @@ async function autofillFlightData() {
           arr_gate: flight.arr_gate || null,
           status: finalStatus,
           fa_flight_id: flight.fa_flight_id || null,
-          gps_track: null // Platzhalter
+          gps_track: null
       };
+      
       // 🚀 DER EWIGE FLUGSCHREIBER: GPS-Track direkt beim Autopiloten für die Ewigkeit sichern!
       if (flight.fa_flight_id) {
           try {

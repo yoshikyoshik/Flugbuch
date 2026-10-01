@@ -6697,23 +6697,20 @@ window.updateUpcomingFlightDetails = async function(flight) {
         const flightId = flight.id || flight.flight_id;
         const cleanFlightNum = (flight.flightNumber || "").replace(/\s+/g, '').toUpperCase();
         
-        // 🚀 Neue FlightAware-Route ansteuern
         const url = `${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-fa-flight?flight_number=${cleanFlightNum}&date=${flight.date}`;
         const response = await fetch(url);
         if (!response.ok) return;
         const flights = await response.json();
 
         if (flights && flights.length > 0) {
-             const match = flights[0]; // Erster Treffer für diesen Tag
+             const match = flights[0]; 
              
-             // Zeiten formatieren (FlightAware liefert ISO-Strings)
              const formatTime = (isoString) => {
                  if (!isoString) return null;
                  const d = new Date(isoString);
                  return d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0');
              };
 
-             // 🚀 BUGHUNT FIX: Auch hier auf scheduled_out zurückgreifen!
              const depTimeStr = formatTime(match.dep_time_iso || match.scheduled_out || match.estimated_out);
              const arrTimeStr = formatTime(match.arr_time_iso || match.scheduled_in || match.estimated_in);
 
@@ -6726,30 +6723,34 @@ window.updateUpcomingFlightDetails = async function(flight) {
                  if (arrEl) arrEl.textContent = arrTimeStr;
              }
              
-             // Airline updaten (falls noch "Unbekannt"), jetzt via CDN
              const isUnknownAirline = !flight.airline || flight.airline.toLowerCase().includes('unbekannt') || flight.airline.toLowerCase().includes('unknown');
-             
              const extractIcao = (val) => (typeof val === 'object' && val !== null) ? (val.code_icao || val.code || "") : (val || "");
              const foundAirlineIcao = match.airline_icao || extractIcao(match.operator) || match.carrier;
              
              if (isUnknownAirline && foundAirlineIcao) {
-                 const logoCode = foundAirlineIcao.substring(0, 2);
-                 const airlineUrl = `https://images.kiwi.com/airlines/128x128/${logoCode}.png`;
-                 const airEl = document.getElementById(`upc-airline-${flightId}`);
-                 if (airEl) airEl.textContent = foundAirlineIcao;
-                 
-                 // DB lautlos im Hintergrund updaten
-                 supabaseClient.from('flights').update({ airline: foundAirlineIcao, airline_logo: airlineUrl }).eq('flight_id', flightId).then();
-                 flight.airline = foundAirlineIcao; 
-                 flight.airline_logo = airlineUrl;
+                 const logoCode = (typeof foundAirlineIcao === 'string') ? foundAirlineIcao.substring(0, 2) : "";
+                 if (logoCode) {
+                     const airlineUrl = `https://images.kiwi.com/airlines/128x128/${logoCode}.png`;
+                     const airEl = document.getElementById(`upc-airline-${flightId}`);
+                     
+                     let displayAirlineName = foundAirlineIcao;
+                     if (window.AIRLINE_MAPPING && window.AIRLINE_MAPPING[foundAirlineIcao]) {
+                         displayAirlineName = window.AIRLINE_MAPPING[foundAirlineIcao].name;
+                     }
+
+                     if (airEl) airEl.textContent = displayAirlineName;
+                     
+                     supabaseClient.from('flights').update({ airline: displayAirlineName, airline_logo: airlineUrl }).eq('flight_id', flightId).then();
+                     flight.airline = displayAirlineName; 
+                     flight.airline_logo = airlineUrl;
+                 }
              }
-        }
+        } // <--- HIER WAR DIE FEHLENDE KLAMMER!
     } catch(e) {
         console.warn("Fehler beim Abrufen der Upcoming-Details:", e);
     }
 };
 
-// Sucht heutige und zukünftige Flüge basierend auf IATA-Codes via FlightAware
 async function searchFlightByRoute() {
     const depRaw = document.getElementById('departure').value.trim().toUpperCase();
     const arrRaw = document.getElementById('arrival').value.trim().toUpperCase();
@@ -6772,11 +6773,8 @@ async function searchFlightByRoute() {
 
     if (dateInput) {
         targetDate = dateInput;
-        if (dateInput > todayStr) {
-            isFuture = true;
-        } else if (dateInput < todayStr) {
-            isPast = true;
-        }
+        if (dateInput > todayStr) isFuture = true;
+        else if (dateInput < todayStr) isPast = true;
     }
 
     const modal = document.getElementById('flight-selector-modal');
@@ -6787,14 +6785,9 @@ async function searchFlightByRoute() {
     list.style.overflowY = "auto"; 
 
     const modalTitleEl = content.querySelector('h3');
-    
-    if (isPast) {
-        modalTitleEl.textContent = (typeof getTranslation === 'function' ? getTranslation('flightSearch.modalTitlePast') : null) || 'Vergangene Flüge';
-    } else if (isFuture) {
-        modalTitleEl.textContent = (typeof getTranslation === 'function' ? getTranslation('flightSearch.modalTitleFuture') : null) || 'Zukünftige Flüge';
-    } else {
-        modalTitleEl.textContent = (typeof getTranslation === 'function' ? getTranslation('flightSearch.modalTitle') : null) || 'Heutige Flüge';
-    }
+    if (isPast) modalTitleEl.textContent = (typeof getTranslation === 'function' ? getTranslation('flightSearch.modalTitlePast') : null) || 'Vergangene Flüge';
+    else if (isFuture) modalTitleEl.textContent = (typeof getTranslation === 'function' ? getTranslation('flightSearch.modalTitleFuture') : null) || 'Zukünftige Flüge';
+    else modalTitleEl.textContent = (typeof getTranslation === 'function' ? getTranslation('flightSearch.modalTitle') : null) || 'Heutige Flüge';
     
     modal.classList.remove('hidden');
     setTimeout(() => { modal.classList.remove('opacity-0'); content.classList.remove('scale-95'); }, 10);
@@ -6806,7 +6799,6 @@ async function searchFlightByRoute() {
         </div>`;
 
     try {
-        // 🚀 BUGHUNT FIX: FlightAware liebt ICAO-Codes! Wir übersetzen beide Eingaben.
         let depIcao = depRaw;
         let arrIcao = arrRaw;
         if (typeof window.getIcaoCode === 'function') {
@@ -6823,24 +6815,26 @@ async function searchFlightByRoute() {
             return;
         }
 
-        // Liste rendern
         list.innerHTML = flights.map(f => {
-            let flightNum = f.ident || f.flight_number || 'Unbekannt';
-            
             const extractIcao = (val) => (typeof val === 'object' && val !== null) ? (val.code_icao || val.code || "") : (val || "");
             let foundAirlineIcao = f.airline_icao || extractIcao(f.operator) || f.carrier;
             
+            let flightDigits = f.flight_number || (f.ident ? f.ident.replace(/[A-Za-z]/g, '') : '');
             let airlineName = (typeof foundAirlineIcao === 'string' && foundAirlineIcao) ? foundAirlineIcao : 'Unbekannte Airline';
-            const depText = getTranslation('flightSearch.departure') || 'Abflug';
+            let flightNum = f.ident || 'Unbekannt';
             
             if (foundAirlineIcao && window.AIRLINE_MAPPING && window.AIRLINE_MAPPING[foundAirlineIcao]) {
                 const mapped = window.AIRLINE_MAPPING[foundAirlineIcao];
                 airlineName = mapped.name;
-                if (flightNum.startsWith(foundAirlineIcao)) {
-                    flightNum = flightNum.replace(foundAirlineIcao, mapped.iata);
+                if (flightDigits) flightNum = mapped.iata + flightDigits;
+            } else if (foundAirlineIcao && typeof foundAirlineIcao === 'string') {
+                if (flightDigits && foundAirlineIcao.length >= 2) {
+                    flightNum = foundAirlineIcao.substring(0,2) + flightDigits;
                 }
             }
 
+            const depText = getTranslation('flightSearch.departure') || 'Abflug';
+            
             let timeStr = '--:--';
             const rawDepIso = f.dep_time_iso || f.scheduled_out || f.estimated_out;
             if (rawDepIso) {
@@ -6853,7 +6847,7 @@ async function searchFlightByRoute() {
 
             return `
             <button onclick="selectFoundFlight('${flightNum}', '${flightDataAttr}', '${safeAirlineName}')" 
-            class="w-full text-left p-4 rounded-xl bg-surface-container-low dark:bg-slate-800 hover:bg-primary/10 transition border border-transparent hover:border-primary/30 flex justify-between items-center group">
+            class="w-full text-left p-4 rounded-xl bg-surface-container-low dark:bg-slate-800 hover:bg-primary/10 transition border border-transparent hover:border-primary/30 flex justify-between items-center group mb-2">
             <div>
                 <div class="font-black text-lg text-on-surface dark:text-white group-hover:text-primary transition-colors">${flightNum}</div>
                 <div class="text-xs font-bold text-slate-500 dark:text-slate-400">${airlineName}</div>
