@@ -5,16 +5,22 @@
 function showMessage(title, message, type = "info") {
   const container = document.getElementById("toast-container");
   if (!container) return;
+  
+  // 🚀 FIX 1: Z-Index massiv erhöhen! Zwingt den Toast ÜBER jedes Modal und jeden Blur-Effekt.
+  container.style.zIndex = "999999";
+  
   const toast = document.createElement("div");
   let typeClass = "toast-info";
   if (type === "success") typeClass = "toast-success";
   if (type === "error") typeClass = "toast-error";
   if (type === "easter-egg") typeClass = "toast-easteregg";
-  // HIER IST DIE ÄNDERUNG: pointer-events-auto hinzugefügt
+  
+  // 🚀 FIX 2: Der Bug (doppelte className-Zuweisung, die sich selbst überschrieb) ist weg!
   toast.className = `toast ${typeClass} pointer-events-auto`;
-  toast.className = `toast ${typeClass}`;
+  
   toast.innerHTML = `<strong class="block">${title}</strong> ${message}`;
   container.appendChild(toast);
+  
   setTimeout(() => {
     toast.remove();
   }, 5000);
