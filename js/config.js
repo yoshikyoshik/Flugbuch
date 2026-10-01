@@ -1192,12 +1192,12 @@ async function autofillFlightData() {
       // Da wir der API das Datum mitgeben, ist der erste Treffer in der Regel der richtige
       const flight = flights[0];
 
-      // --- DATEN EXTRAHIEREN ---
-      const depIata = flight.dep_iata || "";
-      const arrIata = flight.arr_iata || "";
-      const airlineIata = flight.airline_icao || ""; 
-      const aircraftModel = flight.aircraft_type || ""; 
-      const registration = flight.registration || "";
+      // --- DATEN EXTRAHIEREN (MIT FALLBACKS FÜR SCHEDULE-FLÜGE > 48H) ---
+      const depIata = flight.dep_iata || flight.origin || "";
+      const arrIata = flight.arr_iata || flight.destination || "";
+      const airlineIata = flight.airline_icao || flight.operator || flight.carrier || ""; 
+      const aircraftModel = flight.aircraft_type || flight.aircraft || flight.type || ""; 
+      const registration = flight.registration || flight.reg || "";
       
       if (!depIata || !arrIata) {
           throw new Error("Flughafencodes fehlen in den API-Daten.");
@@ -1205,7 +1205,7 @@ async function autofillFlightData() {
 
       // Airline-Namen und saubere Flugnummer abrufen
       let airlineName = airlineIata;
-      let displayFlightNumber = flight.flight_number || flightNumber;
+      let displayFlightNumber = flight.flight_number || flight.ident || flightNumber;
 
       if (airlineIata && typeof fetchAirlineName === 'function') {
           try {

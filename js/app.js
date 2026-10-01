@@ -6725,17 +6725,19 @@ window.updateUpcomingFlightDetails = async function(flight) {
                  if (arrEl) arrEl.textContent = arrTimeStr;
              }
              
-             // Airline updaten (falls noch "Unbekannt"), jetzt via CDN
+             // Airline updaten (falls noch "Unbekannt"), jetzt via CDN (MIT SCHEDULE FALLBACK)
              const isUnknownAirline = !flight.airline || flight.airline.toLowerCase().includes('unbekannt') || flight.airline.toLowerCase().includes('unknown');
-             if (isUnknownAirline && match.airline_icao) {
-                 const logoCode = match.airline_icao.substring(0, 2);
+             const foundAirlineIcao = match.airline_icao || match.operator || match.carrier;
+             
+             if (isUnknownAirline && foundAirlineIcao) {
+                 const logoCode = foundAirlineIcao.substring(0, 2);
                  const airlineUrl = `https://images.kiwi.com/airlines/128x128/${logoCode}.png`;
                  const airEl = document.getElementById(`upc-airline-${flightId}`);
-                 if (airEl) airEl.textContent = match.airline_icao;
+                 if (airEl) airEl.textContent = foundAirlineIcao;
                  
                  // DB lautlos im Hintergrund updaten
-                 supabaseClient.from('flights').update({ airline: match.airline_icao, airline_logo: airlineUrl }).eq('flight_id', flightId).then();
-                 flight.airline = match.airline_icao; 
+                 supabaseClient.from('flights').update({ airline: foundAirlineIcao, airline_logo: airlineUrl }).eq('flight_id', flightId).then();
+                 flight.airline = foundAirlineIcao; 
                  flight.airline_logo = airlineUrl;
              }
         }
@@ -6820,15 +6822,16 @@ async function searchFlightByRoute() {
 
         // Liste rendern
         list.innerHTML = flights.map(f => {
-            let flightNum = f.flight_number || 'Unbekannt';
-            let airlineName = f.airline_icao || 'Unbekannte Airline';
+            let flightNum = f.flight_number || f.ident || 'Unbekannt';
+            let foundAirlineIcao = f.airline_icao || f.operator || f.carrier;
+            let airlineName = foundAirlineIcao || 'Unbekannte Airline';
             const depText = getTranslation('flightSearch.departure') || 'Abflug';
             
-            if (f.airline_icao && window.AIRLINE_MAPPING && window.AIRLINE_MAPPING[f.airline_icao]) {
-                const mapped = window.AIRLINE_MAPPING[f.airline_icao];
+            if (foundAirlineIcao && window.AIRLINE_MAPPING && window.AIRLINE_MAPPING[foundAirlineIcao]) {
+                const mapped = window.AIRLINE_MAPPING[foundAirlineIcao];
                 airlineName = mapped.name;
-                if (flightNum.startsWith(f.airline_icao)) {
-                    flightNum = flightNum.replace(f.airline_icao, mapped.iata);
+                if (flightNum.startsWith(foundAirlineIcao)) {
+                    flightNum = flightNum.replace(foundAirlineIcao, mapped.iata);
                 }
             }
 
