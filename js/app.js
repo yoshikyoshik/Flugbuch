@@ -2019,6 +2019,10 @@ window.setSortOrder = function (sortKey) {
     currentSort.key = sortKey;
     currentSort.direction = "asc";
   }
+  
+  // 🚀 NEU: Die neue Sortierung sofort lokal auf dem Gerät speichern!
+  localStorage.setItem('aviosphere_sort_pref', JSON.stringify(currentSort));
+  
   // Rendere die Flugliste mit der neuen Sortierung neu
   applyFilters();
 };

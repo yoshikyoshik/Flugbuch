@@ -25,7 +25,13 @@ let routeLayer;
 let markerClusterGroup = null;
 let currentlyEditingFlightData = null;
 let isAllRoutesViewActive = false;
+
 let currentSort = { key: "flightLogNumber", direction: "asc" };
+try {
+    const savedSort = localStorage.getItem('aviosphere_sort_pref');
+    if (savedSort) currentSort = JSON.parse(savedSort);
+} catch(e) {}
+
 let currentPage = 1;
 let currentlyFilteredFlights = null;
 let flightsChartInstance, distanceChartInstance, timeChartInstance;
