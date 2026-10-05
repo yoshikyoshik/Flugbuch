@@ -241,7 +241,7 @@
             <p class="text-[10px] font-bold uppercase tracking-widest text-on-surface/50 dark:text-slate-400 animate-pulse" data-i18n="boot.syncing">Flugdaten werden synchronisiert...</p>
         </div>
       <div
-        class="w-full max-w-4xl bg-transparent sm:bg-surface-container-lowest/90 sm:dark:bg-slate-900/80 sm:backdrop-blur-3xl sm:shadow-2xl rounded-none sm:rounded-[2.5rem] px-3 pb-4 pt-[max(1.5rem,env(safe-area-inset-top))] sm:p-8 md:p-12 sm:border border-outline-variant/20 dark:border-slate-800"
+        class="w-full max-w-4xl bg-transparent sm:bg-surface-container-lowest/90 sm:dark:bg-slate-900/80 sm:backdrop-blur-3xl sm:shadow-2xl rounded-none sm:rounded-[2.5rem] px-3 pb-4 pt-2 sm:p-8 md:p-12 sm:border border-outline-variant/20 dark:border-slate-800"
       >
         
         
@@ -252,11 +252,12 @@
           <div class="py-6 pb-28">
             
             <div id="tab-content-radar">
-              <div class="flex items-center justify-between mb-8 pr-2">
+            
+            <div class="flex items-center justify-between mb-8 pr-2 sticky top-0 z-50 w-full bg-background dark:bg-gray-900 pt-[max(env(safe-area-inset-top),1.5rem)] pb-4 -mt-2">
                 <h2 class="text-2xl font-display font-extrabold text-on-surface dark:text-white tracking-tight" data-i18n="tabs.radar">
-                  Radar
+                    Radar
                 </h2>
-              </div>
+                </div>
 
               <div id="radar-empty-state" class="text-center py-12 px-4 bg-surface-container-lowest dark:bg-slate-800 rounded-[2rem] border border-dashed border-outline-variant/30 dark:border-slate-700">
                   <div class="text-5xl mb-4 opacity-50">📡</div>
@@ -376,7 +377,7 @@
             <div id="tab-content-airport-radar" class="hidden">
               
               <!-- STICKY HEADER AIRPORT LIVE -->
-              <div class="sticky top-0 z-30 bg-surface-container-lowest/95 dark:bg-slate-900/95 backdrop-blur-xl pt-2 pb-4 mb-4 -mx-2 px-2">
+              <div class="sticky top-0 z-50 bg-background dark:bg-gray-900 pt-[max(env(safe-area-inset-top),1.5rem)] pb-4 mb-4 -mx-2 px-2 -mt-2">
                   <div class="flex items-center justify-between mb-4 pr-2">
                     <h2 class="text-2xl font-display font-extrabold text-on-surface dark:text-white tracking-tight" data-i18n="airportRadar.title">
                       Flughafen Live
@@ -424,7 +425,7 @@
             <div id="tab-content-timeline" class="hidden">
               
               <!-- STICKY HEADER TIMELINE -->
-              <div class="sticky top-0 z-30 bg-surface-container-lowest/95 dark:bg-slate-900/95 backdrop-blur-xl pt-2 pb-4 mb-4 -mx-2 px-2">
+              <div class="sticky top-0 z-50 bg-background dark:bg-gray-900 pt-[max(env(safe-area-inset-top),1.5rem)] pb-4 mb-4 -mx-2 px-2 -mt-2">
                   <div class="flex items-center justify-between mb-4 pr-2">
                     <h2 class="text-2xl font-display font-extrabold text-on-surface dark:text-white tracking-tight">
                       Timeline
@@ -543,7 +544,7 @@
             <div id="tab-content-analytics" class="hidden">
               
               <!-- STICKY HEADER ANALYTICS -->
-              <div class="sticky top-0 z-30 bg-surface-container-lowest/95 dark:bg-slate-900/95 backdrop-blur-xl pt-2 pb-4 mb-4 -mx-2 px-2">
+              <div class="sticky top-0 z-50 bg-background dark:bg-gray-900 pt-[max(env(safe-area-inset-top),1.5rem)] pb-4 mb-4 -mx-2 px-2 -mt-2">
                   <div class="flex items-center justify-between mb-4 pr-2">
                     <h2 class="text-2xl font-display font-extrabold text-on-surface dark:text-white tracking-tight">
                       Analytics
@@ -687,7 +688,7 @@
             <div id="tab-content-profil" class="hidden">
               
               <!-- STICKY HEADER PROFIL -->
-              <div class="sticky top-0 z-30 bg-surface-container-lowest/95 dark:bg-slate-900/95 backdrop-blur-xl pt-2 pb-4 mb-4 -mx-2 px-2">
+              <div class="sticky top-0 z-50 bg-background dark:bg-gray-900 pt-[max(env(safe-area-inset-top),1.5rem)] pb-4 mb-4 -mx-2 px-2 -mt-2">
                   <div class="flex items-center justify-between mb-4 pr-2">
                     <h2 class="text-2xl font-display font-extrabold text-on-surface dark:text-white tracking-tight">
                       Profil
