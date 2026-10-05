@@ -3219,7 +3219,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   }
 
 	// EASTER EGG LISTENER
-    const headerLogo = document.getElementById("app-header-logo");
+    const headerLogo = document.getElementById("app-version");
     
     if (headerLogo) {
         console.log("Easter Egg Listener wurde erfolgreich registriert!"); // 1. Check
@@ -3236,7 +3236,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             }
         });
     } else {
-        console.error("Fehler: Element mit ID 'app-header-logo' nicht gefunden!");
+        console.error("Fehler: Element mit ID 'app-version' nicht gefunden!");
     }
 
     // --- NEU: Listener für Planespotters Live-Vorschau ---
