@@ -4314,15 +4314,24 @@ window.viewFlightDetails = async function(id, isSwitching = false, customScope =
         }
     }
 
-    if (flight.dep_time_ts || flight.dep_gate || flight.arr_gate) {
+    if (flight.dep_time_ts || flight.dep_gate || flight.arr_gate || flight.dep_actual_ts || flight.dep_estimated_ts) {
         const formatTs = (ts) => {
             if (!ts) return "--:--";
             const d = new Date(ts * 1000);
             return d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0');
         };
 
-        const depTime = formatTs(flight.dep_time_ts);
-        const arrTime = formatTs(flight.arr_time_ts);
+        // 🚀 BUGHUNT FIX: Intelligente Zeit-Kaskade! (Actual -> Estimated -> Scheduled)
+        const finalDepTs = flight.dep_actual_ts || flight.dep_estimated_ts || flight.dep_time_ts;
+        const finalArrTs = flight.arr_actual_ts || flight.arr_estimated_ts || flight.arr_time_ts;
+
+        const depTime = formatTs(finalDepTs);
+        const arrTime = formatTs(finalArrTs);
+
+        // Visuelles Feedback: Grün = Tatsächlich, Orange = Abweichend, Standard = Geplant
+        const depColor = flight.dep_actual_ts ? "text-emerald-500 dark:text-emerald-400" : (flight.dep_estimated_ts && flight.dep_estimated_ts !== flight.dep_time_ts ? "text-orange-500 dark:text-orange-400" : "text-on-surface dark:text-slate-200");
+        const arrColor = flight.arr_actual_ts ? "text-emerald-500 dark:text-emerald-400" : (flight.arr_estimated_ts && flight.arr_estimated_ts !== flight.arr_time_ts ? "text-orange-500 dark:text-orange-400" : "text-on-surface dark:text-slate-200");
+
         const depGate = flight.dep_gate ? `Gate ${flight.dep_gate}` : "-";
         const arrGate = flight.arr_gate ? `Gate ${flight.arr_gate}` : "-";
         const depTerm = flight.dep_terminal ? `T${flight.dep_terminal}` : "-";
@@ -4334,12 +4343,12 @@ window.viewFlightDetails = async function(id, isSwitching = false, customScope =
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <p class="text-[10px] text-on-surface/40 dark:text-slate-500 uppercase">${getTranslation("historical.departure") || "Abflug"} (${flight.departure})</p>
-                        <p class="text-sm font-bold text-on-surface dark:text-slate-200">🕒 ${depTime}</p>
+                        <p class="text-sm font-bold ${depColor}">🕒 ${depTime}</p>
                         <p class="text-xs text-on-surface/70 dark:text-slate-400">🚪 ${depTerm} | ${depGate}</p>
                     </div>
                     <div>
                         <p class="text-[10px] text-on-surface/40 dark:text-slate-500 uppercase">${getTranslation("historical.arrival") || "Ankunft"} (${flight.arrival})</p>
-                        <p class="text-sm font-bold text-on-surface dark:text-slate-200">🕒 ${arrTime}</p>
+                        <p class="text-sm font-bold ${arrColor}">🕒 ${arrTime}</p>
                         <p class="text-xs text-on-surface/70 dark:text-slate-400">🚪 ${arrTerm} | ${arrGate}</p>
                     </div>
                 </div>
@@ -6059,12 +6068,16 @@ window.refreshLiveFlightData = async function(force = true) {
                     const flightIdToSync = window.currentLiveFlight.id || window.currentLiveFlight.flight_id;
                     const syncPayload = {};
 
-                    // 🚀 BUGHUNT FIX: Auch die verspäteten/geschätzten Zeiten an Supabase übergeben!
+                    // 🚀 BUGHUNT FIX: Auch die verspäteten/geschätzten UND tatsächlichen Zeiten an Supabase übergeben!
                     if (data.dep_time_ts) syncPayload.dep_time_ts = data.dep_time_ts;
                     if (data.arr_time_ts) syncPayload.arr_time_ts = data.arr_time_ts;
                     if (data.dep_estimated_ts) syncPayload.dep_estimated_ts = data.dep_estimated_ts;
                     if (data.arr_estimated_ts) syncPayload.arr_estimated_ts = data.arr_estimated_ts;
                     
+                    // 🚀 NEU: Echte Zeiten (Actual) sofort speichern, sobald sie vorliegen!
+                    if (data.actual_out) syncPayload.dep_actual_ts = Math.floor(new Date(data.actual_out).getTime() / 1000);
+                    if (data.actual_in || data.actual_on) syncPayload.arr_actual_ts = Math.floor(new Date(data.actual_in || data.actual_on).getTime() / 1000);
+
                     if (data.dep_terminal) syncPayload.dep_terminal = data.dep_terminal;
                     if (data.dep_gate) syncPayload.dep_gate = data.dep_gate;
                     if (data.arr_terminal) syncPayload.arr_terminal = data.arr_terminal;
