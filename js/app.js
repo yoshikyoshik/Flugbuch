@@ -7601,7 +7601,7 @@ window.takeoverFlightFromLiveBoard = async function(index, ev) {
         ev.stopPropagation();
     }
 
-    // 2. PRO-Check (Kugelsicher auf die globale Variable zugreifen)
+    // 2. PRO-Check
     let subStatus = "free";
     if (typeof currentUserSubscription !== 'undefined') {
         subStatus = currentUserSubscription.toLowerCase();
@@ -7633,11 +7633,8 @@ window.takeoverFlightFromLiveBoard = async function(index, ev) {
         const aircraft = (f.aircraft_type && typeof f.aircraft_type === 'object') ? f.aircraft_type.code : (f.aircraft_type || "");
         
         let rawFlightNum = String(f.ident || f.flight_number || "");
-        
-        // 🚀 FIX: Airline intelligent mappen (inklusive Fallback auf die Flugnummer!)
         let airlineIcao = (f.airline_icao || extractCode(f.operator) || f.carrier || "").toUpperCase();
         
-        // Wenn die API keinen Code geliefert hat, holen wir die Buchstaben aus der Flugnummer (SXS299 -> SXS)
         if (!airlineIcao && rawFlightNum) {
             const match = rawFlightNum.match(/^[A-Za-z]+/);
             if (match) airlineIcao = match[0].toUpperCase();
@@ -7646,17 +7643,14 @@ window.takeoverFlightFromLiveBoard = async function(index, ev) {
         let airlineName = airlineIcao;
         let displayFlightNum = rawFlightNum;
 
-        // Wenn wir ein Mapping haben, holen wir den echten Namen und bauen die Flugnummer auf IATA um (z.B. SXS299 -> XQ299)
         if (airlineIcao && window.AIRLINE_MAPPING && window.AIRLINE_MAPPING[airlineIcao]) {
             airlineName = window.AIRLINE_MAPPING[airlineIcao].name;
-            
             const digits = rawFlightNum.replace(/[^0-9]/g, '');
             if (digits && window.AIRLINE_MAPPING[airlineIcao].iata) {
                 displayFlightNum = window.AIRLINE_MAPPING[airlineIcao].iata + digits;
             }
         }
 
-        // Registrierung fangen
         const reg = f.registration || f.reg || "";
 
         // 6. Felder im Formular befüllen
@@ -7670,15 +7664,30 @@ window.takeoverFlightFromLiveBoard = async function(index, ev) {
             document.getElementById("aircraftType").value = aircraft;
         }
 
-        // Datum setzen
         const targetDateIso = f.scheduled_out || f.scheduled_off || f.scheduled_time || f.estimated_time;
-        if (targetDateIso) {
-            document.getElementById("flightDate").value = new Date(targetDateIso).toISOString().split('T')[0];
-        } else {
-            document.getElementById("flightDate").value = new Date().toISOString().split('T')[0];
-        }
+        const targetDateStr = targetDateIso ? new Date(targetDateIso).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+        document.getElementById("flightDate").value = targetDateStr;
 
-        // Flughafendaten lautlos cachen & Metriken berechnen (Schaltet den Speichern-Button frei!)
+        // ================================================================
+        // 🚀 BUGHUNT FIX: FLIGHT-AWARE ID FÜR PUSH-ALERTS WEITERGEBEN!
+        // ================================================================
+        const tsOut = f.scheduled_out || f.scheduled_time;
+        const tsIn = f.scheduled_in;
+        
+        window.tempSelectedFlightData = {
+            dep_time_ts: tsOut ? Math.floor(new Date(tsOut).getTime()/1000) : null,
+            arr_time_ts: tsIn ? Math.floor(new Date(tsIn).getTime()/1000) : null,
+            dep_terminal: f.origin_terminal || f.dep_terminal || null,
+            dep_gate: f.origin_gate || f.dep_gate || null,
+            arr_terminal: f.destination_terminal || f.arr_terminal || null,
+            arr_gate: f.destination_gate || f.arr_gate || null,
+            status: targetDateStr < new Date().toISOString().split('T')[0] ? "archived" : "scheduled",
+            fa_flight_id: f.fa_flight_id || null, // 👈 Hier ist der fehlende Zündschlüssel für den Alert!
+            gps_track: null
+        };
+        // ================================================================
+
+        // Flughafendaten lautlos cachen & Metriken berechnen
         if (depIata && arrIata) {
             if (typeof showAirportDetails === 'function') {
                 await showAirportDetails(depIata, true); 
@@ -7689,7 +7698,7 @@ window.takeoverFlightFromLiveBoard = async function(index, ev) {
             }
         }
 
-        // Foto direkt nach Autofill laden und Vorschau zeigen
+        // Foto laden
         if (reg && typeof fetchAircraftPhoto === 'function') {
             const photoData = await fetchAircraftPhoto(reg);
             if (photoData) {
@@ -7706,7 +7715,6 @@ window.takeoverFlightFromLiveBoard = async function(index, ev) {
             }
         }
 
-        // 7. Visuelles Feedback & Scrollen
         if (typeof showMessage === 'function') {
             showMessage("Flug übernommen", "Daten wurden eingetragen! Du kannst sie jetzt ergänzen und speichern.", "success");
         }
