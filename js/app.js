@@ -7511,8 +7511,8 @@ function renderRadarFlights(flights, airportIata) {
             ? `${origDisplay} &rarr; <strong>${airportIata}</strong>` 
             : `<strong>${airportIata}</strong> &rarr; ${destDisplay}`;
 
-        // 🚀 NEU: Daten verpacken (mit 'f' statt 'flight')
-        const flightDataAttr = encodeURIComponent(JSON.stringify(f));
+        // 🚀 BUGHUNT FIX: .replace(/'/g, "%27") zwingt auch einfache Anführungszeichen in die Knie!
+        const flightDataAttr = encodeURIComponent(JSON.stringify(f)).replace(/'/g, "%27");
 
         // Optik (Akkordeon)
         html += `
@@ -7549,8 +7549,8 @@ function renderRadarFlights(flights, airportIata) {
                                 <p class="font-black text-lg text-on-surface dark:text-white leading-none">${mainTimeStr}</p>${subTimeStr ? `<p class="text-[10px] font-bold mt-1 text-on-surface/60 dark:text-slate-400 uppercase tracking-widest">${subTimeLabel}: ${subTimeStr}</p>` : ''}
                             </div>
                             
-                            <!-- 🚀 HIER IST DER BUTTON -->
-                            <button onclick="takeoverFlightFromLiveBoard('${flightDataAttr}'); event.stopPropagation();" 
+                            <!-- 🚀 FIX: type="button" und preventDefault hinzugefügt -->
+                            <button type="button" onclick="event.preventDefault(); event.stopPropagation(); takeoverFlightFromLiveBoard('${flightDataAttr}');" 
                                     class="flex items-center justify-center w-10 h-10 shrink-0 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors shadow-sm group"
                                     title="Flug in Logbuch übernehmen">
                                 <span class="material-symbols-outlined text-[20px] group-hover:scale-110 transition-transform">add_task</span>
@@ -7580,8 +7580,9 @@ function renderRadarFlights(flights, airportIata) {
 }
 
 window.takeoverFlightFromLiveBoard = function(encodedFlightData) {
-    // 1. PRO-Check (Paywall)
-    if (window.currentUserSubscription !== "pro") {
+    // 1. PRO-Check (Robust gegen Groß-/Kleinschreibung)
+    const subStatus = (window.currentUserSubscription || "").toLowerCase();
+    if (subStatus !== "pro" && subStatus !== "lifetime") {
         openPremiumModal();
         return;
     }
@@ -7593,7 +7594,7 @@ window.takeoverFlightFromLiveBoard = function(encodedFlightData) {
         if (typeof closeAddMenu === 'function') closeAddMenu();
         openAddFlightModal();
 
-        // 3. Extrahieren der IATA/ICAO Codes (je nach API-Antwort-Struktur)
+        // 3. Extrahieren der IATA/ICAO Codes
         const extractCode = (val) => {
             if (typeof val === 'object' && val !== null) return val.code_iata || val.code_icao || val.code || "";
             if (typeof val === 'string') return val;
@@ -7609,18 +7610,24 @@ window.takeoverFlightFromLiveBoard = function(encodedFlightData) {
         document.getElementById("departure").value = depIata;
         document.getElementById("arrival").value = arrIata;
         document.getElementById("airline").value = f.airline || f.operator || "";
-        document.getElementById("aircraftType").value = aircraft;
+        
+        if (aircraft !== "N/A" && aircraft !== "Unbekannt") {
+            document.getElementById("aircraftType").value = aircraft;
+        }
+        
         document.getElementById("registration").value = f.registration || "";
 
-        // Datum setzen (Geplante Abflugzeit oder heute)
-        if (f.scheduled_out || f.scheduled_off) {
-            document.getElementById("flightDate").value = new Date(f.scheduled_out || f.scheduled_off).toISOString().split('T')[0];
+        // Datum setzen
+        if (f.scheduled_out || f.scheduled_off || f.scheduled_time) {
+            document.getElementById("flightDate").value = new Date(f.scheduled_out || f.scheduled_off || f.scheduled_time).toISOString().split('T')[0];
         } else {
             document.getElementById("flightDate").value = new Date().toISOString().split('T')[0];
         }
 
         // 5. Visuelles Feedback
-        showMessage("Flug übernommen", "Daten eingetragen! Du kannst sie jetzt ergänzen und loggen.", "success");
+        if (typeof showMessage === 'function') {
+            showMessage("Flug übernommen", "Daten vorausgefüllt! Du kannst sie jetzt ergänzen und speichern.", "success");
+        }
         
         // Zum Speichern-Button scrollen
         setTimeout(() => {
@@ -7630,6 +7637,7 @@ window.takeoverFlightFromLiveBoard = function(encodedFlightData) {
 
     } catch (e) {
         console.error("Fehler bei der Flugübergabe:", e);
+        if (typeof showMessage === 'function') showMessage("Fehler", "Flugdaten konnten nicht gelesen werden.", "error");
     }
 };
 
