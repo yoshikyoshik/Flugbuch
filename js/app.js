@@ -961,7 +961,7 @@ window.logFlight = async function () {
     time: estimateFlightTime(distance),
     class: document.getElementById("flightClass").value,
     co2_kg: calculatedCO2,
-    flightNumber: document.getElementById("flightNumber").value.trim(),
+    flightNumber: document.getElementById("flightNumber").value.trim().toUpperCase(),
     // ✅ NEU HINZUFÜGEN:
     trip_id: document.getElementById("tripSelect").value || null,
     airline: finalAirlineName,       // Name aus API oder Eingabefeld
@@ -1429,7 +1429,7 @@ async function updateFlight() {
     time: estimateFlightTime(distance),
     class: document.getElementById("flightClass").value,
     co2_kg: calculatedCO2,
-    flightNumber: document.getElementById("flightNumber").value.trim(),
+    flightNumber: document.getElementById("flightNumber").value.trim().toUpperCase(),
     // ✅ NEU HINZUFÜGEN:
     trip_id: document.getElementById("tripSelect").value || null,
     airline: finalAirlineName,      // Name aus API oder Input
@@ -3809,6 +3809,8 @@ window.renderTripManager = async function() {
 
   trips.forEach(trip => {
       const tripFlights = allFlights.filter(f => f.trip_id == trip.id);
+      // Zwingt die Flüge innerhalb der Reise in eine saubere Chronologie
+      tripFlights.sort((a, b) => new Date(a.date) - new Date(b.date));
       if (tripFlights.length === 0) return; 
 
       const totalDist = tripFlights.reduce((sum, f) => sum + (f.distance || 0), 0);
@@ -4255,9 +4257,21 @@ window.viewFlightDetails = async function(id, isSwitching = false, customScope =
         const btnText = (getTranslation("co2.compensateBtn") || "CO₂ ausgleichen (ca. {price})").replace("{price}", priceStr + " €");
 
         co2ActionContainer.innerHTML = `
-            <button onclick="startCo2Checkout('${flight.id || flight.flight_id}', ${flight.co2_kg})" class="w-full mt-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-bold py-4 px-4 rounded-2xl shadow-lg transition-transform transform hover:-translate-y-0.5 flex justify-center items-center gap-2 border border-emerald-400/50">
-                🌱 <span>${btnText}</span>
-            </button>
+            <div class="text-center w-full">
+                <button onclick="startCo2Checkout('${flight.id || flight.flight_id}', ${flight.co2_kg})" class="w-full mt-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-bold py-4 px-4 rounded-2xl shadow-lg transition-transform transform hover:-translate-y-0.5 flex justify-center items-center gap-2 border border-emerald-400/50">
+                    🌱 <span>${btnText}</span>
+                </button>
+                <div class="mt-3 px-2 space-y-1.5 text-left">
+                    <p class="text-[10px] text-on-surface/60 dark:text-slate-400 font-medium leading-tight flex items-start gap-1.5">
+                        <span class="material-symbols-outlined text-[12px] text-emerald-500/70 shrink-0">verified</span>
+                        <span>${getTranslation("co2.paymentTransparency") || "Kompensation durch zertifizierte Klimaschutzprojekte (Gold Standard)."}</span>
+                    </p>
+                    <p class="text-[10px] text-on-surface/40 dark:text-slate-500 leading-tight flex items-start gap-1.5">
+                        <span class="material-symbols-outlined text-[12px] shrink-0">info</span>
+                        <span>${getTranslation("co2.calculationInfo") || "Inklusive RFI-Faktor 1.9 für Klimaeffekte in großen Flughöhen. Exakter als Standardrechner."}</span>
+                    </p>
+                </div>
+            </div>
         `;
         if (co2El) co2El.className = "font-display font-black text-xl text-orange-500";
     }

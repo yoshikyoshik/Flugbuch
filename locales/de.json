@@ -60,6 +60,8 @@
   "playPause": "Pause",
   "playResume": "Weiter",
   "playStop": "Stopp",
+  "co2.paymentTransparency": "Kompensation durch zertifizierte Klimaschutzprojekte (Gold Standard).",
+  "co2.calculationInfo": "Inklusive RFI-Faktor 1.9 für Klimaeffekte in großen Flughöhen. Exakter als Standardrechner.",
   
   "achievements": {
     "progress": "Fortschritt",

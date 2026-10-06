@@ -2104,6 +2104,7 @@ async function shareFlightDetailsScreenshot() {
     const originalMaxHeight = modalContent.style.maxHeight;
     const originalOverflow = scrollArea.style.overflowY;
     modalContent.style.maxHeight = 'none';
+    modalContent.style.height = 'max-content'; // NEU: Zwingt den Canvas, alles zu zeichnen
     scrollArea.style.overflowY = 'visible';
 
     // 🚀 NEU: Finde heraus, wo wir sind (Handy oder PC?)
@@ -2134,19 +2135,22 @@ async function shareFlightDetailsScreenshot() {
         console.error("Screenshot Fehler:", e);
         showMessage(getTranslation("toast.errorTitle") || "Fehler", getTranslation("share.imageError") || "Konnte Bild nicht erstellen.", "error");
     } finally {
+        // 1. Layout-Manipulationen rückgängig machen
+        modalContent.style.height = originalHeight;
         modalContent.style.maxHeight = originalMaxHeight;
         scrollArea.style.overflowY = originalOverflow;
         
+        // 2. Bilder-Proxy aufräumen
         originalSrcs.forEach((src, img) => {
             img.src = src;
             img.removeAttribute('crossOrigin');
         });
         
-        // Buttons wieder einblenden
+        // 3. Buttons wieder einblenden
         if (actionBtns) actionBtns.style.display = 'flex';
         if (closeBtn) closeBtn.style.display = 'block';
-        if (prevBtn) prevBtn.style.display = prevBtnOrig; // ⬅️ NEU
-        if (nextBtn) nextBtn.style.display = nextBtnOrig; // ➡️ NEU
+        if (prevBtn) prevBtn.style.display = prevBtnOrig;
+        if (nextBtn) nextBtn.style.display = nextBtnOrig;
     }
 }
 
