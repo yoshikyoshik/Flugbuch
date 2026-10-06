@@ -731,68 +731,100 @@ window.getIcaoCode = async function(airportCode) {
 // ==========================================
 window.fetchAviationWeather = async function(airportCode) {
     if (!airportCode) return null;
-    let icaoCode = airportCode.toUpperCase();
+    let iataCode = airportCode.toUpperCase();
+    let icaoCode = iataCode;
 
     // 1. IATA zu ICAO Übersetzung (wenn es 3 Buchstaben sind)
-    if (icaoCode.length === 3) {
-        let foundIcao = null;
-
-        // 🛡️ Versuch 1: Deinen eigenen Supabase-Cache fragen
-        try {
-            if (typeof supabaseClient !== 'undefined') {
-                const { data } = await supabaseClient
-                    .from('icao_cache')
-                    .select('icao_code')
-                    .eq('iata_code', icaoCode)
-                    .maybeSingle();
-                if (data && data.icao_code) foundIcao = data.icao_code;
-            }
-        } catch(e) {}
-
-        // 🌐 Versuch 2: Netlify API fragen (und sofort cachen!)
-        if (!foundIcao) {
-            try {
-                const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : '';
-                const url = `${baseUrl}/.netlify/functions/fetch-airport-details?code=${icaoCode}`;
-                const res = await fetch(url);
-                
-                if (res.ok) {
-                    const json = await res.json();
-                    if (json && json.data && json.data.length > 0 && json.data[0].icao) {
-                        foundIcao = json.data[0].icao.toUpperCase();
-                        
-                        // Sofort in Supabase cachen, damit dieser API-Call nie wieder nötig ist
-                        if (typeof supabaseClient !== 'undefined') {
-                            supabaseClient.from('icao_cache').upsert({ iata_code: icaoCode, icao_code: foundIcao }).then();
-                        }
-                    }
-                }
-            } catch(e) {
-                console.warn("API Fetch Fehler ICAO:", e);
-            }
-        }
-
-        // 🚑 Versuch 3: Das Notfall-Lexikon für beliebte (Urlaubs-)Flughäfen
-        if (!foundIcao) {
+    if (iataCode.length === 3) {
+        
+        // 🛡️ Stufe 1: Blitzschneller RAM-Cache (Verhindert doppelte Anfragen in derselben Session)
+        window.icaoMemoryCache = window.icaoMemoryCache || {};
+        
+        if (window.icaoMemoryCache[iataCode]) {
+            icaoCode = window.icaoMemoryCache[iataCode];
+        } else {
+            
+            // 🚑 Stufe 2: Erweitertes Notfall-Lexikon VORZIEHEN (Spart 90% aller API/DB-Calls)
             const emergencyMap = {
                 'IBZ': 'LEIB', 'PMI': 'LEPA', 'AYT': 'LTAI', 'HER': 'LGIR', 
                 'RHO': 'LGRP', 'FUE': 'GCFV', 'LPA': 'GCLP', 'TFS': 'GCTS',
                 'HRG': 'HEGN', 'DXB': 'OMDB', 'MLE': 'VRMM', 'CUN': 'MMUN',
-                'FRA': 'EDDF', 'MUC': 'EDDM', 'BER': 'EDDB', 'DUS': 'EDDL'
+                'FRA': 'EDDF', 'MUC': 'EDDM', 'BER': 'EDDB', 'DUS': 'EDDL',
+                'DRS': 'EDDC', 'LEJ': 'EDDP', 'NUE': 'EDDN', 'STR': 'EDDS',
+                'HAM': 'EDDH', 'CGN': 'EDDK', 'HAJ': 'EDDV', 'BRE': 'EDDW',
+                'VIE': 'LOWW', 'ZRH': 'LSZH', 'AMS': 'EHAM', 'LHR': 'EGLL',
+                'CDG': 'LFPG', 'MAD': 'LEMD', 'BCN': 'LEBL', 'IST': 'LTFM',
+                'JFK': 'KJFK', 'BOS': 'KBOS', 'SFO': 'KSFO', 'LAX': 'KLAX',
+                'MIA': 'KMIA', 'ATL': 'KATL', 'ORD': 'KORD', 'EWR': 'KEWR'
             };
-            foundIcao = emergencyMap[icaoCode];
-        }
+            
+            if (emergencyMap[iataCode]) {
+                icaoCode = emergencyMap[iataCode];
+                window.icaoMemoryCache[iataCode] = icaoCode; // Im RAM merken
+            } else {
 
-        // Finale Prüfung für ICAO
-        if (foundIcao) {
-            icaoCode = foundIcao;
-        } else {
-            console.warn(`🌤️ Wetter abgebrochen: Konnte keinen ICAO für ${airportCode} finden.`);
-            return null;
+                let foundIcao = null;
+
+                // 🗄️ Stufe 3: Supabase Datenbank prüfen
+                try {
+                    if (typeof supabaseClient !== 'undefined') {
+                        const { data } = await supabaseClient
+                            .from('icao_cache')
+                            .select('icao_code')
+                            .eq('iata_code', iataCode)
+                            .maybeSingle();
+                        if (data && data.icao_code) foundIcao = data.icao_code;
+                    }
+                } catch(e) {}
+
+                if (foundIcao) {
+                    icaoCode = foundIcao;
+                    window.icaoMemoryCache[iataCode] = icaoCode;
+                } else {
+                    
+                    // 🌐 Stufe 4: API Request mit "REQUEST-LOCKING" (Verhindert API-DDoS)
+                    window.icaoOngoingRequests = window.icaoOngoingRequests || {};
+                    
+                    // Wenn noch keine Anfrage für diesen IATA läuft, starten wir EINE einzige
+                    if (!window.icaoOngoingRequests[iataCode]) {
+                        window.icaoOngoingRequests[iataCode] = (async () => {
+                            try {
+                                const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : '';
+                                const res = await fetch(`${baseUrl}/.netlify/functions/fetch-airport-details?code=${iataCode}`);
+                                if (res.ok) {
+                                    const json = await res.json();
+                                    if (json && json.data && json.data.length > 0 && json.data[0].icao) {
+                                        const newIcao = json.data[0].icao.toUpperCase();
+                                        // Sofort in Supabase wegspeichern
+                                        if (typeof supabaseClient !== 'undefined') {
+                                            supabaseClient.from('icao_cache').upsert({ iata_code: iataCode, icao_code: newIcao }).then();
+                                        }
+                                        return newIcao;
+                                    }
+                                } else {
+                                    console.warn(`API-Blockade (${res.status}) für ${iataCode}`);
+                                }
+                            } catch(e) { console.warn("API Fetch Fehler ICAO:", e); }
+                            return null;
+                        })();
+                    }
+                    
+                    // Alle parallelen Aufrufe warten hier auf denselben Promise!
+                    foundIcao = await window.icaoOngoingRequests[iataCode];
+                    
+                    if (foundIcao) {
+                        icaoCode = foundIcao;
+                        window.icaoMemoryCache[iataCode] = icaoCode;
+                    } else {
+                        console.warn(`🌤️ Wetter abgebrochen: Konnte keinen ICAO für ${iataCode} finden.`);
+                        return null;
+                    }
+                }
+            }
         }
     }
     
-    // 2. Das eigentliche Wetter abrufen (mit deinem funktionierenden Corsproxy-Fallback)
+    // 2. Das eigentliche Wetter abrufen (mit Corsproxy-Fallback)
     try {
         const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : '';
         const res = await fetch(`${baseUrl}/.netlify/functions/fetch-weather?icao=${icaoCode}`);
