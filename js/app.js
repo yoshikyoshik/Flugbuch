@@ -7544,9 +7544,9 @@ window.renderRadarFlights = function(flights, airportIata) {
                                 ${subTimeStr ? `<p class="text-[10px] font-bold mt-1 text-on-surface/60 dark:text-slate-400 uppercase tracking-widest">${subTimeLabel}:${subTimeStr}</p>` : ''}
                             </div>
                             
-                            <!-- 🚀 BUGHUNT FIX: Perfekt abgekapselter Button -->
-                            <button type="button" onclick="event.preventDefault(); event.stopPropagation(); takeoverFlightFromLiveBoard(${index});" 
-                                    class="flex items-center justify-center w-10 h-10 shrink-0 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors shadow-sm group"
+                            <!-- 🚀 BUGHUNT FIX: Expliziter window-Aufruf, Pointer-Events und Z-Index! -->
+                            <button type="button" onclick="window.takeoverFlightFromLiveBoard(${index}, event)" 
+                                    class="flex items-center justify-center w-10 h-10 shrink-0 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors shadow-sm group relative z-50 pointer-events-auto"
                                     title="Flug in Logbuch übernehmen">
                                 <span class="material-symbols-outlined text-[20px] group-hover:scale-110 transition-transform">add_task</span>
                             </button>
@@ -7575,72 +7575,84 @@ window.renderRadarFlights = function(flights, airportIata) {
     listEl.innerHTML = html;
 };
 
-window.takeoverFlightFromLiveBoard = function(index, event) {
-    // Klick stoppen, damit das Akkordeon nicht aufklappt
-    if (event) {
-        event.preventDefault();
-        event.stopPropagation();
+window.takeoverFlightFromLiveBoard = function(index, ev) {
+    // 1. Klick hart vom Akkordeon abkoppeln
+    if (ev) {
+        ev.preventDefault();
+        ev.stopPropagation();
     }
+    
+    console.log("✈️ Übernahme-Button geklickt! Lade Index:", index);
 
-    // 1. PRO-Check
-    const subStatus = (window.currentUserSubscription || "").toLowerCase();
+    // 2. PRO-Check (Kugelsicher auf die globale Variable zugreifen)
+    let subStatus = "free";
+    if (typeof currentUserSubscription !== 'undefined') {
+        subStatus = currentUserSubscription.toLowerCase();
+    }
+    
     if (subStatus !== "pro" && subStatus !== "lifetime") {
+        console.log("🔒 Paywall wird geöffnet (Status: " + subStatus + ")");
         if (typeof openPremiumModal === 'function') openPremiumModal();
         return;
     }
 
     try {
-        // 🚀 NEU: Wir holen die perfekten Rohdaten direkt aus dem Speicher
-        const f = window.currentAirportRadarFlights[index];
-        if (!f) return;
+        // 3. Rohdaten abgreifen
+        const f = window.currentAirportRadarFlights ? window.currentAirportRadarFlights[index] : null;
+        if (!f) {
+            console.error("❌ Flugrohdaten nicht im Cache gefunden!");
+            return;
+        }
+        
+        console.log("✅ Rohdaten geladen:", f);
 
-        // 2. Add-Modal öffnen
+        // 4. Modals steuern
         if (typeof closeAddMenu === 'function') closeAddMenu();
         if (typeof openAddFlightModal === 'function') openAddFlightModal();
 
-        // 3. Extrahieren der IATA/ICAO Codes
+        // 5. IATA Codes sicher entpacken
         const extractCode = (val) => {
             if (typeof val === 'object' && val !== null) return val.code_iata || val.code_icao || val.code || "";
             if (typeof val === 'string') return val;
             return "";
         };
 
-        const depIata = extractCode(f.origin);
-        const arrIata = extractCode(f.destination);
+        const depIata = extractCode(f.origin) || "";
+        const arrIata = extractCode(f.destination) || "";
         const aircraft = (f.aircraft_type && typeof f.aircraft_type === 'object') ? f.aircraft_type.code : (f.aircraft_type || "");
 
-        // 4. Felder im Formular befüllen
+        // 6. Felder im Formular befüllen
         document.getElementById("flightNumber").value = f.ident || f.flight_number || "";
         document.getElementById("departure").value = depIata;
         document.getElementById("arrival").value = arrIata;
         document.getElementById("airline").value = f.airline || f.operator || "";
         
-        if (aircraft !== "N/A" && aircraft !== "Unbekannt") {
+        if (aircraft && aircraft !== "N/A" && aircraft !== "Unbekannt") {
             document.getElementById("aircraftType").value = aircraft;
         }
         
         document.getElementById("registration").value = f.registration || "";
 
         // Datum setzen
-        if (f.scheduled_out || f.scheduled_off || f.scheduled_time) {
-            document.getElementById("flightDate").value = new Date(f.scheduled_out || f.scheduled_off || f.scheduled_time).toISOString().split('T')[0];
+        const targetDateIso = f.scheduled_out || f.scheduled_off || f.scheduled_time;
+        if (targetDateIso) {
+            document.getElementById("flightDate").value = new Date(targetDateIso).toISOString().split('T')[0];
         } else {
             document.getElementById("flightDate").value = new Date().toISOString().split('T')[0];
         }
 
-        // 5. Visuelles Feedback
+        // 7. Visuelles Feedback & Scrollen
         if (typeof showMessage === 'function') {
             showMessage("Flug übernommen", "Daten vorausgefüllt! Du kannst sie jetzt ergänzen und speichern.", "success");
         }
         
-        // Zum Speichern-Button scrollen
         setTimeout(() => {
             const logBtn = document.getElementById("log-button");
             if (logBtn) logBtn.scrollIntoView({ behavior: "smooth", block: "center" });
-        }, 500);
+        }, 300);
 
     } catch (e) {
-        console.error("Fehler bei der Flugübergabe:", e);
+        console.error("❌ Schwerer Fehler bei der Flugübergabe:", e);
         if (typeof showMessage === 'function') showMessage("Fehler", "Flugdaten konnten nicht gelesen werden.", "error");
     }
 };
