@@ -60,8 +60,6 @@
   "playPause": "Pause",
   "playResume": "Resume",
   "playStop": "Stop",
-  "co2.paymentTransparency": "Compensation via certified climate protection projects (Gold Standard).",
-  "co2.calculationInfo": "Includes RFI factor 1.9 for high-altitude climate impact. More accurate than standard calculators.",
   
   "achievements": {
     "progress": "Progress",
@@ -1262,7 +1260,9 @@
     "successTitle": "🌱 Thank you, Climate Hero!",
     "successMsg": "Your CO₂ compensation was successful. Data will be updated shortly.",
     "demoDisabled": "CO₂ compensation is not available in demo mode.",
-    "viewCertificate": "View Certificate"
+    "viewCertificate": "View Certificate",
+    "paymentTransparency": "Compensation via certified climate protection projects (Gold Standard).",
+    "calculationInfo": "Includes RFI factor 1.9 for high-altitude climate impact. More accurate than standard calculators."
   },
 
   "historical": {

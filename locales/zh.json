@@ -60,9 +60,7 @@
   "playPause": "暂停",
   "playResume": "继续",
   "playStop": "停止",
-  "co2.paymentTransparency": "通过认证的气候保护项目进行碳补偿 (Gold Standard)。",
-  "co2.calculationInfo": "包含1.9的RFI系数，用于计算高空对气候的影响。比标准计算器更准确。",
-  
+    
   "achievements": {
     "progress": "进度",
     "tabLeaderboard": "社区",
@@ -1258,7 +1256,9 @@
     "successTitle": "🌱 谢谢你，气候英雄！",
     "successMsg": "您的 CO₂ 补偿成功。数据即将更新。",
     "demoDisabled": "演示模式下无法进行 CO₂ 补偿。",
-    "viewCertificate": "查看证书"
+    "viewCertificate": "查看证书",
+    "paymentTransparency": "通过认证的气候保护项目进行碳补偿 (Gold Standard)。",
+    "calculationInfo": "包含1.9的RFI系数，用于计算高空对气候的影响。比标准计算器更准确。"
   },
 
   "historical": {

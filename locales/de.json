@@ -60,9 +60,7 @@
   "playPause": "Pause",
   "playResume": "Weiter",
   "playStop": "Stopp",
-  "co2.paymentTransparency": "Kompensation durch zertifizierte Klimaschutzprojekte (Gold Standard).",
-  "co2.calculationInfo": "Inklusive RFI-Faktor 1.9 für Klimaeffekte in großen Flughöhen. Exakter als Standardrechner.",
-  
+
   "achievements": {
     "progress": "Fortschritt",
     "tabLeaderboard": "Community",
@@ -1263,7 +1261,9 @@
     "successTitle": "🌱 Danke, Climate Hero!",
     "successMsg": "Deine CO₂-Kompensation war erfolgreich. Die Daten werden in Kürze aktualisiert.",
     "demoDisabled": "CO₂-Kompensation ist im Demo-Modus nicht verfügbar.",
-    "viewCertificate": "Zertifikat ansehen"
+    "viewCertificate": "Zertifikat ansehen",
+    "paymentTransparency": "Kompensation durch zertifizierte Klimaschutzprojekte (Gold Standard).",
+    "calculationInfo": "Inklusive RFI-Faktor 1.9 für Klimaeffekte in großen Flughöhen. Exakter als Standardrechner."
   },
 
   "historical": {
