@@ -7669,20 +7669,27 @@ window.takeoverFlightFromLiveBoard = async function(index, ev) {
         document.getElementById("flightDate").value = targetDateStr;
 
         // ================================================================
-        // 🚀 BUGHUNT FIX: FLIGHT-AWARE ID FÜR PUSH-ALERTS WEITERGEBEN!
+        // 🚀 BUGHUNT FIX: FLIGHT-AWARE ID UND GESCHÄTZTE ZEITEN WEITERGEBEN!
         // ================================================================
         const tsOut = f.scheduled_out || f.scheduled_time;
-        const tsIn = f.scheduled_in;
+        const tsIn = f.scheduled_in || f.scheduled_time; 
+        const tsEstOut = f.estimated_out || f.actual_out || f.estimated_time || f.actual_time || tsOut;
+        const tsEstIn = f.estimated_in || f.actual_in || f.estimated_time || f.actual_time || tsIn;
         
         window.tempSelectedFlightData = {
             dep_time_ts: tsOut ? Math.floor(new Date(tsOut).getTime()/1000) : null,
             arr_time_ts: tsIn ? Math.floor(new Date(tsIn).getTime()/1000) : null,
+            dep_estimated_ts: tsEstOut ? Math.floor(new Date(tsEstOut).getTime()/1000) : null,
+            arr_estimated_ts: tsEstIn ? Math.floor(new Date(tsEstIn).getTime()/1000) : null,
             dep_terminal: f.origin_terminal || f.dep_terminal || null,
             dep_gate: f.origin_gate || f.dep_gate || null,
             arr_terminal: f.destination_terminal || f.arr_terminal || null,
             arr_gate: f.destination_gate || f.arr_gate || null,
             status: targetDateStr < new Date().toISOString().split('T')[0] ? "archived" : "scheduled",
-            fa_flight_id: f.fa_flight_id || null, // 👈 Hier ist der fehlende Zündschlüssel für den Alert!
+            
+            // 👈 Hier ist der fehlende Zündschlüssel für den Alert mit 3-fachem Fallback!
+            fa_flight_id: f.fa_flight_id || f.ident || rawFlightNum || null, 
+            
             gps_track: null
         };
         // ================================================================
