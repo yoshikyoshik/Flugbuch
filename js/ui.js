@@ -2049,16 +2049,16 @@ window.toggleAuthSheet = function(show) {
 /**
  * Erstellt einen Screenshot der digitalen Bordkarte (Tagebuch) und teilt diesen.
  */
-async function shareFlightDetailsScreenshot() {
+window.shareFlightDetailsScreenshot = async function() {
     const modalContent = document.getElementById('fd-modal-content');
     const scrollArea = modalContent.querySelector('.overflow-y-auto');
     if (!modalContent || !scrollArea) return;
 
-    // 1. UI Aufräumen: Buttons KOMPLETT aus dem DOM nehmen (Android hakt sonst beim Blur-Effekt)
+    // 1. UI Aufräumen: Buttons KOMPLETT aus dem DOM nehmen
     const actionBtns = document.getElementById('fd-action-buttons');
     const closeBtn = document.getElementById('fd-close-btn');
-    const prevBtn = document.getElementById('fd-prev-btn'); // ⬅️ NEU
-    const nextBtn = document.getElementById('fd-next-btn'); // ➡️ NEU
+    const prevBtn = document.getElementById('fd-prev-btn'); 
+    const nextBtn = document.getElementById('fd-next-btn'); 
     
     // Original-Zustand merken
     const prevBtnOrig = prevBtn ? prevBtn.style.display : '';
@@ -2066,10 +2066,17 @@ async function shareFlightDetailsScreenshot() {
 
     if (actionBtns) actionBtns.style.display = 'none';
     if (closeBtn) closeBtn.style.display = 'none';
-    if (prevBtn) prevBtn.style.display = 'none'; // ⬅️ NEU
-    if (nextBtn) nextBtn.style.display = 'none'; // ➡️ NEU
+    if (prevBtn) prevBtn.style.display = 'none'; 
+    if (nextBtn) nextBtn.style.display = 'none'; 
 
-    showMessage(getTranslation("share.prepTitle") || "Moment...", getTranslation("share.prepDescBoardingPass") || "Bordkarte wird exportiert...", "info");
+    if (typeof showMessage === 'function') {
+        showMessage(getTranslation("share.prepTitle") || "Moment...", getTranslation("share.prepDescBoardingPass") || "Bordkarte wird exportiert...", "info");
+    }
+
+    // 🚀 BUGHUNT FIX 1: Variablen GANZ OBEN sauber deklarieren!
+    const originalMaxHeight = modalContent.style.maxHeight;
+    const originalHeight = modalContent.style.height; 
+    const originalOverflow = scrollArea.style.overflowY;
 
     // 2. PARALLELER BILDER-PROXY (Nur für kleine, fremde Bilder!)
     const images = modalContent.querySelectorAll('img');
@@ -2081,7 +2088,8 @@ async function shareFlightDetailsScreenshot() {
             originalSrcs.set(img, img.src);
             const proxyJob = (async () => {
                 try {
-                    const fetchUrl = `https://corsproxy.io/?url=${encodeURIComponent(img.src)}`;
+                    // 🚀 BUGHUNT FIX 2: Cache-Buster hinzugefügt, um harte CORS-Caches auszutricksen
+                    const fetchUrl = `https://corsproxy.io/?url=${encodeURIComponent(img.src)}?nocache=${new Date().getTime()}`;
                     const response = await fetch(fetchUrl);
                     if (!response.ok) throw new Error("Netzwerkfehler");
                     const blob = await response.blob();
@@ -2101,30 +2109,25 @@ async function shareFlightDetailsScreenshot() {
 
     await Promise.all(fetchPromises);
 
-    const originalMaxHeight = modalContent.style.maxHeight;
-    const originalOverflow = scrollArea.style.overflowY;
+    // 🚀 BUGHUNT FIX 3: Container "ausklappen" für den vollen Screenshot
     modalContent.style.maxHeight = 'none';
-    modalContent.style.height = 'max-content'; // NEU: Zwingt den Canvas, alles zu zeichnen
+    modalContent.style.height = 'max-content';
     scrollArea.style.overflowY = 'visible';
 
-    // 🚀 NEU: Finde heraus, wo wir sind (Handy oder PC?)
+    // Finde heraus, wo wir sind (Handy oder PC?)
     const isNative = typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform();
     const isDark = document.documentElement.classList.contains('dark');
-    const bgColor = isDark ? '#111827' : '#f3f4f6'; // gray-900 für dark, gray-100 für light
+    const bgColor = isDark ? '#111827' : '#f3f4f6'; 
 
     try {
-        // 3. Screenshot machen (mit Performance-Boost)
+        // 3. Screenshot machen
         const canvas = await html2canvas(modalContent, {
             useCORS: true, 
             allowTaint: false, 
-            // PC: Transparente Ecken (null) | Handy: Feste Farbe für das JPEG
             backgroundColor: isNative ? bgColor : null, 
             scale: window.innerWidth < 768 ? 1 : 2 
         });
 
-        // 🚀 DER GAMECHANGER: Dynamisches Format!
-        // Handy = JPG (Winzige Datei, flutscht in Millisekunden durch die Bridge)
-        // PC = PNG (Verlustfreie Qualität mit perfekten Kanten)
         const dataURL = isNative 
             ? canvas.toDataURL("image/jpeg", 0.85) 
             : canvas.toDataURL("image/png");
@@ -2133,26 +2136,27 @@ async function shareFlightDetailsScreenshot() {
 
     } catch (e) {
         console.error("Screenshot Fehler:", e);
-        showMessage(getTranslation("toast.errorTitle") || "Fehler", getTranslation("share.imageError") || "Konnte Bild nicht erstellen.", "error");
+        if (typeof showMessage === 'function') {
+            showMessage(getTranslation("toast.errorTitle") || "Fehler", getTranslation("share.imageError") || "Konnte Bild nicht erstellen.", "error");
+        }
     } finally {
-        // 1. Layout-Manipulationen rückgängig machen
+        // 🚀 BUGHUNT FIX 4: Da die Variablen jetzt oben bekannt sind, crasht hier nichts mehr!
         modalContent.style.height = originalHeight;
         modalContent.style.maxHeight = originalMaxHeight;
         scrollArea.style.overflowY = originalOverflow;
         
-        // 2. Bilder-Proxy aufräumen
         originalSrcs.forEach((src, img) => {
             img.src = src;
             img.removeAttribute('crossOrigin');
         });
         
-        // 3. Buttons wieder einblenden
+        // Buttons wieder einblenden
         if (actionBtns) actionBtns.style.display = 'flex';
         if (closeBtn) closeBtn.style.display = 'block';
-        if (prevBtn) prevBtn.style.display = prevBtnOrig;
-        if (nextBtn) nextBtn.style.display = nextBtnOrig;
+        if (prevBtn) prevBtn.style.display = prevBtnOrig; 
+        if (nextBtn) nextBtn.style.display = nextBtnOrig; 
     }
-}
+};
 
 // ==========================================
 // PLUS BUTTON & FLUG ERFASSEN MODALS LOGIC
