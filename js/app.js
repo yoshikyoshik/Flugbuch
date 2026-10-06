@@ -7551,7 +7551,7 @@ window.renderRadarFlights = function(flights, airportIata) {
                             
                             <!-- 🚀 BUGHUNT FIX: Expliziter window-Aufruf, Pointer-Events und Z-Index! -->
                             <button type="button" onclick="window.takeoverFlightFromLiveBoard(${index}, event)" 
-                                    class="flex items-center justify-center w-10 h-10 shrink-0 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors shadow-sm group relative z-50 pointer-events-auto"
+                                    class="flex items-center justify-center w-10 h-10 shrink-0 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors shadow-sm group relative z-10 pointer-events-auto"
                                     title="Flug in Logbuch übernehmen">
                                 <span class="material-symbols-outlined text-[20px] group-hover:scale-110 transition-transform">add_task</span>
                             </button>
