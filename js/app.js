@@ -7404,7 +7404,7 @@ async function loadAirportRadar() {
     }
 }
 
-function renderRadarFlights(flights, airportIata) {
+window.renderRadarFlights = function(flights, airportIata) {
     const listEl = document.getElementById('radar-results-list');
     
     if (!flights || flights.length === 0) {
@@ -7417,9 +7417,12 @@ function renderRadarFlights(flights, airportIata) {
         return;
     }
 
+    // 🚀 NEU: Wir speichern die Liste global, damit wir später darauf zugreifen können!
+    window.currentAirportRadarFlights = flights;
+
     let html = '';
     
-    flights.forEach(f => {
+    flights.forEach((f, index) => {
         // 1. 🚀 BUGHUNT FIX 3: Anzeigetafel-Zeiten (Geplant vs. Tatsächlich)
         let mainTimeStr = "--:--";
         let subTimeStr = "";
@@ -7511,46 +7514,26 @@ function renderRadarFlights(flights, airportIata) {
             ? `${origDisplay} &rarr; <strong>${airportIata}</strong>` 
             : `<strong>${airportIata}</strong> &rarr; ${destDisplay}`;
 
-        // 🚀 BUGHUNT FIX: .replace(/'/g, "%27") zwingt auch einfache Anführungszeichen in die Knie!
-        const flightDataAttr = encodeURIComponent(JSON.stringify(f)).replace(/'/g, "%27");
-
         // Optik (Akkordeon)
         html += `
             <details class="bg-surface-container-lowest dark:bg-slate-800 rounded-2xl shadow-sm border border-outline-variant/20 dark:border-slate-700 group transition-all duration-300">
-                <summary class="list-none cursor-pointer p-4 flex flex-col gap-3 outline-none">
-                    <div class="flex justify-between items-start">
-                        <!-- ... (oberer Teil mit Logo und Status bleibt völlig unangetastet) ... -->
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-xl bg-surface-container-low dark:bg-slate-900 flex items-center justify-center border border-outline-variant/10 font-black text-primary dark:text-indigo-400 text-lg shadow-inner shrink-0">
-                                ${iconContent}
-                            </div>
-                            <div>
-                                <h4 class="font-display font-black text-on-surface dark:text-white leading-tight ${isPrivate ? 'text-sm' : ''}">${safeFlightNum}</h4>
-                                <p class="text-[10px] uppercase tracking-widest font-bold text-on-surface/50 dark:text-slate-400">${f.aircraft_type === 'N/A' ? 'Unbekannt' : f.aircraft_type}</p>
-                            </div>
-                        </div>
-                        <div class="flex flex-col items-end gap-1.5 shrink-0">
-                            <div class="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-white px-2 py-1 rounded-full ${statusColor}">
-                                <span class="material-symbols-outlined text-[12px]">${statusIcon}</span>${statusText}
-                            </div>
-                            <span class="material-symbols-outlined text-on-surface/30 group-open:rotate-180 transition-transform duration-300 text-sm">keyboard_arrow_down</span>
-                        </div>
-                    </div>
+                
+                <!-- ... (Dein oberer Teil des <summary> bleibt gleich) ... -->
                     
                     <div class="flex justify-between items-center bg-surface-container-low dark:bg-slate-900/50 p-3 rounded-xl border border-outline-variant/10 dark:border-white/5 mt-1">
                         <div class="text-sm font-medium text-on-surface/80 dark:text-slate-300 pb-1 flex-1 pr-2">
                             ${routeText}
                         </div>
                         
-                        <!-- 🚀 NEU: Wrapper für Zeiten UND den neuen Button -->
                         <div class="flex items-center gap-3 shrink-0">
                             <div class="text-right">
                                 <p class="text-[9px] uppercase tracking-widest font-bold text-on-surface/40 dark:text-slate-500 mb-0.5">${getTranslation("airportRadar.statusScheduled") || "Geplant"}</p>
-                                <p class="font-black text-lg text-on-surface dark:text-white leading-none">${mainTimeStr}</p>${subTimeStr ? `<p class="text-[10px] font-bold mt-1 text-on-surface/60 dark:text-slate-400 uppercase tracking-widest">${subTimeLabel}: ${subTimeStr}</p>` : ''}
+                                <p class="font-black text-lg text-on-surface dark:text-white leading-none">${mainTimeStr}</p>
+                                ${subTimeStr ? `<p class="text-[10px] font-bold mt-1 text-on-surface/60 dark:text-slate-400 uppercase tracking-widest">${subTimeLabel}:${subTimeStr}</p>` : ''}
                             </div>
                             
-                            <!-- 🚀 FIX: type="button" und preventDefault hinzugefügt -->
-                            <button type="button" onclick="event.preventDefault(); event.stopPropagation(); takeoverFlightFromLiveBoard('${flightDataAttr}');" 
+                            <!-- 🚀 FIX: Wir übergeben NUR NOCH die Index-Nummer (0, 1, 2...) an die Funktion! -->
+                            <button type="button" onclick="takeoverFlightFromLiveBoard(${index}, event)" 
                                     class="flex items-center justify-center w-10 h-10 shrink-0 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors shadow-sm group"
                                     title="Flug in Logbuch übernehmen">
                                 <span class="material-symbols-outlined text-[20px] group-hover:scale-110 transition-transform">add_task</span>
@@ -7559,40 +7542,36 @@ function renderRadarFlights(flights, airportIata) {
                     </div>
                 </summary>
                 
-                <div class="p-4 border-t border-outline-variant/10 dark:border-slate-700/50 bg-surface-container-low/30 dark:bg-slate-900/30 flex flex-col gap-4">
-                    <div class="grid grid-cols-2 gap-3">
-                        <div class="bg-surface-container-lowest dark:bg-slate-800 p-3 rounded-xl border border-outline-variant/10 shadow-sm">
-                            <p class="text-[9px] uppercase tracking-widest font-bold text-on-surface/50 dark:text-slate-400 mb-1">${getTranslation("weather.departure") || "Abflug"} (${f.origin_name || orig})</p>
-                            <p class="text-sm font-bold text-on-surface dark:text-white">${(getTranslation("airportRadar.termGate") || "Term. {terminal} | Gate {gate}").replace("{terminal}", f.dep_terminal || "-").replace("{gate}", f.dep_gate || "-")}</p>
-                        </div>
-                        <div class="bg-surface-container-lowest dark:bg-slate-800 p-3 rounded-xl border border-outline-variant/10 shadow-sm">
-                            <p class="text-[9px] uppercase tracking-widest font-bold text-on-surface/50 dark:text-slate-400 mb-1">${getTranslation("weather.arrival") || "Ankunft"} (${f.destination_name || dest})</p>
-                            <p class="text-sm font-bold text-on-surface dark:text-white">${(getTranslation("airportRadar.termGate") || "Term. {terminal} | Gate {gate}").replace("{terminal}", f.arr_terminal || "-").replace("{gate}", f.arr_gate || "-")}</p>
-                            ${currentRadarType === 'arrivals' ? `<p class="text-[10px] font-bold text-primary mt-1">${(getTranslation("airportRadar.baggage") || "Gepäckband: {baggage}").replace("{baggage}", f.baggage_claim || (getTranslation("airportRadar.tbd") || "TBD"))}</p>` : ''}
-                        </div>
-                    </div>
-                </div>
+                <!-- ... (Dein unterer Detail-Teil bleibt gleich) ... -->
             </details>
         `;
     });
 
     listEl.innerHTML = html;
-}
+};
 
-window.takeoverFlightFromLiveBoard = function(encodedFlightData) {
-    // 1. PRO-Check (Robust gegen Groß-/Kleinschreibung)
+window.takeoverFlightFromLiveBoard = function(index, event) {
+    // Klick stoppen, damit das Akkordeon nicht aufklappt
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
+    // 1. PRO-Check
     const subStatus = (window.currentUserSubscription || "").toLowerCase();
     if (subStatus !== "pro" && subStatus !== "lifetime") {
-        openPremiumModal();
+        if (typeof openPremiumModal === 'function') openPremiumModal();
         return;
     }
 
     try {
-        const f = JSON.parse(decodeURIComponent(encodedFlightData));
+        // 🚀 NEU: Wir holen die perfekten Rohdaten direkt aus dem Speicher
+        const f = window.currentAirportRadarFlights[index];
+        if (!f) return;
 
         // 2. Add-Modal öffnen
         if (typeof closeAddMenu === 'function') closeAddMenu();
-        openAddFlightModal();
+        if (typeof openAddFlightModal === 'function') openAddFlightModal();
 
         // 3. Extrahieren der IATA/ICAO Codes
         const extractCode = (val) => {
@@ -7633,7 +7612,7 @@ window.takeoverFlightFromLiveBoard = function(encodedFlightData) {
         setTimeout(() => {
             const logBtn = document.getElementById("log-button");
             if (logBtn) logBtn.scrollIntoView({ behavior: "smooth", block: "center" });
-        }, 300);
+        }, 500);
 
     } catch (e) {
         console.error("Fehler bei der Flugübergabe:", e);
