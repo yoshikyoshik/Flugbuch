@@ -7617,7 +7617,7 @@ window.takeoverFlightFromLiveBoard = async function(index, ev) {
         const f = window.currentAirportRadarFlights ? window.currentAirportRadarFlights[index] : null;
         if (!f) return;
 
-        // 4. Modals steuern
+        // 4. Modals steuern (Formular öffnet sich sofort für flüssige UX)
         if (typeof closeAddMenu === 'function') closeAddMenu();
         if (typeof openAddFlightModal === 'function') openAddFlightModal();
 
@@ -7669,8 +7669,28 @@ window.takeoverFlightFromLiveBoard = async function(index, ev) {
         document.getElementById("flightDate").value = targetDateStr;
 
         // ================================================================
-        // 🚀 BUGHUNT FIX: FLIGHT-AWARE ID UND GESCHÄTZTE ZEITEN WEITERGEBEN!
+        // 🚀 BUGHUNT FIX: FLIGHT-AWARE ID UPGRADE FÜR PUSH-ALERTS!
         // ================================================================
+        let finalFaId = f.fa_flight_id || f.flight_id || f.ident || rawFlightNum || null;
+        
+        // Wenn die ID keinen Bindestrich hat (also nur "BEL2648" ist statt "BEL2648-1728..."), 
+        // holt sich die App im Hintergrund blitzschnell die richtige, lange ID für diesen Tag!
+        if (finalFaId && !finalFaId.includes('-') && depIata && arrIata) {
+            try {
+                const url = `${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-fa-flight?flight_number=${finalFaId}&date=${targetDateStr}&dep=${depIata}&arr=${arrIata}`;
+                const res = await fetch(url);
+                if (res.ok) {
+                    const upgradeData = await res.json();
+                    if (upgradeData && upgradeData.length > 0 && upgradeData[0].fa_flight_id) {
+                        finalFaId = upgradeData[0].fa_flight_id;
+                        console.log("🔧 Alert-ID erfolgreich upgegradet auf:", finalFaId);
+                    }
+                }
+            } catch(e) {
+                console.warn("Konnte lange FA-ID nicht nachladen", e);
+            }
+        }
+
         const tsOut = f.scheduled_out || f.scheduled_time;
         const tsIn = f.scheduled_in || f.scheduled_time; 
         const tsEstOut = f.estimated_out || f.actual_out || f.estimated_time || f.actual_time || tsOut;
@@ -7687,8 +7707,7 @@ window.takeoverFlightFromLiveBoard = async function(index, ev) {
             arr_gate: f.destination_gate || f.arr_gate || null,
             status: targetDateStr < new Date().toISOString().split('T')[0] ? "archived" : "scheduled",
             
-            // 👈 Hier ist der fehlende Zündschlüssel für den Alert mit 3-fachem Fallback!
-            fa_flight_id: f.fa_flight_id || f.ident || rawFlightNum || null, 
+            fa_flight_id: finalFaId, // 👈 Die aufgewertete ID mit Zeitstempel!
             
             gps_track: null
         };
