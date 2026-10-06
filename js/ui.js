@@ -2528,13 +2528,17 @@ window.updateChronicleUI = function(state) {
 // DYNAMISCHE PILOT-RÄNGE
 // ==========================================
 
+// ==========================================
+// DYNAMISCHE PILOT-RÄNGE
+// ==========================================
+
 window.updateUserRank = function(flightCount) {
     const statusEl = document.getElementById('profile-header-status');
     if (!statusEl) return;
 
     let rank = getTranslation("ranks.beginner") || "Anfänger";
     let rankClass = "text-on-surface/60 dark:text-slate-400"; 
-    let i18nKey = "ranks.beginner"; // 🚀 NEU: Key merken
+    let i18nKey = "ranks.beginner";
 
     if (flightCount > 500) {
         rank = getTranslation("ranks.legend") || "Sky Legend 🏆";
@@ -2546,12 +2550,15 @@ window.updateUserRank = function(flightCount) {
         i18nKey = "ranks.seniorCaptain";
     } else if (flightCount > 50) {
         rank = getTranslation("ranks.commander") || "Commander";
+        rankClass = "text-on-surface dark:text-white"; 
         i18nKey = "ranks.commander";
     } else if (flightCount > 25) {
         rank = getTranslation("ranks.firstOfficer") || "First Officer";
+        rankClass = "text-on-surface dark:text-white"; 
         i18nKey = "ranks.firstOfficer";
     } else if (flightCount > 15) {
         rank = getTranslation("ranks.frequentFlyer") || "Vielflieger";
+        rankClass = "text-on-surface dark:text-white"; 
         i18nKey = "ranks.frequentFlyer";
     } else if (flightCount > 10) {
         rank = getTranslation("ranks.hobbyist") || "Hobbypilot";
@@ -2560,9 +2567,29 @@ window.updateUserRank = function(flightCount) {
     }
 
     statusEl.textContent = rank;
-    // 🚀 BUGHUNT FIX: Das Schildchen für den Sprachwechsler ankleben!
     statusEl.setAttribute("data-i18n", i18nKey); 
     statusEl.className = `px-3 py-1 bg-surface-container dark:bg-slate-800 rounded-full text-xs font-bold shadow-sm border border-outline-variant/10 ${rankClass}`;
+
+    // ==========================================
+    // 🚀 NEU: RANG IM MODAL HERVORHEBEN
+    // ==========================================
+    const modal = document.getElementById('rank-info-modal');
+    if (modal) {
+        // 1. Zuerst alle Zeilen auf Standard-Design zurücksetzen
+        const allRows = modal.querySelectorAll('.flex.justify-between.text-sm');
+        allRows.forEach(row => {
+            row.classList.remove('bg-primary/10', 'dark:bg-indigo-900/30', 'px-3', '-mx-3', 'rounded-lg', 'shadow-sm', 'border', 'border-primary/20');
+        });
+
+        // 2. Aktive Zeile über den i18n-Key finden und stylen
+        const activeSpan = modal.querySelector(`span[data-i18n="${i18nKey}"]`);
+        if (activeSpan) {
+            const activeRow = activeSpan.closest('.flex.justify-between');
+            if (activeRow) {
+                activeRow.classList.add('bg-primary/10', 'dark:bg-indigo-900/30', 'px-3', '-mx-3', 'rounded-lg', 'shadow-sm', 'border', 'border-primary/20');
+            }
+        }
+    }
 };
 
 // Modal Steuerung
