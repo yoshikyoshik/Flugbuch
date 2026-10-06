@@ -7575,14 +7575,12 @@ window.renderRadarFlights = function(flights, airportIata) {
     listEl.innerHTML = html;
 };
 
-window.takeoverFlightFromLiveBoard = function(index, ev) {
+window.takeoverFlightFromLiveBoard = async function(index, ev) { // 🚀 ACHTUNG: 'async' hinzugefügt!
     // 1. Klick hart vom Akkordeon abkoppeln
     if (ev) {
         ev.preventDefault();
         ev.stopPropagation();
     }
-    
-    console.log("✈️ Übernahme-Button geklickt! Lade Index:", index);
 
     // 2. PRO-Check (Kugelsicher auf die globale Variable zugreifen)
     let subStatus = "free";
@@ -7591,7 +7589,6 @@ window.takeoverFlightFromLiveBoard = function(index, ev) {
     }
     
     if (subStatus !== "pro" && subStatus !== "lifetime") {
-        console.log("🔒 Paywall wird geöffnet (Status: " + subStatus + ")");
         if (typeof openPremiumModal === 'function') openPremiumModal();
         return;
     }
@@ -7599,18 +7596,13 @@ window.takeoverFlightFromLiveBoard = function(index, ev) {
     try {
         // 3. Rohdaten abgreifen
         const f = window.currentAirportRadarFlights ? window.currentAirportRadarFlights[index] : null;
-        if (!f) {
-            console.error("❌ Flugrohdaten nicht im Cache gefunden!");
-            return;
-        }
-        
-        console.log("✅ Rohdaten geladen:", f);
+        if (!f) return;
 
         // 4. Modals steuern
         if (typeof closeAddMenu === 'function') closeAddMenu();
         if (typeof openAddFlightModal === 'function') openAddFlightModal();
 
-        // 5. IATA Codes sicher entpacken
+        // 5. Codes sicher entpacken
         const extractCode = (val) => {
             if (typeof val === 'object' && val !== null) return val.code_iata || val.code_icao || val.code || "";
             if (typeof val === 'string') return val;
@@ -7620,30 +7612,67 @@ window.takeoverFlightFromLiveBoard = function(index, ev) {
         const depIata = extractCode(f.origin) || "";
         const arrIata = extractCode(f.destination) || "";
         const aircraft = (f.aircraft_type && typeof f.aircraft_type === 'object') ? f.aircraft_type.code : (f.aircraft_type || "");
+        
+        // 🚀 NEU: Airline intelligent mappen (z.B. DLH -> Lufthansa)
+        const airlineIcao = f.airline_icao || extractCode(f.operator) || f.carrier || "";
+        let airlineName = airlineIcao;
+        if (airlineIcao && window.AIRLINE_MAPPING && window.AIRLINE_MAPPING[airlineIcao]) {
+            airlineName = window.AIRLINE_MAPPING[airlineIcao].name;
+        }
+
+        // 🚀 NEU: Registrierung fangen
+        const reg = f.registration || f.reg || "";
 
         // 6. Felder im Formular befüllen
         document.getElementById("flightNumber").value = f.ident || f.flight_number || "";
         document.getElementById("departure").value = depIata;
         document.getElementById("arrival").value = arrIata;
-        document.getElementById("airline").value = f.airline || f.operator || "";
+        document.getElementById("airline").value = airlineName;
+        document.getElementById("registration").value = reg;
         
         if (aircraft && aircraft !== "N/A" && aircraft !== "Unbekannt") {
             document.getElementById("aircraftType").value = aircraft;
         }
-        
-        document.getElementById("registration").value = f.registration || "";
 
         // Datum setzen
-        const targetDateIso = f.scheduled_out || f.scheduled_off || f.scheduled_time;
+        const targetDateIso = f.scheduled_out || f.scheduled_off || f.scheduled_time || f.estimated_time;
         if (targetDateIso) {
             document.getElementById("flightDate").value = new Date(targetDateIso).toISOString().split('T')[0];
         } else {
             document.getElementById("flightDate").value = new Date().toISOString().split('T')[0];
         }
 
+        // 🚀 FIX: Flughafendaten lautlos cachen & Metriken berechnen (Schaltet den Speichern-Button frei!)
+        if (depIata && arrIata) {
+            if (typeof showAirportDetails === 'function') {
+                await showAirportDetails(depIata, true); 
+                await showAirportDetails(arrIata, true);
+            }
+            if (typeof updateFlightDetails === 'function') {
+                updateFlightDetails(); // 🔓 Aktiviert den "Flug loggen und speichern" Button
+            }
+        }
+
+        // 🚀 NEU: Foto direkt nach Autofill laden und Vorschau zeigen!
+        if (reg && typeof fetchAircraftPhoto === 'function') {
+            const photoData = await fetchAircraftPhoto(reg);
+            if (photoData) {
+                currentPlanespottersData = photoData;
+                const previewImg = document.getElementById('planespotters-img');
+                const previewCredit = document.getElementById('planespotters-credit');
+                const previewContainer = document.getElementById('planespotters-preview');
+                
+                if (previewImg && previewCredit && previewContainer) {
+                    previewImg.src = photoData.url;
+                    previewCredit.textContent = photoData.photographer || "Planespotters";
+                    previewContainer.classList.remove('hidden');
+                }
+            }
+        }
+
         // 7. Visuelles Feedback & Scrollen
         if (typeof showMessage === 'function') {
-            showMessage("Flug übernommen", "Daten vorausgefüllt! Du kannst sie jetzt ergänzen und speichern.", "success");
+            showMessage("Flug übernommen", "Daten wurden eingetragen! Du kannst sie jetzt ergänzen und speichern.", "success");
         }
         
         setTimeout(() => {
@@ -7652,7 +7681,7 @@ window.takeoverFlightFromLiveBoard = function(index, ev) {
         }, 300);
 
     } catch (e) {
-        console.error("❌ Schwerer Fehler bei der Flugübergabe:", e);
+        console.error("❌ Fehler bei der Flugübergabe:", e);
         if (typeof showMessage === 'function') showMessage("Fehler", "Flugdaten konnten nicht gelesen werden.", "error");
     }
 };
