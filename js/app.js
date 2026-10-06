@@ -7511,11 +7511,15 @@ function renderRadarFlights(flights, airportIata) {
             ? `${origDisplay} &rarr; <strong>${airportIata}</strong>` 
             : `<strong>${airportIata}</strong> &rarr; ${destDisplay}`;
 
+        // 🚀 NEU: Daten verpacken (mit 'f' statt 'flight')
+        const flightDataAttr = encodeURIComponent(JSON.stringify(f));
+
         // Optik (Akkordeon)
         html += `
             <details class="bg-surface-container-lowest dark:bg-slate-800 rounded-2xl shadow-sm border border-outline-variant/20 dark:border-slate-700 group transition-all duration-300">
                 <summary class="list-none cursor-pointer p-4 flex flex-col gap-3 outline-none">
                     <div class="flex justify-between items-start">
+                        <!-- ... (oberer Teil mit Logo und Status bleibt völlig unangetastet) ... -->
                         <div class="flex items-center gap-3">
                             <div class="w-10 h-10 rounded-xl bg-surface-container-low dark:bg-slate-900 flex items-center justify-center border border-outline-variant/10 font-black text-primary dark:text-indigo-400 text-lg shadow-inner shrink-0">
                                 ${iconContent}
@@ -7527,20 +7531,30 @@ function renderRadarFlights(flights, airportIata) {
                         </div>
                         <div class="flex flex-col items-end gap-1.5 shrink-0">
                             <div class="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-white px-2 py-1 rounded-full ${statusColor}">
-                                <span class="material-symbols-outlined text-[12px]">${statusIcon}</span> ${statusText}
+                                <span class="material-symbols-outlined text-[12px]">${statusIcon}</span>${statusText}
                             </div>
                             <span class="material-symbols-outlined text-on-surface/30 group-open:rotate-180 transition-transform duration-300 text-sm">keyboard_arrow_down</span>
                         </div>
                     </div>
                     
-                    <div class="flex justify-between items-end bg-surface-container-low dark:bg-slate-900/50 p-3 rounded-xl border border-outline-variant/10 dark:border-white/5 mt-1">
-                        <div class="text-sm font-medium text-on-surface/80 dark:text-slate-300 pb-1">
+                    <div class="flex justify-between items-center bg-surface-container-low dark:bg-slate-900/50 p-3 rounded-xl border border-outline-variant/10 dark:border-white/5 mt-1">
+                        <div class="text-sm font-medium text-on-surface/80 dark:text-slate-300 pb-1 flex-1 pr-2">
                             ${routeText}
                         </div>
-                        <div class="text-right">
-                            <p class="text-[9px] uppercase tracking-widest font-bold text-on-surface/40 dark:text-slate-500 mb-0.5">${getTranslation("airportRadar.statusScheduled") || "Geplant"}</p>
-                            <p class="font-black text-lg text-on-surface dark:text-white leading-none">${mainTimeStr}</p>
-                            ${subTimeStr ? `<p class="text-[10px] font-bold mt-1 text-on-surface/60 dark:text-slate-400 uppercase tracking-widest">${subTimeLabel}: ${subTimeStr}</p>` : ''}
+                        
+                        <!-- 🚀 NEU: Wrapper für Zeiten UND den neuen Button -->
+                        <div class="flex items-center gap-3 shrink-0">
+                            <div class="text-right">
+                                <p class="text-[9px] uppercase tracking-widest font-bold text-on-surface/40 dark:text-slate-500 mb-0.5">${getTranslation("airportRadar.statusScheduled") || "Geplant"}</p>
+                                <p class="font-black text-lg text-on-surface dark:text-white leading-none">${mainTimeStr}</p>${subTimeStr ? `<p class="text-[10px] font-bold mt-1 text-on-surface/60 dark:text-slate-400 uppercase tracking-widest">${subTimeLabel}: ${subTimeStr}</p>` : ''}
+                            </div>
+                            
+                            <!-- 🚀 HIER IST DER BUTTON -->
+                            <button onclick="takeoverFlightFromLiveBoard('${flightDataAttr}'); event.stopPropagation();" 
+                                    class="flex items-center justify-center w-10 h-10 shrink-0 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors shadow-sm group"
+                                    title="Flug in Logbuch übernehmen">
+                                <span class="material-symbols-outlined text-[20px] group-hover:scale-110 transition-transform">add_task</span>
+                            </button>
                         </div>
                     </div>
                 </summary>
@@ -7564,6 +7578,60 @@ function renderRadarFlights(flights, airportIata) {
 
     listEl.innerHTML = html;
 }
+
+window.takeoverFlightFromLiveBoard = function(encodedFlightData) {
+    // 1. PRO-Check (Paywall)
+    if (window.currentUserSubscription !== "pro") {
+        openPremiumModal();
+        return;
+    }
+
+    try {
+        const f = JSON.parse(decodeURIComponent(encodedFlightData));
+
+        // 2. Add-Modal öffnen
+        if (typeof closeAddMenu === 'function') closeAddMenu();
+        openAddFlightModal();
+
+        // 3. Extrahieren der IATA/ICAO Codes (je nach API-Antwort-Struktur)
+        const extractCode = (val) => {
+            if (typeof val === 'object' && val !== null) return val.code_iata || val.code_icao || val.code || "";
+            if (typeof val === 'string') return val;
+            return "";
+        };
+
+        const depIata = extractCode(f.origin);
+        const arrIata = extractCode(f.destination);
+        const aircraft = (f.aircraft_type && typeof f.aircraft_type === 'object') ? f.aircraft_type.code : (f.aircraft_type || "");
+
+        // 4. Felder im Formular befüllen
+        document.getElementById("flightNumber").value = f.ident || f.flight_number || "";
+        document.getElementById("departure").value = depIata;
+        document.getElementById("arrival").value = arrIata;
+        document.getElementById("airline").value = f.airline || f.operator || "";
+        document.getElementById("aircraftType").value = aircraft;
+        document.getElementById("registration").value = f.registration || "";
+
+        // Datum setzen (Geplante Abflugzeit oder heute)
+        if (f.scheduled_out || f.scheduled_off) {
+            document.getElementById("flightDate").value = new Date(f.scheduled_out || f.scheduled_off).toISOString().split('T')[0];
+        } else {
+            document.getElementById("flightDate").value = new Date().toISOString().split('T')[0];
+        }
+
+        // 5. Visuelles Feedback
+        showMessage("Flug übernommen", "Daten eingetragen! Du kannst sie jetzt ergänzen und loggen.", "success");
+        
+        // Zum Speichern-Button scrollen
+        setTimeout(() => {
+            const logBtn = document.getElementById("log-button");
+            if (logBtn) logBtn.scrollIntoView({ behavior: "smooth", block: "center" });
+        }, 300);
+
+    } catch (e) {
+        console.error("Fehler bei der Flugübergabe:", e);
+    }
+};
 
 // =================================================================
 // 🔔 PUSH NOTIFICATIONS (CAPACITOR + FIREBASE)
