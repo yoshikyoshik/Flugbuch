@@ -7575,7 +7575,7 @@ window.renderRadarFlights = function(flights, airportIata) {
     listEl.innerHTML = html;
 };
 
-window.takeoverFlightFromLiveBoard = async function(index, ev) { // 🚀 ACHTUNG: 'async' hinzugefügt!
+window.takeoverFlightFromLiveBoard = async function(index, ev) { 
     // 1. Klick hart vom Akkordeon abkoppeln
     if (ev) {
         ev.preventDefault();
@@ -7613,18 +7613,35 @@ window.takeoverFlightFromLiveBoard = async function(index, ev) { // 🚀 ACHTUNG
         const arrIata = extractCode(f.destination) || "";
         const aircraft = (f.aircraft_type && typeof f.aircraft_type === 'object') ? f.aircraft_type.code : (f.aircraft_type || "");
         
-        // 🚀 NEU: Airline intelligent mappen (z.B. DLH -> Lufthansa)
-        const airlineIcao = f.airline_icao || extractCode(f.operator) || f.carrier || "";
-        let airlineName = airlineIcao;
-        if (airlineIcao && window.AIRLINE_MAPPING && window.AIRLINE_MAPPING[airlineIcao]) {
-            airlineName = window.AIRLINE_MAPPING[airlineIcao].name;
+        let rawFlightNum = String(f.ident || f.flight_number || "");
+        
+        // 🚀 FIX: Airline intelligent mappen (inklusive Fallback auf die Flugnummer!)
+        let airlineIcao = (f.airline_icao || extractCode(f.operator) || f.carrier || "").toUpperCase();
+        
+        // Wenn die API keinen Code geliefert hat, holen wir die Buchstaben aus der Flugnummer (SXS299 -> SXS)
+        if (!airlineIcao && rawFlightNum) {
+            const match = rawFlightNum.match(/^[A-Za-z]+/);
+            if (match) airlineIcao = match[0].toUpperCase();
         }
 
-        // 🚀 NEU: Registrierung fangen
+        let airlineName = airlineIcao;
+        let displayFlightNum = rawFlightNum;
+
+        // Wenn wir ein Mapping haben, holen wir den echten Namen und bauen die Flugnummer auf IATA um (z.B. SXS299 -> XQ299)
+        if (airlineIcao && window.AIRLINE_MAPPING && window.AIRLINE_MAPPING[airlineIcao]) {
+            airlineName = window.AIRLINE_MAPPING[airlineIcao].name;
+            
+            const digits = rawFlightNum.replace(/[^0-9]/g, '');
+            if (digits && window.AIRLINE_MAPPING[airlineIcao].iata) {
+                displayFlightNum = window.AIRLINE_MAPPING[airlineIcao].iata + digits;
+            }
+        }
+
+        // Registrierung fangen
         const reg = f.registration || f.reg || "";
 
         // 6. Felder im Formular befüllen
-        document.getElementById("flightNumber").value = f.ident || f.flight_number || "";
+        document.getElementById("flightNumber").value = displayFlightNum;
         document.getElementById("departure").value = depIata;
         document.getElementById("arrival").value = arrIata;
         document.getElementById("airline").value = airlineName;
@@ -7642,18 +7659,18 @@ window.takeoverFlightFromLiveBoard = async function(index, ev) { // 🚀 ACHTUNG
             document.getElementById("flightDate").value = new Date().toISOString().split('T')[0];
         }
 
-        // 🚀 FIX: Flughafendaten lautlos cachen & Metriken berechnen (Schaltet den Speichern-Button frei!)
+        // Flughafendaten lautlos cachen & Metriken berechnen (Schaltet den Speichern-Button frei!)
         if (depIata && arrIata) {
             if (typeof showAirportDetails === 'function') {
                 await showAirportDetails(depIata, true); 
                 await showAirportDetails(arrIata, true);
             }
             if (typeof updateFlightDetails === 'function') {
-                updateFlightDetails(); // 🔓 Aktiviert den "Flug loggen und speichern" Button
+                updateFlightDetails(); 
             }
         }
 
-        // 🚀 NEU: Foto direkt nach Autofill laden und Vorschau zeigen!
+        // Foto direkt nach Autofill laden und Vorschau zeigen
         if (reg && typeof fetchAircraftPhoto === 'function') {
             const photoData = await fetchAircraftPhoto(reg);
             if (photoData) {
