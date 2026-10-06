@@ -730,13 +730,69 @@ window.getIcaoCode = async function(airportCode) {
 // 🌤️ PILOTEN-WETTER (Nutzt jetzt den zentralen Übersetzer)
 // ==========================================
 window.fetchAviationWeather = async function(airportCode) {
-    let icaoCode = await window.getIcaoCode(airportCode);
+    if (!airportCode) return null;
+    let icaoCode = airportCode.toUpperCase();
 
-    if (!icaoCode) {
-        console.warn(`🌤️ Wetter abgebrochen: Konnte keinen ICAO für ${airportCode} finden.`);
-        return null;
+    // 1. IATA zu ICAO Übersetzung (wenn es 3 Buchstaben sind)
+    if (icaoCode.length === 3) {
+        let foundIcao = null;
+
+        // 🛡️ Versuch 1: Deinen eigenen Supabase-Cache fragen
+        try {
+            if (typeof supabaseClient !== 'undefined') {
+                const { data } = await supabaseClient
+                    .from('icao_cache')
+                    .select('icao_code')
+                    .eq('iata_code', icaoCode)
+                    .maybeSingle();
+                if (data && data.icao_code) foundIcao = data.icao_code;
+            }
+        } catch(e) {}
+
+        // 🌐 Versuch 2: Netlify API fragen (und sofort cachen!)
+        if (!foundIcao) {
+            try {
+                const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : '';
+                const url = `${baseUrl}/.netlify/functions/fetch-airport-details?code=${icaoCode}`;
+                const res = await fetch(url);
+                
+                if (res.ok) {
+                    const json = await res.json();
+                    if (json && json.data && json.data.length > 0 && json.data[0].icao) {
+                        foundIcao = json.data[0].icao.toUpperCase();
+                        
+                        // Sofort in Supabase cachen, damit dieser API-Call nie wieder nötig ist
+                        if (typeof supabaseClient !== 'undefined') {
+                            supabaseClient.from('icao_cache').upsert({ iata_code: icaoCode, icao_code: foundIcao }).then();
+                        }
+                    }
+                }
+            } catch(e) {
+                console.warn("API Fetch Fehler ICAO:", e);
+            }
+        }
+
+        // 🚑 Versuch 3: Das Notfall-Lexikon für beliebte (Urlaubs-)Flughäfen
+        if (!foundIcao) {
+            const emergencyMap = {
+                'IBZ': 'LEIB', 'PMI': 'LEPA', 'AYT': 'LTAI', 'HER': 'LGIR', 
+                'RHO': 'LGRP', 'FUE': 'GCFV', 'LPA': 'GCLP', 'TFS': 'GCTS',
+                'HRG': 'HEGN', 'DXB': 'OMDB', 'MLE': 'VRMM', 'CUN': 'MMUN',
+                'FRA': 'EDDF', 'MUC': 'EDDM', 'BER': 'EDDB', 'DUS': 'EDDL'
+            };
+            foundIcao = emergencyMap[icaoCode];
+        }
+
+        // Finale Prüfung für ICAO
+        if (foundIcao) {
+            icaoCode = foundIcao;
+        } else {
+            console.warn(`🌤️ Wetter abgebrochen: Konnte keinen ICAO für ${airportCode} finden.`);
+            return null;
+        }
     }
     
+    // 2. Das eigentliche Wetter abrufen (mit deinem funktionierenden Corsproxy-Fallback)
     try {
         const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : '';
         const res = await fetch(`${baseUrl}/.netlify/functions/fetch-weather?icao=${icaoCode}`);

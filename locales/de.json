@@ -1227,7 +1227,8 @@
     "timeEstimated": "Erwartet",
     "termGate": "Term. {terminal} | Gate {gate}",
     "baggage": "Gepäckband: {baggage}",
-    "tbd": "TBD"
+    "tbd": "TBD",
+    "statusTaxiing": "Rollt"
   },
   "toastRadar": {
     "airportNotDetermined": "Flughafen konnte nicht ermittelt werden.",

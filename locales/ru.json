@@ -1222,7 +1222,8 @@
     "timeEstimated": "Ожидается",
     "termGate": "Терм. {terminal} | Выход {gate}",
     "baggage": "Выдача багажа: {baggage}",
-    "tbd": "TBD"
+    "tbd": "TBD",
+    "statusTaxiing": "Руление"
   },
   "toastRadar": {
     "airportNotDetermined": "Аэропорт не удалось определить.",

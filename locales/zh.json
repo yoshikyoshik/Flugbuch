@@ -1222,7 +1222,8 @@
     "timeEstimated": "预计",
     "termGate": "航站楼 {terminal} | 登机口 {gate}",
     "baggage": "行李提取: {baggage}",
-    "tbd": "待定"
+    "tbd": "待定",
+    "statusTaxiing": "滑行中"
   },
   "toastRadar": {
     "airportNotDetermined": "无法确定机场。",
