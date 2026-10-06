@@ -7463,10 +7463,15 @@ window.renderRadarFlights = function(flights, airportIata) {
             statusColor = "bg-red-500";
             statusText = getTranslation("airportRadar.statusCancelled") || "Annulliert";
             statusIcon = "cancel";
-        } else if (rawStatus.includes('land') || rawStatus.includes('arriv') || rawStatus.includes('taxii')) {
+        } else if (rawStatus.includes('land') || rawStatus.includes('arriv') || (rawStatus.includes('taxii') && currentRadarType === 'arrivals')) {
             statusColor = "bg-emerald-500";
             statusText = getTranslation("airportRadar.statusLanded") || "Gelandet";
             statusIcon = "flight_land";
+        } else if (rawStatus.includes('taxii') && currentRadarType === 'departures') {
+            // 🚀 NEU: Eigener, präziser Status für rollende Abflüge!
+            statusColor = "bg-cyan-600";
+            statusText = getTranslation("airportRadar.statusTaxiing") || "Rollt";
+            statusIcon = "airport_shuttle";
         } else if (rawStatus.includes('en route') || rawStatus.includes('departed')) {
             statusColor = "bg-blue-500";
             statusText = getTranslation("airportRadar.statusInAir") || "In der Luft";
@@ -7474,7 +7479,7 @@ window.renderRadarFlights = function(flights, airportIata) {
         } else if (rawStatus.includes('gate') || rawStatus.includes('sched')) {
             statusColor = "bg-amber-500";
             statusText = getTranslation("airportRadar.statusScheduled") || "Geplant";
-            statusIcon = "airport_shuttle";
+            statusIcon = "schedule";
         }
 
         // 3. Airline Daten zähmen
