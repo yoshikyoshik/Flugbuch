@@ -512,9 +512,8 @@ window.showTab = function (tabId) {
 };
 
 // RENDERING
-window.renderFlights = async function (flightsToRender, flightIdToFocus, page = 1) {
+window.renderFlights = async function (flightsToRender, flightIdToFocus, requestedPage) {
   if (typeof stopAnimation === 'function') stopAnimation();
-  window.currentPage = page;
 
   const chronicleContainer = document.getElementById('chronicle-controls-container');
   if (chronicleContainer) chronicleContainer.classList.remove('hidden');
@@ -522,10 +521,10 @@ window.renderFlights = async function (flightsToRender, flightIdToFocus, page = 
   const mapBtn = document.getElementById("toggle-map-view-btn");
   if (mapBtn) {
       if (window.isAllRoutesViewActive) {
-          mapBtn.innerHTML = `<span class="material-symbols-outlined text-3xl text-primary dark:text-indigo-400 group-hover:scale-110 transition-transform">location_on</span><span class="text-sm font-bold text-on-surface dark:text-white" data-i18n="singleView">${getTranslation("singleView") || "Einzelansicht"}</span>`;
+          mapBtn.innerHTML = `<span class="material-symbols-outlined text-3xl text-primary dark:text-indigo-400 group-hover:scale-110 transition-transform">location_on</span><span class="text-sm font-bold text-on-surface dark:text-white" data-i18n="singleView">${typeof getTranslation === 'function' ? getTranslation("singleView") : "Einzelansicht"}</span>`;
           mapBtn.classList.add('bg-primary/10', 'dark:bg-indigo-900/40');
       } else {
-          mapBtn.innerHTML = `<span class="material-symbols-outlined text-3xl text-primary dark:text-indigo-400 group-hover:scale-110 transition-transform">map</span><span class="text-sm font-bold text-on-surface dark:text-white" data-i18n="allRoutes">${getTranslation("allRoutes") || "Alle Routen"}</span>`;
+          mapBtn.innerHTML = `<span class="material-symbols-outlined text-3xl text-primary dark:text-indigo-400 group-hover:scale-110 transition-transform">map</span><span class="text-sm font-bold text-on-surface dark:text-white" data-i18n="allRoutes">${typeof getTranslation === 'function' ? getTranslation("allRoutes") : "Alle Routen"}</span>`;
           mapBtn.classList.remove('bg-primary/10', 'dark:bg-indigo-900/40');
       }
   }
@@ -552,17 +551,28 @@ window.renderFlights = async function (flightsToRender, flightIdToFocus, page = 
   updateStatisticsDisplay(allFlights);
   updateCharts(allFlights); 
 
-  // 🚀 UX FIX: Die richtige Paginierungs-Seite finden, falls wir den Fokus setzen wollen!
-  if (flightIdToFocus && allFlights.length > 0) {
-      const focusIndex = allFlights.findIndex(f => (f.id || f.flight_id) == flightIdToFocus);
+  // ================================================================
+  // 🚀 UX FIX: DIE INTELLIGENTE FOKUS-WARTESCHLANGE
+  // ================================================================
+  let actualFocusId = flightIdToFocus;
+  if (!actualFocusId && window.pendingFlightFocusId) {
+      actualFocusId = window.pendingFlightFocusId;
+      window.pendingFlightFocusId = null; // Sofort leeren!
+  }
+
+  // Wenn keine Seite angefragt wurde, bleiben wir auf der aktuellen (oder 1)
+  let cp = requestedPage !== undefined ? requestedPage : (window.currentPage || 1);
+
+  if (actualFocusId && allFlights.length > 0) {
+      const focusIndex = allFlights.findIndex(f => (f.id || f.flight_id) == actualFocusId);
       if (focusIndex !== -1) {
-          window.currentPage = Math.floor(focusIndex / ITEMS_PER_PAGE) + 1;
+          cp = Math.floor(focusIndex / ITEMS_PER_PAGE) + 1; // Paginierung berechnen
       }
   }
+  window.currentPage = cp;
 
   if (typeof window.updatePaginationUI === 'function') window.updatePaginationUI(allFlights);
 
-  const cp = window.currentPage || 1;
   const startIndex = (cp - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
   const paginatedFlights = allFlights.slice(startIndex, endIndex);
@@ -571,10 +581,11 @@ window.renderFlights = async function (flightsToRender, flightIdToFocus, page = 
   if (window.isAllRoutesViewActive) {
       if (typeof drawAllRoutesOnMap === 'function') drawAllRoutesOnMap(allFlights);
       const mapDetailsTitle = document.querySelector('#last-flight-map-details h2');
-      if (mapDetailsTitle) mapDetailsTitle.textContent = getTranslation("allRoutes") || "Alle Routen";
+      if (mapDetailsTitle) mapDetailsTitle.textContent = (typeof getTranslation === 'function' ? getTranslation("allRoutes") : "Alle Routen");
   } else {
-      if (flightIdToFocus) flightForMap = allFlights.find((f) => f.id === flightIdToFocus);
-      if (!flightForMap && globalLastFlightId) flightForMap = allFlights.find((f) => f.id == globalLastFlightId);
+      let mapFocusId = actualFocusId || globalLastFlightId;
+      if (mapFocusId) flightForMap = allFlights.find((f) => (f.id || f.flight_id) == mapFocusId);
+      
       if (!flightForMap && allFlights.length > 0) {
         flightForMap = [...allFlights].sort((a, b) => {
             const dateDiff = new Date(b.date) - new Date(a.date);
@@ -585,13 +596,15 @@ window.renderFlights = async function (flightsToRender, flightIdToFocus, page = 
 
       const mapDetailsTitle = document.querySelector('#last-flight-map-details h2');
       if (flightForMap) {
-        window.drawRouteOnMap(flightForMap.depLat, flightForMap.depLon, flightForMap.arrLat, flightForMap.arrLon, flightForMap.departure, flightForMap.arrival, flightForMap.depName, flightForMap.arrName, flightForMap);
+        if (typeof drawRouteOnMap === 'function') {
+            drawRouteOnMap(flightForMap.depLat, flightForMap.depLon, flightForMap.arrLat, flightForMap.arrLon, flightForMap.departure, flightForMap.arrival, flightForMap.depName, flightForMap.arrName, flightForMap);
+        }
         if (mapDetailsTitle) {
             mapDetailsTitle.textContent = `Visualisierung: ${flightForMap.departure} ➔ ${flightForMap.arrival}`;
             mapDetailsTitle.removeAttribute("data-i18n"); 
         }
       } else {
-        window.drawRouteOnMap();
+        if (typeof drawRouteOnMap === 'function') drawRouteOnMap();
         if (mapDetailsTitle) mapDetailsTitle.textContent = "Keine Flugdaten vorhanden";
       }
   }
@@ -601,26 +614,25 @@ window.renderFlights = async function (flightsToRender, flightIdToFocus, page = 
   flightList.innerHTML = "";
 
   if (paginatedFlights.length === 0 && currentPage === 1) {
-    flightList.innerHTML = `<p id="no-flights-message" class="log-placeholder text-gray-500 italic text-center py-4">${getTranslation("flights.noFlights")}</p>`;
+    flightList.innerHTML = `<p id="no-flights-message" class="log-placeholder text-gray-500 italic text-center py-4">${typeof getTranslation === 'function' ? getTranslation("flights.noFlights") : "Keine Flüge"}</p>`;
   } else {
     paginatedFlights.forEach((flight) => {
-      // 🚀 BUGHUNT FIX: Greift zuerst auf die in Supabase gespeicherten echten Namen zu!
-      const depName = flight.depName || ((window.airportData && window.airportData[flight.departure]) ? window.airportData[flight.departure].name : flight.departure);
-      const arrName = flight.arrName || ((window.airportData && window.airportData[flight.arrival]) ? window.airportData[flight.arrival].name : flight.arrival);
-      const rawMilestoneColor = getMilestoneColor(flight.flightLogNumber) || "";
+      const depName = (typeof airportData !== 'undefined' && airportData[flight.departure]) ? airportData[flight.departure].name : flight.departure;
+      const arrName = (typeof airportData !== 'undefined' && airportData[flight.arrival]) ? airportData[flight.arrival].name : flight.arrival;
+      const rawMilestoneColor = typeof getMilestoneColor === 'function' ? getMilestoneColor(flight.flightLogNumber) : "";
       const dotColor = rawMilestoneColor.replace('bg-', 'bg-').replace('text-white', '').trim() || 'bg-indigo-500';
 
       const flightElement = document.createElement("div");
-      // 🚀 UX FIX: Dem Element eine einzigartige HTML-ID geben, damit wir dahin scrollen können
-      flightElement.id = `flight-card-${flight.id || flight.flight_id || flight.flightLogNumber}`;
+      const fId = flight.id || flight.flight_id || flight.flightLogNumber;
+      flightElement.id = `flight-card-${fId}`; // 👈 WICHTIG: Die HTML-ID
       flightElement.className = "w-full max-w-3xl mx-auto relative group cursor-pointer mb-6";
-      flightElement.setAttribute("onclick", `viewFlightDetails('${flight.id || flight.flight_id || flight.flightLogNumber}')`);
+      flightElement.setAttribute("onclick", `viewFlightDetails('${fId}')`);
 
       const planeBg = flight.planespotters_url ? `style="background-image: url('${flight.planespotters_url}');"` : '';
       const planeOpacity = flight.planespotters_url ? 'opacity-20 group-hover:opacity-40' : 'opacity-0';
       const logoHtml = flight.airline_logo ? `<img src="${flight.airline_logo}" class="h-5 md:h-6 max-w-[80px] object-contain opacity-90 drop-shadow-sm" alt="Logo">` : '';
       const formattedDate = flight.date ? new Date(flight.date).toLocaleDateString() : '--';
-      const formattedTime = (flight.time || "").replace("Std.", getTranslation("units.hoursShort") || "Std.").replace("Min.", getTranslation("units.minutesShort") || "Min.");
+      const formattedTime = (flight.time || "").replace("Std.", typeof getTranslation === 'function' ? getTranslation("units.hoursShort") || "Std." : "Std.").replace("Min.", typeof getTranslation === 'function' ? getTranslation("units.minutesShort") || "Min." : "Min.");
       const tripBadge = flight.trips && flight.trips.name ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-tertiary-fixed text-on-tertiary-container dark:bg-purple-900/30 dark:text-purple-300 uppercase tracking-wide">🏝️ ${flight.trips.name}</span>` : '';
 
       const isMapActive = (flight.id || flight.flight_id) === activeMapFlightId;
@@ -644,10 +656,10 @@ window.renderFlights = async function (flightsToRender, flightIdToFocus, page = 
                     <div class="flex flex-col items-end"><p class="font-display text-4xl md:text-5xl font-extrabold text-primary dark:text-indigo-400 tracking-tighter leading-none">${flight.arrival || 'N/A'}</p><p class="text-[10px] md:text-xs font-medium text-on-surface/60 dark:text-slate-400 mt-1 max-w-[120px] md:max-w-[150px] line-clamp-2 text-right leading-tight">${arrName}</p></div>
                 </div>
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-5 border-t border-outline-variant/20 dark:border-slate-700">
-                    <div class="flex flex-col"><span class="text-[9px] font-bold uppercase tracking-widest text-on-surface/50 dark:text-slate-500 mb-1 flex items-center gap-1"><span class="material-symbols-outlined text-[12px]">schedule</span> ${getTranslation('boardingPass.flightTime') || 'Flugzeit'}</span><span class="text-xs font-bold text-on-surface/90 dark:text-slate-200">${formattedTime}</span></div>
-                    <div class="flex flex-col"><span class="text-[9px] font-bold uppercase tracking-widest text-on-surface/50 dark:text-slate-500 mb-1 flex items-center gap-1"><span class="material-symbols-outlined text-[12px]">straighten</span> ${getTranslation('boardingPass.distance') || 'Distanz'}</span><span class="text-xs font-bold text-on-surface/90 dark:text-slate-200">${flight.distance ? flight.distance.toLocaleString("de-DE") : '--'} ${getTranslation("achievements.unitKm") || "km"}</span></div>
-                    ${flight.aircraftType ? `<div class="flex flex-col"><span class="text-[9px] font-bold uppercase tracking-widest text-on-surface/50 dark:text-slate-500 mb-1 flex items-center gap-1"><span class="material-symbols-outlined text-[12px]">airlines</span> ${getTranslation('boardingPass.aircraft') || 'Flugzeug'}</span><span class="text-xs font-bold text-on-surface/90 dark:text-slate-200 truncate" title="${flight.aircraftType}">${flight.aircraftType}</span></div>` : ''}
-                    ${flight.seatNumber ? `<div class="flex flex-col"><span class="text-[9px] font-bold uppercase tracking-widest text-on-surface/50 dark:text-slate-500 mb-1 flex items-center gap-1"><span class="material-symbols-outlined text-[12px]">event_seat</span> ${getTranslation('boardingPass.seat') || 'Sitzplatz'}</span><span class="text-xs font-bold text-on-surface/90 dark:text-slate-200">${flight.seatNumber}</span></div>` : ''}
+                    <div class="flex flex-col"><span class="text-[9px] font-bold uppercase tracking-widest text-on-surface/50 dark:text-slate-500 mb-1 flex items-center gap-1"><span class="material-symbols-outlined text-[12px]">schedule</span> ${typeof getTranslation === 'function' ? getTranslation('boardingPass.flightTime') : 'Flugzeit'}</span><span class="text-xs font-bold text-on-surface/90 dark:text-slate-200">${formattedTime}</span></div>
+                    <div class="flex flex-col"><span class="text-[9px] font-bold uppercase tracking-widest text-on-surface/50 dark:text-slate-500 mb-1 flex items-center gap-1"><span class="material-symbols-outlined text-[12px]">straighten</span> ${typeof getTranslation === 'function' ? getTranslation('boardingPass.distance') : 'Distanz'}</span><span class="text-xs font-bold text-on-surface/90 dark:text-slate-200">${flight.distance ? flight.distance.toLocaleString("de-DE") : '--'} ${typeof getTranslation === 'function' ? getTranslation("achievements.unitKm") : "km"}</span></div>
+                    ${flight.aircraftType ? `<div class="flex flex-col"><span class="text-[9px] font-bold uppercase tracking-widest text-on-surface/50 dark:text-slate-500 mb-1 flex items-center gap-1"><span class="material-symbols-outlined text-[12px]">airlines</span> ${typeof getTranslation === 'function' ? getTranslation('boardingPass.aircraft') : 'Flugzeug'}</span><span class="text-xs font-bold text-on-surface/90 dark:text-slate-200 truncate" title="${flight.aircraftType}">${flight.aircraftType}</span></div>` : ''}
+                    ${flight.seatNumber ? `<div class="flex flex-col"><span class="text-[9px] font-bold uppercase tracking-widest text-on-surface/50 dark:text-slate-500 mb-1 flex items-center gap-1"><span class="material-symbols-outlined text-[12px]">event_seat</span> ${typeof getTranslation === 'function' ? getTranslation('boardingPass.seat') : 'Sitzplatz'}</span><span class="text-xs font-bold text-on-surface/90 dark:text-slate-200">${flight.seatNumber}</span></div>` : ''}
                 </div>
             </div>
         </div>
@@ -656,14 +668,31 @@ window.renderFlights = async function (flightsToRender, flightIdToFocus, page = 
     });
   }
 
-  // 🚀 UX FIX: Sanft zum gewünschten Flug scrollen, NACHDEM er ins DOM gerendert wurde!
-  if (flightIdToFocus) {
+  // ================================================================
+  // 🚀 UX FIX: Sanftes Scrollen + Leucht-Animation
+  // ================================================================
+  if (actualFocusId) {
       setTimeout(() => {
-          const card = document.getElementById(`flight-card-${flightIdToFocus}`);
+          const card = document.getElementById(`flight-card-${actualFocusId}`);
           if (card) {
-              card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              if (card.offsetParent !== null) { 
+                  // Element ist sichtbar! Wir scrollen sanft hin.
+                  // 120px Puffer, damit es nicht unter deinem Sticky-Header verschwindet
+                  const y = card.getBoundingClientRect().top + window.scrollY - 120; 
+                  window.scrollTo({ top: y, behavior: 'smooth' });
+                  
+                  // Lässt die innere Kachel kurz aufleuchten
+                  const innerCard = card.firstElementChild;
+                  if (innerCard) {
+                      innerCard.classList.add('ring-4', 'ring-primary', 'ring-offset-4', 'dark:ring-offset-slate-900', 'transition-all');
+                      setTimeout(() => innerCard.classList.remove('ring-4', 'ring-primary', 'ring-offset-4', 'dark:ring-offset-slate-900'), 1500);
+                  }
+              } else {
+                  // Element ist (noch) versteckt, wir versuchen es beim nächsten Tab-Wechsel nochmal
+                  window.pendingFlightFocusId = actualFocusId;
+              }
           }
-      }, 300);
+      }, 400); // 400ms warten, damit showTab('timeline') sein eigenes, hartes Scrollen garantiert abgeschlossen hat
   }
 
   if(typeof updateSortButtonUI === 'function') updateSortButtonUI();
@@ -2581,11 +2610,7 @@ window.focusFlightOnMap = function(flightId) {
     }
 
     globalLastFlightId = flightId; 
+    window.pendingFlightFocusId = flightId; // 👈 NEU: Fokus in die Warteschlange legen
+    
     if (typeof showTab === 'function') showTab('timeline');
-
-    // 🚀 BUGHUNT FIX: Kein hartes Scrollen mehr nach oben!
-    // Wir übergeben dem Renderer einfach die ID, den Rest (Paginierung & Scroll) macht er selbst!
-    if (typeof renderFlights === 'function') {
-        renderFlights(null, flightId);
-    }
 };

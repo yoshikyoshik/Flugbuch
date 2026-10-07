@@ -88,6 +88,7 @@ async function initializeApp() {
       // Letzte Flug-ID laden
       if (meta.last_flight_id) {
           globalLastFlightId = meta.last_flight_id;
+          window.pendingFlightFocusId = meta.last_flight_id; // 👈 NEU: Fokus in die Warteschlange legen
       }
       
       let isPro = false;
@@ -1581,26 +1582,24 @@ async function updateFlight() {
 	});
   }
 
-  const flightIdToFocus = currentlyEditingFlightData.id;
+  const flightIdToFocus = currentlyEditingFlightData.id || currentlyEditingFlightData.flight_id;
   
-  // 🚀 NEU: Das Datum des bearbeiteten Flugs prüfen!
   const targetDate = updatedFlightForSupabase.date;
   const todayStr = new Date().toISOString().slice(0, 10);
   
   resetForm();
-  
   if (typeof closeAddFlightModal === 'function') closeAddFlightModal();
-  // 🚀 NEU: Smartes Routing!
+  
+  // 🚀 UX FIX: Fokus-Warteschlange statt manuellem Neuladen
+  currentlyFilteredFlights = null;
+  window.pendingFlightFocusId = flightIdToFocus; 
+  
   if (targetDate >= todayStr) {
       showTab("radar");
   } else {
-      showTab("timeline");
+      showTab("timeline"); // Das löst jetzt das perfekte Scrollen automatisch aus!
   }
   
-  // 🚀 BUGHUNT FIX: Zwingt die Liste zum frischen DB-Download!
-  currentlyFilteredFlights = null;
-  
-  renderFlights(null, flightIdToFocus);
   initLiveWidget(); 
   initUpcomingWidget();
 }
