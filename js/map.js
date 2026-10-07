@@ -15,6 +15,38 @@ function hexToRgba(hex, alpha) {
     return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
+// =================================================================
+// 🚀 MAGIE: BERECHNET DAS LAND ANHAND DER GPS-KOORDINATE
+// =================================================================
+window.getCountryIsoFromCoords = function(lat, lng) {
+    if (!window.countriesGeoJSON || !window.countriesGeoJSON.features) return null;
+    
+    // Ray-Casting Algorithmus: Prüft, ob ein Punkt in einem Vieleck liegt
+    const insidePoly = (pt, vs) => {
+        let inside = false;
+        for (let i = 0, j = vs.length - 1; i < vs.length; j = i++) {
+            let xi = vs[i][0], yi = vs[i][1];
+            let xj = vs[j][0], yj = vs[j][1];
+            let intersect = ((yi > pt[1]) !== (yj > pt[1])) && (pt[0] < (xj - xi) * (pt[1] - yi) / (yj - yi) + xi);
+            if (intersect) inside = !inside;
+        }
+        return inside;
+    };
+
+    for (const feature of window.countriesGeoJSON.features) {
+        if (!feature.geometry) continue;
+        
+        if (feature.geometry.type === 'Polygon') {
+            if (insidePoly([lng, lat], feature.geometry.coordinates[0])) return feature.properties.ISO_A2;
+        } else if (feature.geometry.type === 'MultiPolygon') {
+            for (const poly of feature.geometry.coordinates) {
+                if (insidePoly([lng, lat], poly[0])) return feature.properties.ISO_A2;
+            }
+        }
+    }
+    return null;
+};
+
 // --- NEU: Custom Tooltip CSS für die 2D-Karte injizieren ---
 if (!document.getElementById('custom-map-tooltip-style')) {
     const style = document.createElement('style');
@@ -390,30 +422,48 @@ function processGlobeData(flightsToShow, isStoryMode = false) {
                 distance: distance,
                 originalFlight: flight,
                 allFlightsOnRoute: flightsOnThisRoute,
-                
-                // ✅ WICHTIG: Das hier brauchen wir für die Entwirrung!
                 stackIndex: indexInRoute, 
-                // ✅ WICHTIG: Hash für verschiedene Routen, die ähnlich liegen
                 hash: (flight.arrival.charCodeAt(0) + flight.arrival.charCodeAt(1)) % 10,
-                
                 isActive: isActiveFlight
             });
 
-            // (Länder & Airports Logik wie gehabt...)
-            const depCountry = airportData[flight.departure]?.country_code;
-            const arrCountry = airportData[flight.arrival]?.country_code;
+            // ================================================================
+            // 🚀 BUGHUNT FIX: LÄNDER & AIRPORTS (MIT GEO-MATH!)
+            // ================================================================
+            
+            // 1. Länder aus Cache oder DB laden
+            let depCountry = (typeof airportData !== 'undefined' && airportData[flight.departure]) ? airportData[flight.departure].country_code : (flight.country || flight.depCountry);
+            let arrCountry = (typeof airportData !== 'undefined' && airportData[flight.arrival]) ? airportData[flight.arrival].country_code : flight.arrCountry;
+            
+            // 2. 🌍 MAGIE: Fehlendes Land mathematisch aus GPS berechnen!
+            if (!depCountry && flight.depLat && flight.depLon && typeof window.getCountryIsoFromCoords === 'function') {
+                depCountry = window.getCountryIsoFromCoords(flight.depLat, flight.depLon);
+            }
+            if (!arrCountry && flight.arrLat && flight.arrLon && typeof window.getCountryIsoFromCoords === 'function') {
+                arrCountry = window.getCountryIsoFromCoords(flight.arrLat, flight.arrLon);
+            }
+            
             if (depCountry) visitedCountries.add(depCountry);
             if (arrCountry) visitedCountries.add(arrCountry);
 
-            [flight.departure, flight.arrival].forEach((iata) => {
-                const airport = airportData[iata];
-                if (!airport) return;
-                if (!airportUsage[iata]) {
-                    airportUsage[iata] = { code: iata, name: airport.name || iata, lat: airport.lat, lon: airport.lon, count: 1 };
+            // 3. Flughafen-Punkte IMMER zeichnen, wenn GPS-Daten da sind!
+            [
+                { iata: flight.departure, lat: flight.depLat, lon: flight.depLon, name: flight.depName },
+                { iata: flight.arrival, lat: flight.arrLat, lon: flight.arrLon, name: flight.arrName }
+            ].forEach(port => {
+                if (!port.iata || !port.lat || !port.lon) return; 
+                
+                if (!airportUsage[port.iata]) {
+                    let portName = port.name;
+                    if (!portName && typeof airportData !== 'undefined' && airportData[port.iata]) {
+                        portName = airportData[port.iata].name;
+                    }
+                    airportUsage[port.iata] = { code: port.iata, name: portName || port.iata, lat: port.lat, lon: port.lon, count: 1 };
                 } else {
-                    airportUsage[iata].count++;
+                    airportUsage[port.iata].count++;
                 }
             });
+            // ================================================================
         });
     }
 
@@ -488,17 +538,21 @@ async function openGlobeModal() {
     labelEl.textContent = `${lastFlight.date} (#${lastFlight.flightLogNumber})`;
   else labelEl.textContent = getTranslation("globe.noFlights") || "No flights available";
 
+  // 🚀 BUGHUNT FIX: Weltkarte VORHER laden, damit die Länder-Mathe funktioniert!
+  if (!window.countriesGeoJSON) {
+      try {
+          window.countriesGeoJSON = await (await fetch("https://raw.githubusercontent.com/vasturiano/globe.gl/master/example/datasets/ne_110m_admin_0_countries.geojson")).json();
+          window.countries = window.countriesGeoJSON; // Wichtig für deinen restlichen Code!
+      } catch(e) { console.warn("Fehler beim Laden der GeoJSON", e); }
+  }
+
+  // Jetzt erst die Daten durch den Fleischwolf drehen!
   const initialData = processGlobeData(sortedFlights);
   const progressiveFlightSlice = sortedFlights.slice(-50);
   const progressiveData = processGlobeData(progressiveFlightSlice);
 
   if (!globeInstance) {
-    countries = await (
-      await fetch(
-        "https://raw.githubusercontent.com/vasturiano/globe.gl/master/example/datasets/ne_110m_admin_0_countries.geojson"
-      )
-    ).json();
-    countriesGeoJSON = countries;
+      // (Die alte fetch-Logik ist hier jetzt weg, da wir sie oben erledigt haben!)
 
     globeInstance = Globe({ rendererConfig: { preserveDrawingBuffer: true } })(document.getElementById("globe-container"))
       .backgroundColor("#000000")
