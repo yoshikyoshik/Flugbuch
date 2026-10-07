@@ -483,49 +483,32 @@ async function getGlobeData() {
 }
 
 async function openGlobeModal() {
-  // --- 1. PAYWALL CHECK ANPASSEN ---
-  // Vorher: Blockiert alle Free-User
-  // if (currentUserSubscription === "free") { ... }
-  
-  // Neu: Wir lassen Demo-User IMMER durch.
-  // (Wenn du später Step 2 "Globus für alle" machst, löschen wir diesen Block ganz)
   if (currentUserSubscription === "free" && !isDemoMode) {
-    // Optional: Wenn du willst, dass Free-User den Globus sehen (Step 2),
-    // kommentiere diese Zeilen einfach aus!
     openPremiumModal("globe"); 
     return;
   }
-  // ----------------------------------
 
   let countries;
   document.getElementById("globe-modal").classList.remove("hidden");
   
-  // CONTAINER GRÖSSE FIXEN ---
-    const container = document.getElementById("globe-container");
-    
-    // Wir warten einen winzigen Moment (10ms), damit der Browser das CSS (hidden removed) 
-    // verarbeitet hat und die wahre Größe des Containers kennt.
-    setTimeout(() => {
-        if (globeInstance) {
-            globeInstance.width(container.clientWidth);
-            globeInstance.height(container.clientHeight);
-        }
-    }, 10);
-    // --- ENDE ---
+  const container = document.getElementById("globe-container");
+  setTimeout(() => {
+      if (globeInstance) {
+          globeInstance.width(container.clientWidth);
+          globeInstance.height(container.clientHeight);
+      }
+  }, 10);
 
   const sliderEl = document.getElementById("globe-time-slider");
   const labelEl = document.getElementById("globe-time-label");
   const sliderContainer = document.getElementById("globe-slider-container");
 
-  // Wenn Demo-Modus: Nimm die Daten aus der globalen Variable (die startDemoMode gefüllt hat)
   if (isDemoMode && typeof flights !== 'undefined') {
-      console.log("Globus: Nutze Demo-Daten");
       allFlightsUnfiltered = flights; 
   } else {
-      // Sonst: Lade frisch vom Server (oder Cache)
       allFlightsUnfiltered = await getFlights();
   }
-  // ------------------------------------------
+  
   const sortedFlights = resequenceAndAssignNumbers(allFlightsUnfiltered);
 
   if (sortedFlights.length === 0) sliderContainer.classList.add("hidden");
@@ -541,7 +524,7 @@ async function openGlobeModal() {
   else labelEl.textContent = getTranslation("globe.noFlights") || "No flights available";
 
   // ================================================================
-  // 🚀 BUGHUNT FIX KORREKTUR: Weltkarte sicher in lokale Variable laden!
+  // 🚀 BUGHUNT FIX: Weltkarte laden
   // ================================================================
   if (!window.countriesGeoJSON) {
       try {
@@ -549,100 +532,64 @@ async function openGlobeModal() {
           window.countriesGeoJSON = countries;
       } catch(e) { console.warn("Fehler beim Laden der GeoJSON", e); }
   } else {
-      countries = window.countriesGeoJSON; // Aus dem Cache holen, falls schon da!
+      countries = window.countriesGeoJSON;
   }
 
-  // Erst JETZT die Daten verarbeiten (Die Mathe-Funktion hat nun ihre Karte!)
+  // 🚀 DER GROSSE FIX: Weg mit der .slice(-50) Limitierung!
   const initialData = processGlobeData(sortedFlights);
-  const progressiveFlightSlice = sortedFlights.slice(-50);
-  const progressiveData = processGlobeData(progressiveFlightSlice);
 
   if (!globeInstance) {
-      // (Kein fetch(...) mehr hier nötig!)
-      
-      globeInstance = Globe({ rendererConfig: { preserveDrawingBuffer: true } })(document.getElementById("globe-container"))
+    globeInstance = Globe({ rendererConfig: { preserveDrawingBuffer: true } })(document.getElementById("globe-container"))
       .backgroundColor("#000000")
       .atmosphereColor("#000000")
-      //.globeImageUrl("//unpkg.com/three-globe/example/img/earth-night.jpg")
       .globeImageUrl("pictures/earth-night.jpg")
-      .arcsData(progressiveData.arcData)
-      // --- NEU: Reichhaltiger Tooltip für die Routen (Hover) ---
+      
+      // Nutzt jetzt ÜBERALL initialData (Alle 100+ Flüge!)
+      .arcsData(initialData.arcData)
       .arcLabel((d) => window.buildMapTooltipHtml(d.originalFlight, d.allFlightsOnRoute ? d.allFlightsOnRoute.length : 1))
-            
-            // --- 1. FARBE (Jetzt: Bunt aber Transparent) ---
-            .arcColor((d) => {
-                if (isStoryModeActive) {
-                    // AKTIV: Leuchtendes Cyan/Weiß (knallt raus)
-                    if (d.isActive) return "#00ffff"; 
-                    
-                    // INAKTIV (Ghost Trails):
-                    // Wir nehmen die Originalfarbe (d.color) und machen sie 40% deckend.
-                    // Das erhält die Information "Kurzstrecke/Langstrecke", ist aber dezent.
-                    return hexToRgba(d.color, 0.4); 
-                }
-                // NORMALER MODUS: Volle Farbe
-                return d.color;
-            })
+      .arcColor((d) => {
+          if (isStoryModeActive) {
+              if (d.isActive) return "#00ffff"; 
+              return hexToRgba(d.color, 0.4); 
+          }
+          return d.color;
+      })
+      .arcAltitude((d) => {
+          let naturalArch = d.distance < 1000 ? 0.05 : Math.min(0.5, d.distance / 15000);
+          let stackOffset = d.stackIndex * 0.02; 
+          let routeVariation = d.hash * 0.01;
 
-            // --- 2. HÖHE (Proportionale Bögen) ---
-            .arcAltitude((d) => {
-                // Natürliche Bogenhöhe
-                let naturalArch = d.distance < 1000 ? 0.05 : Math.min(0.5, d.distance / 15000);
-                
-                // Offsets
-                let stackOffset = d.stackIndex * 0.02; 
-                let routeVariation = d.hash * 0.01;
-
-                if (isStoryModeActive) {
-                    if (d.isActive) {
-                        // Hero: Hoch drüber
-                        return naturalArch + 0.25 + stackOffset;
-                    } else {
-                        // Ghosts: 60% Höhe + Sicherheitsabstand
-                        return (naturalArch * 0.6) + 0.05 + (d.stackIndex * 0.005);
-                    }
-                }
-                // Normal
-                return naturalArch + routeVariation + stackOffset;
-            })
-
-            // --- 3. DICKE (Konsistent halten!) ---
-            .arcStroke((d) => {
-                if (isStoryModeActive) {
-                    // Aktiv: 2.5 (Fett)
-                    // Inaktiv: 0.8 (Vorher 0.6 - etwas dicker für die Farbe)
-                    return d.isActive ? 4.0 : 1.2;
-                }
-                // Normal: 0.5
-                return 0.5;
-            })
-
-            // --- 4. ANIMATION ---
-            .arcDashLength((d) => {
-                if (isStoryModeActive) return d.isActive ? 0.4 : 1; 
-                return 0.1;
-            })
-            .arcDashGap((d) => {
-                if (isStoryModeActive) return d.isActive ? 0.1 : 0;
-                return 0.02; 
-            })
-            .arcDashAnimateTime((d) => {
-                if (isStoryModeActive) return d.isActive ? 4000 : 0; 
-                return d.distance < 1000 ? 8000 : 12000;
-            })
+          if (isStoryModeActive) {
+              if (d.isActive) return naturalArch + 0.25 + stackOffset;
+              return (naturalArch * 0.6) + 0.05 + (d.stackIndex * 0.005);
+          }
+          return naturalArch + routeVariation + stackOffset;
+      })
+      .arcStroke((d) => {
+          if (isStoryModeActive) return d.isActive ? 4.0 : 1.2;
+          return 0.5;
+      })
+      .arcDashLength((d) => {
+          if (isStoryModeActive) return d.isActive ? 0.4 : 1; 
+          return 0.1;
+      })
+      .arcDashGap((d) => {
+          if (isStoryModeActive) return d.isActive ? 0.1 : 0;
+          return 0.02; 
+      })
+      .arcDashAnimateTime((d) => {
+          if (isStoryModeActive) return d.isActive ? 4000 : 0; 
+          return d.distance < 1000 ? 8000 : 12000;
+      })
       .polygonsData(countries.features)
       .polygonCapColor((feat) => {
-        const isVisited = initialData.visitedCountries.includes(
-          feat.properties.ISO_A2
-        );
-        return isVisited
-          ? "rgba(147, 51, 234, 0.5)"
-          : "rgba(100, 100, 100, 0.2)";
+        const isVisited = initialData.visitedCountries.includes(feat.properties.ISO_A2);
+        return isVisited ? "rgba(147, 51, 234, 0.5)" : "rgba(100, 100, 100, 0.2)";
       })
       .polygonSideColor(() => "rgba(255, 255, 255, 0.05)")
       .polygonStrokeColor(() => "#ffffff")
       .polygonAltitude(0.01)
-      .pointsData(progressiveData.airportPointsData)
+      .pointsData(initialData.airportPointsData)
       .pointLat("lat")
       .pointLng("lon")
       .pointLabel((d) => {
@@ -655,28 +602,13 @@ async function openGlobeModal() {
           `;
       })
       .pointColor(() => "#fde047")
-      .pointRadius(
-        (d) =>
-          0.1 +
-          (progressiveData.maxCount > 0
-            ? (d.count / progressiveData.maxCount) * 0.4
-            : 0)
-      )
-      .pointAltitude((d) =>
-        progressiveData.maxCount > 0
-          ? (d.count / progressiveData.maxCount) * 0.2
-          : 0.01
-      )
+      .pointRadius((d) => 0.1 + (initialData.maxCount > 0 ? (d.count / initialData.maxCount) * 0.4 : 0))
+      .pointAltitude((d) => initialData.maxCount > 0 ? (d.count / initialData.maxCount) * 0.2 : 0.01)
       .pointsTransitionDuration(0)
-      .htmlElementsData(progressiveData.airportPointsData)
+      .htmlElementsData(initialData.airportPointsData)
       .htmlLat("lat")
       .htmlLng("lon")
-      .htmlAltitude(
-        (d) =>
-          (progressiveData.maxCount > 0
-            ? (d.count / progressiveData.maxCount) * 0.2
-            : 0.01) + 0.03
-      )
+      .htmlAltitude((d) => (initialData.maxCount > 0 ? (d.count / initialData.maxCount) * 0.2 : 0.01) + 0.03)
       .htmlElement((d) => {
         const el = document.createElement("div");
         el.innerHTML = d.code;
@@ -690,407 +622,202 @@ async function openGlobeModal() {
         return el;
       })
       .htmlTransitionDuration(0)
-
-      // +++ NEU: EVENT-HANDLER FÜR FOKUS-MODUS +++
-
-      /**
-       * EVENT 1: Klick auf eine Flughafen-Säule (Point)
-       */
       .onPointClick((point) => {
-        // 🚀 FIX: Klicks auf Flughäfen ignorieren, wenn wir im Story-Modus sind!
         if (isStoryModeActive) return;
-        
-        console.log("Fokus auf:", point.code);
-        // 1. Rotation stoppen & Slider deaktivieren
         globeInstance.controls().autoRotate = false;
         sliderEl.disabled = true;
         labelEl.textContent = `${getTranslation("globe.focus") || "Focus"}: ${point.name} (${point.code})`;
+        globeInstance.pointOfView({ lat: point.lat, lng: point.lon, altitude: 1.5 }, 1000);
 
-        // 2. Zur Säule fliegen
-        globeInstance.pointOfView(
-          { lat: point.lat, lng: point.lon, altitude: 1.5 },
-          1000
-        );
+        const focusedFlights = sortedFlights.filter((f) => f.departure === point.code || f.arrival === point.code);
+        const { arcData, visitedCountries, airportPointsData, maxCount } = processGlobeData(focusedFlights);
 
-        // 3. Flüge nur für diesen Punkt filtern
-        const focusedFlights = sortedFlights.filter(
-          (f) => f.departure === point.code || f.arrival === point.code
-        );
-
-        // 4. Daten neu verarbeiten (zeigt nur noch diesen Punkt und verbundene an)
-        const { arcData, visitedCountries, airportPointsData, maxCount } =
-          processGlobeData(focusedFlights);
-
-        // 5. Globus mit den FOKUSSIERTEN Daten aktualisieren
         globeInstance.arcsData(arcData);
         globeInstance
           .polygonsData(countries.features)
           .polygonCapColor((feat) => {
             const isVisited = visitedCountries.includes(feat.properties.ISO_A2);
-            return isVisited
-              ? "rgba(147, 51, 234, 0.5)"
-              : "rgba(100, 100, 100, 0.2)";
+            return isVisited ? "rgba(147, 51, 234, 0.5)" : "rgba(100, 100, 100, 0.2)";
           });
         globeInstance
           .pointsData(airportPointsData)
-          .pointRadius(
-            (d) => 0.1 + (maxCount > 0 ? (d.count / maxCount) * 0.4 : 0)
-          )
-          .pointAltitude((d) =>
-            maxCount > 0 ? (d.count / maxCount) * 0.2 : 0.01
-          );
+          .pointRadius((d) => 0.1 + (maxCount > 0 ? (d.count / maxCount) * 0.4 : 0))
+          .pointAltitude((d) => maxCount > 0 ? (d.count / maxCount) * 0.2 : 0.01);
         globeInstance
           .htmlElementsData(airportPointsData)
-          .htmlAltitude(
-            (d) => (maxCount > 0 ? (d.count / maxCount) * 0.2 : 0.01) + 0.03
-          );
+          .htmlAltitude((d) => (maxCount > 0 ? (d.count / maxCount) * 0.2 : 0.01) + 0.03);
       })
-
-      /**
-       * EVENT 2: Klick auf den Globus-Hintergrund (Reset)
-       */
       .onGlobeClick(() => {
         if (isStoryModeActive) return;
-
-        console.log("Fokus zurücksetzen");
-        // 1. Slider aktivieren und auf MAX setzen
         sliderEl.disabled = false;
         sliderEl.value = sortedFlights.length - 1;
-        if (lastFlight) {
-          // Zeigt den Label-Text für den letzten Flug
-          labelEl.textContent = `${lastFlight.date} (#${lastFlight.flightLogNumber})`;
-        }
+        if (lastFlight) labelEl.textContent = `${lastFlight.date} (#${lastFlight.flightLogNumber})`;
 
-        // 2. Globus mit den SCHNELLEN Daten (progressiveData) zurücksetzen
-        globeInstance.arcsData(progressiveData.arcData);
+        // Wieder zurück auf initialData setzen!
+        globeInstance.arcsData(initialData.arcData);
         globeInstance
           .polygonsData(countries.features)
           .polygonCapColor((feat) => {
-            const isVisited = initialData.visitedCountries.includes(
-              feat.properties.ISO_A2
-            );
-            return isVisited
-              ? "rgba(147, 51, 234, 0.5)"
-              : "rgba(100, 100, 100, 0.2)";
+            const isVisited = initialData.visitedCountries.includes(feat.properties.ISO_A2);
+            return isVisited ? "rgba(147, 51, 234, 0.5)" : "rgba(100, 100, 100, 0.2)";
           });
         globeInstance
-          .pointsData(progressiveData.airportPointsData) // <-- Korrekt
-          .pointRadius(
-            (d) =>
-              0.1 +
-              (progressiveData.maxCount > 0 // ✅ KORRIGIERT
-                ? (d.count / progressiveData.maxCount) * 0.4 // ✅ KORRIGIERT
-                : 0)
-          )
-          .pointAltitude((d) =>
-            progressiveData.maxCount > 0 // ✅ KORRIGIERT
-              ? (d.count / progressiveData.maxCount) * 0.2 // ✅ KORRIGIERT
-              : 0.01
-          );
+          .pointsData(initialData.airportPointsData) 
+          .pointRadius((d) => 0.1 + (initialData.maxCount > 0 ? (d.count / initialData.maxCount) * 0.4 : 0))
+          .pointAltitude((d) => initialData.maxCount > 0 ? (d.count / initialData.maxCount) * 0.2 : 0.01);
         globeInstance
-          .htmlElementsData(progressiveData.airportPointsData) // <-- Korrekt
-          .htmlAltitude(
-            (d) =>
-              (progressiveData.maxCount > 0 // ✅ KORRIGIERT
-                ? (d.count / progressiveData.maxCount) * 0.2 // ✅ KORRIGIERT
-                : 0.01) + 0.03
-          );
+          .htmlElementsData(initialData.airportPointsData) 
+          .htmlAltitude((d) => (initialData.maxCount > 0 ? (d.count / initialData.maxCount) * 0.2 : 0.01) + 0.03);
 
-        // 3. Ansicht herauszoomen und Rotation starten
-        globeInstance.pointOfView({ altitude: 3.5 }, 1000); // Zoomt auf globale Ansicht
+        globeInstance.pointOfView({ altitude: 3.5 }, 1000); 
         globeInstance.controls().autoRotate = true;
       })
-
-      /**
-       * EVENT 3: Klick auf ein Land (Polygon)
-       */
       .onPolygonClick((polygon) => {
         if (isStoryModeActive) return;
-        console.log("Fokus auf Land:", polygon.properties.ADMIN);
-
-        // 1. Rotation stoppen & Slider deaktivieren
         globeInstance.controls().autoRotate = false;
         sliderEl.disabled = true;
 
-        const countryCode = polygon.properties.ISO_A2; // z.B. "ES" für Spanien
-        const countryName = polygon.properties.ADMIN; // z.B. "Spain"
+        const countryCode = polygon.properties.ISO_A2; 
+        const countryName = polygon.properties.ADMIN; 
         labelEl.textContent = `${getTranslation("globe.focus") || "Focus"}: ${countryName} (${countryCode})`;
 
-        // 2. Zur Polygon fliegen (Kamerasteuerung)
         let centerCoords;
         const geometryType = polygon.geometry.type;
 
         if (geometryType === "MultiPolygon") {
-          // Nimm den ersten Punkt des ersten Polygons der Inselgruppe (z.B. für Japan)
           centerCoords = polygon.geometry.coordinates[0][0][0];
         } else if (geometryType === "Polygon") {
-          // Nimm den ersten Punkt des Polygons (z.B. für Spanien)
           centerCoords = polygon.geometry.coordinates[0][0];
         }
 
         if (centerCoords && centerCoords.length === 2) {
-          // WICHTIG: GeoJSON ist [lng, lat], pointOfView ist { lat, lng }
-          globeInstance.pointOfView(
-            { lat: centerCoords[1], lng: centerCoords[0], altitude: 2.5 },
-            1000
-          );
-        } else {
-          // Fallback, falls die Koordinaten ungültig sind
-          console.error(
-            "Konnte keinen Mittelpunkt für das Polygon finden:",
-            polygon.properties.ADMIN
-          );
+          globeInstance.pointOfView({ lat: centerCoords[1], lng: centerCoords[0], altitude: 2.5 }, 1000);
         }
 
-        // 3. Flüge nur für dieses Land filtern
-        // 'sortedFlights' ist die globale Liste aus openGlobeModal
         const focusedFlights = sortedFlights.filter((f) => {
-          // Prüfe, ob der Ländercode im airportData-Cache existiert
           const depCountry = airportData[f.departure]?.country_code;
           const arrCountry = airportData[f.arrival]?.country_code;
           return depCountry === countryCode || arrCountry === countryCode;
         });
 
-        // 4. Daten neu verarbeiten (zeigt nur noch Flüge & Punkte für dieses Land an)
-        const { arcData, visitedCountries, airportPointsData, maxCount } =
-          processGlobeData(focusedFlights);
+        const { arcData, visitedCountries, airportPointsData, maxCount } = processGlobeData(focusedFlights);
 
-        // 5. Globus mit den FOKUSSIERTEN Daten aktualisieren
         globeInstance.arcsData(arcData);
         globeInstance
           .polygonsData(countries.features)
           .polygonCapColor((feat) => {
-            // Hebe das geklickte Land ODER besuchte Länder hervor
             const isClicked = feat.properties.ISO_A2 === countryCode;
             const isVisited = visitedCountries.includes(feat.properties.ISO_A2);
-            // Geklicktes Land bekommt eine andere Farbe (z.B. Pink)
-            return isClicked
-              ? "rgba(236, 72, 153, 0.7)"
-              : isVisited
-                ? "rgba(147, 51, 234, 0.5)"
-                : "rgba(100, 100, 100, 0.2)";
+            return isClicked ? "rgba(236, 72, 153, 0.7)" : isVisited ? "rgba(147, 51, 234, 0.5)" : "rgba(100, 100, 100, 0.2)";
           });
         globeInstance
           .pointsData(airportPointsData)
-          .pointRadius(
-            (d) => 0.1 + (maxCount > 0 ? (d.count / maxCount) * 0.4 : 0)
-          )
-          .pointAltitude((d) =>
-            maxCount > 0 ? (d.count / maxCount) * 0.2 : 0.01
-          );
+          .pointRadius((d) => 0.1 + (maxCount > 0 ? (d.count / maxCount) * 0.4 : 0))
+          .pointAltitude((d) => maxCount > 0 ? (d.count / maxCount) * 0.2 : 0.01);
         globeInstance
           .htmlElementsData(airportPointsData)
-          .htmlAltitude(
-            (d) => (maxCount > 0 ? (d.count / maxCount) * 0.2 : 0.01) + 0.03
-          );
+          .htmlAltitude((d) => (maxCount > 0 ? (d.count / maxCount) * 0.2 : 0.01) + 0.03);
       })
-
-      /**
-       * EVENT 4: Klick auf eine Flugroute (Arc)
-       */
       .onArcClick((arc) => {
-        // ✅ NEUE PRÜFUNG:
-        // Im "Normalen Modus" (Präsentation) passiert bei Klick nichts.
-        if (!isStoryModeActive) {
-          return;
-        }
+        if (!isStoryModeActive) return;
+        if (!arc) return; 
 
-        if (!arc) return; // Sicherheitsabfrage
-
-        // Wir prüfen das neue Array, das wir in Schritt 1 hinzugefügt haben
         if (arc.allFlightsOnRoute && arc.allFlightsOnRoute.length > 1) {
-          // --- MEHRERE FLÜGE (STAPEL) GEFUNDEN ---
-          // Rufe eine neue Funktion auf, um die Auswahlliste zu zeigen
           showFlightDisambiguationModal(arc.allFlightsOnRoute);
         } else if (arc.originalFlight) {
-          // --- NUR EIN FLUG GEFUNDEN ---
-          // Rufe die normale Detail-Funktion auf
           showFlightDetailsInModal(arc.originalFlight);
-        } else {
-          console.warn("Arc-Klick ohne originalFlight-Daten:", arc);
         }
       })
+      .onArcHover((arc) => {
+          const globeContainer = document.getElementById("globe-container");
+          globeContainer.style.cursor = arc ? "pointer" : "grab";
 
-      /**
-       * NEU: EVENT 5: Hover über eine Flugroute (Arc)
-       */
-      // --- 5. HOVER EFFEKT (Bugfix: Reset muss identisch sein!) ---
-            .onArcHover((arc) => {
-                const globeContainer = document.getElementById("globe-container");
-                globeContainer.style.cursor = arc ? "pointer" : "grab";
-
-                if (arc) {
-                    // +++ HOVER (Maus drauf) +++
-                    globeInstance.arcColor((d) => d === arc ? "#ffffff" : (
-                        isStoryModeActive 
-                            ? (d.isActive ? "#00ffff" : hexToRgba(d.color, 0.4)) // ✅ Korrigiert
-                            : d.color
-                    ));
-                    
-                    globeInstance.arcStroke((d) => d === arc ? 1.5 : (
-                        isStoryModeActive ? (d.isActive ? 2.5 : 0.8) : 0.5 // ✅ Korrigiert (0.8 statt 0.3)
-                    ));
-
-                    // --- NEU: Tooltip Update (Hover State) ---
-                    globeInstance.arcLabel((d) => d === arc ? window.buildMapTooltipHtml(d.originalFlight, d.allFlightsOnRoute ? d.allFlightsOnRoute.length : 1) : "");
-
-                } else {
-                    // +++ RESET (Maus weg) - HIER WAR DER FEHLER +++
-                    
-                    globeInstance.arcColor((d) => {
-                        if (isStoryModeActive) {
-                            return d.isActive ? "#00ffff" : hexToRgba(d.color, 0.4); // ✅ Jetzt identisch zu oben
-                        }
-                        return d.color;
-                    });
-                    
-                    globeInstance.arcStroke((d) => {
-                        if (isStoryModeActive) {
-                            return d.isActive ? 2.5 : 0.8; // ✅ Jetzt identisch zu oben (0.8)
-                        }
-                        return 0.5;
-                    });
-                    
-                    // --- NEU: Tooltip Reset ---
-                    globeInstance.arcLabel((d) => window.buildMapTooltipHtml(d.originalFlight, d.allFlightsOnRoute ? d.allFlightsOnRoute.length : 1));
-                }
-            })
-    // +++ ENDE EVENT-HANDLER +++
+          if (arc) {
+              globeInstance.arcColor((d) => d === arc ? "#ffffff" : (isStoryModeActive ? (d.isActive ? "#00ffff" : hexToRgba(d.color, 0.4)) : d.color));
+              globeInstance.arcStroke((d) => d === arc ? 1.5 : (isStoryModeActive ? (d.isActive ? 2.5 : 0.8) : 0.5));
+              globeInstance.arcLabel((d) => d === arc ? window.buildMapTooltipHtml(d.originalFlight, d.allFlightsOnRoute ? d.allFlightsOnRoute.length : 1) : "");
+          } else {
+              globeInstance.arcColor((d) => {
+                  if (isStoryModeActive) return d.isActive ? "#00ffff" : hexToRgba(d.color, 0.4); 
+                  return d.color;
+              });
+              globeInstance.arcStroke((d) => {
+                  if (isStoryModeActive) return d.isActive ? 2.5 : 0.8; 
+                  return 0.5;
+              });
+              globeInstance.arcLabel((d) => window.buildMapTooltipHtml(d.originalFlight, d.allFlightsOnRoute ? d.allFlightsOnRoute.length : 1));
+          }
+      });
 
     globeInstance.controls().autoRotate = true;
     globeInstance.controls().autoRotateSpeed = 0.2;
     globeInstance.controls().enableZoom = true;
 
-    // --- EVENT LISTENER FÜR SLIDER (Wird nur einmal hinzugefügt) ---
     sliderEl.addEventListener("input", () => {
-      // Wenn der Story-Modus aktiv war, beende ihn jetzt vollständig.
-      if (isStoryModeActive) {
-        toggleStoryMode(); // Dies setzt den Button-Text und den Status zurück
-      }
+      if (isStoryModeActive) toggleStoryMode(); 
 
-      // +++ ANPASSUNG: Slider-Bewegung bricht den Fokus-Modus +++
-      globeInstance.controls().autoRotate = true; // Rotation wieder starten
-      sliderEl.disabled = false; // Slider (falls deaktiviert) wieder aktivieren
+      globeInstance.controls().autoRotate = true; 
+      sliderEl.disabled = false; 
 
       const selectedIndex = parseInt(sliderEl.value, 10);
       const currentFlight = sortedFlights[selectedIndex];
-
       const newLabelText = `${currentFlight.date} (#${currentFlight.flightLogNumber}: ${currentFlight.departure} → ${currentFlight.arrival})`;
 
-      // Den "normalen" Text immer speichern, falls wir ihn brauchen
       normalGlobeLabelText = newLabelText;
-
-      // Das Label nur aktualisieren, wenn der Story-Modus NICHT aktiv ist
-      if (!isStoryModeActive) {
-        labelEl.textContent = newLabelText;
-      }
+      if (!isStoryModeActive) labelEl.textContent = newLabelText;
 
       const filteredFlights = sortedFlights.slice(0, selectedIndex + 1);
-      const { arcData, visitedCountries, airportPointsData, maxCount } =
-        processGlobeData(filteredFlights);
+      const { arcData, visitedCountries, airportPointsData, maxCount } = processGlobeData(filteredFlights);
 
-      // 4. Globus-Schichten mit den neuen Daten aktualisieren
       globeInstance.arcsData(arcData);
       globeInstance.polygonsData(countries.features).polygonCapColor((feat) => {
         const isVisited = visitedCountries.includes(feat.properties.ISO_A2);
-        return isVisited
-          ? "rgba(147, 51, 234, 0.5)"
-          : "rgba(100, 100, 100, 0.2)";
+        return isVisited ? "rgba(147, 51, 234, 0.5)" : "rgba(100, 100, 100, 0.2)";
       });
       globeInstance
         .pointsData(airportPointsData)
-        .pointRadius(
-          (d) => 0.1 + (maxCount > 0 ? (d.count / maxCount) * 0.4 : 0)
-        )
-        .pointAltitude((d) =>
-          maxCount > 0 ? (d.count / maxCount) * 0.2 : 0.01
-        );
+        .pointRadius((d) => 0.1 + (maxCount > 0 ? (d.count / maxCount) * 0.4 : 0))
+        .pointAltitude((d) => maxCount > 0 ? (d.count / maxCount) * 0.2 : 0.01);
       globeInstance
         .htmlElementsData(airportPointsData)
-        .htmlAltitude(
-          (d) => (maxCount > 0 ? (d.count / maxCount) * 0.2 : 0.01) + 0.03
-        );
+        .htmlAltitude((d) => (maxCount > 0 ? (d.count / maxCount) * 0.2 : 0.01) + 0.03);
     });
   }
-
-  // --- 3. DATEN-UPDATE (Läuft bei jedem Öffnen) ---
   else {
-    // ✅ NEU: 'else' hinzugefügt
+    sliderEl.disabled = false; 
+    sliderEl.value = sortedFlights.length - 1; 
+    if (lastFlight) labelEl.textContent = `${lastFlight.date} (#${lastFlight.flightLogNumber})`;
 
-    // Setzt den Globus auf den "vollen" Zustand zurück
-    sliderEl.disabled = false; // Sicherstellen, dass Slider aktiv ist
-    sliderEl.value = sortedFlights.length - 1; // Sicherstellen, dass Slider auf MAX steht
-    if (lastFlight) {
-      labelEl.textContent = `${lastFlight.date} (#${lastFlight.flightLogNumber})`;
-    }
-
-    //// globeInstance.arcsData(initialData.arcData);
-    globeInstance.arcsData(progressiveData.arcData); // <-- HIER
+    // AUCH HIER: initialData für den Update-Block nutzen
+    globeInstance.arcsData(initialData.arcData); 
     globeInstance
       .polygonsData(countriesGeoJSON.features)
       .polygonCapColor((feat) => {
-        const isVisited = initialData.visitedCountries.includes(
-          feat.properties.ISO_A2
-        );
-        return isVisited
-          ? "rgba(147, 51, 234, 0.5)"
-          : "rgba(100, 100, 100, 0.2)";
+        const isVisited = initialData.visitedCountries.includes(feat.properties.ISO_A2);
+        return isVisited ? "rgba(147, 51, 234, 0.5)" : "rgba(100, 100, 100, 0.2)";
       });
     globeInstance
-      //// .pointsData(initialData.airportPointsData)
-      .pointsData(progressiveData.airportPointsData) // <-- HIER
-      .pointRadius(
-        (d) =>
-          0.1 +
-          (progressiveData.maxCount > 0 // ✅ KORRIGIERT
-            ? (d.count / progressiveData.maxCount) * 0.4 // ✅ KORRIGIERT
-            : 0)
-      )
-      .pointAltitude((d) =>
-        //// initialData.maxCount > 0
-        progressiveData.maxCount > 0 // <-- HIER
-          ? (d.count / progressiveData.maxCount) * 0.2
-          : 0.01
-      );
+      .pointsData(initialData.airportPointsData) 
+      .pointRadius((d) => 0.1 + (initialData.maxCount > 0 ? (d.count / initialData.maxCount) * 0.4 : 0))
+      .pointAltitude((d) => initialData.maxCount > 0 ? (d.count / initialData.maxCount) * 0.2 : 0.01);
     globeInstance
-      //// .htmlElementsData(initialData.airportPointsData)
-      .htmlElementsData(progressiveData.airportPointsData) // <-- HIER
-      .htmlAltitude(
-        (d) =>
-          ////(initialData.maxCount > 0
-          (progressiveData.maxCount > 0 // <-- HIER
-            ? (d.count / progressiveData.maxCount) * 0.2
-            : 0.01) + 0.03
-      );
+      .htmlElementsData(initialData.airportPointsData) 
+      .htmlAltitude((d) => (initialData.maxCount > 0 ? (d.count / initialData.maxCount) * 0.2 : 0.01) + 0.03);
 
-	// RESPONSIVE RESIZE
-        // ✅ NEU: Robuster Resize-Listener mit Delay & Zentrierung
-        const handleResize = () => {
-            const container = document.getElementById("globe-container");
-            if (globeInstance && container) {
-                // 1. Neue Dimensionen holen
-                const w = container.clientWidth;
-                const h = container.clientHeight;
-
-                // 2. Dem Globus die neuen Maße geben
-                globeInstance.width(w);
-                globeInstance.height(h);
-                
-                // 3. WICHTIG: Erzwinge ein Kamera-Update, um Verzerrungen zu vermeiden
-                // Wir lesen die aktuelle Position und setzen sie neu. Das triggert intern ein Update der Projektionsmatrix.
-                const currentPos = globeInstance.pointOfView();
-                globeInstance.pointOfView(currentPos); 
-            }
-        };
-
-        // A) Event Listener für Fenster-Größenänderung (Drehen)
-        window.addEventListener('resize', handleResize);
-        
-        // B) Einmaliger Aufruf kurz nach dem Start (Fängt initiale Layout-Verschiebungen ab)
-        setTimeout(handleResize, 200);
+    const handleResize = () => {
+        const container = document.getElementById("globe-container");
+        if (globeInstance && container) {
+            globeInstance.width(container.clientWidth);
+            globeInstance.height(container.clientHeight);
+            const currentPos = globeInstance.pointOfView();
+            globeInstance.pointOfView(currentPos); 
+        }
+    };
+    window.addEventListener('resize', handleResize);
+    setTimeout(handleResize, 200);
 
     globeInstance.controls().autoRotate = true;
-  } // Ende des 'else'
+  } 
   window.globeDebugLogged = false;
 }
 
