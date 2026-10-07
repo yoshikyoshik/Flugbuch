@@ -431,6 +431,11 @@
                       Timeline
                     </h2>
                     <div class="flex items-center gap-2">
+                        <!-- 🚀 NEU: Der smarte Fahrstuhl-Button -->
+                        <button id="scroll-elevator-btn" onclick="toggleScrollElevator()" class="hidden w-9 h-9 rounded-full bg-surface-container-high hover:bg-outline-variant/30 dark:bg-slate-800 dark:hover:bg-slate-700 text-on-surface/70 dark:text-slate-300 flex items-center justify-center transition-colors border border-outline-variant/20 dark:border-slate-700 shadow-sm" title="Zur Karte scrollen">
+                            <span class="material-symbols-outlined text-[18px]" id="scroll-elevator-icon">arrow_upward</span>
+                        </button>
+
                         <button onclick="window.scrollTo({top: 0, behavior: 'smooth'});" class="w-9 h-9 rounded-full bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center transition-colors border border-indigo-200 dark:border-indigo-800 shadow-sm" data-i18n-title="map2d" title="2D Karte">
                             <span class="material-symbols-outlined text-[18px]">map</span>
                         </button>

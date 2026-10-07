@@ -2623,3 +2623,61 @@ window.focusFlightOnMap = function(flightId) {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }, 50);
 };
+
+// ==========================================
+// 🚀 UX FEATURE: SMARTER FAHRSTUHL (ELEVATOR)
+// ==========================================
+
+window.toggleScrollElevator = function() {
+    if (window.scrollY < 200) {
+        // Wir sind OBEN -> Fahrstuhl fährt nach UNTEN zum aktuell markierten Flug
+        if (typeof globalLastFlightId !== 'undefined' && globalLastFlightId) {
+            const card = document.getElementById(`flight-card-${globalLastFlightId}`);
+            if (card) {
+                // Wir ziehen 120 Pixel ab, damit die Flugkarte nicht unter dem Sticky-Header verschwindet
+                const y = card.getBoundingClientRect().top + window.scrollY - 120; 
+                window.scrollTo({ top: y, behavior: 'smooth' });
+                
+                // Schöner UX-Effekt: Die Flugkarte leuchtet kurz auf, damit das Auge sie sofort findet
+                const innerCard = card.firstElementChild;
+                if (innerCard) {
+                    innerCard.classList.add('ring-4', 'ring-primary', 'ring-offset-4', 'dark:ring-offset-slate-900', 'transition-all');
+                    setTimeout(() => innerCard.classList.remove('ring-4', 'ring-primary', 'ring-offset-4', 'dark:ring-offset-slate-900'), 1500);
+                }
+            }
+        }
+    } else {
+        // Wir sind UNTEN -> Fahrstuhl fährt nach OBEN zur Karte
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+};
+
+// Intelligenter Scroll-Listener: Dreht den Pfeil je nach Scroll-Position um
+window.addEventListener('scroll', () => {
+    const elevatorBtn = document.getElementById('scroll-elevator-btn');
+    const elevatorIcon = document.getElementById('scroll-elevator-icon');
+    
+    if (!elevatorBtn || !elevatorIcon) return;
+
+    // Der Button wird nur eingeblendet, wenn wir im Timeline-Tab sind, die Einzelansicht aktiv ist 
+    // und wir bereits einen Flug angeklickt haben (globalLastFlightId).
+    const timelineContainer = document.getElementById('tab-content-timeline');
+    const isTimelineActive = timelineContainer && !timelineContainer.classList.contains('hidden');
+    
+    if (isTimelineActive && typeof globalLastFlightId !== 'undefined' && globalLastFlightId && (!window.isAllRoutesViewActive)) {
+        
+        elevatorBtn.classList.remove('hidden');
+        
+        if (window.scrollY < 200) {
+            // Wir sind Oben -> Pfeil zeigt nach unten
+            elevatorIcon.textContent = 'arrow_downward';
+            elevatorBtn.title = 'Zum ausgewählten Flug springen';
+        } else {
+            // Wir sind Unten -> Pfeil zeigt nach oben
+            elevatorIcon.textContent = 'arrow_upward';
+            elevatorBtn.title = 'Zur Karte hochscrollen';
+        }
+    } else {
+        elevatorBtn.classList.add('hidden');
+    }
+});
