@@ -604,8 +604,9 @@ window.renderFlights = async function (flightsToRender, flightIdToFocus, page = 
     flightList.innerHTML = `<p id="no-flights-message" class="log-placeholder text-gray-500 italic text-center py-4">${getTranslation("flights.noFlights")}</p>`;
   } else {
     paginatedFlights.forEach((flight) => {
-      const depName = (airportData && airportData[flight.departure]) ? airportData[flight.departure].name : flight.departure;
-      const arrName = (airportData && airportData[flight.arrival]) ? airportData[flight.arrival].name : flight.arrival;
+      // 🚀 BUGHUNT FIX: Greift zuerst auf die in Supabase gespeicherten echten Namen zu!
+      const depName = flight.depName || ((window.airportData && window.airportData[flight.departure]) ? window.airportData[flight.departure].name : flight.departure);
+      const arrName = flight.arrName || ((window.airportData && window.airportData[flight.arrival]) ? window.airportData[flight.arrival].name : flight.arrival);
       const rawMilestoneColor = getMilestoneColor(flight.flightLogNumber) || "";
       const dotColor = rawMilestoneColor.replace('bg-', 'bg-').replace('text-white', '').trim() || 'bg-indigo-500';
 
