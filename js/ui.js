@@ -2611,7 +2611,15 @@ window.focusFlightOnMap = function(flightId) {
     }
 
     globalLastFlightId = flightId; 
-    window.pendingFlightFocusId = flightId; // 👈 NEU: Fokus in die Warteschlange legen
+    
+    // 🚀 UX FIX: Wir legen das HIER NICHT in die Fokus-Warteschlange! 
+    // Denn der User will ja die Karte ganz oben sehen und nicht zur Flug-Kachel scrollen.
+    window.pendingFlightFocusId = null; 
     
     if (typeof showTab === 'function') showTab('timeline');
+
+    // Wir scrollen butterweich ganz nach oben zur Karte, wo der Flug jetzt visualisiert wird.
+    setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 50);
 };

@@ -430,6 +430,15 @@
                     <h2 class="text-2xl font-display font-extrabold text-on-surface dark:text-white tracking-tight">
                       Timeline
                     </h2>
+                    <!-- 🚀 NEU: Quick-Access Buttons im Sticky Header -->
+                    <div class="flex items-center gap-2">
+                        <button onclick="window.scrollTo({top: 0, behavior: 'smooth'}); setTimeout(toggleAllRoutesView, 300);" class="w-9 h-9 rounded-full bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center transition-colors border border-indigo-200 dark:border-indigo-800 shadow-sm" data-i18n-title="map2d" title="2D Karte">
+                            <span class="material-symbols-outlined text-[18px]">map</span>
+                        </button>
+                        <button onclick="openGlobeModal()" class="w-9 h-9 rounded-full bg-cyan-50 hover:bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400 flex items-center justify-center transition-colors border border-cyan-200 dark:border-cyan-800 shadow-sm" data-i18n-title="globe3d" title="3D Globus">
+                            <span class="material-symbols-outlined text-[18px]">public</span>
+                        </button>
+                    </div>
                   </div>
 
                   <div class="flex flex-col items-center gap-4 w-full">
@@ -1322,13 +1331,19 @@
                     <span id="fd-log-number" class="bg-white/20 backdrop-blur-sm border border-white/10 text-white px-2.5 py-0.5 rounded-full text-[10px] font-bold shadow-sm"></span>
                 </div>
                 <div class="text-4xl md:text-5xl font-display font-black tracking-tighter flex items-center justify-between w-full">
-                    <span id="fd-dep" class="drop-shadow-md"></span>
+                    <div class="flex flex-col">
+                        <span id="fd-dep" class="drop-shadow-md leading-none"></span>
+                        <span id="fd-dep-name" class="text-[10px] md:text-xs font-medium text-white/70 mt-2 max-w-[120px] line-clamp-2 leading-tight"></span>
+                    </div>
                     <div class="flex-1 px-4 relative flex items-center justify-center">
                         <div class="h-[2px] w-full bg-gradient-to-r from-transparent via-white/40 to-transparent relative">
                             <span class="material-symbols-outlined absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-cyan-accent bg-transparent px-2 text-2xl drop-shadow-[0_0_8px_rgba(0,229,255,0.5)]" style="font-variation-settings: 'FILL' 1;">flight</span>
                         </div>
                     </div>
-                    <span id="fd-arr" class="drop-shadow-md text-right"></span>
+                    <div class="flex flex-col items-end text-right">
+                        <span id="fd-arr" class="drop-shadow-md leading-none"></span>
+                        <span id="fd-arr-name" class="text-[10px] md:text-xs font-medium text-white/70 mt-2 max-w-[120px] line-clamp-2 leading-tight"></span>
+                    </div>
                 </div>
             </div>
         </div>

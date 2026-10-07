@@ -4327,8 +4327,25 @@ window.viewFlightDetails = async function(id, isSwitching = false, customScope =
     document.getElementById('fd-date').textContent = new Date(flight.date).toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' });
     document.getElementById('fd-log-number').textContent = `#${flight.flightLogNumber}`; // 🎫 Flugnummer setzen
     
+    // 3. Textdaten einfügen
+    document.getElementById('fd-date').textContent = new Date(flight.date).toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' });
+    document.getElementById('fd-log-number').textContent = `#${flight.flightLogNumber}`; // 🎫 Flugnummer setzen
+    
     document.getElementById('fd-dep').textContent = flight.departure;
     document.getElementById('fd-arr').textContent = flight.arrival;
+
+    // =========================================================
+    // 🚀 NEU: Die vollen Flughafennamen in die Karte einfügen
+    // =========================================================
+    const depName = flight.depName || ((typeof window.airportData !== 'undefined' && window.airportData[flight.departure]) ? window.airportData[flight.departure].name : flight.departure);
+    const arrName = flight.arrName || ((typeof window.airportData !== 'undefined' && window.airportData[flight.arrival]) ? window.airportData[flight.arrival].name : flight.arrival);
+    
+    const depNameEl = document.getElementById('fd-dep-name');
+    const arrNameEl = document.getElementById('fd-arr-name');
+    if(depNameEl) depNameEl.textContent = depName;
+    if(arrNameEl) arrNameEl.textContent = arrName;
+    // =========================================================
+
     document.getElementById('fd-airline').textContent = flight.airline || "Unbekannte Airline";
     document.getElementById('fd-flight-number').textContent = flight.flightNumber || "";
     document.getElementById('fd-class').textContent = flight.class || "Economy";
