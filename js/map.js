@@ -1106,24 +1106,24 @@ function toggleStoryMode() {
 
   if (isStoryModeActive) {
     globeInstance.controls().autoRotate = false;
-    btn.textContent =
-      getTranslation("globe.buttonNormalMode") || "🚀 Normaler Modus";
-    label.textContent =
-      getTranslation("globe.storyModeHint") ||
-      "Story-Modus: Flüge anklicken...";
+    btn.textContent = getTranslation("globe.buttonNormalMode") || "🚀 Normaler Modus";
+    label.textContent = getTranslation("globe.storyModeHint") || "Story-Modus: Flüge anklicken...";
     btn.classList.remove("bg-blue-600", "hover:bg-blue-700");
     btn.classList.add("bg-green-600", "hover:bg-green-700");
     normalGlobeLabelText = label.textContent;
-    globeInstance.arcStroke((d) => (d.distance < 1000 ? 2.0 : 1.5));
   } else {
     globeInstance.controls().autoRotate = true;
-    btn.textContent =
-      getTranslation("globe.buttonStoryMode") || "📖 Story-Modus";
+    btn.textContent = getTranslation("globe.buttonStoryMode") || "📖 Story-Modus";
     btn.classList.remove("bg-green-600", "hover:bg-green-700");
     btn.classList.add("bg-blue-600", "hover:bg-blue-700");
     label.textContent = normalGlobeLabelText;
-    globeInstance.arcStroke((d) => (d.distance < 1000 ? 0.6 : 0.5));
   }
+
+  // ================================================================
+  // 🚀 BUGHUNT FIX: Globus zwingen, das neue Design (Farben/Animation) anzuwenden!
+  // ================================================================
+  const currentArcs = globeInstance.arcsData();
+  globeInstance.arcsData([...currentArcs]); 
 }
 
 // ==========================================
