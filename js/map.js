@@ -389,34 +389,42 @@ function processGlobeData(flightsToShow, isStoryMode = false) {
     const airportUsage = {};
     const routeGroups = {};
 
-    // 1. Gruppieren, um Stapel zu berechnen
-    flightsToShow.filter((f) => f.depLat && f.arrLat).forEach((flight) => {
-        // Sortiere IATA-Codes alphabetisch, damit Hin- und Rückflug im selben Stapel landen
-        const routeKey = [flight.departure, flight.arrival].sort().join("-");
-        
-        if (!routeGroups[routeKey]) routeGroups[routeKey] = [];
-        routeGroups[routeKey].push(flight);
+    // ================================================================
+    // 🚀 BUGHUNT FIX: Hyper-robuster Filter & Koordinaten-Rettung
+    // ================================================================
+    flightsToShow.forEach((flight) => {
+        // 1. Koordinaten zwingend zu echten Zahlen machen (parseFloat)
+        // 2. Wenn sie in der DB fehlen, schnappen wir sie uns aus dem lokalen Wörterbuch!
+        flight._safeDepLat = parseFloat(flight.depLat || (window.airportData && window.airportData[flight.departure] ? window.airportData[flight.departure].lat : null));
+        flight._safeDepLon = parseFloat(flight.depLon || (window.airportData && window.airportData[flight.departure] ? window.airportData[flight.departure].lon : null));
+        flight._safeArrLat = parseFloat(flight.arrLat || (window.airportData && window.airportData[flight.arrival] ? window.airportData[flight.arrival].lat : null));
+        flight._safeArrLon = parseFloat(flight.arrLon || (window.airportData && window.airportData[flight.arrival] ? window.airportData[flight.arrival].lon : null));
+
+        // 3. Flug nur für den 3D-Globus zulassen, wenn wir jetzt echte, fehlerfreie Zahlen haben!
+        if (!isNaN(flight._safeDepLat) && !isNaN(flight._safeArrLat) && !isNaN(flight._safeDepLon) && !isNaN(flight._safeArrLon)) {
+            const routeKey = [flight.departure, flight.arrival].sort().join("-");
+            if (!routeGroups[routeKey]) routeGroups[routeKey] = [];
+            routeGroups[routeKey].push(flight);
+        }
     });
 
-    // Wir brauchen die ID des Fluges, auf dem der Slider gerade steht (der allerletzte in der gefilterten Liste)
     const currentSliderFlightId = flightsToShow.length > 0 ? flightsToShow[flightsToShow.length - 1].id : null;
 
-    // 2. Daten für den Globus bauen
     for (const routeKey in routeGroups) {
         const flightsOnThisRoute = routeGroups[routeKey];
         
         flightsOnThisRoute.forEach((flight, indexInRoute) => {
-            const distance = calculateDistance(flight.depLat, flight.depLon, flight.arrLat, flight.arrLon);
+            // Wir nutzen ab hier nur noch unsere sicheren "_safe" Koordinaten!
+            const distance = calculateDistance(flight._safeDepLat, flight._safeDepLon, flight._safeArrLat, flight._safeArrLon);
             const flightColor = getColorByDistance(distance);
-            
-            // Ist dies der Flug, den der Slider gerade "berührt"?
             const isActiveFlight = isStoryMode && (flight.id === currentSliderFlightId);
 
+            // --- FLUGROUTEN (ARCS) ---
             arcData.push({
-                startLat: flight.depLat, 
-                startLng: flight.depLon, 
-                endLat: flight.arrLat, 
-                endLng: flight.arrLon,
+                startLat: flight._safeDepLat, 
+                startLng: flight._safeDepLon, 
+                endLat: flight._safeArrLat, 
+                endLng: flight._safeArrLon,
                 name: `${flight.departure} → ${flight.arrival}`,
                 color: flightColor,
                 distance: distance,
@@ -427,43 +435,37 @@ function processGlobeData(flightsToShow, isStoryMode = false) {
                 isActive: isActiveFlight
             });
 
-            // ================================================================
-            // 🚀 BUGHUNT FIX: LÄNDER & AIRPORTS (MIT GEO-MATH!)
-            // ================================================================
+            // --- BESUCHTE LÄNDER ---
+            let depCountry = (typeof window.airportData !== 'undefined' && window.airportData[flight.departure]) ? window.airportData[flight.departure].country_code : (flight.country || flight.depCountry);
+            let arrCountry = (typeof window.airportData !== 'undefined' && window.airportData[flight.arrival]) ? window.airportData[flight.arrival].country_code : flight.arrCountry;
             
-            // 1. Länder aus Cache oder DB laden
-            let depCountry = (typeof airportData !== 'undefined' && airportData[flight.departure]) ? airportData[flight.departure].country_code : (flight.country || flight.depCountry);
-            let arrCountry = (typeof airportData !== 'undefined' && airportData[flight.arrival]) ? airportData[flight.arrival].country_code : flight.arrCountry;
-            
-            // 2. 🌍 MAGIE: Fehlendes Land mathematisch aus GPS berechnen!
-            if (!depCountry && flight.depLat && flight.depLon && typeof window.getCountryIsoFromCoords === 'function') {
-                depCountry = window.getCountryIsoFromCoords(flight.depLat, flight.depLon);
+            if (!depCountry && typeof window.getCountryIsoFromCoords === 'function') {
+                depCountry = window.getCountryIsoFromCoords(flight._safeDepLat, flight._safeDepLon);
             }
-            if (!arrCountry && flight.arrLat && flight.arrLon && typeof window.getCountryIsoFromCoords === 'function') {
-                arrCountry = window.getCountryIsoFromCoords(flight.arrLat, flight.arrLon);
+            if (!arrCountry && typeof window.getCountryIsoFromCoords === 'function') {
+                arrCountry = window.getCountryIsoFromCoords(flight._safeArrLat, flight._safeArrLon);
             }
             
             if (depCountry) visitedCountries.add(depCountry);
             if (arrCountry) visitedCountries.add(arrCountry);
 
-            // 3. Flughafen-Punkte IMMER zeichnen, wenn GPS-Daten da sind!
+            // --- FLUGHAFEN-SÄULEN (POINTS) ---
             [
-                { iata: flight.departure, lat: flight.depLat, lon: flight.depLon, name: flight.depName },
-                { iata: flight.arrival, lat: flight.arrLat, lon: flight.arrLon, name: flight.arrName }
+                { iata: flight.departure, lat: flight._safeDepLat, lon: flight._safeDepLon, name: flight.depName },
+                { iata: flight.arrival, lat: flight._safeArrLat, lon: flight._safeArrLon, name: flight.arrName }
             ].forEach(port => {
-                if (!port.iata || !port.lat || !port.lon) return; 
+                if (!port.iata) return; 
                 
                 if (!airportUsage[port.iata]) {
                     let portName = port.name;
-                    if (!portName && typeof airportData !== 'undefined' && airportData[port.iata]) {
-                        portName = airportData[port.iata].name;
+                    if (!portName && typeof window.airportData !== 'undefined' && window.airportData[port.iata]) {
+                        portName = window.airportData[port.iata].name;
                     }
                     airportUsage[port.iata] = { code: port.iata, name: portName || port.iata, lat: port.lat, lon: port.lon, count: 1 };
                 } else {
                     airportUsage[port.iata].count++;
                 }
             });
-            // ================================================================
         });
     }
 

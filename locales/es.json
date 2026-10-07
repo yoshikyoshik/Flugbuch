@@ -506,6 +506,14 @@
     }
   },
   "import": {
+    "window": "Ventanilla",
+    "middle": "Centro",
+    "aisle": "Pasillo",
+    "seatType": "Tipo de asiento",
+    "leisure": "Privado",
+    "business": "Negocios",
+    "crew": "Tripulación",
+    "reason": "Motivo",
     "currentSaved": "Actualmente guardados: {count} vuelos.",
     "freeTierWarning": "Estás en el <b>Plan Gratuito</b> (máximo de 15 vuelos en total).",
     "unlockPro": "🚀 ¡Desbloquear PRO para todos los vuelos!",

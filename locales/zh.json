@@ -506,6 +506,14 @@
     }
   },
   "import": {
+    "window": "靠窗",
+    "middle": "中间",
+    "aisle": "靠走道",
+    "seatType": "座位类型",
+    "leisure": "私人",
+    "business": "商务",
+    "crew": "机组人员",
+    "reason": "目的",
     "currentSaved": "当前已保存：{count} 个航班。",
     "freeTierWarning": "您当前使用的是<b>免费计划</b>（总共最多 15 个航班）。",
     "unlockPro": "🚀 解锁 PRO 以记录所有航班！",

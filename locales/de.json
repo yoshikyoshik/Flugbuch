@@ -507,6 +507,14 @@
     }
   },
   "import": {
+    "window": "Fenster",
+    "middle": "Mitte",
+    "aisle": "Gang",
+    "seatType": "Sitztyp",
+    "leisure": "Privat",
+    "business": "Business",
+    "crew": "Crew",
+    "reason": "Grund",
     "currentSaved": "Aktuell gespeichert: {count} Flüge.",
     "freeTierWarning": "Du bist im <b>Free-Tarif</b> (Maximal 15 Flüge gesamt).",
     "unlockPro": "🚀 PRO freischalten für alle Flüge!",

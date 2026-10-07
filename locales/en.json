@@ -506,6 +506,14 @@
     }
   },
   "import": {
+    "window": "Window",
+    "middle": "Middle",
+    "aisle": "Aisle",
+    "seatType": "Seat",
+    "leisure": "Leisure",
+    "business": "Business",
+    "crew": "Crew",
+    "reason": "Reason",
     "currentSaved": "Currently saved: {count} flights.",
     "freeTierWarning": "You are on the <b>Free Plan</b> (maximum of 15 flights total).",
     "unlockPro": "🚀 Unlock PRO for all flights!",

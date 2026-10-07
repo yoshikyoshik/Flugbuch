@@ -2887,14 +2887,30 @@ function parseCSV(csvText) {
             else obj.class = val; 
         }
         
+        // ================================================================
+        // 🌍 MULTILINGUAL & KORREKT: Sitz-Typ
+        // ================================================================
         if (header === 'seat_type') {
-            const types = { 'W': 'Fenster', 'M': 'Mitte', 'A': 'Gang' };
-            extraNotes.push(`Sitz-Typ: ${types[val.toUpperCase()] || val}`);
+            const types = { 
+                'W': typeof getTranslation === 'function' ? getTranslation('import.window') || 'Fenster' : 'Fenster', 
+                'M': typeof getTranslation === 'function' ? getTranslation('import.middle') || 'Mitte' : 'Mitte', 
+                'A': typeof getTranslation === 'function' ? getTranslation('import.aisle') || 'Gang' : 'Gang' 
+            };
+            const label = typeof getTranslation === 'function' ? getTranslation('import.seatType') || 'Sitztyp' : 'Sitztyp';
+            extraNotes.push(`${label}: ${types[val.toUpperCase()] || val}`);
         }
         
+        // ================================================================
+        // 🌍 MULTILINGUAL & KORREKT: Reisegrund (Leisure/Business/Crew)
+        // ================================================================
         if (header === 'reason') {
-            const reasons = { 'L': 'Urlaub', 'B': 'Business', 'C': 'Crew' };
-            extraNotes.push(`Grund: ${reasons[val.toUpperCase()] || val}`);
+            const reasons = { 
+                'L': typeof getTranslation === 'function' ? getTranslation('import.leisure') || 'Privat' : 'Privat', 
+                'B': typeof getTranslation === 'function' ? getTranslation('import.business') || 'Business' : 'Business', 
+                'C': typeof getTranslation === 'function' ? getTranslation('import.crew') || 'Crew' : 'Crew' 
+            };
+            const label = typeof getTranslation === 'function' ? getTranslation('import.reason') || 'Grund' : 'Grund';
+            extraNotes.push(`${label}: ${reasons[val.toUpperCase()] || val}`);
         }
 
         if (header.includes('note')) obj.notes = val;
