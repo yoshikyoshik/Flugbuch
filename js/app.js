@@ -1513,10 +1513,37 @@ async function updateFlight() {
   }
   // ================================================================
 
-  // 🚀 DER EWIGE FLUGSCHREIBER: Check beim Bearbeiten alter Flüge!
-  const targetFaId = updatedFlightForSupabase.fa_flight_id || currentlyEditingFlightData.fa_flight_id;
-  const targetGps = updatedFlightForSupabase.gps_track || currentlyEditingFlightData.gps_track;
+  // ================================================================
+  // 🚀 BUGHUNT FIX & EWIGER FLUGSCHREIBER: GPS & FlightAware ID nachträglich laden!
+  // ================================================================
+  let targetFaId = updatedFlightForSupabase.fa_flight_id || currentlyEditingFlightData.fa_flight_id;
+  let targetGps = updatedFlightForSupabase.gps_track || currentlyEditingFlightData.gps_track;
 
+  // 1. Wenn wir noch keine FlightAware ID haben (z.B. nach CSV Import), holen wir sie uns jetzt!
+  if (!targetFaId && updatedFlightForSupabase.flightNumber && updatedFlightForSupabase.date) {
+      try {
+          console.log("🔍 Hole fehlende FlightAware ID für importierten Flug...");
+          const cleanFlightNum = updatedFlightForSupabase.flightNumber.replace(/\s+/g, '').toUpperCase();
+          const faUrl = `${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-fa-flight?flight_number=${cleanFlightNum}&date=${updatedFlightForSupabase.date}`;
+          const faRes = await fetch(faUrl);
+          
+          if (faRes.ok) {
+              const faData = await faRes.json();
+              if (faData && faData.length > 0 && faData[0].fa_flight_id) {
+                  targetFaId = faData[0].fa_flight_id;
+                  updatedFlightForSupabase.fa_flight_id = targetFaId; // Gleich in der DB abspeichern!
+                  
+                  // Bonus: Echte, minutengenaue Zeiten aus dem Archiv retten, falls vorhanden
+                  if (faData[0].dep_time_ts) updatedFlightForSupabase.dep_time_ts = faData[0].dep_time_ts;
+                  if (faData[0].arr_time_ts) updatedFlightForSupabase.arr_time_ts = faData[0].arr_time_ts;
+                  if (faData[0].actual_out) updatedFlightForSupabase.dep_actual_ts = Math.floor(new Date(faData[0].actual_out).getTime() / 1000);
+                  if (faData[0].actual_in || faData[0].actual_on) updatedFlightForSupabase.arr_actual_ts = Math.floor(new Date(faData[0].actual_in || faData[0].actual_on).getTime() / 1000);
+              }
+          }
+      } catch(e) { console.warn("Konnte FA ID nicht nachladen", e); }
+  }
+
+  // 2. Wenn wir jetzt eine ID haben, aber noch keinen GPS-Track, laden wir die Kurve!
   if (targetFaId && (!targetGps || targetGps.length === 0)) {
       console.log("📍 Lade fehlenden GPS-Track für Supabase herunter...");
       try {
@@ -1532,6 +1559,7 @@ async function updateFlight() {
           }
       } catch(e) { console.warn("GPS Track Fehler", e); }
   }
+  // ================================================================
 
   const { error } = await supabaseClient
     .from("flights")
@@ -2252,6 +2280,8 @@ async function handleImport(event) {
         let time = f.time || "";
         let flightClass = f.class || "Economy";
         let co2_kg = f.co2_kg ? parseFloat(f.co2_kg) : 0;
+        let rawAirlineName = f.airline || "";
+        let rawFlightNumber = f.flightNumber || f.flight_number || "";
         
         let depLat = f.depLat ? parseFloat(f.depLat) : null;
         let depLon = f.depLon ? parseFloat(f.depLon) : null;
@@ -2260,7 +2290,36 @@ async function handleImport(event) {
         let depName = f.depName || "";
         let arrName = f.arrName || "";
 
-        // 🚨 MISSING DATA ENRICHMENT: Fehlen Daten? Wir berechnen sie neu!
+        // ================================================================
+        // 🚀 BUGHUNT FIX 1 & 2: AIRLINE LOGO & FLUGNUMMER GENERIEREN
+        // ================================================================
+        let finalAirlineLogo = f.airline_logo || null;
+        let finalFlightNumber = rawFlightNumber;
+
+        if (rawAirlineName && window.AIRLINE_MAPPING) {
+            // Wir suchen den Namen in unserer Datenbank (Ignoriert Groß-/Kleinschreibung)
+            const airlineMatch = Object.values(window.AIRLINE_MAPPING).find(
+                a => a.name.toLowerCase() === rawAirlineName.toLowerCase()
+            );
+
+            if (airlineMatch && airlineMatch.iata) {
+                // 1. Logo generieren
+                if (!finalAirlineLogo) {
+                    finalAirlineLogo = `https://images.kiwi.com/airlines/128x128/${airlineMatch.iata}.png`;
+                }
+                
+                // 2. Flugnummer vervollständigen (Wenn es nur Zahlen sind, klemme den Code davor)
+                if (rawFlightNumber && /^\d+$/.test(rawFlightNumber)) {
+                    finalFlightNumber = airlineMatch.iata + rawFlightNumber;
+                }
+            }
+        }
+        // ================================================================
+
+        // ================================================================
+        // 🚀 BUGHUNT FIX 3: KOORDINATEN FÜR DIE KARTE ERGÄNZEN
+        // ================================================================
+        // Fehlen Daten? Wir berechnen sie neu und holen Koordinaten!
         if (distance === 0 || !depLat || !arrLat) {
             let depAirport = typeof findAirport === 'function' ? findAirport(depCode) : null;
             let arrAirport = typeof findAirport === 'function' ? findAirport(arrCode) : null;
@@ -2276,7 +2335,7 @@ async function handleImport(event) {
             }
 
             if (depAirport && arrAirport) {
-                // Koordinaten & Namen auffüllen
+                // Koordinaten & Namen auffüllen (Das macht die Karte sichtbar!)
                 if (!depLat) depLat = depAirport.lat;
                 if (!depLon) depLon = depAirport.lon;
                 if (!arrLat) arrLat = arrAirport.lat;
@@ -2290,6 +2349,7 @@ async function handleImport(event) {
                 }
             }
         }
+        // ================================================================
 
         // Zeit berechnen (falls fehlend)
         if (time === "" && distance > 0 && typeof estimateFlightTime === 'function') {
@@ -2312,11 +2372,11 @@ async function handleImport(event) {
             user_id: userId,
             flight_id: f.flight_id ? parseInt(f.flight_id) : (new Date().getTime() + Math.floor(Math.random()*10000)),
             date: f.date,
-            flightNumber: f.flightNumber || f.flight_number || "",
+            flightNumber: finalFlightNumber, // 👈 Jetzt komplett (z.B. LX138)
             departure: depCode,
             arrival: arrCode,
-            airline: f.airline || "",
-            airline_logo: f.airline_logo || null,
+            airline: rawAirlineName,
+            airline_logo: finalAirlineLogo, // 👈 Jetzt mit Bild-URL
             aircraftType: f.aircraftType || f.aircraft || "",
             registration: f.registration || "",
             time: time,
@@ -2326,10 +2386,10 @@ async function handleImport(event) {
             seatNumber: f.seatNumber || null,
             price: f.price ? parseFloat(f.price) : null,
             currency: f.currency || null,
-            depLat: depLat,
-            depLon: depLon,
-            arrLat: arrLat,
-            arrLon: arrLon,
+            depLat: depLat, // 👈 Gefüllt für die Karte
+            depLon: depLon, // 👈 Gefüllt für die Karte
+            arrLat: arrLat, // 👈 Gefüllt für die Karte
+            arrLon: arrLon, // 👈 Gefüllt für die Karte
             depName: depName,
             arrName: arrName,
             photo_url: parsedPhotos,
