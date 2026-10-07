@@ -2323,6 +2323,7 @@ async function handleImport(event) {
             distance: distance,
             notes: f.notes || f.note || "",
             class: flightClass,
+            seatNumber: f.seatNumber || null,
             price: f.price ? parseFloat(f.price) : null,
             currency: f.currency || null,
             depLat: depLat,
@@ -2746,39 +2747,95 @@ function parseCSV(csvText) {
   const commaCount = (firstLine.match(/,/g) || []).length;
   const separator = semicolonCount > commaCount ? ';' : ',';
 
-  // Header normalisieren (alles kleingeschrieben für einfachen Vergleich)
-  const headers = lines[0].split(separator).map(h => h.trim().toLowerCase().replace(/"/g, ''));
+  // 🚀 KUGELSICHERER CSV-PARSER: Ignoriert Trennzeichen innerhalb von Anführungszeichen!
+  const parseLine = (line) => {
+      const vals = [];
+      let inQuotes = false;
+      let currentVal = '';
+      for (let j = 0; j < line.length; j++) {
+          const char = line[j];
+          if (char === '"') {
+              inQuotes = !inQuotes;
+          } else if (char === separator && !inQuotes) {
+              vals.push(currentVal.trim());
+              currentVal = '';
+          } else {
+              currentVal += char;
+          }
+      }
+      vals.push(currentVal.trim());
+      return vals;
+  };
+
+  // Header normalisieren
+  const headers = parseLine(lines[0]).map(h => h.toLowerCase().replace(/^"|"$/g, ''));
+  
+  // 🚀 AUTOMATISCHE FORMAT-ERKENNUNG (Für sauberes Logging)
+  let detectedFormat = "Unbekannt";
+  if (headers.includes("flight_number") && headers.includes("from_oid")) detectedFormat = "OpenFlights";
+  else if (headers.includes("flightnumber") && headers.includes("from")) detectedFormat = "App In The Air";
+  else if (headers.includes("flight") && headers.includes("from")) detectedFormat = "FlightRadar24";
+  console.log(`✈️ CSV Format erkannt: ${detectedFormat}`);
   
   for (let i = 1; i < lines.length; i++) {
     const currentLine = lines[i];
     if (!currentLine.trim()) continue;
     
-    // Split
-    const values = currentLine.split(separator); 
+    // Kompletten Line-Wrap (oft bei OpenFlights) entfernen
+    const cleanLine = currentLine.replace(/^"|"$/g, '');
+    const values = parseLine(cleanLine);
     
     let obj = {};
+    let extraNotes = []; // Sammelbecken für alle optionalen Daten!
+
     headers.forEach((header, index) => {
-        // Wert säubern (Anführungszeichen entfernen)
-        let val = values[index] ? values[index].trim().replace(/^"|"$/g, '').replace(/"/g, '') : "";
+        let val = values[index] ? values[index].replace(/^"|"$/g, '').replace(/""/g, '"') : "";
+        if (!val) return;
         
-        // --- BASIS DATEN (Unterstützt AvioSphere, MyFlightradar24 & App In The Air) ---
-        if (header === 'date' || header === 'flight date' || header === 'datum') obj.date = val;
-        
-        // WICHTIG: From/To für MyFlightradar24 hinzugefügt!
+        // --- BASIS DATEN ---
+        if (header === 'date' || header === 'flight date' || header === 'datum') {
+            obj.date = val.split(' ')[0]; // OpenFlights hat oft YYYY-MM-DD HH:MM
+        }
         if (header === 'departure' || header === 'from' || header === 'start') obj.departure = val;
         if (header === 'arrival' || header === 'to' || header === 'ziel') obj.arrival = val;
         
         if (header.includes('flightnumber') || header.includes('flight number') || header === 'flight' || header === 'flight_number') obj.flightNumber = val;
         if (header === 'airline') obj.airline = val;
         if (header === 'airline_logo') obj.airline_logo = val;
-        if (header.includes('aircraft') || header === 'aircraft type' || header.includes('type')) obj.aircraftType = val;
+        
+        // OpenFlights nennt das Flugzeug "Plane"
+        if (header.includes('aircraft') || header === 'plane' || header === 'aircraft type' || header.includes('type')) obj.aircraftType = val;
         if (header === 'registration' || header === 'reg') obj.registration = val;
+        
+        // OpenFlights nennt die Zeit "Duration"
         if (header === 'time' || header === 'duration') obj.time = val;
         if (header === 'distance') obj.distance = val;
-        if (header === 'class' || header === 'cabin') obj.class = val;
-        if (header.includes('note')) obj.notes = val;
         if (header === 'price') obj.price = val;
         if (header === 'currency') obj.currency = val;
+
+        // --- 🚀 OPTIONALE DATEN (z.B. aus OpenFlights) ---
+        if (header === 'seat') obj.seatNumber = val;
+        
+        if (header === 'class' || header === 'cabin') {
+            const upVal = val.toUpperCase();
+            if (upVal === 'Y' || upVal === 'ECONOMY') obj.class = 'Economy';
+            else if (upVal === 'W' || upVal === 'PREMIUM') obj.class = 'Premium Eco';
+            else if (upVal === 'C' || upVal === 'J' || upVal === 'BUSINESS') obj.class = 'Business';
+            else if (upVal === 'F' || upVal === 'A' || upVal === 'FIRST') obj.class = 'First';
+            else obj.class = val; 
+        }
+        
+        if (header === 'seat_type') {
+            const types = { 'W': 'Fenster', 'M': 'Mitte', 'A': 'Gang' };
+            extraNotes.push(`Sitz-Typ: ${types[val.toUpperCase()] || val}`);
+        }
+        
+        if (header === 'reason') {
+            const reasons = { 'L': 'Urlaub', 'B': 'Business', 'C': 'Crew' };
+            extraNotes.push(`Grund: ${reasons[val.toUpperCase()] || val}`);
+        }
+
+        if (header.includes('note')) obj.notes = val;
 
         // --- TECH & GEO DATEN ---
         if (header === 'deplat') obj.depLat = val;
@@ -2797,7 +2854,12 @@ function parseCSV(csvText) {
         }
     });
 
-    // Validierung: Mindestens Datum und Route (Start & Ziel) müssen da sein
+    // Optionales (Fenster, Grund, etc.) formatiert an die Notizen hängen
+    if (extraNotes.length > 0) {
+        obj.notes = obj.notes ? `${obj.notes}\n(${extraNotes.join(' | ')})` : `(${extraNotes.join(' | ')})`;
+    }
+
+    // Validierung: Mindestens Datum und Route müssen da sein
     if (obj.date && obj.departure && obj.arrival) {
         result.push(obj);
     }
