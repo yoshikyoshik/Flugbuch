@@ -538,23 +538,27 @@ async function openGlobeModal() {
     labelEl.textContent = `${lastFlight.date} (#${lastFlight.flightLogNumber})`;
   else labelEl.textContent = getTranslation("globe.noFlights") || "No flights available";
 
-  // 🚀 BUGHUNT FIX: Weltkarte VORHER laden, damit die Länder-Mathe funktioniert!
+  // ================================================================
+  // 🚀 BUGHUNT FIX KORREKTUR: Weltkarte sicher in lokale Variable laden!
+  // ================================================================
   if (!window.countriesGeoJSON) {
       try {
-          window.countriesGeoJSON = await (await fetch("https://raw.githubusercontent.com/vasturiano/globe.gl/master/example/datasets/ne_110m_admin_0_countries.geojson")).json();
-          window.countries = window.countriesGeoJSON; // Wichtig für deinen restlichen Code!
+          countries = await (await fetch("https://raw.githubusercontent.com/vasturiano/globe.gl/master/example/datasets/ne_110m_admin_0_countries.geojson")).json();
+          window.countriesGeoJSON = countries;
       } catch(e) { console.warn("Fehler beim Laden der GeoJSON", e); }
+  } else {
+      countries = window.countriesGeoJSON; // Aus dem Cache holen, falls schon da!
   }
 
-  // Jetzt erst die Daten durch den Fleischwolf drehen!
+  // Erst JETZT die Daten verarbeiten (Die Mathe-Funktion hat nun ihre Karte!)
   const initialData = processGlobeData(sortedFlights);
   const progressiveFlightSlice = sortedFlights.slice(-50);
   const progressiveData = processGlobeData(progressiveFlightSlice);
 
   if (!globeInstance) {
-      // (Die alte fetch-Logik ist hier jetzt weg, da wir sie oben erledigt haben!)
-
-    globeInstance = Globe({ rendererConfig: { preserveDrawingBuffer: true } })(document.getElementById("globe-container"))
+      // (Kein fetch(...) mehr hier nötig!)
+      
+      globeInstance = Globe({ rendererConfig: { preserveDrawingBuffer: true } })(document.getElementById("globe-container"))
       .backgroundColor("#000000")
       .atmosphereColor("#000000")
       //.globeImageUrl("//unpkg.com/three-globe/example/img/earth-night.jpg")
