@@ -27,6 +27,7 @@
     "@capacitor/push-notifications": "^8.1.2",
     "@capacitor/share": "^7.0.3",
     "@my-plugins/capacitor-printer": "file:my-printer",
+    "@netlify/functions": "^6.0.2",
     "@revenuecat/purchases-capacitor": "^11.3.2",
     "@supabase/supabase-js": "^2.84.0",
     "firebase-admin": "^14.3.0",
