@@ -238,7 +238,8 @@ window.AIRLINE_MAPPING = {
     "SIA": { iata: "SQ", name: "Singapore Airlines" },
     "ANA": { iata: "NH", name: "All Nippon Airways" },
     "JAL": { iata: "JL", name: "Japan Airlines" },
-    "QFA": { iata: "QF", name: "Qantas" }
+    "QFA": { iata: "QF", name: "Qantas" },
+    "AIC": { iata: "AI", name: "Air India" },
 };
 
 async function fetchAirlineName(icaoCode) {

@@ -2291,16 +2291,19 @@ async function handleImport(event) {
         let arrName = f.arrName || "";
 
         // ================================================================
-        // 🚀 BUGHUNT FIX 1 & 2: AIRLINE LOGO & FLUGNUMMER GENERIEREN
+        // 🚀 BUGHUNT FIX 1 & 2: AIRLINE LOGO & FLUGNUMMER GENERIEREN (FUZZY MATCHING)
         // ================================================================
         let finalAirlineLogo = f.airline_logo || null;
         let finalFlightNumber = rawFlightNumber;
 
         if (rawAirlineName && window.AIRLINE_MAPPING) {
-            // Wir suchen den Namen in unserer Datenbank (Ignoriert Groß-/Kleinschreibung)
-            const airlineMatch = Object.values(window.AIRLINE_MAPPING).find(
-                a => a.name.toLowerCase() === rawAirlineName.toLowerCase()
-            );
+            // Wir filtern Rechtsformen und Füllwörter rigoros heraus
+            const cleanRawName = rawAirlineName.toLowerCase().replace(/\b(airlines|airline|airways|limited|ltd|inc|corp|air lines)\b/gi, '').replace(/[^a-z0-9]/g, '');
+            
+            const airlineMatch = Object.values(window.AIRLINE_MAPPING).find(a => {
+                const cleanMapName = a.name.toLowerCase().replace(/\b(airlines|airline|airways|limited|ltd|inc|corp|air lines)\b/gi, '').replace(/[^a-z0-9]/g, '');
+                return cleanMapName === cleanRawName || a.name.toLowerCase() === rawAirlineName.toLowerCase();
+            });
 
             if (airlineMatch && airlineMatch.iata) {
                 // 1. Logo generieren
@@ -2926,10 +2929,6 @@ function parseCSV(csvText) {
   }
   return result;
 }
-
-// =================================================================
-// AUTO-SYNC (Lazy Sync für vergangene Flüge)
-// =================================================================
 
 // =================================================================
 // AUTO-SYNC (Lazy Sync für vergangene Flüge)
@@ -6905,6 +6904,27 @@ window.updateUpcomingFlightDetails = async function(flight) {
                      flight.airline_logo = airlineUrl;
                  }
              }
+
+             // ================================================================
+             // 🔔 PUSH-ALERTS FÜR IMPORTIERTE ZUKUNFTSFLÜGE AKTIVIEREN
+             // ================================================================
+             if (match.fa_flight_id) {
+                 const todayStrAlert = new Date().toISOString().split('T')[0];
+                 const isPro = (typeof currentUserSubscription !== 'undefined' && currentUserSubscription === "pro");
+                 
+                 if (isPro && flight.date >= todayStrAlert) {
+                     console.log(`🔔 Upcoming Widget: Registriere Push-Alert für importierten Flug ${flight.flightNumber}`);
+                     try {
+                         fetch(`${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fa-create-alert`, {
+                             method: 'POST',
+                             headers: { 'Content-Type': 'application/json' },
+                             body: JSON.stringify({ fa_flight_id: match.fa_flight_id })
+                         });
+                     } catch(e) { console.warn("Konnte Push-Alert nicht setzen", e); }
+                 }
+             }
+             // ================================================================
+
         } // <--- HIER WAR DIE FEHLENDE KLAMMER!
     } catch(e) {
         console.warn("Fehler beim Abrufen der Upcoming-Details:", e);
