@@ -746,16 +746,56 @@ window.fetchAviationWeather = async function(airportCode) {
             
             // 🚑 Stufe 2: Erweitertes Notfall-Lexikon VORZIEHEN (Spart 90% aller API/DB-Calls)
             const emergencyMap = {
-                'IBZ': 'LEIB', 'PMI': 'LEPA', 'AYT': 'LTAI', 'HER': 'LGIR', 
-                'RHO': 'LGRP', 'FUE': 'GCFV', 'LPA': 'GCLP', 'TFS': 'GCTS',
-                'HRG': 'HEGN', 'DXB': 'OMDB', 'MLE': 'VRMM', 'CUN': 'MMUN',
-                'FRA': 'EDDF', 'MUC': 'EDDM', 'BER': 'EDDB', 'DUS': 'EDDL',
-                'DRS': 'EDDC', 'LEJ': 'EDDP', 'NUE': 'EDDN', 'STR': 'EDDS',
-                'HAM': 'EDDH', 'CGN': 'EDDK', 'HAJ': 'EDDV', 'BRE': 'EDDW',
-                'VIE': 'LOWW', 'ZRH': 'LSZH', 'AMS': 'EHAM', 'LHR': 'EGLL',
-                'CDG': 'LFPG', 'MAD': 'LEMD', 'BCN': 'LEBL', 'IST': 'LTFM',
-                'JFK': 'KJFK', 'BOS': 'KBOS', 'SFO': 'KSFO', 'LAX': 'KLAX',
-                'MIA': 'KMIA', 'ATL': 'KATL', 'ORD': 'KORD', 'EWR': 'KEWR'
+                // --- DEUTSCHLAND ---
+                'FRA': 'EDDF', 'MUC': 'EDDM', 'BER': 'EDDB', 'DUS': 'EDDL', 'HAM': 'EDDH',
+                'STR': 'EDDS', 'CGN': 'EDDK', 'HAJ': 'EDDV', 'BRE': 'EDDW', 'DRS': 'EDDC',
+                'LEJ': 'EDDP', 'NUE': 'EDDN', 'FMO': 'EDDG', 'PAD': 'EDLP',
+                
+                // --- EUROPA ---
+                'LHR': 'EGLL', 'LGW': 'EGKK', 'AMS': 'EHAM', 'CDG': 'LFPG', 'ORY': 'LFPO',
+                'MAD': 'LEMD', 'BCN': 'LEBL', 'PMI': 'LEPA', 'IBZ': 'LEIB', 'AGP': 'LEMG',
+                'LPA': 'GCLP', 'TFS': 'GCTS', 'FUE': 'GCFV', 'ACE': 'GCRR',
+                'FCO': 'LIRF', 'MXP': 'LIMC', 'LIN': 'LIML', 'VCE': 'LIPZ', 'BGY': 'LIME',
+                'ZRH': 'LSZH', 'GVA': 'LSGG', 'BSL': 'LFSB', 'VIE': 'LOWW', 'SZG': 'LOWS',
+                'IST': 'LTFM', 'SAW': 'LTFJ', 'AYT': 'LTAI', 'TIA': 'LATI',
+                'ATH': 'LGAV', 'HER': 'LGIR', 'RHO': 'LGRP', 'KGS': 'LGKO', 'CFU': 'LGKR',
+                'LIS': 'LPPT', 'OPO': 'LPPR', 'FAO': 'LPFR', 'FNC': 'LPMA',
+                'CPH': 'EKCH', 'OSL': 'ENGM', 'ARN': 'ESSA', 'HEL': 'EFHK',
+                'WAW': 'EPWA', 'PRG': 'LKPR', 'BUD': 'LHBP', 'OTP': 'LROP',
+
+                // --- NORDAMERIKA ---
+                'JFK': 'KJFK', 'LAX': 'KLAX', 'ORD': 'KORD', 'ATL': 'KATL', 'SFO': 'KSFO',
+                'EWR': 'KEWR', 'MIA': 'KMIA', 'BOS': 'KBOS', 'DFW': 'KDFW', 'DEN': 'KDEN',
+                'SEA': 'KSEA', 'LAS': 'KLAS', 'MCO': 'KMCO', 'PHX': 'KPHX', 'IAH': 'KIAH',
+                'YYZ': 'CYYZ', 'YVR': 'CYVR', 'YUL': 'CYUL', 
+                'MEX': 'MMMX', 'CUN': 'MMUN',
+
+                // --- ASIEN ---
+                'HND': 'RJTT', 'NRT': 'RJAA', 'KIX': 'RJBB', 'ITM': 'RJOO',
+                'PEK': 'ZBAA', 'PVG': 'ZSPD', 'HKG': 'VHHH', 'MFM': 'VMMC', 'TPE': 'RCTP',
+                'ICN': 'RKSI', 'SIN': 'WSSS', 'KUL': 'WMKK',
+                'BKK': 'VTBS', 'HKT': 'VTSP', 'CGK': 'WIII', 'DPS': 'WADD',
+                'DEL': 'VIDP', 'BOM': 'VABB', 'BLR': 'VOBL',
+                'SGN': 'VVTS', 'HAN': 'VVNB', 'MNL': 'RPLL',
+
+                // --- NAHER OSTEN ---
+                'DXB': 'OMDB', 'AUH': 'OMAA', 'DOH': 'OTHH', 'KWI': 'OKBK',
+                'MCT': 'OOMS', 'BAH': 'OBBI', 'JED': 'OEJN', 'RUH': 'OERK',
+                'TLV': 'LLBG', 'AMM': 'OJAI', 'BEY': 'OLBA',
+
+                // --- AFRIKA ---
+                'JNB': 'FAOR', 'CPT': 'FACT',
+                'CAI': 'HECA', 'HRG': 'HEGN', 'SSH': 'HESH',
+                'CMN': 'GMMN', 'NBO': 'HKJK', 'ADD': 'HAAB', 'LOS': 'DNMM',
+
+                // --- SÜD- UND MITTELAMERIKA ---
+                'GRU': 'SBGR', 'GIG': 'SBGL', 'BSB': 'SBBR', 
+                'EZE': 'SAEZ', 'AEP': 'SABE', 'SCL': 'SCEL', 'BOG': 'SKBO', 'LIM': 'SPJC',
+                'PTY': 'MPTO', 'PUJ': 'MDPC', 'SDQ': 'MDSD', 'HAV': 'MUHA',
+
+                // --- OZEANIEN & REST ---
+                'SYD': 'YSSY', 'MEL': 'YMML', 'BNE': 'YBBN', 'PER': 'YPPH',
+                'AKL': 'NZAA', 'NAN': 'NFFN', 'MLE': 'VRMM'
             };
             
             if (emergencyMap[iataCode]) {
