@@ -389,20 +389,109 @@ function processGlobeData(flightsToShow, isStoryMode = false) {
     const airportUsage = {};
     const routeGroups = {};
 
-    // ================================================================
-    // 🚀 BUGHUNT FIX: Hyper-robuster Filter & Koordinaten-Rettung
-    // ================================================================
-    flightsToShow.forEach((flight) => {
-        // 1. Koordinaten zwingend zu echten Zahlen machen (parseFloat)
-        // 2. Wenn sie in der DB fehlen, schnappen wir sie uns aus dem lokalen Wörterbuch!
-        flight._safeDepLat = parseFloat(flight.depLat || (window.airportData && window.airportData[flight.departure] ? window.airportData[flight.departure].lat : null));
-        flight._safeDepLon = parseFloat(flight.depLon || (window.airportData && window.airportData[flight.departure] ? window.airportData[flight.departure].lon : null));
-        flight._safeArrLat = parseFloat(flight.arrLat || (window.airportData && window.airportData[flight.arrival] ? window.airportData[flight.arrival].lat : null));
-        flight._safeArrLon = parseFloat(flight.arrLon || (window.airportData && window.airportData[flight.arrival] ? window.airportData[flight.arrival].lon : null));
+    // 🚀 BUGHUNT FIX: Massives IATA zu Länder-ISO Mapping
+    const iataToCountry = {
+        // --- DEUTSCHLAND ---
+        'MUC':'DE', 'FRA':'DE', 'BER':'DE', 'DUS':'DE', 'HAM':'DE', 'STR':'DE', 'CGN':'DE', 
+        'HAJ':'DE', 'BRE':'DE', 'DRS':'DE', 'LEJ':'DE', 'NUE':'DE', 'FMO':'DE', 'PAD':'DE', 
+        'FKB':'DE', 'FDH':'DE', 'ERF':'DE', 'RLG':'DE', 'NRN':'DE', 'HHN':'DE',
 
-        // 3. Flug nur für den 3D-Globus zulassen, wenn wir jetzt echte, fehlerfreie Zahlen haben!
+        // --- EUROPA (Süd & West) ---
+        'PMI':'ES', 'MAD':'ES', 'BCN':'ES', 'LPA':'ES', 'TFS':'ES', 'FUE':'ES', 'ACE':'ES', 
+        'IBZ':'ES', 'AGP':'ES', 'ALC':'ES', 'VLC':'ES', 'MAH':'ES', 'SPC':'ES',
+        'CDG':'FR', 'ORY':'FR', 'NCE':'FR', 'LYS':'FR', 'MRS':'FR', 'TLS':'FR', 'BOD':'FR',
+        'FCO':'IT', 'MXP':'IT', 'LIN':'IT', 'VCE':'IT', 'BGY':'IT', 'NAP':'IT', 'BLQ':'IT', 
+        'PMO':'IT', 'CTA':'IT', 'PSA':'IT', 'VRN':'IT', 'TRN':'IT', 'CAG':'IT', 'OLB':'IT',
+        'LIS':'PT', 'OPO':'PT', 'FAO':'PT', 'FNC':'PT', 'PDL':'PT',
+        'LHR':'GB', 'LGW':'GB', 'STN':'GB', 'LTN':'GB', 'MAN':'GB', 'EDI':'GB', 'GLA':'GB', 
+        'BHX':'GB', 'BRS':'GB', 'NCL':'GB', 'BHD':'GB', 'BFS':'GB',
+        'DUB':'IE', 'ORK':'IE', 'SNN':'IE',
+
+        // --- EUROPA (Zentral, Nord & Ost) ---
+        'AMS':'NL', 'EIN':'NL', 'RTM':'NL',
+        'ZRH':'CH', 'GVA':'CH', 'BSL':'CH',
+        'VIE':'AT', 'SZG':'AT', 'INN':'AT', 'GRZ':'AT', 'KLU':'AT', 'LNZ':'AT',
+        'BRU':'BE', 'CRL':'BE',
+        'CPH':'DK', 'BLL':'DK', 'OSL':'NO', 'BGO':'NO', 'SVG':'NO', 'TOS':'NO',
+        'ARN':'SE', 'GOT':'SE', 'MMX':'SE', 'HEL':'FI', 'RVN':'FI',
+        'WAW':'PL', 'KRK':'PL', 'GDN':'PL', 'KTW':'PL', 'WRO':'PL',
+        'PRG':'CZ', 'BUD':'HU', 'OTP':'RO', 'CLJ':'RO', 'SOF':'BG', 'BOJ':'BG', 'VAR':'BG',
+        'ATH':'GR', 'SKG':'GR', 'HER':'GR', 'RHO':'GR', 'KGS':'GR', 'CFU':'GR', 'ZTH':'GR', 'CHQ':'GR',
+        'IST':'TR', 'SAW':'TR', 'AYT':'TR', 'ADB':'TR', 'ESB':'TR', 'DLM':'TR', 'BJV':'TR',
+        'TIA':'AL', 'BEG':'RS', 'ZAG':'HR', 'DBV':'HR', 'SPU':'HR', 'LJU':'SI',
+
+        // --- NORDAMERIKA ---
+        'JFK':'US', 'LAX':'US', 'ORD':'US', 'ATL':'US', 'SFO':'US', 'EWR':'US', 'MIA':'US', 
+        'BOS':'US', 'DFW':'US', 'DEN':'US', 'SEA':'US', 'LAS':'US', 'MCO':'US', 'PHX':'US', 
+        'IAH':'US', 'CLT':'US', 'PHL':'US', 'LGA':'US', 'IAD':'US', 'DCA':'US', 'SAN':'US',
+        'HNL':'US', 'ANC':'US',
+        'YYZ':'CA', 'YVR':'CA', 'YUL':'CA', 'YYC':'CA', 'YEG':'CA', 'YOW':'CA', 'YHZ':'CA',
+        'MEX':'MX', 'CUN':'MX', 'GDL':'MX', 'MTY':'MX', 'SJD':'MX', 'PVR':'MX',
+
+        // --- ASIEN ---
+        'HND':'JP', 'NRT':'JP', 'KIX':'JP', 'ITM':'JP', 'CTS':'JP', 'FUK':'JP', 'OKA':'JP', 'NGO':'JP',
+        'PEK':'CN', 'PKX':'CN', 'PVG':'CN', 'SHA':'CN', 'CAN':'CN', 'SZX':'CN', 'CTU':'CN', 'CKG':'CN',
+        'HKG':'HK', 'MFM':'MO', 'TPE':'TW', 'KHH':'TW',
+        'ICN':'KR', 'GMP':'KR', 'CJU':'KR', 'PUS':'KR',
+        'SIN':'SG', 'KUL':'MY', 'PEN':'MY', 'BKI':'MY',
+        'BKK':'TH', 'DMK':'TH', 'HKT':'TH', 'CNX':'TH', 'USM':'TH',
+        'CGK':'ID', 'DPS':'ID', 'SUB':'ID', 'KNO':'ID',
+        'DEL':'IN', 'BOM':'IN', 'BLR':'IN', 'HYD':'IN', 'MAA':'IN', 'CCU':'IN', 'COK':'IN',
+        'SGN':'VN', 'HAN':'VN', 'DAD':'VN', 'CXR':'VN',
+        'MNL':'PH', 'CEB':'PH', 'KLO':'PH',
+
+        // --- NAHER OSTEN ---
+        'DXB':'AE', 'AUH':'AE', 'SHJ':'AE', 'DWC':'AE',
+        'DOH':'QA', 'KWI':'KW', 'MCT':'OM', 'BAH':'BH',
+        'JED':'SA', 'RUH':'SA', 'DMM':'SA', 'MED':'SA',
+        'TLV':'IL', 'AMM':'JO', 'BEY':'LB', 'BGW':'IQ',
+
+        // --- AFRIKA ---
+        'JNB':'ZA', 'CPT':'ZA', 'DUR':'ZA', 'PLZ':'ZA',
+        'CAI':'EG', 'HRG':'EG', 'SSH':'EG', 'LXR':'EG', 'RMF':'EG',
+        'CMN':'MA', 'RAK':'MA', 'AGA':'MA', 'FEZ':'MA', 'TNG':'MA',
+        'NBO':'KE', 'MBA':'KE', 'ADD':'ET', 'LOS':'NG', 'ABV':'NG', 
+        'ACC':'GH', 'DKR':'SN', 'TUN':'TN', 'MIR':'TN', 'DJE':'TN',
+        'MRU':'MU', 'SEZ':'SC', 'RUN':'RE', 'SID':'CV', 'BVC':'CV',
+
+        // --- SÜD- UND MITTELAMERIKA / KARIBIK ---
+        'GRU':'BR', 'CGH':'BR', 'GIG':'BR', 'SDU':'BR', 'BSB':'BR', 'CNF':'BR', 'REC':'BR',
+        'EZE':'AR', 'AEP':'AR', 'COR':'AR', 'MDZ':'AR',
+        'SCL':'CL', 'BOG':'CO', 'MDE':'CO', 'CTG':'CO', 'LIM':'PE', 'CUZ':'PE',
+        'UIO':'EC', 'GYE':'EC', 'CCS':'VE', 'MVD':'UY',
+        'PUJ':'DO', 'SDQ':'DO', 'HAV':'CU', 'VRA':'CU', 'SJU':'PR', 'NAS':'BS', 'MBJ':'JM',
+
+        // --- OZEANIEN ---
+        'SYD':'AU', 'MEL':'AU', 'BNE':'AU', 'PER':'AU', 'ADL':'AU', 'CBR':'AU', 'CNS':'AU', 'OOL':'AU',
+        'AKL':'NZ', 'WLG':'NZ', 'CHC':'NZ', 'ZQN':'NZ',
+        'NAN':'FJ', 'PPT':'PF', 'NOU':'NC'
+    };
+
+    const getSafeCoord = (flightVal, iata, isLat) => {
+        if (flightVal !== null && flightVal !== undefined && flightVal !== "") {
+            let num = parseFloat(String(flightVal).replace(',', '.'));
+            if (!isNaN(num)) return num;
+        }
+        const cleanIata = (iata || "").toString().trim().toUpperCase();
+        if (cleanIata && typeof window.airportData !== 'undefined' && window.airportData[cleanIata]) {
+            const fallbackVal = isLat ? window.airportData[cleanIata].lat : window.airportData[cleanIata].lon;
+            let num = parseFloat(String(fallbackVal).replace(',', '.'));
+            if (!isNaN(num)) return num;
+        }
+        return NaN; 
+    };
+
+    flightsToShow.forEach((flight) => {
+        flight._cleanDep = (flight.departure || "").toString().trim().toUpperCase();
+        flight._cleanArr = (flight.arrival || "").toString().trim().toUpperCase();
+
+        flight._safeDepLat = getSafeCoord(flight.depLat, flight._cleanDep, true);
+        flight._safeDepLon = getSafeCoord(flight.depLon, flight._cleanDep, false);
+        flight._safeArrLat = getSafeCoord(flight.arrLat, flight._cleanArr, true);
+        flight._safeArrLon = getSafeCoord(flight.arrLon, flight._cleanArr, false);
+
         if (!isNaN(flight._safeDepLat) && !isNaN(flight._safeArrLat) && !isNaN(flight._safeDepLon) && !isNaN(flight._safeArrLon)) {
-            const routeKey = [flight.departure, flight.arrival].sort().join("-");
+            const routeKey = [flight._cleanDep, flight._cleanArr].sort().join("-");
             if (!routeGroups[routeKey]) routeGroups[routeKey] = [];
             routeGroups[routeKey].push(flight);
         }
@@ -414,48 +503,45 @@ function processGlobeData(flightsToShow, isStoryMode = false) {
         const flightsOnThisRoute = routeGroups[routeKey];
         
         flightsOnThisRoute.forEach((flight, indexInRoute) => {
-            // Wir nutzen ab hier nur noch unsere sicheren "_safe" Koordinaten!
             const distance = calculateDistance(flight._safeDepLat, flight._safeDepLon, flight._safeArrLat, flight._safeArrLon);
             const flightColor = getColorByDistance(distance);
             const isActiveFlight = isStoryMode && (flight.id === currentSliderFlightId);
 
-            // --- FLUGROUTEN (ARCS) ---
             arcData.push({
                 startLat: flight._safeDepLat, 
                 startLng: flight._safeDepLon, 
                 endLat: flight._safeArrLat, 
                 endLng: flight._safeArrLon,
-                name: `${flight.departure} → ${flight.arrival}`,
+                name: `${flight._cleanDep} → ${flight._cleanArr}`,
                 color: flightColor,
                 distance: distance,
                 originalFlight: flight,
                 allFlightsOnRoute: flightsOnThisRoute,
                 stackIndex: indexInRoute, 
-                hash: (flight.arrival.charCodeAt(0) + flight.arrival.charCodeAt(1)) % 10,
+                hash: (flight._cleanArr.charCodeAt(0) + (flight._cleanArr.charCodeAt(1) || 0)) % 10,
                 isActive: isActiveFlight
             });
 
-            // --- BESUCHTE LÄNDER ---
-            let depCountry = (typeof window.airportData !== 'undefined' && window.airportData[flight.departure]) ? window.airportData[flight.departure].country_code : (flight.country || flight.depCountry);
-            let arrCountry = (typeof window.airportData !== 'undefined' && window.airportData[flight.arrival]) ? window.airportData[flight.arrival].country_code : flight.arrCountry;
+            // LÄNDER SICHER ERMITTELN
+            let depCountry = iataToCountry[flight._cleanDep];
+            let arrCountry = iataToCountry[flight._cleanArr];
             
-            if (!depCountry && typeof window.getCountryIsoFromCoords === 'function') {
-                depCountry = window.getCountryIsoFromCoords(flight._safeDepLat, flight._safeDepLon);
+            // Fallback auf airportData Cache, falls der IATA nicht in unserer Top-Liste steht
+            if (!depCountry && typeof window.airportData !== 'undefined' && window.airportData[flight._cleanDep]) {
+                depCountry = window.airportData[flight._cleanDep].country_code;
             }
-            if (!arrCountry && typeof window.getCountryIsoFromCoords === 'function') {
-                arrCountry = window.getCountryIsoFromCoords(flight._safeArrLat, flight._safeArrLon);
+            if (!arrCountry && typeof window.airportData !== 'undefined' && window.airportData[flight._cleanArr]) {
+                arrCountry = window.airportData[flight._cleanArr].country_code;
             }
             
             if (depCountry) visitedCountries.add(depCountry);
             if (arrCountry) visitedCountries.add(arrCountry);
 
-            // --- FLUGHAFEN-SÄULEN (POINTS) ---
             [
-                { iata: flight.departure, lat: flight._safeDepLat, lon: flight._safeDepLon, name: flight.depName },
-                { iata: flight.arrival, lat: flight._safeArrLat, lon: flight._safeArrLon, name: flight.arrName }
+                { iata: flight._cleanDep, lat: flight._safeDepLat, lon: flight._safeDepLon, name: flight.depName },
+                { iata: flight._cleanArr, lat: flight._safeArrLat, lon: flight._safeArrLon, name: flight.arrName }
             ].forEach(port => {
                 if (!port.iata) return; 
-                
                 if (!airportUsage[port.iata]) {
                     let portName = port.name;
                     if (!portName && typeof window.airportData !== 'undefined' && window.airportData[port.iata]) {
