@@ -2132,15 +2132,21 @@ window.exportData = async function (format) {
           }
 
           // Fotos & Arrays
-          if (key === "photo_url" && Array.isArray(value)) {
-             value = JSON.stringify(value); 
-          }
+              if (key === "photo_url" && Array.isArray(value)) {
+                 value = JSON.stringify(value); 
+              }
 
-          if (value === undefined || value === null) value = "";
-          else value = String(value);
+              if (value === undefined || value === null) value = "";
+              else value = String(value);
 
-          value = value.replace(/(\r\n|\n|\r)/gm, " ");
-          return `"${value.replace(/"/g, '""')}"`;
+              value = value.replace(/(\r\n|\n|\r)/gm, " ");
+              
+              // 🚀 BUGHUNT FIX: Excel austricksen, damit lange IDs nicht als Exponent (E+12) dargestellt werden!
+              if ((key === "flight_id" || key === "id") && value !== "") {
+                  return `="${value}"`;
+              }
+              
+              return `"${value.replace(/"/g, '""')}"`;
         })
         .join(separator);
     }).join("\n");
@@ -4323,10 +4329,6 @@ window.viewFlightDetails = async function(id, isSwitching = false, customScope =
     window.currentSwipeIndex = currentIndex;
     window.currentSwipeFlights = allFlights;
 
-    // 3. Textdaten einfügen
-    document.getElementById('fd-date').textContent = new Date(flight.date).toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' });
-    document.getElementById('fd-log-number').textContent = `#${flight.flightLogNumber}`; // 🎫 Flugnummer setzen
-    
     // 3. Textdaten einfügen
     document.getElementById('fd-date').textContent = new Date(flight.date).toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' });
     document.getElementById('fd-log-number').textContent = `#${flight.flightLogNumber}`; // 🎫 Flugnummer setzen
