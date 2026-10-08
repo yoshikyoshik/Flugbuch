@@ -905,26 +905,44 @@ window.logFlight = async function () {
   let detectedIata = ""; // 🚀 WICHTIG: Speichert den Code für die Flugnummer-Korrektur
 
   if (rawAirlineInput.length >= 2) {
-      let iataCode = rawAirlineInput.substring(0, 2).toUpperCase(); // Fallback
+      let iataCode = "";
       
-      // Reverse Lookup: Wir suchen im Lexikon nach dem Namen (z.B. "Sundair")
-      if (window.AIRLINE_MAPPING) {
-          const foundMapping = Object.values(window.AIRLINE_MAPPING).find(
-              m => m.name.toLowerCase() === rawAirlineInput.toLowerCase()
+      // 1. Smarte Suche im Lexikon
+      if (typeof window.AIRLINE_MAPPING !== 'undefined') {
+          // A: Exakter Treffer (Name oder Code)
+          let found = Object.values(window.AIRLINE_MAPPING).find(
+              m => m.name.toLowerCase() === rawAirlineInput.toLowerCase() || m.iata === rawAirlineInput.toUpperCase()
           );
-          if (foundMapping && foundMapping.iata) {
-              iataCode = foundMapping.iata;
+          
+          // B: Fuzzy-Suche (findet "Discover Airlines" auch wenn du "EW Discover" tippst)
+          if (!found) {
+              found = Object.values(window.AIRLINE_MAPPING).find(
+                  m => rawAirlineInput.toLowerCase().includes(m.name.toLowerCase()) || m.name.toLowerCase().includes(rawAirlineInput.toLowerCase())
+              );
+          }
+          
+          if (found && found.iata) {
+              iataCode = found.iata;
+              finalAirlineName = found.name; // Überschreibt deine Eingabe mit dem sauberen, offiziellen Namen!
           }
       }
-      finalAirlineLogo = `https://images.kiwi.com/airlines/128x128/${iataCode}.png`;
-      detectedIata = iataCode; // 🚀 IATA-Code sichern
+
+      // 2. Notfall-Rettung: Nur anwenden, wenn du exakt 2 Buchstaben tippst (z.B. "LH" oder "4Y")
+      if (!iataCode && rawAirlineInput.length === 2) {
+          iataCode = rawAirlineInput.toUpperCase();
+      }
+
+      // 3. Logo setzen
+      if (iataCode) {
+          detectedIata = iataCode;
+          finalAirlineLogo = `https://images.kiwi.com/airlines/128x128/${iataCode}.png`;
+      }
   }
 
   // =========================================================
   // 🚀 BUGHUNT FIX: Flugnummern intelligent reparieren!
   // =========================================================
   let rawFlightNum = document.getElementById("flightNumber").value.trim().toUpperCase();
-  // Wenn der Nutzer NUR Zahlen (z.B. "55") getippt hat, kleben wir den Airline-Code davor!
   if (/^\d+$/.test(rawFlightNum) && detectedIata) {
       rawFlightNum = detectedIata + rawFlightNum;
   }
@@ -1379,22 +1397,35 @@ async function updateFlight() {
   const rawAirlineInput = document.getElementById("airline").value.trim();
   let finalAirlineName = rawAirlineInput;
   let finalAirlineLogo = currentlyEditingFlightData.airline_logo || null; 
-  let detectedIata = ""; // 🚀 WICHTIG: Diese Variable brauchen wir für die Flugnummer
+  let detectedIata = ""; 
 
   if (rawAirlineInput.length >= 2) {
-      detectedIata = rawAirlineInput.substring(0, 2).toUpperCase(); 
+      let iataCode = "";
       
-      if (window.AIRLINE_MAPPING) {
-          const foundMapping = Object.values(window.AIRLINE_MAPPING).find(
-              m => m.name.toLowerCase() === rawAirlineInput.toLowerCase()
+      if (typeof window.AIRLINE_MAPPING !== 'undefined') {
+          let found = Object.values(window.AIRLINE_MAPPING).find(
+              m => m.name.toLowerCase() === rawAirlineInput.toLowerCase() || m.iata === rawAirlineInput.toUpperCase()
           );
-          if (foundMapping && foundMapping.iata) {
-              detectedIata = foundMapping.iata;
+          if (!found) {
+              found = Object.values(window.AIRLINE_MAPPING).find(
+                  m => rawAirlineInput.toLowerCase().includes(m.name.toLowerCase()) || m.name.toLowerCase().includes(rawAirlineInput.toLowerCase())
+              );
+          }
+          if (found && found.iata) {
+              iataCode = found.iata;
+              finalAirlineName = found.name;
           }
       }
-      
-      if (!currentlyEditingFlightData.airline_logo || rawAirlineInput !== currentlyEditingFlightData.airline) {
-          finalAirlineLogo = `https://images.kiwi.com/airlines/128x128/${detectedIata}.png`;
+
+      if (!iataCode && rawAirlineInput.length === 2) {
+          iataCode = rawAirlineInput.toUpperCase();
+      }
+
+      if (iataCode) {
+          detectedIata = iataCode;
+          if (!currentlyEditingFlightData.airline_logo || rawAirlineInput !== currentlyEditingFlightData.airline) {
+              finalAirlineLogo = `https://images.kiwi.com/airlines/128x128/${iataCode}.png`;
+          }
       }
   }
 
@@ -1402,11 +1433,10 @@ async function updateFlight() {
   // 🚀 BUGHUNT FIX: Flugnummern intelligent reparieren!
   // =========================================================
   let rawFlightNum = document.getElementById("flightNumber").value.trim().toUpperCase();
-  // Wenn der Nutzer NUR Zahlen (z.B. "55") getippt hat, kleben wir den Airline-Code davor!
   if (/^\d+$/.test(rawFlightNum) && detectedIata) {
       rawFlightNum = detectedIata + rawFlightNum;
   }
-  // -----------------------------------------------
+  // =========================================================
 
   // 🚀 BUGHUNT-FIX: Fehlendes Planespotters-Bild in letzter Sekunde sichern
   const regValueForPhoto = document.getElementById("registration").value.trim().toUpperCase();
