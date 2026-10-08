@@ -902,6 +902,7 @@ window.logFlight = async function () {
   const rawAirlineInput = document.getElementById("airline").value.trim();
   let finalAirlineName = rawAirlineInput;
   let finalAirlineLogo = null;
+  let detectedIata = ""; // 🚀 WICHTIG: Speichert den Code für die Flugnummer-Korrektur
 
   if (rawAirlineInput.length >= 2) {
       let iataCode = rawAirlineInput.substring(0, 2).toUpperCase(); // Fallback
@@ -916,8 +917,18 @@ window.logFlight = async function () {
           }
       }
       finalAirlineLogo = `https://images.kiwi.com/airlines/128x128/${iataCode}.png`;
+      detectedIata = iataCode; // 🚀 IATA-Code sichern
   }
-  // ------------------------------
+
+  // =========================================================
+  // 🚀 BUGHUNT FIX: Flugnummern intelligent reparieren!
+  // =========================================================
+  let rawFlightNum = document.getElementById("flightNumber").value.trim().toUpperCase();
+  // Wenn der Nutzer NUR Zahlen (z.B. "55") getippt hat, kleben wir den Airline-Code davor!
+  if (/^\d+$/.test(rawFlightNum) && detectedIata) {
+      rawFlightNum = detectedIata + rawFlightNum;
+  }
+  // =========================================================
 
   const flightClass = document.getElementById("flightClass").value;
   const calculatedCO2 = calculateCO2(distance, flightClass);
@@ -962,7 +973,7 @@ window.logFlight = async function () {
     time: estimateFlightTime(distance),
     class: document.getElementById("flightClass").value,
     co2_kg: calculatedCO2,
-    flightNumber: document.getElementById("flightNumber").value.trim().toUpperCase(),
+    flightNumber: rawFlightNum,
     // ✅ NEU HINZUFÜGEN:
     trip_id: document.getElementById("tripSelect").value || null,
     airline: finalAirlineName,       // Name aus API oder Eingabefeld
@@ -1368,23 +1379,32 @@ async function updateFlight() {
   const rawAirlineInput = document.getElementById("airline").value.trim();
   let finalAirlineName = rawAirlineInput;
   let finalAirlineLogo = currentlyEditingFlightData.airline_logo || null; 
+  let detectedIata = ""; // 🚀 WICHTIG: Diese Variable brauchen wir für die Flugnummer
 
   if (rawAirlineInput.length >= 2) {
-      let iataCode = rawAirlineInput.substring(0, 2).toUpperCase(); 
+      detectedIata = rawAirlineInput.substring(0, 2).toUpperCase(); 
       
       if (window.AIRLINE_MAPPING) {
           const foundMapping = Object.values(window.AIRLINE_MAPPING).find(
               m => m.name.toLowerCase() === rawAirlineInput.toLowerCase()
           );
           if (foundMapping && foundMapping.iata) {
-              iataCode = foundMapping.iata;
+              detectedIata = foundMapping.iata;
           }
       }
       
-      // Nur überschreiben, wenn sich der Name geändert hat oder noch kein Logo da war
       if (!currentlyEditingFlightData.airline_logo || rawAirlineInput !== currentlyEditingFlightData.airline) {
-          finalAirlineLogo = `https://images.kiwi.com/airlines/128x128/${iataCode}.png`;
+          finalAirlineLogo = `https://images.kiwi.com/airlines/128x128/${detectedIata}.png`;
       }
+  }
+
+  // =========================================================
+  // 🚀 BUGHUNT FIX: Flugnummern intelligent reparieren!
+  // =========================================================
+  let rawFlightNum = document.getElementById("flightNumber").value.trim().toUpperCase();
+  // Wenn der Nutzer NUR Zahlen (z.B. "55") getippt hat, kleben wir den Airline-Code davor!
+  if (/^\d+$/.test(rawFlightNum) && detectedIata) {
+      rawFlightNum = detectedIata + rawFlightNum;
   }
   // -----------------------------------------------
 
@@ -1430,7 +1450,7 @@ async function updateFlight() {
     time: estimateFlightTime(distance),
     class: document.getElementById("flightClass").value,
     co2_kg: calculatedCO2,
-    flightNumber: document.getElementById("flightNumber").value.trim().toUpperCase(),
+    flightNumber: rawFlightNum,
     // ✅ NEU HINZUFÜGEN:
     trip_id: document.getElementById("tripSelect").value || null,
     airline: finalAirlineName,      // Name aus API oder Input

@@ -890,7 +890,8 @@ async function openGlobeModal() {
     // AUCH HIER: initialData für den Update-Block nutzen
     globeInstance.arcsData(initialData.arcData); 
     globeInstance
-      .polygonsData(countriesGeoJSON.features)
+      // 🚀 BUGHUNT FIX: Variable sicher mit "window." aufrufen, um Crash zu verhindern!
+      .polygonsData(window.countriesGeoJSON.features)
       .polygonCapColor((feat) => {
         const isVisited = initialData.visitedCountries.includes(feat.properties.ISO_A2);
         return isVisited ? "rgba(147, 51, 234, 0.5)" : "rgba(100, 100, 100, 0.2)";
