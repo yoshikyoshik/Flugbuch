@@ -251,7 +251,11 @@ window.AIRLINE_MAPPING = {
     "CTN": { iata: "OU", name: "Croatia Airlines" },
     "ASL": { iata: "JU", name: "Air Serbia" },
     "BTI": { iata: "BT", name: "airBaltic" },
-    "CSW": { iata: "CS", name: "Chair Airlines" },
+    "CSW": { 
+        iata: "GM", 
+        name: "Chair Airlines", 
+        logo: "https://images.kiwi.com/airlines/128x128/GM.png" 
+    },
     "OAW": { iata: "2L", name: "Helvetic Airways" },
     "EZS": { iata: "DS", name: "easyJet Switzerland" },
     "EJU": { iata: "EC", name: "easyJet Europe" },

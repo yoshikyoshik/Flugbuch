@@ -7782,17 +7782,17 @@ window.renderRadarFlights = function(flights, airportIata) {
                 const match = safeFlightNum.match(/^([A-Za-z]{3}|[A-Za-z0-9]{2})/);
                 if (match) {
                     const prefix = match[1].toUpperCase();
-                    let airlineIata = prefix; // Standard: Er hat schon U2 oder 4Y erkannt
+                    let airlineIata = prefix;
+                    let customLogo = null;
                     
-                    if (prefix.length === 3) {
-                        if (typeof window.AIRLINE_MAPPING !== 'undefined' && window.AIRLINE_MAPPING[prefix]) {
-                            airlineIata = window.AIRLINE_MAPPING[prefix].iata;
-                        } else {
-                            airlineIata = prefix.substring(0, 2); // Notfall-Fallback
-                        }
+                    if (prefix.length === 3 && typeof window.AIRLINE_MAPPING !== 'undefined' && window.AIRLINE_MAPPING[prefix]) {
+                        airlineIata = window.AIRLINE_MAPPING[prefix].iata;
+                        customLogo = window.AIRLINE_MAPPING[prefix].logo || null;
                     }
                     
-                    iconContent = `<img src="https://images.kiwi.com/airlines/128x128/${airlineIata}.png" class="w-7 h-7 object-contain" onerror="this.onerror=null; this.outerHTML='<span class=\\'text-lg\\'>✈️</span>'">`;
+                    const logoSrc = customLogo || `https://images.kiwi.com/airlines/128x128/${airlineIata}.png`;
+
+                    iconContent = `<img src="${logoSrc}" class="w-7 h-7 object-contain" onerror="this.onerror=null; this.outerHTML='<span class=\\'text-lg\\'>✈️</span>'">`;
                 } else {
                     iconContent = `<span class="text-lg text-primary dark:text-indigo-400">${safeFlightNum.substring(0, 2)}</span>`;
                 }
