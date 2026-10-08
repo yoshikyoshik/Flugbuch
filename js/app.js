@@ -1782,6 +1782,7 @@ window.resetForm = function () {
     const logButton = document.getElementById("log-button");
     if (logButton) {
         logButton.textContent = (typeof getTranslation === 'function' ? getTranslation("flights.logFlightBtn") : null) || "Flug loggen und speichern";
+        logButton.disabled = false; // 🚀 BUGHUNT FIX: Auch für neue Flüge hart entsperren!
     }
 
     const cancelBtn = document.getElementById("cancel-edit-button") || document.getElementById("cancel-edit-btn");
@@ -1983,6 +1984,7 @@ window.editFlight = async function (id) {
   // UI für den Bearbeitungsmodus anpassen
   const logButton = document.getElementById("log-button");
   logButton.textContent = getTranslation("flights.saveChangesBtn") || "Änderungen speichern";
+  logButton.disabled = false; // 🚀 BUGHUNT FIX: Zwingt den Button zur Freigabe!
   document.getElementById("cancel-edit-button").classList.remove("hidden");
 
   updateFlightDetails(); // Berechnet Distanz/Zeit für die geladenen Flughäfen
