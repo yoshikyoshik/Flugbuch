@@ -7778,15 +7778,18 @@ window.renderRadarFlights = function(flights, airportIata) {
                 iconContent = '<span class="text-lg">🛩️</span>'; 
                 isPrivate = true;
             } else {
-                const match = safeFlightNum.match(/^[A-Za-z]+/);
+                // 🚀 BUGHUNT FIX: Greift 3 Buchstaben (z.B. UAE) ODER 2 Buchstaben/Zahlen (z.B. U2, 4Y)
+                const match = safeFlightNum.match(/^([A-Za-z]{3}|[A-Za-z0-9]{2})/);
                 if (match) {
-                    const prefix = match[0].toUpperCase();
-                    let airlineIata = prefix.substring(0, 2); // Fallback-Standard (2 Buchstaben)
+                    const prefix = match[1].toUpperCase();
+                    let airlineIata = prefix; // Standard: Er hat schon U2 oder 4Y erkannt
                     
-                    // 🚀 BUGHUNT FIX: Wenn es ein 3-stelliger ICAO-Code (wie UAE oder DLH) ist, 
-                    // schlagen wir den korrekten 2-stelligen IATA-Code im Lexikon nach!
-                    if (prefix.length === 3 && typeof window.AIRLINE_MAPPING !== 'undefined' && window.AIRLINE_MAPPING[prefix]) {
-                        airlineIata = window.AIRLINE_MAPPING[prefix].iata;
+                    if (prefix.length === 3) {
+                        if (typeof window.AIRLINE_MAPPING !== 'undefined' && window.AIRLINE_MAPPING[prefix]) {
+                            airlineIata = window.AIRLINE_MAPPING[prefix].iata;
+                        } else {
+                            airlineIata = prefix.substring(0, 2); // Notfall-Fallback
+                        }
                     }
                     
                     iconContent = `<img src="https://images.kiwi.com/airlines/128x128/${airlineIata}.png" class="w-7 h-7 object-contain" onerror="this.onerror=null; this.outerHTML='<span class=\\'text-lg\\'>✈️</span>'">`;
@@ -7913,8 +7916,8 @@ window.takeoverFlightFromLiveBoard = async function(index, ev) {
         let airlineIcao = (f.airline_icao || extractCode(f.operator) || f.carrier || "").toUpperCase();
         
         if (!airlineIcao && rawFlightNum) {
-            const match = rawFlightNum.match(/^[A-Za-z]+/);
-            if (match) airlineIcao = match[0].toUpperCase();
+            const match = rawFlightNum.match(/^([A-Za-z]{3}|[A-Za-z0-9]{2})/);
+            if (match) airlineIcao = match[1].toUpperCase();
         }
 
         let airlineName = airlineIcao;

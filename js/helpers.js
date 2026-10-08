@@ -762,6 +762,7 @@ window.fetchAviationWeather = async function(airportCode) {
                 'LIS': 'LPPT', 'OPO': 'LPPR', 'FAO': 'LPFR', 'FNC': 'LPMA',
                 'CPH': 'EKCH', 'OSL': 'ENGM', 'ARN': 'ESSA', 'HEL': 'EFHK',
                 'WAW': 'EPWA', 'PRG': 'LKPR', 'BUD': 'LHBP', 'OTP': 'LROP',
+                'LTN': 'EGGW',
 
                 // --- NORDAMERIKA ---
                 'JFK': 'KJFK', 'LAX': 'KLAX', 'ORD': 'KORD', 'ATL': 'KATL', 'SFO': 'KSFO',
