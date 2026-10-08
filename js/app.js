@@ -1983,11 +1983,52 @@ window.editFlight = async function (id) {
 
   // UI für den Bearbeitungsmodus anpassen
   const logButton = document.getElementById("log-button");
-  logButton.textContent = getTranslation("flights.saveChangesBtn") || "Änderungen speichern";
-  logButton.disabled = false; // 🚀 BUGHUNT FIX: Zwingt den Button zur Freigabe!
-  document.getElementById("cancel-edit-button").classList.remove("hidden");
+  if (logButton) {
+      logButton.textContent = (typeof getTranslation === 'function' ? getTranslation("flights.saveChangesBtn") : null) || "Änderungen speichern";
+      logButton.disabled = false;
+  }
+  
+  const cancelBtn = document.getElementById("cancel-edit-button");
+  if (cancelBtn) cancelBtn.classList.remove("hidden");
 
-  updateFlightDetails(); // Berechnet Distanz/Zeit für die geladenen Flughäfen
+  // =========================================================
+  // 🚀 BUGHUNT FIX: Den Cache füttern, bevor der Button gesperrt wird!
+  // =========================================================
+  window.airportData = window.airportData || {};
+  
+  // Abflughafen in den Cache zwingen
+  if (flightToEdit.departure && flightToEdit.depLat) {
+      window.airportData[flightToEdit.departure] = {
+          code: flightToEdit.departure,
+          name: flightToEdit.depName || flightToEdit.departure,
+          lat: flightToEdit.depLat,
+          lon: flightToEdit.depLon,
+          country_code: "XX"
+      };
+  }
+  // Zielflughafen in den Cache zwingen
+  if (flightToEdit.arrival && flightToEdit.arrLat) {
+      window.airportData[flightToEdit.arrival] = {
+          code: flightToEdit.arrival,
+          name: flightToEdit.arrName || flightToEdit.arrival,
+          lat: flightToEdit.arrLat,
+          lon: flightToEdit.arrLon,
+          country_code: "XX"
+      };
+  }
+
+  // Jetzt darf die Funktion laufen – sie wird die Flughäfen finden!
+  if (typeof updateFlightDetails === 'function') {
+      updateFlightDetails(); 
+  }
+
+  // 🚀 SICHERHEITS-OVERRIDE: Nach allen Berechnungen zwingen wir den Button hart auf Aktiv!
+  setTimeout(() => {
+      if (logButton) {
+          logButton.disabled = false;
+          logButton.classList.remove("opacity-50", "cursor-not-allowed", "pointer-events-none");
+      }
+  }, 50);
 
   // Zum Formular scrollen für eine bessere User Experience
   document
