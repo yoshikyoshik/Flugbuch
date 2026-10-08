@@ -5256,10 +5256,36 @@ window.viewAchievementDetails = async function(category, key, isSwitching = fals
         const uniqueAirports = new Set(allFlights.flatMap(f => [f.departure, f.arrival]));
         const longestFlightDistance = allFlights.length > 0 ? Math.max(...allFlights.map(f => f.distance || 0)) : 0;
         const totalCO2 = allFlights.reduce((sum, f) => sum + (f.co2_kg || 0), 0);
+        
+        // 🚀 NEU: Kompensierte Flüge und CO2 für das Modal berechnen
+        const compensatedFlights = allFlights.filter(f => f.co2_compensated);
+        const totalCompensatedFlights = compensatedFlights.length;
+        const totalCompensatedCO2 = compensatedFlights.reduce((sum, f) => sum + (f.co2_kg || 0), 0);
 
-        const values = { flights: totalFlights, distance: totalDistance, time: totalHours, uniqueAirports: uniqueAirports.size, longestFlight: longestFlightDistance, co2_total: totalCO2 };
-        const units = { flights: getTranslation("achievements.unitFlights"), distance: getTranslation("achievements.unitKm"), time: getTranslation("achievements.unitHours"), uniqueAirports: getTranslation("achievements.unitAirports"), longestFlight: getTranslation("achievements.unitKm"), co2_total: getTranslation("achievements.unitCo2") };
+        const values = {
+            flights: totalFlights,
+            distance: totalDistance,
+            time: totalHours,
+            uniqueAirports: uniqueAirports.size,
+            longestFlight: longestFlightDistance,
+            co2_total: totalCO2,
+            // 🚀 NEU: Die fehlenden Kategorien hinzugefügt!
+            co2_offset_flights: totalCompensatedFlights,
+            co2_offset_kg: totalCompensatedCO2
+        };
 
+        const units = {
+            flights: getTranslation("achievements.unitFlights"),
+            distance: getTranslation("achievements.unitKm"),
+            time: getTranslation("achievements.unitHours"),
+            uniqueAirports: getTranslation("achievements.unitAirports"),
+            longestFlight: getTranslation("achievements.unitKm"),
+            co2_total: getTranslation("achievements.unitCo2"),
+            // 🚀 NEU: Die Einheiten für das Modal registrieren!
+            co2_offset_flights: getTranslation("achievements.unitOffsetFlights") || "Flüge",
+            co2_offset_kg: getTranslation("achievements.unitOffsetKg") || "kg CO₂"
+        };
+        
         // Flache Liste aller Trophäen bauen
         let flatList = [];
         Object.keys(achievements).forEach(cat => {
