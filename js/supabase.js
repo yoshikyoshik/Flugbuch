@@ -251,6 +251,11 @@ window.AIRLINE_MAPPING = {
     "CTN": { iata: "OU", name: "Croatia Airlines" },
     "ASL": { iata: "JU", name: "Air Serbia" },
     "BTI": { iata: "BT", name: "airBaltic" },
+    "CSW": { iata: "CS", name: "Chair Airlines" },
+    "OAW": { iata: "2L", name: "Helvetic Airways" },
+    "EZS": { iata: "DS", name: "easyJet Switzerland" },
+    "EJU": { iata: "EC", name: "easyJet Europe" },
+    "CFE": { iata: "BA", name: "BA CityFlyer" },
 
     // === 🇺🇸 NORDAMERIKA ===
     "AAL": { iata: "AA", name: "American Airlines" },
