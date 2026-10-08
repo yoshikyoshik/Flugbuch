@@ -7780,7 +7780,15 @@ window.renderRadarFlights = function(flights, airportIata) {
             } else {
                 const match = safeFlightNum.match(/^[A-Za-z]+/);
                 if (match) {
-                    const airlineIata = match[0].substring(0, 2).toUpperCase();
+                    const prefix = match[0].toUpperCase();
+                    let airlineIata = prefix.substring(0, 2); // Fallback-Standard (2 Buchstaben)
+                    
+                    // 🚀 BUGHUNT FIX: Wenn es ein 3-stelliger ICAO-Code (wie UAE oder DLH) ist, 
+                    // schlagen wir den korrekten 2-stelligen IATA-Code im Lexikon nach!
+                    if (prefix.length === 3 && typeof window.AIRLINE_MAPPING !== 'undefined' && window.AIRLINE_MAPPING[prefix]) {
+                        airlineIata = window.AIRLINE_MAPPING[prefix].iata;
+                    }
+                    
                     iconContent = `<img src="https://images.kiwi.com/airlines/128x128/${airlineIata}.png" class="w-7 h-7 object-contain" onerror="this.onerror=null; this.outerHTML='<span class=\\'text-lg\\'>✈️</span>'">`;
                 } else {
                     iconContent = `<span class="text-lg text-primary dark:text-indigo-400">${safeFlightNum.substring(0, 2)}</span>`;
