@@ -1337,7 +1337,8 @@
                 <div class="text-4xl md:text-5xl font-display font-black tracking-tighter flex items-center justify-between w-full">
                     <div class="flex flex-col">
                         <span id="fd-dep" class="drop-shadow-md leading-none"></span>
-                        <span id="fd-dep-name" class="text-[10px] md:text-xs font-medium text-white/70 mt-2 max-w-[120px] line-clamp-2 leading-tight"></span>
+                        <!-- 🚀 FIX: tracking-normal und font-sans hinzugefügt, damit die Buchstaben nicht ineinander krachen -->
+                        <span id="fd-dep-name" class="text-[10px] md:text-xs font-medium font-sans tracking-normal text-white/70 mt-2 max-w-[120px] line-clamp-2 leading-tight"></span>
                     </div>
                     <div class="flex-1 px-4 relative flex items-center justify-center">
                         <div class="h-[2px] w-full bg-gradient-to-r from-transparent via-white/40 to-transparent relative">
@@ -1346,7 +1347,8 @@
                     </div>
                     <div class="flex flex-col items-end text-right">
                         <span id="fd-arr" class="drop-shadow-md leading-none"></span>
-                        <span id="fd-arr-name" class="text-[10px] md:text-xs font-medium text-white/70 mt-2 max-w-[120px] line-clamp-2 leading-tight"></span>
+                        <!-- 🚀 FIX: tracking-normal und font-sans hinzugefügt -->
+                        <span id="fd-arr-name" class="text-[10px] md:text-xs font-medium font-sans tracking-normal text-white/70 mt-2 max-w-[120px] line-clamp-2 leading-tight"></span>
                     </div>
                 </div>
             </div>

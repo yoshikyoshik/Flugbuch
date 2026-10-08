@@ -537,11 +537,13 @@ function processGlobeData(flightsToShow, isStoryMode = false) {
             if (depCountry) visitedCountries.add(depCountry);
             if (arrCountry) visitedCountries.add(arrCountry);
 
+            // Flughafen-Säulen
             [
                 { iata: flight._cleanDep, lat: flight._safeDepLat, lon: flight._safeDepLon, name: flight.depName },
                 { iata: flight._cleanArr, lat: flight._safeArrLat, lon: flight._safeArrLon, name: flight.arrName }
             ].forEach(port => {
                 if (!port.iata) return; 
+                
                 if (!airportUsage[port.iata]) {
                     let portName = port.name;
                     if (!portName && typeof window.airportData !== 'undefined' && window.airportData[port.iata]) {
@@ -550,6 +552,17 @@ function processGlobeData(flightsToShow, isStoryMode = false) {
                     airportUsage[port.iata] = { code: port.iata, name: portName || port.iata, lat: port.lat, lon: port.lon, count: 1 };
                 } else {
                     airportUsage[port.iata].count++;
+                    
+                    // 🚀 BUGHUNT FIX: Die ultimative Selbstheilung!
+                    // Da die Liste chronologisch ist, zwingen wir die Säule, 
+                    // immer auf die Koordinaten des NEUESTEN/ZUULETZT EDITIERTEN Fluges umzuziehen!
+                    airportUsage[port.iata].lat = port.lat;
+                    airportUsage[port.iata].lon = port.lon;
+                    
+                    // Wenn der neuere Flug auch einen echten Namen statt nur das IATA-Kürzel hat, übernehmen wir den auch gleich:
+                    if (port.name && port.name !== port.iata) {
+                        airportUsage[port.iata].name = port.name;
+                    }
                 }
             });
         });
