@@ -336,7 +336,7 @@ window.AIRLINE_MAPPING = {
         iata: "QY", 
         name: "EAT Leipzig (DHL)",
         // Zieht sich das offizielle, saubere DHL-Logo direkt von Wikipedia:
-        logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/DHL_Logo.svg/256px-DHL_Logo.svg.png"
+        logo: "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ac/DHL_Logo.svg/250px-DHL_Logo.svg.png"
     },
     "BOX": { iata: "3T", name: "AeroLogic" },
     "TAY": { iata: "3V", name: "ASL Airlines Belgium" },
