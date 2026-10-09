@@ -373,7 +373,40 @@ window.AIRLINE_MAPPING = {
         iata: "JET", // Dummy-Code
         name: "Bertelsmann Aviation", 
         logo: "https://cdn-icons-png.flaticon.com/128/3125/3125713.png" // Fallback auf ein Privatjet-Icon
-    }
+    },
+
+    // --- 🇫🇷 & 🇪🇺 EUROPA ---
+    "HOP": { iata: "A5", name: "Air France Hop" },
+    "TVF": { iata: "TO", name: "Transavia France" },
+    "AWG": { iata: "A2", name: "Animawings" },
+
+    // --- 🇷🇺 & 🌍 CIS / ZENTRALASIEN ---
+    "AFL": { iata: "SU", name: "Aeroflot" },
+    "PBD": { iata: "DP", name: "Pobeda" },
+    "AZO": { iata: "A4", name: "Azimuth" },
+    "BRU": { iata: "B2", name: "Belavia" },
+    "AHY": { iata: "J2", name: "Azerbaijan Airlines" },
+    "KZR": { iata: "KC", name: "Air Astana" },
+    "SMR": { iata: "SZ", name: "Somon Air" },
+
+    // --- 🐪 NAHER OSTEN & AFRIKA ---
+    "KAC": { iata: "KU", name: "Kuwait Airways" },
+    "JZR": { iata: "J9", name: "Jazeera Airways" },
+    "KNE": { iata: "XY", name: "Flynas" },
+    "FAD": { iata: "F3", name: "Flyadeal" },
+    "IAW": { iata: "IA", name: "Iraqi Airways" },
+    "IRA": { iata: "IR", name: "Iran Air" },
+
+    // --- 🌏 ASIEN ---
+    "PIA": { iata: "PK", name: "Pakistan International Airlines" },
+    "AXB": { iata: "IX", name: "Air India Express" },
+    "SEJ": { iata: "SG", name: "SpiceJet" },
+    "UBG": { iata: "BS", name: "US-Bangla Airlines" },
+
+    // --- 📦 CARGO & FRACHT ---
+    "SIF": { iata: "7L", name: "Silk Way West Airlines" },
+    "KZU": { iata: "GO", name: "ULS Airlines Cargo" },
+    "MFX": { iata: "C6", name: "My Freighter / Centrum Air" }
 
 };
 
