@@ -332,7 +332,12 @@ window.AIRLINE_MAPPING = {
     "SAA": { iata: "SA", name: "South African Airways" },
 
 // --- 📦 CARGO & FRACHTFLIEGER ---
-    "BCS": { iata: "QY", name: "EAT Leipzig (DHL)" },
+    "BCS": { 
+        iata: "QY", 
+        name: "EAT Leipzig (DHL)",
+        // Zieht sich das offizielle, saubere DHL-Logo direkt von Wikipedia:
+        logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/DHL_Logo.svg/256px-DHL_Logo.svg.png"
+    },
     "BOX": { iata: "3T", name: "AeroLogic" },
     "TAY": { iata: "3V", name: "ASL Airlines Belgium" },
     "SRR": { iata: "S6", name: "Maersk Air Cargo" },
@@ -356,13 +361,13 @@ window.AIRLINE_MAPPING = {
 
     // --- 📦 CARGO & FRACHT (Ergänzung) ---
     "GEC": { iata: "LH", name: "Lufthansa Cargo" },
-    "BCS": { iata: "QY", name: "EAT Leipzig (DHL)" }, // (Bereits bekannt, aber hier zur Vollständigkeit)
-
+    
     // --- 🚁 POLIZEI & CORPORATE JETS (MUC/FRA Specials) ---
     "EDL": { 
-        iata: "POL", // Dummy-Code
+        iata: "POL",
         name: "Polizei Bayern (Heli)", 
-        logo: "https://cdn-icons-png.flaticon.com/128/1932/1932104.png" // Fallback auf ein Polizei-Heli-Icon
+        // 100% ausfallsicherer Trick: Rendert ein echtes Helikopter-Emoji (🚁) als SVG-Grafik!
+        logo: "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🚁%3C/text%3E%3C/svg%3E"
     },
     "BFD": { 
         iata: "JET", // Dummy-Code
