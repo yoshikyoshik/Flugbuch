@@ -329,7 +329,21 @@ window.AIRLINE_MAPPING = {
     "KQA": { iata: "KQ", name: "Kenya Airways" },
     "MSR": { iata: "MS", name: "EgyptAir" },
     "RAM": { iata: "AT", name: "Royal Air Maroc" },
-    "SAA": { iata: "SA", name: "South African Airways" }
+    "SAA": { iata: "SA", name: "South African Airways" },
+
+// --- 📦 CARGO & FRACHTFLIEGER ---
+    "BCS": { iata: "QY", name: "EAT Leipzig (DHL)" },
+    "BOX": { iata: "3T", name: "AeroLogic" },
+    "TAY": { iata: "3V", name: "ASL Airlines Belgium" },
+    "SRR": { iata: "S6", name: "Maersk Air Cargo" },
+
+    // --- 🌍 WEITERE PASSAGIER-AIRLINES ---
+    "GFA": { iata: "GF", name: "Gulf Air" },
+    
+    // --- 🛠️ SPEZIAL-FALLBACKS ---
+    // Fängt alphanumerische Lufthansa-Rufzeichen ab, die fälschlicherweise als "LHX" ausgelesen werden
+    "LHX": { iata: "LH", name: "Lufthansa" }
+
 };
 
 async function fetchAirlineName(icaoCode) {
