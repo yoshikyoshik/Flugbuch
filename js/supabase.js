@@ -342,7 +342,33 @@ window.AIRLINE_MAPPING = {
     
     // --- 🛠️ SPEZIAL-FALLBACKS ---
     // Fängt alphanumerische Lufthansa-Rufzeichen ab, die fälschlicherweise als "LHX" ausgelesen werden
-    "LHX": { iata: "LH", name: "Lufthansa" }
+    "LHX": { iata: "LH", name: "Lufthansa" },
+
+// --- 🌍 INTERNATIONALE AIRLINES ---
+    "TAR": { iata: "TU", name: "Tunisair" },
+    "LBT": { iata: "BJ", name: "Nouvelair Tunisie" },
+    "KMM": { iata: "KM", name: "KM Malta Airlines" },
+    "UZB": { iata: "HY", name: "Uzbekistan Airways" },
+    
+    // --- 🇪🇺 EUROPA & REGIONAL ---
+    "EWL": { iata: "EW", name: "Eurowings Europe" },
+    "BCY": { iata: "WX", name: "CityJet" },
+
+    // --- 📦 CARGO & FRACHT (Ergänzung) ---
+    "GEC": { iata: "LH", name: "Lufthansa Cargo" },
+    "BCS": { iata: "QY", name: "EAT Leipzig (DHL)" }, // (Bereits bekannt, aber hier zur Vollständigkeit)
+
+    // --- 🚁 POLIZEI & CORPORATE JETS (MUC/FRA Specials) ---
+    "EDL": { 
+        iata: "POL", // Dummy-Code
+        name: "Polizei Bayern (Heli)", 
+        logo: "https://cdn-icons-png.flaticon.com/128/1932/1932104.png" // Fallback auf ein Polizei-Heli-Icon
+    },
+    "BFD": { 
+        iata: "JET", // Dummy-Code
+        name: "Bertelsmann Aviation", 
+        logo: "https://cdn-icons-png.flaticon.com/128/3125/3125713.png" // Fallback auf ein Privatjet-Icon
+    }
 
 };
 
