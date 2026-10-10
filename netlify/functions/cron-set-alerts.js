@@ -16,7 +16,6 @@ export default async (req, context) => {
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    // 🚀 NEU: Globaler Try-Catch-Block für ausfallsicheres Error-Logging
     try {
         // 1. Das 48h-Zeitfenster definieren
         const now = new Date();
@@ -26,16 +25,15 @@ export default async (req, context) => {
         const todayStr = now.toISOString().split('T')[0];
         const targetStr = in48Hours.toISOString().split('T')[0];
 
-        // 2. Flüge aus Supabase laden
+        // 2. Flüge aus Supabase laden (🚀 NEU: departure und arrival hinzugefügt)
         const { data: flights, error } = await supabase
             .from('flights')
-            .select('flight_id, fa_flight_id, date, user_id')
+            .select('flight_id, fa_flight_id, date, user_id, departure, arrival')
             .eq('alert_set', false)
             .not('fa_flight_id', 'is', null)
             .gte('date', todayStr)
             .lte('date', targetStr);
 
-        // 🚀 NEU: Datenbank-Fehler loggen
         if (error) {
             console.error("❌ DB Fehler:", error);
             await supabase.from('system_logs').insert([{
@@ -47,7 +45,6 @@ export default async (req, context) => {
             return new Response("DB Error", { status: 500 });
         }
 
-        // 🚀 NEU: Erfolgreichen Leerlauf loggen
         if (!flights || flights.length === 0) {
             console.log("✅ Keine neuen Flüge im 48h-Fenster für Alerts gefunden.");
             await supabase.from('system_logs').insert([{
@@ -60,7 +57,6 @@ export default async (req, context) => {
 
         console.log(`✈️ ${flights.length} Flüge für Alert-Registrierung gefunden.`);
         
-        // Zähler für das abschließende Protokoll
         let successCount = 0;
         let errorCount = 0;
 
@@ -75,6 +71,9 @@ export default async (req, context) => {
                     },
                     body: JSON.stringify({
                         flight_id: flight.fa_flight_id,
+                        // 🚀 NEU: Start und Ziel mitgeben, um FlightAware zufrieden zu stellen
+                        origin: flight.departure,
+                        destination: flight.arrival,
                         events: {
                             arrival: true,
                             departure: true,
@@ -106,10 +105,9 @@ export default async (req, context) => {
             }
         }
 
-        // 🚀 NEU: Gesamtergebnis nach der Flug-Schleife loggen
+        // Globales Log für diesen Durchlauf
         await supabase.from('system_logs').insert([{
             job_name: 'cron-set-alerts',
-            // Setzt den Status auf 'warning', falls einzelne Flüge fehlgeschlagen sind
             status: errorCount === 0 ? 'success' : 'warning',
             message: `Alert-Registrierung abgeschlossen. ${successCount} erfolgreich, ${errorCount} fehlerhaft.`,
             details: { processed: flights.length, success: successCount, failed: errorCount }
@@ -119,7 +117,6 @@ export default async (req, context) => {
         return new Response("OK", { status: 200 });
 
     } catch (globalError) {
-        // 🚀 NEU: Auffangbecken für unerwartete Skript-Abstürze
         console.error("❌ Kritischer Fehler im Cronjob:", globalError);
         await supabase.from('system_logs').insert([{
             job_name: 'cron-set-alerts',
@@ -131,7 +128,6 @@ export default async (req, context) => {
     }
 };
 
-// Netlify Cron-Job Konfiguration für V2
 export const config = {
     schedule: "@hourly"
 };
