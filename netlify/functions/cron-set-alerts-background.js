@@ -1,10 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Moderne Netlify V2 Syntax
+// Moderne Netlify V2 Syntax (Jetzt als Background Function)
 export default async (req, context) => {
     console.log("🕒 Cron Job Start: Prüfe anstehende Flüge für Push-Alerts...");
 
-    // Umgebungsvariablen laden
     const SUPABASE_URL = process.env.SUPABASE_URL;
     const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY; 
     const FLIGHTAWARE_API_KEY = process.env.FLIGHTAWARE_API_KEY;
@@ -17,15 +16,12 @@ export default async (req, context) => {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     try {
-        // 1. Das 48h-Zeitfenster definieren
         const now = new Date();
         const in48Hours = new Date(now.getTime() + (48 * 60 * 60 * 1000));
         
-        // Für Supabase als saubere YYYY-MM-DD Strings formatieren
         const todayStr = now.toISOString().split('T')[0];
         const targetStr = in48Hours.toISOString().split('T')[0];
 
-        // 2. Flüge aus Supabase laden (🚀 NEU: departure und arrival hinzugefügt)
         const { data: flights, error } = await supabase
             .from('flights')
             .select('flight_id, fa_flight_id, date, user_id, departure, arrival')
@@ -60,18 +56,21 @@ export default async (req, context) => {
         let successCount = 0;
         let errorCount = 0;
 
-        // 3. Alerts bei FlightAware setzen
         for (const flight of flights) {
+            // 🚀 NEU: Timeout Controller für maximal 10 Sekunden Wartezeit
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000);
+
             try {
                 const response = await fetch('https://aeroapi.flightaware.com/aeroapi/alerts', {
                     method: 'POST',
+                    signal: controller.signal, // 🚀 Signal übergeben
                     headers: {
                         'x-apikey': FLIGHTAWARE_API_KEY,
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
                         flight_id: flight.fa_flight_id,
-                        // 🚀 NEU: Start und Ziel mitgeben, um FlightAware zufrieden zu stellen
                         origin: flight.departure,
                         destination: flight.arrival,
                         events: {
@@ -85,8 +84,9 @@ export default async (req, context) => {
                     })
                 });
 
+                clearTimeout(timeoutId); // 🚀 Erfolgreich geantwortet -> Timeout löschen
+
                 if (response.ok || response.status === 409) { 
-                    // 4. In Supabase abhaken
                     await supabase
                         .from('flights')
                         .update({ alert_set: true })
@@ -100,12 +100,18 @@ export default async (req, context) => {
                     errorCount++;
                 }
             } catch (err) {
-                console.error(`❌ Genereller Fehler bei Flug ${flight.flight_id}:`, err);
+                clearTimeout(timeoutId); // 🚀 Auch im Fehlerfall Timeout aufräumen
+
+                // 🚀 NEU: Prüfen, ob der Abbruch durch unseren Timeout kam
+                if (err.name === 'AbortError') {
+                    console.error(`❌ API Timeout: FlightAware hat für ${flight.fa_flight_id} zu lange gebraucht (>10s)`);
+                } else {
+                    console.error(`❌ Genereller Fehler bei Flug ${flight.flight_id}:`, err);
+                }
                 errorCount++;
             }
         }
 
-        // Globales Log für diesen Durchlauf
         await supabase.from('system_logs').insert([{
             job_name: 'cron-set-alerts',
             status: errorCount === 0 ? 'success' : 'warning',
