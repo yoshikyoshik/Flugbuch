@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Moderne Netlify V2 Syntax
+// Moderne Netlify V2 Syntax (Jetzt als Background Function)
 export default async (req, context) => {
     console.log("🕒 Cron Job Start: Hydrate Flights (Suche fehlende FlightAware IDs)...");
 
@@ -16,20 +16,18 @@ export default async (req, context) => {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     try {
-        // 1. Das Zeitfenster definieren: Ab HEUTE (0h) bis +72h (Fängt alle Nachzügler auf!)
         const now = new Date();
         const in72Hours = new Date(now.getTime() + (72 * 60 * 60 * 1000));
         
         const todayStr = now.toISOString().split('T')[0];
         const endStr = in72Hours.toISOString().split('T')[0];
 
-        // 2. Flüge ohne FlightAware ID in diesem Zeitfenster laden
         const { data: flights, error } = await supabase
             .from('flights')
             .select('flight_id, flightNumber, date')
-            .is('fa_flight_id', null) // Greift nur unvollständige Flüge!
-            .gte('date', todayStr)    // Von HEUTE
-            .lte('date', endStr);     // Bis in 3 Tagen
+            .is('fa_flight_id', null)
+            .gte('date', todayStr)
+            .lte('date', endStr);
 
         if (error) {
             console.error("❌ DB Fehler:", error);
@@ -58,29 +56,31 @@ export default async (req, context) => {
         let notFoundCount = 0;
         let errorCount = 0;
 
-        // 3. FlightAware ID für jeden Flug abrufen
         for (const flight of flights) {
+            // 🚀 NEU: Timeout Controller für maximal 10 Sekunden Wartezeit
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000);
+
             try {
-                // Endpoint aufrufen (z.B. /flights/LH624)
                 const response = await fetch(`https://aeroapi.flightaware.com/aeroapi/flights/${flight.flightNumber}`, {
                     method: 'GET',
+                    signal: controller.signal, // 🚀 Signal übergeben
                     headers: {
                         'x-apikey': FLIGHTAWARE_API_KEY,
                         'Accept': 'application/json'
                     }
                 });
 
+                clearTimeout(timeoutId); // 🚀 Erfolgreich geantwortet -> Timeout löschen
+
                 if (response.ok) {
                     const data = await response.json();
                     
-                    // FlightAware gibt oft eine Liste von Flügen zurück (gestern, heute, morgen).
-                    // Wir suchen den Flug, dessen geplanter Abflug (scheduled_out) mit unserem Flugdatum übereinstimmt.
                     const matchingFaFlight = data.flights.find(fa => {
                         return fa.scheduled_out && fa.scheduled_out.startsWith(flight.date);
                     });
 
                     if (matchingFaFlight && matchingFaFlight.fa_flight_id) {
-                        // 4. In Supabase speichern
                         await supabase
                             .from('flights')
                             .update({ fa_flight_id: matchingFaFlight.fa_flight_id })
@@ -98,12 +98,18 @@ export default async (req, context) => {
                     errorCount++;
                 }
             } catch (err) {
-                console.error(`❌ Request Fehler bei ${flight.flightNumber}:`, err);
+                clearTimeout(timeoutId); // 🚀 Auch im Fehlerfall Timeout aufräumen
+                
+                // 🚀 NEU: Prüfen, ob der Abbruch durch unseren Timeout kam
+                if (err.name === 'AbortError') {
+                    console.error(`❌ API Timeout: FlightAware hat für ${flight.flightNumber} zu lange gebraucht (>10s)`);
+                } else {
+                    console.error(`❌ Request Fehler bei ${flight.flightNumber}:`, err);
+                }
                 errorCount++;
             }
         }
 
-        // Globales Log für diesen Durchlauf speichern
         await supabase.from('system_logs').insert([{
             job_name: 'cron-hydrate-flights',
             status: (errorCount === 0 && notFoundCount === 0) ? 'success' : 'warning',
@@ -126,7 +132,6 @@ export default async (req, context) => {
     }
 };
 
-// Netlify Cron-Job Konfiguration für V2 (stündliche Ausführung)
 export const config = {
     schedule: "@hourly"
 };
