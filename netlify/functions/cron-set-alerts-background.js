@@ -70,9 +70,7 @@ export default async (req, context) => {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        flight_id: flight.fa_flight_id,
-                        origin: flight.departure,
-                        destination: flight.arrival,
+                        ident: flight.fa_flight_id, // 🚀 HIER IST DER FIX: 'ident' statt 'flight_id'
                         events: {
                             arrival: true,
                             departure: true,
