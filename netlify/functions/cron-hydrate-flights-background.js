@@ -32,7 +32,7 @@ export default async (req, context) => {
         if (error) {
             console.error("❌ DB Fehler:", error);
             await supabase.from('system_logs').insert([{
-                job_name: 'cron-hydrate-flights',
+                job_name: 'cron-hydrate-flights-background',
                 status: 'error',
                 message: 'Fehler beim Laden der Flüge aus Supabase',
                 details: error
@@ -43,7 +43,7 @@ export default async (req, context) => {
         if (!flights || flights.length === 0) {
             console.log("✅ Keine Flüge zum Hydrieren im 0-72h Fenster gefunden.");
             await supabase.from('system_logs').insert([{
-                job_name: 'cron-hydrate-flights',
+                job_name: 'cron-hydrate-flights-background',
                 status: 'success',
                 message: 'Keine anstehenden importierten Flüge ohne fa_flight_id gefunden.'
             }]);
@@ -57,21 +57,21 @@ export default async (req, context) => {
         let errorCount = 0;
 
         for (const flight of flights) {
-            // 🚀 NEU: Timeout Controller für maximal 10 Sekunden Wartezeit
+            // 🚀 Timeout Controller für maximal 10 Sekunden Wartezeit
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 10000);
 
             try {
                 const response = await fetch(`https://aeroapi.flightaware.com/aeroapi/flights/${flight.flightNumber}`, {
                     method: 'GET',
-                    signal: controller.signal, // 🚀 Signal übergeben
+                    signal: controller.signal, 
                     headers: {
                         'x-apikey': FLIGHTAWARE_API_KEY,
                         'Accept': 'application/json'
                     }
                 });
 
-                clearTimeout(timeoutId); // 🚀 Erfolgreich geantwortet -> Timeout löschen
+                clearTimeout(timeoutId); // Erfolgreich geantwortet -> Timeout löschen
 
                 if (response.ok) {
                     const data = await response.json();
@@ -81,12 +81,29 @@ export default async (req, context) => {
                     });
 
                     if (matchingFaFlight && matchingFaFlight.fa_flight_id) {
+                        
+                        // 1. Zeiten aus FlightAware extrahieren
+                        const depTimeTs = matchingFaFlight.scheduled_out ? new Date(matchingFaFlight.scheduled_out).getTime() : null;
+                        const arrTimeTs = matchingFaFlight.scheduled_in ? new Date(matchingFaFlight.scheduled_in).getTime() : null;
+                        const timeString = matchingFaFlight.scheduled_out ? matchingFaFlight.scheduled_out.substring(11, 16) : null;
+
+                        // 2. Supabase Update: Wir reichern den CSV-Flug mit allen echten Daten an!
                         await supabase
                             .from('flights')
-                            .update({ fa_flight_id: matchingFaFlight.fa_flight_id })
+                            .update({ 
+                                fa_flight_id: matchingFaFlight.fa_flight_id,
+                                time: timeString,
+                                dep_time_ts: depTimeTs,
+                                arr_time_ts: arrTimeTs,
+                                aircraftType: matchingFaFlight.aircraft_type || null,
+                                dep_terminal: matchingFaFlight.origin?.terminal || null,
+                                dep_gate: matchingFaFlight.origin?.gate || null,
+                                arr_terminal: matchingFaFlight.destination?.terminal || null,
+                                arr_gate: matchingFaFlight.destination?.gate || null
+                            })
                             .eq('flight_id', flight.flight_id);
                             
-                        console.log(`✅ ID gefunden für ${flight.flightNumber}: ${matchingFaFlight.fa_flight_id}`);
+                        console.log(`✅ ID & Meta-Daten hydriert für ${flight.flightNumber}`);
                         successCount++;
                     } else {
                         console.log(`⚠️ Flug ${flight.flightNumber} am ${flight.date} existiert bei FlightAware (noch) nicht im System.`);
@@ -98,9 +115,8 @@ export default async (req, context) => {
                     errorCount++;
                 }
             } catch (err) {
-                clearTimeout(timeoutId); // 🚀 Auch im Fehlerfall Timeout aufräumen
+                clearTimeout(timeoutId); 
                 
-                // 🚀 NEU: Prüfen, ob der Abbruch durch unseren Timeout kam
                 if (err.name === 'AbortError') {
                     console.error(`❌ API Timeout: FlightAware hat für ${flight.flightNumber} zu lange gebraucht (>10s)`);
                 } else {
@@ -111,7 +127,7 @@ export default async (req, context) => {
         }
 
         await supabase.from('system_logs').insert([{
-            job_name: 'cron-hydrate-flights',
+            job_name: 'cron-hydrate-flights-background',
             status: (errorCount === 0 && notFoundCount === 0) ? 'success' : 'warning',
             message: `Hydrierung abgeschlossen. ${successCount} IDs bezogen, ${notFoundCount} nicht gefunden, ${errorCount} Fehler.`,
             details: { processed: flights.length, success: successCount, notFound: notFoundCount, errors: errorCount }
@@ -123,7 +139,7 @@ export default async (req, context) => {
     } catch (globalError) {
         console.error("❌ Kritischer Fehler im Cronjob:", globalError);
         await supabase.from('system_logs').insert([{
-            job_name: 'cron-hydrate-flights',
+            job_name: 'cron-hydrate-flights-background',
             status: 'error',
             message: globalError.message || 'Unerwarteter Fehler im Skript',
             details: { stack: globalError.stack }
