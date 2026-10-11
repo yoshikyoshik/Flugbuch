@@ -82,17 +82,15 @@ export default async (req, context) => {
 
                     if (matchingFaFlight && matchingFaFlight.fa_flight_id) {
                         
-                        // 1. Zeiten aus FlightAware extrahieren
+                        // 1. Zeiten aus FlightAware extrahieren (timeString komplett entfernt)
                         const depTimeTs = matchingFaFlight.scheduled_out ? new Date(matchingFaFlight.scheduled_out).getTime() : null;
                         const arrTimeTs = matchingFaFlight.scheduled_in ? new Date(matchingFaFlight.scheduled_in).getTime() : null;
-                        const timeString = matchingFaFlight.scheduled_out ? matchingFaFlight.scheduled_out.substring(11, 16) : null;
 
-                        // 2. Supabase Update: Wir reichern den CSV-Flug mit allen echten Daten an!
+                        // 2. Supabase Update: Die Spalte 'time' wird absichtlich NICHT beschrieben!
                         await supabase
                             .from('flights')
                             .update({ 
                                 fa_flight_id: matchingFaFlight.fa_flight_id,
-                                time: timeString,
                                 dep_time_ts: depTimeTs,
                                 arr_time_ts: arrTimeTs,
                                 aircraftType: matchingFaFlight.aircraft_type || null,
