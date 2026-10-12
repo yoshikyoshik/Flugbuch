@@ -1522,6 +1522,9 @@ async function updateFlight() {
       if (window.tempSelectedFlightData.arr_time_ts) {
           updatedFlightForSupabase.arr_time_ts = window.tempSelectedFlightData.arr_time_ts;
       }
+	  if (window.tempSelectedFlightData.dep_time_ts && window.tempSelectedFlightData.arr_time_ts) {
+          updatedFlightForSupabase.time = null; // Alten Text löschen, da wir jetzt echte Timestamps haben!
+      }
       
       // 🚀 NEU: Historische Zeiten & Gates mitspeichern
       if (window.tempSelectedFlightData.dep_estimated_ts) {
@@ -1587,7 +1590,12 @@ async function updateFlight() {
                   // Bonus: Echte, minutengenaue Zeiten aus dem Archiv retten, falls vorhanden
                   if (faData[0].dep_time_ts) updatedFlightForSupabase.dep_time_ts = faData[0].dep_time_ts;
                   if (faData[0].arr_time_ts) updatedFlightForSupabase.arr_time_ts = faData[0].arr_time_ts;
-                  if (faData[0].actual_out) updatedFlightForSupabase.dep_actual_ts = Math.floor(new Date(faData[0].actual_out).getTime() / 1000);
+                  // NEU: Wenn wir nachträglich Timestamps von FlightAware bekommen, 
+                  // leeren wir den alten Schätzwert!
+                  if (faData[0].dep_time_ts && faData[0].arr_time_ts) {
+                      updatedFlightForSupabase.time = null;
+				  }
+				  if (faData[0].actual_out) updatedFlightForSupabase.dep_actual_ts = Math.floor(new Date(faData[0].actual_out).getTime() / 1000);
                   if (faData[0].actual_in || faData[0].actual_on) updatedFlightForSupabase.arr_actual_ts = Math.floor(new Date(faData[0].actual_in || faData[0].actual_on).getTime() / 1000);
               }
           }
