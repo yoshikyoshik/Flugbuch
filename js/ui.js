@@ -633,7 +633,16 @@ window.renderFlights = async function (flightsToRender, flightIdToFocus, request
       const planeOpacity = flight.planespotters_url ? 'opacity-20 group-hover:opacity-40' : 'opacity-0';
       const logoHtml = flight.airline_logo ? `<img src="${flight.airline_logo}" class="h-5 md:h-6 max-w-[80px] object-contain opacity-90 drop-shadow-sm" alt="Logo">` : '';
       const formattedDate = flight.date ? new Date(flight.date).toLocaleDateString() : '--';
-      const formattedTime = (flight.time || "").replace("Std.", typeof getTranslation === 'function' ? getTranslation("units.hoursShort") || "Std." : "Std.").replace("Min.", typeof getTranslation === 'function' ? getTranslation("units.minutesShort") || "Min." : "Min.");
+      
+      let rawTime = flight.time;
+if (!rawTime && flight.arr_time_ts && flight.dep_time_ts) {
+    const diffMinutes = Math.floor((flight.arr_time_ts - flight.dep_time_ts) / 60);
+    const hours = Math.floor(diffMinutes / 60);
+    const mins = diffMinutes % 60;
+    rawTime = `${hours} Std. ${mins} Min.`;
+}
+const formattedTime = (rawTime || "").replace("Std.", typeof getTranslation === 'function' ? getTranslation("units.hoursShort") || "Std." : "Std.").replace("Min.", typeof getTranslation === 'function' ? getTranslation("units.minutesShort") || "Min." : "Min.");
+      
       const tripBadge = flight.trips && flight.trips.name ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-tertiary-fixed text-on-tertiary-container dark:bg-purple-900/30 dark:text-purple-300 uppercase tracking-wide">🏝️ ${flight.trips.name}</span>` : '';
 
       const isMapActive = (flight.id || flight.flight_id) === activeMapFlightId;
