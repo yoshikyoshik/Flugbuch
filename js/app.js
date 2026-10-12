@@ -4461,7 +4461,16 @@ window.viewFlightDetails = async function(id, isSwitching = false, customScope =
     document.getElementById('fd-aircraft').textContent = flight.aircraftType || "Unbekannt";
     document.getElementById('fd-reg').textContent = flight.registration || "-";
     document.getElementById('fd-distance').textContent = flight.distance ? `${flight.distance.toLocaleString()} km` : "-";
-    document.getElementById('fd-duration').textContent = flight.time || "-";
+    let displayTime = flight.time;
+if (!displayTime && flight.arr_time_ts && flight.dep_time_ts) {
+    const diffMinutes = Math.floor((flight.arr_time_ts - flight.dep_time_ts) / 60);
+    const hours = Math.floor(diffMinutes / 60);
+    const mins = diffMinutes % 60;
+    const hUnit = typeof getTranslation === 'function' ? getTranslation("units.hoursShort") || "Std." : "Std.";
+    const mUnit = typeof getTranslation === 'function' ? getTranslation("units.minutesShort") || "Min." : "Min.";
+    displayTime = `${hours} ${hUnit} ${mins} ${mUnit}`;
+}
+document.getElementById('fd-duration').textContent = displayTime || "-";
     document.getElementById('fd-co2').textContent = flight.co2_kg ? `${flight.co2_kg.toLocaleString()} kg` : "-";
 
     // =========================================================
