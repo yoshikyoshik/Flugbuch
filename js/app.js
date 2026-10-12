@@ -2452,10 +2452,24 @@ async function handleImport(event) {
         }
         // ================================================================
 
-        // Zeit berechnen (falls fehlend)
-        if (time === "" && distance > 0 && typeof estimateFlightTime === 'function') {
-            time = estimateFlightTime(distance);
+        // Zeit berechnen & OpenFlights-Müll herausfiltern
+        let estimatedTimeStr = "";
+        let estimatedMinutes = 0;
+        if (distance > 0 && typeof estimateFlightTime === 'function') {
+            estimatedTimeStr = estimateFlightTime(distance);
+            estimatedMinutes = typeof parseFlightTimeToMinutes === 'function' ? parseFlightTimeToMinutes(estimatedTimeStr, distance) : 0;
         }
+
+        if (time === "") {
+            time = estimatedTimeStr;
+        } else if (estimatedMinutes > 0 && typeof parseFlightTimeToMinutes === 'function') {
+            let importedMinutes = parseFlightTimeToMinutes(time);
+            
+            if (importedMinutes < (estimatedMinutes - 120)) {
+                console.log(`⚠️ Unplausible Flugzeit im Import erkannt: ${time} für ${distance}km. Überschreibe mit ${estimatedTimeStr}`);
+                time = estimatedTimeStr;
+            }
+		}
 
         // CO2 berechnen (falls fehlend)
         if (co2_kg === 0 && distance > 0 && typeof calculateCO2 === 'function') {
