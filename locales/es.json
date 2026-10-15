@@ -1082,7 +1082,12 @@
   "errorMissingRoute": "Por favor, introduce primero los aeropuertos de salida y llegada (IATA).",
   "onlyTodayHint": "* La búsqueda solo muestra los vuelos de hoy.",
   "errorWrongDate": "La búsqueda de vuelos solo funciona para hoy o una fecha futura.",
-  "modalTitleFuture": "Vuelos futuros"
+  "modalTitleFuture": "Vuelos futuros",
+  "zone1Title": "1. Datos básicos y búsqueda inteligente",
+  "dateRequired": "Fecha del vuelo",
+  "orByFlightNumber": "o directamente por número de vuelo",
+  "btnSmartSearch": "Buscar vuelo en línea y autocompletar",
+  "smartSearchHint": "💡 Ingresa Fecha + Ruta (lista de vuelos) o Fecha + Número de vuelo (búsqueda directa, PRO)."
   },
 
 "upcoming": {
@@ -1142,8 +1147,9 @@
     "logFlight": "Registrar Vuelo",
     "scanPass": "Tarjeta de embarque",
     "autopilot": "Piloto automático",
-    "manualTitle": "Ingreso Manual",
-    "manualContent": "Rellena o busca los detalles tú mismo"
+    "manualTitle": "Búsqueda inteligente y registro",
+    "manualContent": "Por número de vuelo, ruta o manual",
+    "scanPassSub": "Escanear código QR o de barras"
   },
   "radarEmpty": {
     "title": "Sin vuelos próximos",

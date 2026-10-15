@@ -1087,7 +1087,12 @@
   "errorMissingRoute": "Bitte gib zuerst den Abflug- und Zielort (IATA) ein.",
   "onlyTodayHint": "* Die Suche zeigt nur tagesaktuelle Flüge an.",
   "errorWrongDate": "Die Flugsuche funktioniert nur für das heutige oder ein zukünftiges Datum.",
-  "modalTitleFuture": "Zukünftige Flüge"
+  "modalTitleFuture": "Zukünftige Flüge",
+  "zone1Title": "1. Basisdaten & Smart-Suche",
+  "dateRequired": "Flugdatum",
+  "orByFlightNumber": "oder direkt per Flugnummer",
+  "btnSmartSearch": "Flug online suchen & automatisch ausfüllen",
+  "smartSearchHint": "💡 Gib Datum + Route (Flugauswahl) oder Datum + Flugnummer (Direkt-Treffer, PRO) ein."
   },
 
 "upcoming": {
@@ -1147,8 +1152,8 @@
     "logFlight": "Flug erfassen",
     "scanPass": "Bordkarte",
     "autopilot": "Autopilot",
-    "manualTitle": "Manuell Eintragen",
-    "manualContent": "Details selbst ausfüllen oder suchen",
+    "manualTitle": "Smart-Suche & Eingabe",
+    "manualContent": "Per Flugnummer, Route oder manuell",
     "scanPassSub": "QR- oder Barcode scannen"
   },
   "radarEmpty": {

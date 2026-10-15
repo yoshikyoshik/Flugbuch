@@ -540,8 +540,14 @@
     "successTitle": "导入成功",
     "wait": "请稍候。",
     "writing": "正在写入数据。",
-    "maxFlightsReached": "您保存的航班数量已达到上限。"
+    "maxFlightsReached": "您保存的航班数量已达到上限。",
+    "zone1Title": "1. 基本信息与智能搜索",
+    "dateRequired": "航班日期",
+    "orByFlightNumber": "或直接输入航班号",
+    "btnSmartSearch": "在线搜索航班并自动填写",
+    "smartSearchHint": "💡 输入“日期 + 航线”（航班列表）或“日期 + 航班号”（精准匹配，PRO）。"
   },
+
   "landing": {
     "AcceptingRegPrivacy": "隐私政策",
     "AcceptingRegTerms": "条款",
@@ -1142,8 +1148,9 @@
     "logFlight": "记录航班",
     "scanPass": "登机牌",
     "autopilot": "自动驾驶",
-    "manualTitle": "手动输入",
-    "manualContent": "自行填写或搜索详细信息"
+    "manualTitle": "智能搜索与录入",
+    "manualContent": "通过航班号、航线或手动输入",
+    "scanPassSub": "扫描二维码或条形码"
   },
   "radarEmpty": {
     "title": "没有即将到来的航班",

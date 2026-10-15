@@ -1086,7 +1086,12 @@
   "errorMissingRoute": "Please enter the departure and arrival airports (IATA) first.",
   "onlyTodayHint": "* Search only shows today's flights.",
   "errorWrongDate": "The flight search only works for today or a future date.",
-  "modalTitleFuture": "Future Flights"
+  "modalTitleFuture": "Future Flights",
+  "zone1Title": "1. Basic Data & Smart Search",
+  "dateRequired": "Flight Date",
+  "orByFlightNumber": "or directly by flight number",
+  "btnSmartSearch": "Search flight online & auto-fill",
+  "smartSearchHint": "💡 Enter Date + Route (flight list) or Date + Flight Number (direct match, PRO)."
   },
 
 "upcoming": {
@@ -1146,8 +1151,9 @@
     "logFlight": "Log Flight",
     "scanPass": "Boarding Pass",
     "autopilot": "Autopilot",
-    "manualTitle": "Enter Manually",
-    "manualContent": "Fill in or search details yourself"
+    "manualTitle": "Smart Search & Entry",
+    "manualContent": "By flight number, route, or manually",
+    "scanPassSub": "Scan QR or barcode"
   },
   "radarEmpty": {
     "title": "No Upcoming Flights",

@@ -1840,14 +1840,15 @@
                     
                     <div class="flex items-center justify-between">
                       <span class="text-[11px] font-black uppercase tracking-widest text-primary dark:text-indigo-400 flex items-center gap-1.5">
-                        <span class="material-symbols-outlined text-[16px]">travel_explore</span> 1. Basisdaten & Smart-Suche
+                        <span class="material-symbols-outlined text-[16px]">travel_explore</span> 
+                        <span data-i18n="flightSearch.zone1Title">1. Basisdaten & Smart-Suche</span>
                       </span>
                     </div>
 
                     <!-- ANKER: FLUGDATUM (Immer zuerst!) -->
                     <div>
                       <label for="flightDate" class="block text-xs font-bold uppercase tracking-wider text-on-surface/80 dark:text-slate-300 mb-1.5">
-                        <span data-i18n="flightDateNewFlight">Flugdatum</span> <span class="text-red-500">*</span>
+                        <span data-i18n="flightSearch.dateRequired">Flugdatum</span> <span class="text-red-500">*</span>
                       </label>
                       <input type="date" id="flightDate" class="block w-full rounded-xl bg-surface-container-lowest dark:bg-slate-800 border border-outline-variant/20 dark:border-slate-700 shadow-sm p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-bold text-on-surface" />
                     </div>
@@ -1870,7 +1871,7 @@
                     <!-- VISUELLER TRENNER: ODER / UND -->
                     <div class="flex items-center gap-3 py-1">
                       <div class="h-px bg-outline-variant/30 dark:bg-slate-700 flex-1"></div>
-                      <span class="text-[10px] font-black uppercase tracking-widest text-on-surface/40 dark:text-slate-500">
+                      <span class="text-[10px] font-black uppercase tracking-widest text-on-surface/40 dark:text-slate-500" data-i18n="flightSearch.orByFlightNumber">
                         oder direkt per Flugnummer
                       </span>
                       <div class="h-px bg-outline-variant/30 dark:bg-slate-700 flex-1"></div>
@@ -1888,8 +1889,8 @@
                         <span class="material-symbols-outlined text-[20px] group-hover:scale-110 transition-transform">travel_explore</span>
                         <span data-i18n="flightSearch.btnSmartSearch">Flug online suchen & automatisch ausfüllen</span>
                       </button>
-                      <p class="mt-2.5 text-[11px] text-center text-on-surface/60 dark:text-slate-400 font-medium leading-relaxed">
-                        💡 Gib <strong>Datum + Route</strong> (Flugauswahl) oder <strong>Datum + Flugnummer</strong> (Direkt-Treffer, PRO) ein.
+                      <p class="mt-2.5 text-[11px] text-center text-on-surface/60 dark:text-slate-400 font-medium leading-relaxed" data-i18n="flightSearch.smartSearchHint">
+                        💡 Gib Datum + Route (Flugauswahl) oder Datum + Flugnummer (Direkt-Treffer, PRO) ein.
                       </p>
                     </div>
                   </div>
