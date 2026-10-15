@@ -1148,7 +1148,8 @@
     "scanPass": "Bordkarte",
     "autopilot": "Autopilot",
     "manualTitle": "Manuell Eintragen",
-    "manualContent": "Details selbst ausfüllen oder suchen"
+    "manualContent": "Details selbst ausfüllen oder suchen",
+    "scanPassSub": "QR- oder Barcode scannen"
   },
   "radarEmpty": {
     "title": "Keine anstehenden Flüge",

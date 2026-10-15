@@ -1760,16 +1760,7 @@
         </div>
 
         <div class="grid grid-cols-2 gap-4">
-            <button onclick="closeAddMenu(); openAddFlightModal(); setTimeout(()=>document.getElementById('auto-flight-number').focus(), 300);" class="bg-cyan-accent/10 hover:bg-cyan-accent/20 border border-cyan-accent/20 p-5 rounded-3xl flex flex-col items-center justify-center gap-3 transition-colors group">
-                <span class="material-symbols-outlined text-3xl text-cyan-accent group-hover:scale-110 transition-transform">smart_toy</span>
-                <span class="text-sm font-bold text-on-surface dark:text-white" data-i18n="addAction.autopilot">Autopilot</span>
-            </button>
             
-            <button onclick="closeAddMenu(); startBoardingPassScanner();" class="bg-primary/10 hover:bg-primary/20 border border-primary/20 p-5 rounded-3xl flex flex-col items-center justify-center gap-3 transition-colors group relative overflow-hidden">
-                <span id="scanner-lock" class="absolute top-3 right-3 text-[10px]">🔒</span>
-                <span class="material-symbols-outlined text-3xl text-primary dark:text-indigo-400 group-hover:scale-110 transition-transform">qr_code_scanner</span>
-                <span class="text-sm font-bold text-on-surface dark:text-white" data-i18n="addAction.scanPass">Bordkarte</span>
-            </button>
             
             <button onclick="closeAddMenu(); openAddFlightModal();" class="col-span-2 bg-surface-container-low dark:bg-slate-800 hover:bg-surface-container-highest dark:hover:bg-slate-700 border border-outline-variant/10 dark:border-white/5 p-5 rounded-3xl flex items-center gap-4 transition-colors group">
                 <div class="w-12 h-12 rounded-full bg-surface-container-lowest dark:bg-slate-900 flex items-center justify-center text-on-surface/60 dark:text-slate-400 group-hover:text-primary transition-colors shadow-sm shrink-0">
@@ -1780,6 +1771,19 @@
                     <span class="block text-[10px] text-on-surface/50 dark:text-slate-400 uppercase tracking-widest font-bold" data-i18n="addAction.manualContent">Details selbst ausfüllen oder suchen</span>
                 </div>
             </button>
+            
+            <button onclick="closeAddMenu(); startBoardingPassScanner();" class="col-span-2 bg-primary/10 hover:bg-primary/20 border border-primary/20 p-5 rounded-3xl flex items-center gap-4 transition-colors group relative overflow-hidden">
+                <span id="scanner-lock" class="absolute top-4 right-4 text-xs">🔒</span>
+                <div class="w-12 h-12 rounded-full bg-primary/20 dark:bg-indigo-500/20 flex items-center justify-center text-primary dark:text-indigo-400 group-hover:scale-110 transition-transform shadow-sm shrink-0">
+                    <span class="material-symbols-outlined">qr_code_scanner</span>
+                </div>
+                <div class="text-left">
+                    <span class="block text-sm font-bold text-on-surface dark:text-white mb-0.5" data-i18n="addAction.scanPass">Bordkarte</span>
+                    <span class="block text-[10px] text-primary/70 dark:text-indigo-300/70 uppercase tracking-widest font-bold" data-i18n="addAction.scanPassSub">QR- oder Barcode scannen</span>
+                </div>
+            </button>
+            
+            
         </div>
     </div>
 </div>
@@ -1812,33 +1816,7 @@
                   </button>
               </div>
 
-              <details class="bg-surface-container-lowest dark:bg-slate-800 p-6 md:p-8 rounded-[2rem] mb-6 shadow-sm border border-outline-variant/20 dark:border-slate-700 group transition-all duration-300" open>
-                <summary class="list-none cursor-pointer flex items-center justify-between">
-                  <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-cyan-accent/10 flex items-center justify-center text-cyan-accent">
-                        <span class="material-symbols-outlined">smart_toy</span>
-                    </div>
-                    <h3 class="text-lg font-bold text-on-surface dark:text-white font-display flex items-center gap-2">
-                        <span data-i18n="autoPilot">Autopilot: Flugdaten laden</span>
-                    </h3>
-                  </div>
-                  <span class="material-symbols-outlined text-on-surface/40 group-open:rotate-180 transition-transform duration-300">keyboard_arrow_down</span>
-                </summary>
-
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end mt-6 border-t border-outline-variant/10 dark:border-slate-700 pt-6">
-                  <div>
-                    <label for="auto-flight-number" data-i18n="autoFlightNumber" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1">Flugnummer</label>
-                    <input type="text" id="auto-flight-number" placeholder="z.B. LH202" data-i18n="placeholder.egFlightNumber" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium placeholder-on-surface/30" />
-                  </div>
-                  <div>
-                    <label for="auto-flight-date" data-i18n="autoFlightDate" class="block text-xs font-bold uppercase tracking-wider text-on-surface/60 dark:text-slate-400 mb-1">Flugdatum</label>
-                    <input type="date" id="auto-flight-date" class="block w-full rounded-xl bg-surface-container-low dark:bg-slate-900 border-none shadow-inner p-3.5 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white font-medium text-on-surface/70" />
-                  </div>
-                  <button id="autofill-btn" data-i18n="autofillBtn" class="w-full h-[48px] bg-primary hover:bg-primary/90 text-white rounded-xl transition-all shadow-sm font-bold text-sm flex items-center justify-center gap-2">
-                    <span class="material-symbols-outlined text-[18px]">cloud_download</span> Daten abrufen
-                  </button>
-                </div>
-              </details>
+              
 
               <details class="bg-surface-container-lowest dark:bg-slate-800 p-6 md:p-8 rounded-[2rem] mb-6 shadow-sm border border-outline-variant/20 dark:border-slate-700 group transition-all duration-300" open>
                 <summary class="list-none cursor-pointer flex items-center justify-between">
