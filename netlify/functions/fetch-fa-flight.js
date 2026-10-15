@@ -245,6 +245,28 @@ export default async function handler(request, context) {
                 flightStatus = "active";
             }
 
+            // 🚀 ZEITZONEN-KILLER: Echte Flugdauer in Minuten direkt im Backend berechnen
+            let durationMinutes = null;
+            if (f.actual_out && f.actual_in) {
+                // 1. Prio: Tatsächliche Blockzeit (Gate-to-Gate)
+                durationMinutes = Math.round((new Date(f.actual_in).getTime() - new Date(f.actual_out).getTime()) / 60000);
+            } else if (f.actual_off && f.actual_on) {
+                // 2. Prio: Tatsächliche Zeit in der Luft (Takeoff-to-Landing)
+                durationMinutes = Math.round((new Date(f.actual_on).getTime() - new Date(f.actual_off).getTime()) / 60000);
+            } else if (f.filed_ete && f.filed_ete > 0) {
+                // 3. Prio: Von FlightAware offiziell hinterlegte Flugdauer (filed_ete ist in Sekunden)
+                durationMinutes = Math.round(f.filed_ete / 60);
+            } else if (depTime && arrTime) {
+                // 4. Prio: Geplante Differenz aus den ISO-Strings
+                const diff = Math.round((new Date(arrTime).getTime() - new Date(depTime).getTime()) / 60000);
+                if (diff > 0 && diff < 1500) durationMinutes = diff;
+            }
+
+            // Sicherheits-Check gegen negative oder korrupte Werte
+            if (durationMinutes !== null && (durationMinutes <= 0 || durationMinutes > 1500)) {
+                durationMinutes = null;
+            }
+
             return {
                 ...f, 
                 flight_number: ident,
@@ -260,6 +282,7 @@ export default async function handler(request, context) {
                 arr_time_ts: arrTime ? Math.floor(new Date(arrTime).getTime() / 1000) : null,
                 dep_estimated_ts: depEstimated ? Math.floor(new Date(depEstimated).getTime() / 1000) : null,
                 arr_estimated_ts: arrEstimated ? Math.floor(new Date(arrEstimated).getTime() / 1000) : null,
+                fa_duration_minutes: durationMinutes, // 👈 NEU: Unsere saubere Flugdauer in Minuten!
                 dep_terminal: f.terminal_origin || null,
                 dep_gate: f.gate_origin || null,
                 arr_terminal: f.terminal_destination || null,

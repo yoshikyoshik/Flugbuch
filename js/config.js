@@ -605,7 +605,7 @@ async function updateAchievements() {
   // 1. Aktuelle Statistiken berechnen
   const totalFlights = allFlights.length;
   const totalDistance = allFlights.reduce((sum, flight) => sum + (flight.distance || 0), 0);
-  const totalMinutes = allFlights.reduce((sum, flight) => sum + (typeof parseFlightTimeToMinutes === 'function' ? parseFlightTimeToMinutes(flight.time) : 0), 0);
+  const totalMinutes = allFlights.reduce((sum, flight) => sum + (typeof parseFlightTimeToMinutes === 'function' ? parseFlightTimeToMinutes(flight) : 0), 0);
   const totalHours = totalMinutes / 60;
   const uniqueAirports = new Set(allFlights.flatMap((f) => [f.departure, f.arrival]));
   const longestFlightDistance = allFlights.length > 0 ? Math.max(...allFlights.map((f) => f.distance || 0)) : 0;

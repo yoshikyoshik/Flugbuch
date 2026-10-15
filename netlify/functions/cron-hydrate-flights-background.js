@@ -82,17 +82,27 @@ export default async (req, context) => {
 
                     if (matchingFaFlight && matchingFaFlight.fa_flight_id) {
                         
-                        // 1. Zeiten aus FlightAware extrahieren (timeString komplett entfernt)
-                        const depTimeTs = matchingFaFlight.scheduled_out ? new Date(matchingFaFlight.scheduled_out).getTime() : null;
-                        const arrTimeTs = matchingFaFlight.scheduled_in ? new Date(matchingFaFlight.scheduled_in).getTime() : null;
+                        // 1. Zeiten sauber in SEKUNDEN umrechnen (Bugfix: vorher waren es Millisekunden!)
+                        const depTimeTs = matchingFaFlight.scheduled_out ? Math.floor(new Date(matchingFaFlight.scheduled_out).getTime() / 1000) : null;
+                        const arrTimeTs = matchingFaFlight.scheduled_in ? Math.floor(new Date(matchingFaFlight.scheduled_in).getTime() / 1000) : null;
 
-                        // 2. Supabase Update: Die Spalte 'time' wird absichtlich NICHT beschrieben!
+                        // 2. Echte Flugdauer in Minuten berechnen
+                        let durationMinutes = null;
+                        if (matchingFaFlight.filed_ete && matchingFaFlight.filed_ete > 0) {
+                            durationMinutes = Math.round(matchingFaFlight.filed_ete / 60);
+                        } else if (depTimeTs && arrTimeTs && arrTimeTs > depTimeTs) {
+                            durationMinutes = Math.round((arrTimeTs - depTimeTs) / 60);
+                        }
+
+                        // 3. Supabase Update inkl. fa_duration_minutes und time = null
                         await supabase
                             .from('flights')
                             .update({ 
                                 fa_flight_id: matchingFaFlight.fa_flight_id,
                                 dep_time_ts: depTimeTs,
                                 arr_time_ts: arrTimeTs,
+                                fa_duration_minutes: durationMinutes,
+                                time: (durationMinutes || (depTimeTs && arrTimeTs)) ? null : undefined,
                                 aircraftType: matchingFaFlight.aircraft_type || null,
                                 dep_terminal: matchingFaFlight.origin?.terminal || null,
                                 dep_gate: matchingFaFlight.origin?.gate || null,

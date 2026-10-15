@@ -293,14 +293,14 @@ async function showAircraftDetails(modelCode) {
     document.getElementById("info-modal-title").textContent = getTranslation("logbook.detailsTitleAircraft").replace("{key}", modelCode);
     const contentContainer = document.getElementById("info-modal-content");
 
-    // 🚀 Mapping-Logik
-    let mappedModel = modelCode;
-    if (typeof window.normalizeAircraftCode === 'function') {
-        mappedModel = window.normalizeAircraftCode(modelCode);
-    }
+    // 🚀 Zuerst direkt mit dem Code (z.B. B738, A21N, A359) in LOCAL_AIRCRAFT_DB suchen,
+    // und erst als Fallback den normalisierten Code nutzen!
+    const cleanCode = (modelCode || "").trim().toUpperCase();
+    const mappedModel = typeof window.normalizeAircraftCode === 'function' ? window.normalizeAircraftCode(cleanCode) : cleanCode;
 
-    // 🚀 AUS DER NEUEN LOKALEN DATENBANK LESEN
-    const aircraft = typeof LOCAL_AIRCRAFT_DB !== 'undefined' ? LOCAL_AIRCRAFT_DB[mappedModel] : null;
+    const aircraft = typeof LOCAL_AIRCRAFT_DB !== 'undefined' 
+        ? (LOCAL_AIRCRAFT_DB[cleanCode] || LOCAL_AIRCRAFT_DB[mappedModel]) 
+        : null;
 
     if (aircraft) {
         contentContainer.innerHTML = `
@@ -634,15 +634,20 @@ window.renderFlights = async function (flightsToRender, flightIdToFocus, request
       const logoHtml = flight.airline_logo ? `<img src="${flight.airline_logo}" class="h-5 md:h-6 max-w-[80px] object-contain opacity-90 drop-shadow-sm" alt="Logo">` : '';
       const formattedDate = flight.date ? new Date(flight.date).toLocaleDateString() : '--';
       
-      let rawTime = flight.time;
-if (!rawTime && flight.arr_time_ts && flight.dep_time_ts) {
-    const diffMinutes = Math.floor((flight.arr_time_ts - flight.dep_time_ts) / 60);
-    const hours = Math.floor(diffMinutes / 60);
-    const mins = diffMinutes % 60;
-    rawTime = `${hours} Std. ${mins} Min.`;
-}
-const formattedTime = (rawTime || "").replace("Std.", typeof getTranslation === 'function' ? getTranslation("units.hoursShort") || "Std." : "Std.").replace("Min.", typeof getTranslation === 'function' ? getTranslation("units.minutesShort") || "Min." : "Min.");
-      
+      let rawTime = "";
+      if (flight.fa_duration_minutes && flight.fa_duration_minutes > 0) {
+          const hours = Math.floor(flight.fa_duration_minutes / 60);
+          const mins = flight.fa_duration_minutes % 60;
+          rawTime = `${hours} Std. ${mins} Min.`;
+      } else if (flight.time) {
+          rawTime = flight.time;
+      } else if (flight.arr_time_ts && flight.dep_time_ts && flight.arr_time_ts > flight.dep_time_ts) {
+          const diffMinutes = Math.floor((flight.arr_time_ts - flight.dep_time_ts) / 60);
+          const hours = Math.floor(diffMinutes / 60);
+          const mins = diffMinutes % 60;
+          rawTime = `${hours} Std. ${mins} Min.`;
+      }
+      const formattedTime = (rawTime || "-").replace("Std.", typeof getTranslation === 'function' ? getTranslation("units.hoursShort") || "Std." : "Std.").replace("Min.", typeof getTranslation === 'function' ? getTranslation("units.minutesShort") || "Min." : "Min.");      
       const tripBadge = flight.trips && flight.trips.name ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-tertiary-fixed text-on-tertiary-container dark:bg-purple-900/30 dark:text-purple-300 uppercase tracking-wide">🏝️ ${flight.trips.name}</span>` : '';
 
       const isMapActive = (flight.id || flight.flight_id) === activeMapFlightId;
@@ -1133,59 +1138,7 @@ function updateCharts(allFlights, timeframe = "year") {
       aggregatedData[key] = { count: 0, distance: 0, time: 0 };
     }
     
-    // --- 🛡️ DER MULTILINGUALE ZEIT-PARSER ---
-    let flightMinutes = 0;
-    let t = flight.time;
-    
-    if (t) {
-        if (typeof t === 'number') {
-            flightMinutes = t <= 30 ? t * 60 : t; 
-        } else if (typeof t === 'string') {
-            t = t.toLowerCase().trim();
-            
-            // Fall 1: Doppelpunkt (z.B. "11:31", "0:54h")
-            if (t.includes(':')) {
-                const cleanT = t.replace(/[^\d:]/g, ''); 
-                const parts = cleanT.split(':');
-                flightMinutes = (parseInt(parts[0], 10) || 0) * 60 + (parseInt(parts[1], 10) || 0);
-            } 
-            // Fall 2: Textformate (Findet jetzt 'h', 'Std', 'Stunde', 'hour' etc.)
-            else if (/[a-z]/i.test(t)) {
-                let h = 0, m = 0;
-                // Sucht nach der Zahl vor h, std, stunde oder hour
-                const matchH = t.match(/(\d+(?:[.,]\d+)?)\s*(?:h|std|stunde|hour)/i);
-                // Sucht nach der Zahl vor m, min oder minute
-                const matchM = t.match(/(\d+(?:[.,]\d+)?)\s*(?:m|min|minute)/i);
-                
-                if (matchH) h = parseFloat(matchH[1].replace(',', '.'));
-                if (matchM) m = parseFloat(matchM[1].replace(',', '.'));
-                
-                if (matchH || matchM) {
-                    flightMinutes = (h * 60) + m;
-                } else {
-                    // Notfall-Rettung: Holt einfach die ersten zwei Zahlen (z.B. bei "11 31")
-                    const nums = t.match(/\d+/g);
-                    if (nums && nums.length >= 2) {
-                        flightMinutes = (parseInt(nums[0], 10) * 60) + parseInt(nums[1], 10);
-                    }
-                }
-            } 
-            // Fall 3: Reine Zahlen (z.B. "1.5", "5,2")
-            else {
-                let cleanT = t.replace(/[^\d.,]/g, '').replace(',', '.');
-                let num = parseFloat(cleanT);
-                if (!isNaN(num)) {
-                    flightMinutes = num <= 30 ? num * 60 : num;
-                }
-            }
-        }
-    }
-    
-    // Fallback falls alles fehlschlägt
-    if (flightMinutes <= 0 && flight.distance > 0) {
-        flightMinutes = (flight.distance / 800) * 60 + 30;
-    }
-    // -------------------------------------
+    const flightMinutes = parseFlightTimeToMinutes(flight);
 
     aggregatedData[key].count++;
     aggregatedData[key].distance += (flight.distance || 0);
@@ -1354,7 +1307,7 @@ async function buildAndPrintHtml(flightsToPrint, title) {
   // 5. Statistiken berechnen
   const stats = calculateStatistics(sequencedFlights);
   const totalMinutes = sequencedFlights.reduce(
-    (sum, f) => sum + parseFlightTimeToMinutes(f.time),
+    (sum, f) => sum + parseFlightTimeToMinutes(f),
     0
   );
   const totalTimeStr = `${Math.floor(totalMinutes / 60)} ${getTranslation("units.hoursShort")} ${totalMinutes % 60} ${getTranslation("units.minutesShort")}`;
@@ -1415,7 +1368,7 @@ async function buildAndPrintHtml(flightsToPrint, title) {
                 }
                 <p><strong>${getTranslation("logbook.flightEntryRoute")}:</strong> ${flight.depName || flight.departure} ${getTranslation("logbook.routeSeparator")} ${flight.arrName || flight.arrival}</p>
                 <p><strong>${getTranslation("logbook.flightEntryDistance")}:</strong> ${flight.distance.toLocaleString("de-DE")} km</p>
-                <p><strong>${getTranslation("logbook.flightEntryDuration")}:</strong> ${flight.time}</p>
+                <p><strong>${getTranslation("logbook.flightEntryDuration")}:</strong> ${window.formatFlightDuration(flight)}</p>
                 <hr style="margin: 0.75rem 0;">
                 <p><strong>${getTranslation("logbook.flightEntryAirline")}:</strong> ${flight.airline || "-"} (${flight.flightNumber || "-"})</p>
                 <p><strong>${getTranslation("logbook.flightEntryAircraft")}:</strong> ${flight.aircraftType || "-"} (${flight.registration || "-"})</p>

@@ -32,7 +32,7 @@ async function uploadFlightPhotos(filesToUpload) {
       const errorMsg = (
         getTranslation("messages.uploadLimitSize") || "Datei übersprungen"
       ).replace("{fileName}", file.name);
-      sshowMessage(
+      showMessage(
         getTranslation("toast.uploadLimitTitle") || "Upload-Limit", 
         errorMsg, 
         "error"
@@ -177,14 +177,13 @@ window.fetchExternalAirport = async function (input) {
   if (normalizedInput.length < 3) return [];
   
   try {
-    // Wir nutzen die blitzschnelle und komplett kostenlose Travel-API von Kiwi.com
     const response = await fetch(`https://api.skypicker.com/locations?term=${encodeURIComponent(normalizedInput)}&locale=de-DE&location_types=airport&limit=10`);
     if (!response.ok) return [];
     
     const data = await response.json();
     if (!data.locations) return [];
 
-    return data.locations.map((result) => {
+    const mapped = data.locations.map((result) => {
       return {
         code: result.code, // IATA Code
         name: result.name,
@@ -194,6 +193,17 @@ window.fetchExternalAirport = async function (input) {
         country_code: result.city && result.city.country ? result.city.country.id : null,
       };
     });
+
+    // 🚀 BUGHUNT FIX: Exakten IATA-Code-Treffer immer auf Platz 1 setzen!
+    // Verhindert, dass bei "DUB" Dubai (DXB) vor Dublin (DUB) landet.
+    const upperInput = normalizedInput.toUpperCase();
+    mapped.sort((a, b) => {
+      if (a.code === upperInput && b.code !== upperInput) return -1;
+      if (b.code === upperInput && a.code !== upperInput) return 1;
+      return 0;
+    });
+
+    return mapped;
   } catch (error) {
     console.error("Netzwerkfehler (Fetch Airport):", error);
     return [];

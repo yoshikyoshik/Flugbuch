@@ -24,14 +24,23 @@ var findAirport = function (input) {
   const normalizedInput = input.trim().toUpperCase();
   if (normalizedInput.length === 0) return null;
 
+  // 1. Exakter Treffer beim IATA/ICAO-Code
   if (
     (normalizedInput.length === 3 || normalizedInput.length === 4) &&
     airportData[normalizedInput]
   ) {
     return { code: normalizedInput, ...airportData[normalizedInput] };
   }
+
+  // 🚀 BUGHUNT FIX: Wenn exakt 3 Buchstaben (IATA-Code wie "DUB") gesucht werden,
+  // NICHT in Namen suchen (verhindert, dass "DUB" in "Dubai" gefunden wird!).
+  if (normalizedInput.length === 3) {
+    return null;
+  }
+
+  // 2. Namenssuche nur bei längeren Eingaben (ab 4 Zeichen, z.B. "Frankfurt")
   for (const code in airportData) {
-    if (airportData[code].name.toUpperCase().includes(normalizedInput)) {
+    if (airportData[code].name && airportData[code].name.toUpperCase().includes(normalizedInput)) {
       return { code: code, ...airportData[code] };
     }
   }
@@ -77,9 +86,23 @@ function calculateCO2(distance, flightClass) {
   return Math.round(co2_kg);
 }
 
-function parseFlightTimeToMinutes(timeString, distance = 0) {
-  let t = timeString;
+function parseFlightTimeToMinutes(flightOrTimeString, distance = 0) {
+  let t = flightOrTimeString;
   let flightMinutes = 0;
+
+  // 🚀 NEU: Wenn ein ganzes Flug-Objekt übergeben wird, nutze zuerst fa_duration_minutes & Timestamps!
+  if (t && typeof t === 'object') {
+      const f = t;
+      if (f.fa_duration_minutes && f.fa_duration_minutes > 0) {
+          return Math.round(f.fa_duration_minutes);
+      }
+      if (!f.time && f.arr_time_ts && f.dep_time_ts && f.arr_time_ts > f.dep_time_ts) {
+          const diff = Math.floor((f.arr_time_ts - f.dep_time_ts) / 60);
+          if (diff > 0 && diff < 1500) return diff;
+      }
+      distance = f.distance || distance;
+      t = f.time;
+  }
 
   if (t) {
       if (typeof t === 'number') {
@@ -130,6 +153,28 @@ function parseFlightTimeToMinutes(timeString, distance = 0) {
 
   return Math.round(flightMinutes);
 }
+
+window.formatFlightDuration = function(flight) {
+  if (!flight) return "-";
+  const hUnit = typeof getTranslation === 'function' ? getTranslation("units.hoursShort") || "Std." : "Std.";
+  const mUnit = typeof getTranslation === 'function' ? getTranslation("units.minutesShort") || "Min." : "Min.";
+
+  if (flight.fa_duration_minutes && flight.fa_duration_minutes > 0) {
+      const hours = Math.floor(flight.fa_duration_minutes / 60);
+      const mins = flight.fa_duration_minutes % 60;
+      return `${hours} ${hUnit} ${mins} ${mUnit}`;
+  }
+  if (flight.time) {
+      return flight.time.replace("Std.", hUnit).replace("Min.", mUnit);
+  }
+  if (flight.arr_time_ts && flight.dep_time_ts && flight.arr_time_ts > flight.dep_time_ts) {
+      const diffMinutes = Math.floor((flight.arr_time_ts - flight.dep_time_ts) / 60);
+      const hours = Math.floor(diffMinutes / 60);
+      const mins = diffMinutes % 60;
+      return `${hours} ${hUnit} ${mins} ${mUnit}`;
+  }
+  return "-";
+};
 
 function extractIata(text) {
   const match = text.match(/\(([^)]+)\)/);

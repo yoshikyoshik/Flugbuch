@@ -1030,6 +1030,13 @@ window.logFlight = async function () {
       if (window.tempSelectedFlightData.arr_time_ts) {
           newFlightForSupabase.arr_time_ts = window.tempSelectedFlightData.arr_time_ts;
       }
+      if (window.tempSelectedFlightData.fa_duration_minutes) {
+          newFlightForSupabase.fa_duration_minutes = window.tempSelectedFlightData.fa_duration_minutes;
+      }
+      // 🚀 WICHTIGER FIX: Sobald echte FA-Dauer oder Timestamps da sind, Schätz-Text löschen!
+      if (window.tempSelectedFlightData.fa_duration_minutes || (window.tempSelectedFlightData.dep_time_ts && window.tempSelectedFlightData.arr_time_ts)) {
+          newFlightForSupabase.time = null;
+      }
       
       // 🚀 NEU: Historische Zeiten & Gates mitspeichern
       if (window.tempSelectedFlightData.dep_estimated_ts) {
@@ -1194,6 +1201,7 @@ window.logFlight = async function () {
                             }
                             if (data.dep_time_ts) updatePayload.dep_time_ts = data.dep_time_ts;
                             if (data.arr_time_ts) updatePayload.arr_time_ts = data.arr_time_ts;
+                            if (data.fa_duration_minutes) { updatePayload.fa_duration_minutes = data.fa_duration_minutes; updatePayload.time = null; }
                             if (data.dep_time_ts && data.arr_time_ts) updatePayload.time = null;
 
                             if (data.dep_terminal) updatePayload.dep_terminal = data.dep_terminal;
@@ -1254,14 +1262,14 @@ window.logFlight = async function () {
  */
 async function updateFlight() {
   // --- NEU: DEMO CHECK ---
-    if (isDemoMode) {"demo.noChangesSaved"
-        showMessage(
-          getTranslation("demo.demoModus") || "Demo-Modus",
-          getTranslation() || "Im Demo-Modus können keine Änderungen gespeichert werden.",
-          "info"
-        );
-        return;
-    }
+    if (isDemoMode) {
+    showMessage(
+      getTranslation("demo.demoModus") || "Demo-Modus",
+      getTranslation("demo.noChangesSaved") || "Im Demo-Modus können keine Änderungen gespeichert werden.",
+      "info"
+    );
+    return;
+}
     // -----------------------
 
   // 1. Auth-Check
@@ -1486,7 +1494,11 @@ async function updateFlight() {
     departure: departureAirport.code,
     arrival: arrivalAirport.code,
     distance: Math.round(distance),
-    time: estimateFlightTime(distance),
+    time: (
+    departureAirport.code === currentlyEditingFlightData.departure &&
+    arrivalAirport.code === currentlyEditingFlightData.arrival &&
+    (currentlyEditingFlightData.fa_duration_minutes || (currentlyEditingFlightData.dep_time_ts && currentlyEditingFlightData.arr_time_ts))
+    ) ? null : estimateFlightTime(distance),
     class: document.getElementById("flightClass").value,
     co2_kg: calculatedCO2,
     flightNumber: rawFlightNum,
@@ -1533,6 +1545,10 @@ async function updateFlight() {
       }
 	  if (window.tempSelectedFlightData.dep_time_ts && window.tempSelectedFlightData.arr_time_ts) {
           updatedFlightForSupabase.time = null; // Alten Text löschen, da wir jetzt echte Timestamps haben!
+      }
+      if (window.tempSelectedFlightData.fa_duration_minutes) {
+          updatedFlightForSupabase.fa_duration_minutes = window.tempSelectedFlightData.fa_duration_minutes;
+          updatedFlightForSupabase.time = null;
       }
       
       // 🚀 NEU: Historische Zeiten & Gates mitspeichern
@@ -1604,6 +1620,10 @@ async function updateFlight() {
                   if (faData[0].dep_time_ts && faData[0].arr_time_ts) {
                       updatedFlightForSupabase.time = null;
 				  }
+                  if (faData[0].fa_duration_minutes) {
+                      updatedFlightForSupabase.fa_duration_minutes = faData[0].fa_duration_minutes;
+                      updatedFlightForSupabase.time = null;
+                  }
 				  if (faData[0].actual_out) updatedFlightForSupabase.dep_actual_ts = Math.floor(new Date(faData[0].actual_out).getTime() / 1000);
                   if (faData[0].actual_in || faData[0].actual_on) updatedFlightForSupabase.arr_actual_ts = Math.floor(new Date(faData[0].actual_in || faData[0].actual_on).getTime() / 1000);
               }
@@ -1920,33 +1940,6 @@ window.editFlight = async function (id) {
       }
   }
 
-  if (flightToEdit.photo_url && flightToEdit.photo_url.length > 0) {
-    // Erstelle eine "Foto-Karte" für jedes existierende Foto
-    flightToEdit.photo_url.forEach((url) => {
-      const imgCard = document.createElement("div");
-      imgCard.className = "relative inline-block h-16 w-16"; // Feste Größe für die Vorschau
-
-      // Wir speichern die URL in einem data-Attribut,
-      // damit 'updateFlight' weiß, welche Fotos überlebt haben.
-      imgCard.dataset.url = url;
-
-      imgCard.innerHTML = `
-              <img src="${url}" class="h-16 w-16 rounded-md object-cover shadow-sm">
-              
-              <button 
-                type="button" 
-                onclick="this.parentElement.remove()" 
-                class="absolute top-0 right-0 -mt-2 -mr-2 bg-red-600 text-white rounded-full w-5 h-5 
-                       flex items-center justify-center text-sm font-bold 
-                       hover:bg-red-700 transition-transform hover:scale-110"
-                title="Foto entfernen"
-              >
-                &times;
-              </button>
-            `;
-      existingPreviewContainer.appendChild(imgCard);
-    });
-  }
   // Der "photo-preview-text" für NEUE Dateien wird von resetForm/change gehandhabt
   // --- ENDE NEUE LOGIK ---
 
@@ -2214,7 +2207,7 @@ window.exportData = async function (format) {
       "distance", "time", "class", "flightNumber", 
       "airline", "airline_logo", "aircraftType", "registration",
       "price", "currency", "notes", "flight_id", "photo_url",
-      "trip_name",
+      "trip_name", "fa_duration_minutes", "dep_actual_ts", "arr_actual_ts",
       // 🌱 CO2 & Zertifikate
       "co2_kg", "co2_compensated", "co2_certificate_url",
       // 📸 Planespotters
@@ -2477,7 +2470,10 @@ async function handleImport(event) {
             estimatedMinutes = typeof parseFlightTimeToMinutes === 'function' ? parseFlightTimeToMinutes(estimatedTimeStr, distance) : 0;
         }
 
-        if (time === "") {
+        const hasRealTimes = f.fa_duration_minutes || (f.dep_time_ts && f.arr_time_ts);
+        if (hasRealTimes) {
+            time = null;
+        } else if (time === "") {
             time = estimatedTimeStr;
         } else if (estimatedMinutes > 0 && typeof parseFlightTimeToMinutes === 'function') {
             let importedMinutes = parseFlightTimeToMinutes(time);
@@ -2547,6 +2543,9 @@ async function handleImport(event) {
             arr_time_ts: f.arr_time_ts ? parseInt(f.arr_time_ts) : null,
             dep_estimated_ts: f.dep_estimated_ts ? parseInt(f.dep_estimated_ts) : null,
             arr_estimated_ts: f.arr_estimated_ts ? parseInt(f.arr_estimated_ts) : null,
+            fa_duration_minutes: f.fa_duration_minutes ? parseInt(f.fa_duration_minutes) : null,
+            dep_actual_ts: f.dep_actual_ts ? parseInt(f.dep_actual_ts) : null,
+            arr_actual_ts: f.arr_actual_ts ? parseInt(f.arr_actual_ts) : null,
 
             // 📍 GPS Track & Wetter
             gps_track: parseJsonField(f.gps_track),
@@ -4478,16 +4477,31 @@ window.viewFlightDetails = async function(id, isSwitching = false, customScope =
     document.getElementById('fd-aircraft').textContent = flight.aircraftType || "Unbekannt";
     document.getElementById('fd-reg').textContent = flight.registration || "-";
     document.getElementById('fd-distance').textContent = flight.distance ? `${flight.distance.toLocaleString()} km` : "-";
-    let displayTime = flight.time;
-if (!displayTime && flight.arr_time_ts && flight.dep_time_ts) {
-    const diffMinutes = Math.floor((flight.arr_time_ts - flight.dep_time_ts) / 60);
-    const hours = Math.floor(diffMinutes / 60);
-    const mins = diffMinutes % 60;
     const hUnit = typeof getTranslation === 'function' ? getTranslation("units.hoursShort") || "Std." : "Std.";
     const mUnit = typeof getTranslation === 'function' ? getTranslation("units.minutesShort") || "Min." : "Min.";
-    displayTime = `${hours} ${hUnit} ${mins} ${mUnit}`;
-}
-document.getElementById('fd-duration').textContent = displayTime || "-";
+    let displayTime = "";
+
+    // PRIO 1: Echte FlightAware-Dauer in Minuten (100% zeitzonensicher!)
+    if (flight.fa_duration_minutes && flight.fa_duration_minutes > 0) {
+        const hours = Math.floor(flight.fa_duration_minutes / 60);
+        const mins = flight.fa_duration_minutes % 60;
+        displayTime = `${hours} ${hUnit} ${mins} ${mUnit}`;
+    } 
+    // PRIO 2: Gespeicherter Text (z.B. aus alten CSV-Flügen oder manueller Schätzung)
+    else if (flight.time) {
+        displayTime = flight.time
+            .replace("Std.", hUnit)
+            .replace("Min.", mUnit);
+    } 
+    // PRIO 3: Fallback auf Timestamp-Differenz
+    else if (flight.arr_time_ts && flight.dep_time_ts && flight.arr_time_ts > flight.dep_time_ts) {
+        const diffMinutes = Math.floor((flight.arr_time_ts - flight.dep_time_ts) / 60);
+        const hours = Math.floor(diffMinutes / 60);
+        const mins = diffMinutes % 60;
+        displayTime = `${hours} ${hUnit} ${mins} ${mUnit}`;
+    }
+
+    document.getElementById('fd-duration').textContent = displayTime || "-";
     document.getElementById('fd-co2').textContent = flight.co2_kg ? `${flight.co2_kg.toLocaleString()} kg` : "-";
 
     // =========================================================
@@ -5291,7 +5305,7 @@ window.viewAchievementDetails = async function(category, key, isSwitching = fals
         // Werte berechnen (Gleiche Logik wie in ui.js)
         const totalFlights = allFlights.length;
         const totalDistance = allFlights.reduce((sum, f) => sum + (f.distance || 0), 0);
-        const totalMinutes = allFlights.reduce((sum, f) => sum + (typeof parseFlightTimeToMinutes === 'function' ? parseFlightTimeToMinutes(f.time) : 0), 0);
+        const totalMinutes = allFlights.reduce((sum, f) => sum + (typeof parseFlightTimeToMinutes === 'function' ? parseFlightTimeToMinutes(f) : 0), 0);
         const totalHours = totalMinutes / 60;
         const uniqueAirports = new Set(allFlights.flatMap(f => [f.departure, f.arrival]));
         const longestFlightDistance = allFlights.length > 0 ? Math.max(...allFlights.map(f => f.distance || 0)) : 0;
@@ -5739,7 +5753,7 @@ window.startWrapped = async function(year) {
     flightsToProcess.forEach(f => {
         totalDistance += (f.distance || 0);
         if (typeof parseFlightTimeToMinutes === 'function') {
-            totalMinutes += parseFlightTimeToMinutes(f.time, f.distance);
+            totalMinutes += parseFlightTimeToMinutes(f);
         }
         if (f.airline) airlines[f.airline] = (airlines[f.airline] || 0) + 1;
         if (f.aircraftType) aircrafts[f.aircraftType] = (aircrafts[f.aircraftType] || 0) + 1;
@@ -6136,7 +6150,7 @@ window.renderCurrentLiveFlight = function() {
     }
 
     // Flugdauer formatieren
-    let durationStr = flight.time || "-";
+    let durationStr = window.formatFlightDuration(flight);
     durationStr = durationStr.replace(/Std\.?/g, 'h').replace(/Min\.?/g, 'm').replace(/\s+/g, ' ');
     document.getElementById('live-flight-duration').textContent = durationStr;
 
@@ -6405,6 +6419,8 @@ window.refreshLiveFlightData = async function(force = true) {
                     if (data.arr_time_ts) syncPayload.arr_time_ts = data.arr_time_ts;
                     if (data.dep_estimated_ts) syncPayload.dep_estimated_ts = data.dep_estimated_ts;
                     if (data.arr_estimated_ts) syncPayload.arr_estimated_ts = data.arr_estimated_ts;
+
+                    if (data.fa_duration_minutes) syncPayload.fa_duration_minutes = data.fa_duration_minutes;
                     
                     // 🚀 NEU: Echte Zeiten (Actual) sofort speichern, sobald sie vorliegen!
                     if (data.actual_out) syncPayload.dep_actual_ts = Math.floor(new Date(data.actual_out).getTime() / 1000);
@@ -7331,6 +7347,7 @@ window.selectFoundFlight = async function(flightNum, encodedData, airlineNameStr
             arr_gate: f.arr_gate || null,
             status: finalStatus,
             fa_flight_id: f.fa_flight_id || f.ident || null,
+            fa_duration_minutes: f.fa_duration_minutes || null,
             gps_track: null
         };
 
@@ -7541,6 +7558,11 @@ window.silentPostFlightSync = async function(allFlights) {
                     // Wir aktualisieren die tatsächlichen Flugzeiten, falls wir sie noch nicht haben
                     if (data.actual_out) updates.dep_actual_ts = Math.floor(new Date(data.actual_out).getTime() / 1000);
                     if (data.actual_in || data.actual_on) updates.arr_actual_ts = Math.floor(new Date(data.actual_in || data.actual_on).getTime() / 1000);
+
+                    if (data.fa_duration_minutes) {
+                        updates.fa_duration_minutes = data.fa_duration_minutes;
+                        updates.time = null;
+                    }
                     
                     // 🚀 NEU: Den fertigen GPS-Track für immer ins Archiv laden!
                     if (data.fa_flight_id && !flight.gps_track) {
