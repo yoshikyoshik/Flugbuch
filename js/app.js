@@ -7379,8 +7379,8 @@ window.selectFoundFlight = async function(flightNum, encodedData, airlineNameStr
 
         if (typeof showMessage === 'function') {
             showMessage(
-                typeof getTranslation === 'function' ? getTranslation("toast.successTitle") || "Erfolg" : "Erfolg", 
-                "Flugdaten wurden übernommen!", 
+                getTranslation("toast.successTitle") || "Erfolg",
+                getTranslation("toast.flightSuccessMsg") || "Flugdaten wurden übernommen!",
                 "success"
             );
         }
@@ -7389,9 +7389,9 @@ window.selectFoundFlight = async function(flightNum, encodedData, airlineNameStr
         console.error("Fehler beim Übernehmen der Flugdaten:", e);
         if (typeof showMessage === 'function') {
             showMessage(
-                typeof getTranslation === 'function' ? getTranslation("toast.errorTitle") || "Fehler" : "Fehler", 
-                "Flugdaten konnten nicht übernommen werden.", 
-                "error"
+                getTranslation("toast.errorTitle") || "Fehler",
+                getTranslation("toast.flightErrorMsg") || "Flugdaten konnten nicht übernommen werden!",
+                "success"
             );
         }
     } finally {

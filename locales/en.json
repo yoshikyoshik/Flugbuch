@@ -889,6 +889,8 @@
     "saveOffline": "Saved Offline",
     "sessionExpired": "Session expired. Please log in again.",
     "successTitle": "Success",
+    "flightSuccessMsg": "Flight data applied successfully!",
+    "flightErrorMsg": "Could not apply flight data.",
     "syncSuccess": "Sync successful",
     "syncTitle": "Sync",
     "syncingDesc": "Transferring {count} offline saved flights...",

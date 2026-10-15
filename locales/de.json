@@ -890,6 +890,8 @@
     "saveOffline": "Offline gespeichert",
     "sessionExpired": "Sitzung abgelaufen. Bitte neu einloggen.",
     "successTitle": "Erfolg",
+    "flightSuccessMsg": "Flugdaten wurden übernommen!",
+    "flightErrorMsg": "Flugdaten konnten nicht übernommen werden!",
     "syncSuccess": "Sync erfolgreich",
     "syncTitle": "Sync",
     "syncingDesc": "Übertrage {count} offline gespeicherte Flüge...",

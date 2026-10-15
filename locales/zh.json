@@ -891,6 +891,8 @@
     "saveOffline": "离线保存",
     "sessionExpired": "会话已过期。请重新登录。",
     "successTitle": "成功",
+    "flightSuccessMsg": "航班数据已成功应用！",
+    "flightErrorMsg": "无法应用航班数据。",
     "syncSuccess": "同步成功",
     "syncTitle": "同步",
     "syncingDesc": "正在传输 {count} 个离线保存的航班...",

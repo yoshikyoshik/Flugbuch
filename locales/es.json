@@ -885,6 +885,8 @@
     "saveOffline": "Guardado Sin Conexión",
     "sessionExpired": "La sesión ha expirado. Por favor, inicia sesión de nuevo.",
     "successTitle": "Éxito",
+    "flightSuccessMsg": "¡Datos de vuelo aplicados con éxito!",
+    "flightErrorMsg": "No se pudieron aplicar los datos de vuelo.",
     "syncSuccess": "Sincronización exitosa",
     "syncTitle": "Sincronizar",
     "syncingDesc": "Transfiriendo {count} vuelos guardados sin conexión...",
