@@ -1164,51 +1164,81 @@ window.logFlight = async function () {
     });
 
     // ================================================================
-    // 🚀 NEU: "FIRE & FORGET" INSTANT-SYNC (Der Lückenschließer für den Agenten!)
+    // 🚀 INSTANT-SYNC & SOFORT-ALERT (Für Flüge Heute & Morgen)
     // ================================================================
     setTimeout(async () => {
         const tomorrowObj = new Date(Date.now() + 86400000);
         const tomorrowStr = tomorrowObj.toISOString().split('T')[0];
 
-        // Wir feuern den Sync NUR ab, wenn der Flug heute oder morgen ist!
+        // Greift NUR, wenn der Flug heute oder morgen stattfindet
         if (flightDateStr === todayStr || flightDateStr === tomorrowStr) {
-            console.log(`🚀 Starte lautlosen Instant-Sync für neuen Flug ${newFlightForSupabase.flightNumber}...`);
-            try {
-                // 🚀 BUGHUNT FIX: Auf neue FlightAware-Funktion umleiten!
-                const cleanFlightNum = newFlightForSupabase.flightNumber.replace(/\s+/g, '').toUpperCase();
-                const fetchUrl = `${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-fa-flight?flight_number=${cleanFlightNum}&date=${flightDateStr}&dep=${newFlightForSupabase.departure}&arr=${newFlightForSupabase.arrival}`;
-                const syncRes = await fetch(fetchUrl);
-                
-                if (syncRes.ok) {
-                    const flightsArray = await syncRes.json();
+            let activeFaFlightId = newFlightForSupabase.fa_flight_id;
+
+            // 1. Falls der Flug OHNE Lupe eingetragen wurde: Daten & FA-ID schnell nachladen
+            if (!activeFaFlightId && newFlightForSupabase.flightNumber) {
+                console.log(`🚀 Starte lautlosen Instant-Sync für neuen Flug ${newFlightForSupabase.flightNumber}...`);
+                try {
+                    const cleanFlightNum = newFlightForSupabase.flightNumber.replace(/\s+/g, '').toUpperCase();
+                    const fetchUrl = `${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fetch-fa-flight?flight_number=${cleanFlightNum}&date=${flightDateStr}&dep=${newFlightForSupabase.departure}&arr=${newFlightForSupabase.arrival}`;
+                    const syncRes = await fetch(fetchUrl);
                     
-                    if (flightsArray && flightsArray.length > 0) {
-                        const data = flightsArray[0];
-                        const updatePayload = {};
+                    if (syncRes.ok) {
+                        const flightsArray = await syncRes.json();
+                        if (flightsArray && flightsArray.length > 0) {
+                            const data = flightsArray[0];
+                            const updatePayload = {};
 
-                        // Die rettenden Timestamps für den Agenten eintragen!
-                        if (data.dep_time_ts) updatePayload.dep_time_ts = data.dep_time_ts;
-                        if (data.arr_time_ts) updatePayload.arr_time_ts = data.arr_time_ts;
+                            if (data.fa_flight_id) {
+                                activeFaFlightId = data.fa_flight_id;
+                                updatePayload.fa_flight_id = data.fa_flight_id;
+                            }
+                            if (data.dep_time_ts) updatePayload.dep_time_ts = data.dep_time_ts;
+                            if (data.arr_time_ts) updatePayload.arr_time_ts = data.arr_time_ts;
+                            if (data.dep_time_ts && data.arr_time_ts) updatePayload.time = null;
 
-                        // Gates und Terminals sofort ins UI schieben! (AvioSphere Panzer-Format)
-                        if (data.dep_terminal) updatePayload.dep_terminal = data.dep_terminal;
-                        if (data.dep_gate) updatePayload.dep_gate = data.dep_gate;
-                        if (data.arr_terminal) updatePayload.arr_terminal = data.arr_terminal;
-                        if (data.arr_gate) updatePayload.arr_gate = data.arr_gate;
-                        if (data.registration) updatePayload.registration = data.registration;
+                            if (data.dep_terminal) updatePayload.dep_terminal = data.dep_terminal;
+                            if (data.dep_gate) updatePayload.dep_gate = data.dep_gate;
+                            if (data.arr_terminal) updatePayload.arr_terminal = data.arr_terminal;
+                            if (data.arr_gate) updatePayload.arr_gate = data.arr_gate;
+                            if (data.registration) updatePayload.registration = data.registration;
 
-                        if (Object.keys(updatePayload).length > 0) {
-                            await supabaseClient.from('flights').update(updatePayload).eq('flight_id', newFlightId);
-                            console.log(`✅ Instant-Sync erfolgreich! Flug ${newFlightForSupabase.flightNumber} hat sofort Gates/Timestamps erhalten.`);
-                            
-                            // Heimlich die Widgets aktualisieren, damit das neue Gate direkt aufploppt!
-                            if (flightDateStr === todayStr && typeof initLiveWidget === 'function') initLiveWidget();
-                            if (typeof initUpcomingWidget === 'function') initUpcomingWidget();
+                            if (Object.keys(updatePayload).length > 0) {
+                                await supabaseClient.from('flights').update(updatePayload).eq('flight_id', newFlightId);
+                                console.log(`✅ Instant-Sync erfolgreich! Flug ${newFlightForSupabase.flightNumber} hat sofort Gates/Timestamps erhalten.`);
+                                
+                                if (flightDateStr === todayStr && typeof initLiveWidget === 'function') initLiveWidget();
+                                if (typeof initUpcomingWidget === 'function') initUpcomingWidget();
+                            }
                         }
                     }
+                } catch (err) {
+                    console.warn("Instant-Sync übersprungen. (Cronjob übernimmt später!)", err);
                 }
-            } catch (err) {
-                console.warn("Instant-Sync übersprungen. (Agent übernimmt das später!)", err);
+            }
+
+            // 2. 🔔 SOFORT-ALERT SETZEN & IN SUPABASE ALS ERLEDIGT MARKIEREN (alert_set = true)
+            const isPro = (typeof currentUserSubscription !== 'undefined' && currentUserSubscription === "pro");
+            if (isPro && activeFaFlightId) {
+                console.log(`✈️ PRO-User: Setze Sofort-Alert für kurzfristigen Flug (${activeFaFlightId})...`);
+                try {
+                    const alertUrl = `${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fa-create-alert`;
+                    const alertRes = await fetch(alertUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ fa_flight_id: activeFaFlightId })
+                    });
+
+                    if (alertRes.ok || alertRes.status === 409) {
+                        // 🛡️ DER DUPLIKAT-KILLER: Sofort alert_set = true setzen, damit der stündliche Cronjob diesen Flug ignoriert!
+                        await supabaseClient
+                            .from('flights')
+                            .update({ alert_set: true })
+                            .eq('flight_id', newFlightId);
+                        console.log("✅ Sofort-Alert aktiv & 'alert_set = true' in Supabase gesichert!");
+                    }
+                } catch (alertErr) {
+                    console.warn("Sofort-Alert klappte nicht, stündlicher Cronjob übernimmt als Backup:", alertErr);
+                }
             }
         }
     }, 1000); // 1 Sekunde Verzögerung, damit die UI flüssig bleibt!
@@ -7067,26 +7097,6 @@ window.updateUpcomingFlightDetails = async function(flight) {
                      flight.airline_logo = airlineUrl;
                  }
              }
-
-             // ================================================================
-             // 🔔 PUSH-ALERTS FÜR IMPORTIERTE ZUKUNFTSFLÜGE AKTIVIEREN
-             // ================================================================
-             if (match.fa_flight_id) {
-                 const todayStrAlert = new Date().toISOString().split('T')[0];
-                 const isPro = (typeof currentUserSubscription !== 'undefined' && currentUserSubscription === "pro");
-                 
-                 if (isPro && flight.date >= todayStrAlert) {
-                     console.log(`🔔 Upcoming Widget: Registriere Push-Alert für importierten Flug ${flight.flightNumber}`);
-                     try {
-                         fetch(`${typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : ''}/.netlify/functions/fa-create-alert`, {
-                             method: 'POST',
-                             headers: { 'Content-Type': 'application/json' },
-                             body: JSON.stringify({ fa_flight_id: match.fa_flight_id })
-                         });
-                     } catch(e) { console.warn("Konnte Push-Alert nicht setzen", e); }
-                 }
-             }
-             // ================================================================
 
         } // <--- HIER WAR DIE FEHLENDE KLAMMER!
     } catch(e) {
