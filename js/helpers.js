@@ -706,19 +706,39 @@ window.getIcaoCode = async function(airportCode) {
     if (!airportCode) return null;
     let icaoCode = airportCode.toString().trim().toUpperCase();
     
-    // Wenn es schon 4 Buchstaben hat, ist es bereits ein ICAO-Code!
     if (icaoCode.length === 4) return icaoCode;
 
-    // 🚀 VIP-Flughäfen (Inklusive SAW Fix!)
+    // 🚀 Großes Offline-Lexikon (Spart API-Calls & verhindert 403-Fehler)
     const commonAirports = {
         "FRA": "EDDF", "MUC": "EDDM", "BER": "EDDB", "DUS": "EDDL", "HAM": "EDDH",
         "STR": "EDDS", "CGN": "EDDK", "HAJ": "EDDV", "BRE": "EDDW", "DRS": "EDDC",
-        "LEJ": "EDDP", "NUE": "EDDN", "JFK": "KJFK", "LHR": "EGLL", "CDG": "LFPG",
-        "AMS": "EHAM", "MAD": "LEMD", "BCN": "LEBL", "FCO": "LIRF", "DXB": "OMDB",
-        "SIN": "WSSS", "LAX": "KLAX", "ORD": "KORD", "ATL": "KATL", "ZRH": "LSZH",
-        "VIE": "LOWW", "PMI": "LEPA", "LPA": "GCLP", "TFS": "GCTS", "FUE": "GCFV",
-        "ACE": "GCRR", "LIS": "LPPT", "GRU": "SBGR", "GIG": "SBGL", "EWR": "KEWR",
-        "SAW": "LTFJ" // 🚀 DER TÜRKEI-RETTUNGSANKER
+        "LEJ": "EDDP", "NUE": "EDDN", "FMO": "EDDG", "PAD": "EDLP", "LHR": "EGLL",
+        "LGW": "EGKK", "LTN": "EGGW", "AMS": "EHAM", "CDG": "LFPG", "ORY": "LFPO",
+        "MAD": "LEMD", "BCN": "LEBL", "PMI": "LEPA", "IBZ": "LEIB", "AGP": "LEMG",
+        "LPA": "GCLP", "TFS": "GCTS", "FUE": "GCFV", "ACE": "GCRR", "FCO": "LIRF",
+        "MXP": "LIMC", "LIN": "LIML", "VCE": "LIPZ", "BGY": "LIME", "ZRH": "LSZH",
+        "GVA": "LSGG", "BSL": "LFSB", "VIE": "LOWW", "SZG": "LOWS", "IST": "LTFM",
+        "SAW": "LTFJ", "AYT": "LTAI", "TIA": "LATI", "ATH": "LGAV", "HER": "LGIR",
+        "RHO": "LGRP", "KGS": "LGKO", "CFU": "LGKR", "LIS": "LPPT", "OPO": "LPPR",
+        "FAO": "LPFR", "FNC": "LPMA", "CPH": "EKCH", "OSL": "ENGM", "ARN": "ESSA",
+        "HEL": "EFHK", "WAW": "EPWA", "PRG": "LKPR", "BUD": "LHBP", "OTP": "LROP",
+        "TZL": "LQTZ", "DUB": "EIDW", "JFK": "KJFK", "LAX": "KLAX", "ORD": "KORD",
+        "ATL": "KATL", "SFO": "KSFO", "EWR": "KEWR", "MIA": "KMIA", "BOS": "KBOS",
+        "DFW": "KDFW", "DEN": "KDEN", "SEA": "KSEA", "LAS": "KLAS", "MCO": "KMCO",
+        "PHX": "KPHX", "IAH": "KIAH", "YYZ": "CYYZ", "YVR": "CYVR", "YUL": "CYUL",
+        "MEX": "MMMX", "CUN": "MMUN", "HND": "RJTT", "NRT": "RJAA", "KIX": "RJBB",
+        "ITM": "RJOO", "PEK": "ZBAA", "PVG": "ZSPD", "HKG": "VHHH", "MFM": "VMMC",
+        "TPE": "RCTP", "ICN": "RKSI", "SIN": "WSSS", "KUL": "WMKK", "BKK": "VTBS",
+        "HKT": "VTSP", "CGK": "WIII", "DPS": "WADD", "DEL": "VIDP", "BOM": "VABB",
+        "BLR": "VOBL", "SGN": "VVTS", "HAN": "VVNB", "MNL": "RPLL", "DXB": "OMDB",
+        "AUH": "OMAA", "DOH": "OTHH", "KWI": "OKBK", "MCT": "OOMS", "BAH": "OBBI",
+        "JED": "OEJN", "RUH": "OERK", "TLV": "LLBG", "AMM": "OJAI", "BEY": "OLBA",
+        "JNB": "FAOR", "CPT": "FACT", "CAI": "HECA", "HRG": "HEGN", "SSH": "HESH",
+        "CMN": "GMMN", "NBO": "HKJK", "ADD": "HAAB", "LOS": "DNMM", "GRU": "SBGR",
+        "GIG": "SBGL", "BSB": "SBBR", "EZE": "SAEZ", "AEP": "SABE", "SCL": "SCEL",
+        "BOG": "SKBO", "LIM": "SPJC", "PTY": "MPTO", "PUJ": "MDPC", "SDQ": "MDSD",
+        "HAV": "MUHA", "SYD": "YSSY", "MEL": "YMML", "BNE": "YBBN", "PER": "YPPH",
+        "AKL": "NZAA", "NAN": "NFFN", "MLE": "VRMM"
     };
 
     if (commonAirports[icaoCode]) return commonAirports[icaoCode];
@@ -730,45 +750,14 @@ window.getIcaoCode = async function(airportCode) {
     }
 
     try {
-        if (window.icaoPromiseCache[icaoCode]) {
-            return await window.icaoPromiseCache[icaoCode];
+        const { data: sbData } = await supabaseClient.from('icao_cache').select('icao_code').eq('iata_code', icaoCode).maybeSingle();
+        if (sbData && sbData.icao_code) {
+            window.icaoCache[icaoCode] = sbData.icao_code;
+            return sbData.icao_code;
         }
+    } catch (err) {}
 
-        const fetchPromise = (async () => {
-            // A) Supabase
-            try {
-                const { data: sbData } = await supabaseClient.from('icao_cache').select('icao_code').eq('iata_code', icaoCode).maybeSingle();
-                if (sbData && sbData.icao_code) {
-                    window.icaoCache[icaoCode] = sbData.icao_code;
-                    return sbData.icao_code;
-                }
-            } catch (err) {}
-
-            // B) API Fallback
-            const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : '';
-            const res = await fetch(`${baseUrl}/.netlify/functions/fetch-airport-details?code=${icaoCode}`);
-            if (!res.ok) return null;
-            const json = await res.json();
-            
-            if (json && json.data && json.data.length > 0 && json.data[0].icao_code) {
-                const foundIcao = json.data[0].icao_code;
-                window.icaoCache[icaoCode] = foundIcao;
-                try {
-                    await supabaseClient.from('icao_cache').insert([{ iata_code: icaoCode, icao_code: foundIcao }]);
-                } catch (dbErr) {}
-                return foundIcao;
-            }
-            return null;
-        })();
-
-        window.icaoPromiseCache[icaoCode] = fetchPromise;
-        const result = await fetchPromise;
-        if (!result) delete window.icaoPromiseCache[icaoCode];
-        return result;
-    } catch(e) {
-        delete window.icaoPromiseCache[icaoCode];
-        return null; 
-    }
+    return null;
 };
 
 // ==========================================

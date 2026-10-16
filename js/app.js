@@ -2001,29 +2001,26 @@ window.editFlight = async function (id) {
   const cancelBtn = document.getElementById("cancel-edit-button");
   if (cancelBtn) cancelBtn.classList.remove("hidden");
 
-  // =========================================================
-  // 🚀 BUGHUNT FIX: Den Cache füttern, bevor der Button gesperrt wird!
-  // =========================================================
+  // 🚀 BUGHUNT FIX: Nur als Fallback eintragen, wenn der Airport noch NICHT im Cache ist!
+  // Niemals echte Koordinaten im Cache mit alten Flug-Koordinaten überschreiben!
   window.airportData = window.airportData || {};
   
-  // Abflughafen in den Cache zwingen
-  if (flightToEdit.departure && flightToEdit.depLat) {
+  if (flightToEdit.departure && flightToEdit.depLat && !window.airportData[flightToEdit.departure]) {
       window.airportData[flightToEdit.departure] = {
           code: flightToEdit.departure,
           name: flightToEdit.depName || flightToEdit.departure,
           lat: flightToEdit.depLat,
           lon: flightToEdit.depLon,
-          country_code: "XX"
+          country_code: null
       };
   }
-  // Zielflughafen in den Cache zwingen
-  if (flightToEdit.arrival && flightToEdit.arrLat) {
+  if (flightToEdit.arrival && flightToEdit.arrLat && !window.airportData[flightToEdit.arrival]) {
       window.airportData[flightToEdit.arrival] = {
           code: flightToEdit.arrival,
           name: flightToEdit.arrName || flightToEdit.arrival,
           lat: flightToEdit.arrLat,
           lon: flightToEdit.arrLon,
-          country_code: "XX"
+          country_code: null
       };
   }
 
@@ -2439,36 +2436,38 @@ async function handleImport(event) {
         // ================================================================
 
         // ================================================================
-        // 🚀 BUGHUNT FIX 3: KOORDINATEN FÜR DIE KARTE ERGÄNZEN
+        // 🚀 BUGHUNT FIX 3: KOORDINATEN & ECHTE KM-DISTANZ SICHERSTELLEN
         // ================================================================
-        // Fehlen Daten? Wir berechnen sie neu und holen Koordinaten!
-        if (distance === 0 || !depLat || !arrLat) {
-            let depAirport = typeof findAirport === 'function' ? findAirport(depCode) : null;
-            let arrAirport = typeof findAirport === 'function' ? findAirport(arrCode) : null;
+        let depAirport = typeof findAirport === 'function' ? findAirport(depCode) : null;
+        let arrAirport = typeof findAirport === 'function' ? findAirport(arrCode) : null;
 
-            // API Fallback, falls der Flughafen nicht im Offline-Cache ist
-            if (!depAirport && typeof window.fetchExternalAirport === 'function') {
-                const res = await window.fetchExternalAirport(depCode);
-                if (res && res.length > 0) depAirport = res[0];
+        // API Fallback, falls der Flughafen noch nicht im lokalen Cache ist
+        if (!depAirport && typeof window.fetchExternalAirport === 'function') {
+            const res = await window.fetchExternalAirport(depCode);
+            if (res && res.length > 0) {
+                depAirport = res[0];
+                await cacheAndSaveAirport(depAirport); // Sofort cachen für 50x schnelleren Import!
             }
-            if (!arrAirport && typeof window.fetchExternalAirport === 'function') {
-                const res = await window.fetchExternalAirport(arrCode);
-                if (res && res.length > 0) arrAirport = res[0];
+        }
+        if (!arrAirport && typeof window.fetchExternalAirport === 'function') {
+            const res = await window.fetchExternalAirport(arrCode);
+            if (res && res.length > 0) {
+                arrAirport = res[0];
+                await cacheAndSaveAirport(arrAirport);
             }
+        }
 
-            if (depAirport && arrAirport) {
-                // Koordinaten & Namen auffüllen (Das macht die Karte sichtbar!)
-                if (!depLat) depLat = depAirport.lat;
-                if (!depLon) depLon = depAirport.lon;
-                if (!arrLat) arrLat = arrAirport.lat;
-                if (!arrLon) arrLon = arrAirport.lon;
-                if (!depName) depName = depAirport.name;
-                if (!arrName) arrName = arrAirport.name;
+        if (depAirport && arrAirport) {
+            depLat = depAirport.lat;
+            depLon = depAirport.lon;
+            arrLat = arrAirport.lat;
+            arrLon = arrAirport.lon;
+            depName = depAirport.name;
+            arrName = arrAirport.name;
 
-                // Distanz berechnen
-                if (distance === 0 && typeof calculateDistance === 'function') {
-                    distance = Math.round(calculateDistance(depLat, depLon, arrLat, arrLon));
-                }
+            // Distanz IMMER frisch in echten Kilometern berechnen (verhindert Meilen-Werte aus Fremd-CSVs!)
+            if (typeof calculateDistance === 'function') {
+                distance = Math.round(calculateDistance(depLat, depLon, arrLat, arrLon));
             }
         }
         // ================================================================
@@ -2763,13 +2762,16 @@ async function executeImport(flightsData, mode, importedTripsSource = [], allowe
         };
     });
 
-    // 4. SPEICHERN
+    // 4. SPEICHERN (In 500er-Batches für große OpenFlights-Importe > 1.000 Flüge)
     if (finalFlights.length > 0) {
-        const { error: insertError } = await supabaseClient
-          .from("flights")
-          .insert(finalFlights);
-
-        if (insertError) throw insertError;
+        const batchSize = 500;
+        for (let i = 0; i < finalFlights.length; i += batchSize) {
+            const chunk = finalFlights.slice(i, i + batchSize);
+            const { error: insertError } = await supabaseClient
+              .from("flights")
+              .insert(chunk);
+            if (insertError) throw insertError;
+        }
     }
 
     // 5. ERFOLG
@@ -7226,12 +7228,27 @@ async function executeSmartSearch(flightNum, date, dep, arr) {
         const response = await fetch(url);
         const flights = await response.json();
 
-        if(!Array.isArray(flights) || flights.length === 0) {
-            if (showModal) {
-                list.innerHTML = `<div class="text-center p-8 text-slate-500 font-bold">${getTranslation('flightSearch.noResults') || 'Keine direkten Flüge gefunden.'}</div>`;
-            } else {
-                showMessage("Kein Treffer", "Für diese Daten konnte FlightAware leider nichts finden.", "error");
+        if (!Array.isArray(flights) || flights.length === 0) {
+            // 🚀 FALLBACK FÜR HISTORISCHE FLÜGE (z.B. 2004):
+            // Auch wenn FlightAware keinen Flug hat, lösen wir trotzdem die Flughäfen auf,
+            // damit Distanz & Flugzeit berechnet werden und der User sofort speichern kann!
+            const depRaw = document.getElementById('departure').value.trim().toUpperCase();
+            const arrRaw = document.getElementById('arrival').value.trim().toUpperCase();
+            if (depRaw.length === 3 && arrRaw.length === 3 && typeof showAirportDetails === 'function') {
+                await showAirportDetails(depRaw, true);
+                await showAirportDetails(arrRaw, true);
+                if (typeof updateFlightDetails === 'function') updateFlightDetails();
             }
+
+            if (showModal) {
+            list.innerHTML = `<div class="text-center p-8 text-slate-500 font-bold">${getTranslation('flightSearch.noResults') || 'Keine Live-/Archivflüge gefunden. Du kannst den Flug aber direkt manuell speichern!'}</div>`;
+        } else {
+            showMessage(
+                getTranslation("toast.infoTitle") || "Hinweis",
+                getTranslation("flightSearch.noArchiveFallback") || "Keine Archivdaten bei FlightAware gefunden – Routendaten wurden berechnet, du kannst direkt speichern!",
+                "info"
+            );
+        }
             return;
         }
 
@@ -8426,4 +8443,63 @@ window.customConfirm = function(title, message, confirmBtnText = "OK") {
         document.getElementById("confirm-ok-btn").onclick = () => cleanup(true);
         document.getElementById("confirm-cancel-btn").onclick = () => cleanup(false);
     });
+};
+
+// ==========================================
+// 🗑️ ALLE FLÜGE LÖSCHEN & ACCOUNT LÖSCHEN
+// ==========================================
+window.deleteAllMyFlights = async function () {
+  if (typeof isDemoMode !== "undefined" && isDemoMode) return;
+
+  const confirmed = await customConfirm(
+    getTranslation("toast.warningTitle") || "Achtung",
+    getTranslation("profile.confirmDeleteAllFlights") ||
+      "Möchtest du wirklich ALLE deine gespeicherten Flüge und Reisen unwiderruflich löschen?",
+    getTranslation("flights.delete") || "Alles löschen"
+  );
+  if (!confirmed) return;
+
+  try {
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    if (!user) return;
+
+    await supabaseClient.from("flights").delete().eq("user_id", user.id);
+    await supabaseClient.from("trips").delete().eq("user_id", user.id);
+
+    currentlyFilteredFlights = null;
+    window.flights = [];
+    await renderFlights([]);
+    showMessage(
+      getTranslation("toast.successTitle") || "Erfolg",
+      getTranslation("profile.allFlightsDeleted") || "Alle Flüge wurden gelöscht.",
+      "success"
+    );
+  } catch (err) {
+    console.error("Fehler beim Löschen aller Flüge:", err);
+    showMessage(getTranslation("toast.errorTitle") || "Fehler", err.message, "error");
+  }
+};
+
+window.deleteMyAccount = async function () {
+  if (typeof isDemoMode !== "undefined" && isDemoMode) return;
+
+  const confirmed = await customConfirm(
+    getTranslation("toast.warningTitle") || "Account löschen",
+    getTranslation("profile.confirmDeleteAccount") ||
+      "Möchtest du deinen AvioSphere-Account inklusive aller Flüge wirklich endgültig und unwiderruflich löschen?",
+    getTranslation("flights.delete") || "Account löschen"
+  );
+  if (!confirmed) return;
+
+  try {
+    const { error } = await supabaseClient.rpc("delete_my_account");
+    if (error) throw error;
+
+    await supabaseClient.auth.signOut();
+    localStorage.clear();
+    window.location.reload();
+  } catch (err) {
+    console.error("Fehler beim Account-Löschen:", err);
+    showMessage(getTranslation("toast.errorTitle") || "Fehler", err.message, "error");
+  }
 };

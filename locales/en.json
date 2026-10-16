@@ -962,7 +962,12 @@
     "language": "Language",
     "changePassword": "Change Password",
     "logout": "Logout",
-    "appTour": "App Tour & Features"
+    "appTour": "App Tour & Features",
+    "deleteAllFlights": "Delete all flights (Reset)",
+    "deleteAccount": "Permanently delete account",
+    "confirmDeleteAllFlights": "Are you sure you want to permanently delete ALL your saved flights and trips?",
+    "allFlightsDeleted": "All flights have been deleted.",
+    "confirmDeleteAccount": "Are you sure you want to permanently and irrevocably delete your AvioSphere account including all flights?"
   },
 
   "leaderboard": {
@@ -1076,7 +1081,6 @@
   "modalTitle": "Today's Flights",
   "modalTitlePast": "flights",
   "loading": "Searching flights...",
-  "noResults": "No direct flights found for today.",
   "error": "Error during search.",
   "departure": "Departure",
   "unknown": "Unknown",
@@ -1093,7 +1097,9 @@
   "dateRequired": "Flight Date",
   "orByFlightNumber": "or directly by flight number",
   "btnSmartSearch": "Search flight online & auto-fill",
-  "smartSearchHint": "💡 Enter Date + Route (flight list) or Date + Flight Number (direct match, PRO)."
+  "smartSearchHint": "💡 Enter Date + Route (flight list) or Date + Flight Number (direct match, PRO).",
+  "noResults": "No live/archive flights found. However, you can save the flight manually right away!",
+  "noArchiveFallback": "No archive data found on FlightAware – route data has been calculated, you can save directly!"
   },
 
 "upcoming": {

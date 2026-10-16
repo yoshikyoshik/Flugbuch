@@ -958,7 +958,12 @@
     "language": "Idioma",
     "changePassword": "Cambiar contraseña",
     "logout": "Cerrar sesión",
-    "appTour": "Tour de la App y Funciones"
+    "appTour": "Tour de la App y Funciones",
+    "deleteAllFlights": "Eliminar todos los vuelos (Restablecer)",
+    "deleteAccount": "Eliminar cuenta definitivamente",
+    "confirmDeleteAllFlights": "¿Estás seguro de que quieres eliminar de forma irreversible TODOS tus vuelos y viajes guardados?",
+    "allFlightsDeleted": "Todos los vuelos han sido eliminados.",
+    "confirmDeleteAccount": "¿Estás seguro de que quieres eliminar tu cuenta de AvioSphere, incluidos todos tus vuelos, de forma definitiva e irreversible?"
   },
 
   "leaderboard": {
@@ -1072,7 +1077,6 @@
   "modalTitle": "Vuelos de hoy",
   "modalTitlePast": "Vuelos",
   "loading": "Buscando vuelos...",
-  "noResults": "No se encontraron vuelos directos para hoy.",
   "error": "Error en la búsqueda.",
   "departure": "Salida",
   "unknown": "Desconocido",
@@ -1089,7 +1093,9 @@
   "dateRequired": "Fecha del vuelo",
   "orByFlightNumber": "o directamente por número de vuelo",
   "btnSmartSearch": "Buscar vuelo en línea y autocompletar",
-  "smartSearchHint": "💡 Ingresa Fecha + Ruta (lista de vuelos) o Fecha + Número de vuelo (búsqueda directa, PRO)."
+  "smartSearchHint": "💡 Ingresa Fecha + Ruta (lista de vuelos) o Fecha + Número de vuelo (búsqueda directa, PRO).",
+  "noResults": "No se encontraron vuelos en vivo/archivo. ¡Pero puedes guardar el vuelo manualmente directamente!",
+  "noArchiveFallback": "No se encontraron datos de archivo en FlightAware – se han calculado los datos de la ruta, ¡puedes guardar directamente!"
   },
 
 "upcoming": {

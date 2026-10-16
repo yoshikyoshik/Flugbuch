@@ -1259,8 +1259,8 @@ function selectAutocompleteItem(input, list, selectedAirport) {
 }
 
 var updateFlightDetails = function () {
-  var departureInput = document.getElementById("departure").value;
-  var arrivalInput = document.getElementById("arrival").value;
+  var departureInput = document.getElementById("departure").value.trim();
+  var arrivalInput = document.getElementById("arrival").value.trim();
   var flightClass = document.getElementById("flightClass").value;
   
   var distanceDisplay = document.getElementById("distance-display");
@@ -1268,20 +1268,21 @@ var updateFlightDetails = function () {
   var co2Display = document.getElementById("co2-display");
   var logButton = document.getElementById("log-button");
 
-  // Sicherheitsprüfung: Elemente leeren, falls sie existieren
   if (distanceDisplay) distanceDisplay.textContent = "-";
   if (timeDisplay) timeDisplay.textContent = "-";
   if (co2Display) co2Display.textContent = "-";
   
-  if (logButton) logButton.disabled = true;
+  // 🚀 FIX: Sobald Abflug & Ziel (mind. 3 Zeichen) eingetragen sind, darf IMMER gespeichert werden!
+  // (Auch für Flüge aus 2004 ohne FlightAware-Treffer oder noch unbekannte Airports)
+  if (logButton) {
+    logButton.disabled = !(departureInput.length >= 3 && arrivalInput.length >= 3);
+  }
 
-  // Wenn Felder leer sind, frühzeitig abbrechen
   if (!departureInput || !arrivalInput) return;
 
   var departureAirport = findAirport(departureInput);
   var arrivalAirport = findAirport(arrivalInput);
 
-  // Nur wenn BEIDE Flughäfen gefunden wurden, neu berechnen
   if (departureAirport && arrivalAirport) {
     var distance = calculateDistance(
       departureAirport.lat,
@@ -1292,12 +1293,9 @@ var updateFlightDetails = function () {
     var estimatedTime = estimateFlightTime(distance);
     var estimatedCO2 = calculateCO2(distance, flightClass);
 
-    // Sicherheitsprüfung: Werte schreiben, falls Elemente existieren
     if (distanceDisplay) distanceDisplay.textContent = `${Math.round(distance).toLocaleString("de-DE")} km`;
     if (timeDisplay) timeDisplay.textContent = estimatedTime;
     if (co2Display) co2Display.textContent = `${estimatedCO2.toLocaleString("de-DE")} kg`;
-    
-    if (logButton) logButton.disabled = false;
   }
 };
 

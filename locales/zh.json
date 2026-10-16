@@ -540,12 +540,7 @@
     "successTitle": "导入成功",
     "wait": "请稍候。",
     "writing": "正在写入数据。",
-    "maxFlightsReached": "您保存的航班数量已达到上限。",
-    "zone1Title": "1. 基本信息与智能搜索",
-    "dateRequired": "航班日期",
-    "orByFlightNumber": "或直接输入航班号",
-    "btnSmartSearch": "在线搜索航班并自动填写",
-    "smartSearchHint": "💡 输入“日期 + 航线”（航班列表）或“日期 + 航班号”（精准匹配，PRO）。"
+    "maxFlightsReached": "您保存的航班数量已达到上限。"
   },
 
   "landing": {
@@ -964,7 +959,12 @@
     "language": "语言",
     "changePassword": "更改密码",
     "logout": "登出",
-    "appTour": "应用导览与功能"
+    "appTour": "应用导览与功能",
+    "deleteAllFlights": "删除所有航班 (重置)",
+    "deleteAccount": "永久删除账户",
+    "confirmDeleteAllFlights": "您确定要不可恢复地删除所有已保存的航班和行程吗？",
+    "allFlightsDeleted": "所有航班已删除。",
+    "confirmDeleteAccount": "您确定要永久且不可恢复地删除您的 AvioSphere 账户及所有航班数据吗？"
   },
 
   "leaderboard": {
@@ -1075,22 +1075,28 @@
   },
 
   "flightSearch": {
-  "modalTitle": "今日航班",
-  "modalTitlePast": "今日航班",
-  "loading": "正在搜索航班...",
-  "noResults": "今天没有找到直达航班。",
-  "error": "搜索时出错。",
-  "departure": "起飞",
-  "unknown": "未知",
-  "unknownAirline": "未知航空公司",
-  "successTitle": "找到了！",
-  "successMsg": "已输入。",
-  "btnTitle": "按航线搜索航班号",
-  "errorTitle": "错误",
-  "errorMissingRoute": "请先输入起飞和降落机场 (IATA)。",
-  "onlyTodayHint": "* 搜索仅显示今日的航班。",
-  "errorWrongDate": "航班搜索仅支持今天或未来的日期。",
-  "modalTitleFuture": "未来航班"
+    "modalTitle": "今日航班",
+    "modalTitlePast": "航班",
+    "loading": "正在搜索航班...",
+    "noResults": "未找到实时/存档航班。但您可以直接手动保存该航班！",
+    "noArchiveFallback": "在 FlightAware 中未找到存档数据 – 航线数据已计算完毕，您可以直接保存！",
+    "error": "搜索时出错。",
+    "departure": "起飞",
+    "unknown": "未知",
+    "unknownAirline": "未知航空公司",
+    "successTitle": "找到了！",
+    "successMsg": "已输入。",
+    "btnTitle": "按航线搜索航班号",
+    "errorTitle": "错误",
+    "errorMissingRoute": "请先输入起飞和降落机场 (IATA)。",
+    "onlyTodayHint": "* 搜索仅显示今日的航班。",
+    "errorWrongDate": "航班搜索仅支持今天或未来的日期。",
+    "modalTitleFuture": "未来航班",
+    "zone1Title": "1. 基本信息与智能搜索",
+    "dateRequired": "航班日期",
+    "orByFlightNumber": "或直接输入航班号",
+    "btnSmartSearch": "在线搜索航班并自动填写",
+    "smartSearchHint": "💡 输入“日期 + 航线”（航班列表）或“日期 + 航班号”（精准匹配，PRO）。"
   },
 
 "upcoming": {

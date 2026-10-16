@@ -963,7 +963,12 @@
     "language": "Sprache",
     "changePassword": "Passwort ändern",
     "logout": "Abmelden",
-    "appTour": "App-Tour & Features"
+    "appTour": "App-Tour & Features",
+    "deleteAllFlights": "Alle Flüge löschen (Reset)",
+    "deleteAccount": "Account endgültig löschen",
+    "confirmDeleteAllFlights": "Möchtest du wirklich ALLE deine gespeicherten Flüge und Reisen unwiderruflich löschen?",
+    "allFlightsDeleted": "Alle Flüge wurden gelöscht.",
+    "confirmDeleteAccount": "Möchtest du deinen AvioSphere-Account inklusive aller Flüge wirklich endgültig und unwiderruflich löschen?"
   },
 
   "leaderboard": {
@@ -1077,7 +1082,6 @@
   "modalTitle": "Heutige Flüge",
   "modalTitlePast": "Flüge",
   "loading": "Suche Flüge...",
-  "noResults": "Keine direkten Flüge für heute gefunden.",
   "error": "Fehler bei der Abfrage.",
   "departure": "Abflug",
   "unknown": "Unbekannt",
@@ -1094,7 +1098,9 @@
   "dateRequired": "Flugdatum",
   "orByFlightNumber": "oder direkt per Flugnummer",
   "btnSmartSearch": "Flug online suchen & automatisch ausfüllen",
-  "smartSearchHint": "💡 Gib Datum + Route (Flugauswahl) oder Datum + Flugnummer (Direkt-Treffer, PRO) ein."
+  "smartSearchHint": "💡 Gib Datum + Route (Flugauswahl) oder Datum + Flugnummer (Direkt-Treffer, PRO) ein.",
+  "noResults": "Keine Live-/Archivflüge gefunden. Du kannst den Flug aber direkt manuell speichern!",
+  "noArchiveFallback": "Keine Archivdaten bei FlightAware gefunden – Routendaten wurden berechnet, du kannst direkt speichern!"
   },
 
 "upcoming": {

@@ -6,22 +6,29 @@ const { createClient } = supabase;
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 async function getFlights() {
-  // 1. Änderung im Select: trips(name) dazu
-  // 2. Empfehlung: .order() dazu, damit die Liste sortiert ist
-  const { data, error } = await supabaseClient
-    .from("flights")
-    .select("*, trips(name)") 
-    .order("date", { ascending: false }); 
+  let allData = [];
+  let from = 0;
+  const pageSize = 1000;
 
-  if (error) {
-    console.error("Fehler beim Laden der Flüge:", error);
-    return [];
+  while (true) {
+    const { data, error } = await supabaseClient
+      .from("flights")
+      .select("*, trips(name)")
+      .order("date", { ascending: false })
+      .range(from, from + pageSize - 1);
+
+    if (error) {
+      console.error("Fehler beim Laden der Flüge:", error);
+      break;
+    }
+    if (!data || data.length === 0) break;
+
+    allData = allData.concat(data);
+    if (data.length < pageSize) break; // Letzte Seite erreicht
+    from += pageSize;
   }
 
-  // Dein Mapping ist wichtig für deine App-Logik.
-  // Durch den Spread-Operator (...flight) wird das neue 'trips'-Objekt 
-  // automatisch mit übernommen.
-  return data.map((flight) => ({ ...flight, id: flight.flight_id }));
+  return allData.map((flight) => ({ ...flight, id: flight.flight_id }));
 }
 
 async function uploadFlightPhotos(filesToUpload) {
@@ -169,39 +176,71 @@ async function claimExistingFlights() {
   }
 }
 
-// ==========================================
-// 🚀 NEU: KOSTENLOSE FLUGHAFEN-SUCHE (Bye, API-Ninjas!)
-// ==========================================
 window.fetchExternalAirport = async function (input) {
   const normalizedInput = input.trim();
   if (normalizedInput.length < 3) return [];
+  const upperInput = normalizedInput.toUpperCase();
   
   try {
     const response = await fetch(`https://api.skypicker.com/locations?term=${encodeURIComponent(normalizedInput)}&locale=de-DE&location_types=airport&limit=10`);
-    if (!response.ok) return [];
-    
-    const data = await response.json();
-    if (!data.locations) return [];
+    let mapped = [];
 
-    const mapped = data.locations.map((result) => {
-      return {
-        code: result.code, // IATA Code
-        name: result.name,
-        city: result.city ? result.city.name : "",
-        lat: result.location.lat,
-        lon: result.location.lon,
-        country_code: result.city && result.city.country ? result.city.country.id : null,
-      };
-    });
+    if (response.ok) {
+      const data = await response.json();
+      if (data.locations) {
+        mapped = data.locations.map((result) => ({
+          code: result.code,
+          name: result.name,
+          city: result.city ? result.city.name : "",
+          lat: result.location.lat,
+          lon: result.location.lon,
+          country_code: result.city && result.city.country ? result.city.country.id : null,
+        }));
+      }
+    }
 
-    // 🚀 BUGHUNT FIX: Exakten IATA-Code-Treffer immer auf Platz 1 setzen!
-    // Verhindert, dass bei "DUB" Dubai (DXB) vor Dublin (DUB) landet.
-    const upperInput = normalizedInput.toUpperCase();
-    mapped.sort((a, b) => {
-      if (a.code === upperInput && b.code !== upperInput) return -1;
-      if (b.code === upperInput && a.code !== upperInput) return 1;
-      return 0;
-    });
+    // 🚀 SCHUTZSCHILD: Wenn exakt 3 Buchstaben (IATA-Code wie "NLP") gesucht werden,
+    // sortiere exakten Code-Treffer nach vorn. Falls Kiwi KEINEN exakten Treffer hat,
+    // verhindere falsche Fuzzy-Treffer (wie "NAP" Neapel für "NLP" Nelspruit)!
+    if (upperInput.length === 3) {
+      const exactMatch = mapped.find((a) => a.code === upperInput);
+      if (exactMatch) {
+        mapped.sort((a, b) => (a.code === upperInput ? -1 : b.code === upperInput ? 1 : 0));
+        return mapped;
+      }
+
+      // 🏛️ BACKUP FÜR HISTORISCHE & KLEINE FLUGHÄFEN (z.B. NLP Nelspruit):
+      // Wenn Kiwi den 3-stelligen IATA-Code nicht kennt, prüfen wir das Open-Source-Archiv!
+      try {
+        if (!window.historicalAirportsCache) {
+          const histRes = await fetch("https://raw.githubusercontent.com/algolia/datasets/master/airports/airports.json");
+          if (histRes.ok) window.historicalAirportsCache = await histRes.json();
+        }
+        if (Array.isArray(window.historicalAirportsCache)) {
+          const histHit = window.historicalAirportsCache.find((a) => a.iata_code === upperInput);
+          if (histHit && histHit._geoloc) {
+            return [{
+              code: upperInput,
+              name: histHit.name || upperInput,
+              city: histHit.city || "",
+              lat: histHit._geoloc.lat,
+              lon: histHit._geoloc.lng,
+              country_code: histHit.country || null,
+            }];
+          }
+        }
+      } catch (histErr) {
+        console.warn("Backup-Airport-Check fehlgeschlagen:", histErr);
+      }
+
+      // Letzter Fallback für bekannte Spezialfälle wie NLP (Nelspruit)
+      if (upperInput === "NLP") {
+        return [{ code: "NLP", name: "Nelspruit Airport", city: "Nelspruit", lat: -25.5003, lon: 30.9136, country_code: "ZA" }];
+      }
+
+      // Nur behalten, wenn zumindest der Name die 3 Buchstaben enthält (z.B. "BER" in "Berlin")
+      return mapped.filter((a) => a.name && a.name.toUpperCase().includes(upperInput));
+    }
 
     return mapped;
   } catch (error) {
