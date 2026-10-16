@@ -387,28 +387,35 @@ input:focus, select:focus, textarea:focus {
     border-color: #6366f1 !important;
 }
 
-/* 2. Flug-Karten in der Liste */
+/* 2. Flug-Karten in der Liste (Große Ansicht) */
 #flight-log-list > div {
-    border-radius: 1.25rem !important;
-    border: 1px solid rgba(255, 255, 255, 0.8) !important; /* Heller Rand für Glas-Effekt */
-    box-shadow: 0 4px 20px -4px rgba(79, 70, 229, 0.08) !important; /* Zarter blauer Schatten */
-    transition: transform 0.3s ease, box-shadow 0.3s ease !important;
-    
-    /* HIER IST DEIN ZARTES INDIGO: */
+    border-radius: 1.5rem !important;
+    border: 1px solid rgba(255, 255, 255, 0.8) !important;
+    box-shadow: 0 4px 20px -4px rgba(79, 70, 229, 0.08) !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease !important;
     background-color: rgba(238, 242, 255, 0.85) !important; 
-    backdrop-filter: blur(10px) !important; /* Milchglas-Effekt */
-    padding: 1.25rem !important;
+    backdrop-filter: blur(10px) !important;
+    padding: 0.6rem !important; /* Schlankerer Rahmen statt 1.25rem */
 }
 
 #flight-log-list > div:hover {
-    transform: translateY(-3px) !important;
+    transform: translateY(-2px) !important;
     box-shadow: 0 12px 25px -5px rgba(79, 70, 229, 0.15) !important;
 }
 
 .dark #flight-log-list > div {
-    background-color: rgba(30, 27, 75, 0.6) !important; /* Edles, dunkles Indigo im Dark Mode */
+    background-color: rgba(30, 27, 75, 0.6) !important;
     border-color: rgba(67, 56, 202, 0.4) !important;
     box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* 🚀 KOMPAKTANSICHT: Sehr feiner, enger Indigo-Rahmen (nur 4px statt 20px) */
+#flight-log-list > div.mb-1\.5,
+.dark #flight-log-list > div.mb-1\.5 {
+    padding: 0.25rem 0.35rem !important;
+    border-radius: 0.9rem !important;
+    margin-top: 0.4rem !important;
+    margin-bottom: 0 !important;
 }
 
 /* 3. Statistik-, Trip- und Logbuch-Karten */

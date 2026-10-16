@@ -2054,31 +2054,47 @@ window.editFlight = async function (id) {
 };
 
 /**
+ * Steuert die Farbe der Filter-Buttons (Rot = Filter aktiv, Blau = Standard).
+ */
+window.updateFilterButtonsUI = function (isActive) {
+  const outerBtn = document.getElementById("timeline-filter-btn");
+  const innerBtn = document.getElementById("modal-filter-btn");
+
+  [outerBtn, innerBtn].forEach((btn) => {
+    if (!btn) return;
+    if (isActive) {
+      btn.classList.remove("bg-primary", "hover:bg-primary/90");
+      btn.classList.add("bg-red-500", "hover:bg-red-600", "shadow-[0_0_15px_rgba(239,68,68,0.4)]");
+    } else {
+      btn.classList.remove("bg-red-500", "hover:bg-red-600", "shadow-[0_0_15px_rgba(239,68,68,0.4)]");
+      btn.classList.add("bg-primary", "hover:bg-primary/90");
+    }
+  });
+};
+
+/**
  * Wendet Filter (Ort, Datum, Reise) an.
  */
 window.applyFilters = async function () {
   currentPage = 1;
-  
-  // Wir nutzen die globale Variable 'allFlightsUnfiltered' (falls vorhanden) 
-  // oder laden neu, falls nötig.
-  // Da deine App Struktur 'getFlights' nutzt, bleiben wir dabei:
   const allFlights = await getFlights();
 
-  const searchInput = document.getElementById("search-input").value.toLowerCase();
-  
-  // ✅ NEU: Trip Filter Wert holen
+  const searchInput = document.getElementById("search-input")?.value.toLowerCase() || "";
   const tripFilterEl = document.getElementById("filter-trip");
   const tripFilterId = tripFilterEl ? tripFilterEl.value : "";
 
-  // Alte Filter-Felder (falls du die Details-Leiste noch nutzt):
   const depFilter = document.getElementById("filter-departure")?.value.trim().toUpperCase() || "";
   const arrFilter = document.getElementById("filter-arrival")?.value.trim().toUpperCase() || "";
   const dateFrom = document.getElementById("filter-date-from")?.value || "";
   const dateTo = document.getElementById("filter-date-to")?.value || "";
 
+  // 🚀 Prüfen, ob mindestens ein Filter im Modal (oder in der Suche) gesetzt ist
+  const isFilterActive = Boolean(
+    tripFilterId !== "" || depFilter !== "" || arrFilter !== "" || dateFrom !== "" || dateTo !== ""
+  );
+  window.updateFilterButtonsUI(isFilterActive);
+
   let filtered = allFlights.filter((flight) => {
-    
-    // 1. Text-Suche (Orte, Airline, Datum... UND JETZT AUCH REISENAME)
     const matchesSearch =
       !searchInput ||
       (flight.departure && flight.departure.toLowerCase().includes(searchInput)) ||
@@ -2090,17 +2106,13 @@ window.applyFilters = async function () {
       (flight.aircraftType && flight.aircraftType.toLowerCase().includes(searchInput)) ||
       (flight.registration && flight.registration.toLowerCase().includes(searchInput)) ||
       (flight.notes && flight.notes.toLowerCase().includes(searchInput)) ||
-      // ✅ HIER: Auch nach Reisenamen suchen
       (flight.trips && flight.trips.name && flight.trips.name.toLowerCase().includes(searchInput));
 
-    // 2. ✅ NEU: Trip Dropdown Filter
     let matchesTripFilter = true;
     if (tripFilterId !== "") {
-        // Vergleich String vs Number sicherstellen
         matchesTripFilter = flight.trip_id == tripFilterId;
     }
 
-    // 3. Bestehende Detail-Filter (Abwärtskompatibilität)
     const matchesDep = !depFilter || flight.departure.toUpperCase().includes(depFilter);
     const matchesArr = !arrFilter || flight.arrival.toUpperCase().includes(arrFilter);
     const matchesDateFrom = !dateFrom || flight.date >= dateFrom;
@@ -2109,30 +2121,29 @@ window.applyFilters = async function () {
     return matchesSearch && matchesTripFilter && matchesDep && matchesArr && matchesDateFrom && matchesDateTo;
   });
 
-  // Globale Variable aktualisieren
-  currentlyFilteredFlights = filtered;
-  
-  // Rendern (Seite 1)
+  currentlyFilteredFlights = (isFilterActive || searchInput !== "") ? filtered : null;
   renderFlights(filtered, null, 1);
 };
 
 /**
- * Setzt alle Filterfelder zurück und zeigt wieder die vollständige Flugliste an.
+ * Setzt alle Filterfelder zurück und färbt den Filter-Button wieder blau.
  */
 window.resetFilters = function () {
-  currentPage = 1; // Zurück zu Seite 1
-  // Setze die Werte der Input-Felder zurück
-  document.getElementById("filter-departure").value = "";
-  document.getElementById("filter-arrival").value = "";
-  document.getElementById("filter-date-from").value = "";
-  document.getElementById("filter-date-to").value = "";
-  // Auch das Reise-Dropdown zurücksetzen
+  currentPage = 1;
+  if (document.getElementById("filter-departure")) document.getElementById("filter-departure").value = "";
+  if (document.getElementById("filter-arrival")) document.getElementById("filter-arrival").value = "";
+  if (document.getElementById("filter-date-from")) document.getElementById("filter-date-from").value = "";
+  if (document.getElementById("filter-date-to")) document.getElementById("filter-date-to").value = "";
+  if (document.getElementById("search-input")) document.getElementById("search-input").value = "";
+
   const tripFilter = document.getElementById("filter-trip");
   if (tripFilter) tripFilter.value = "";
 
-  // Rufe renderFlights ohne Argument auf, um alle Flüge anzuzeigen
-  currentlyFilteredFlights = null; // ✅ NEU: Gespeicherten Filter löschen
-  renderFlights(null, null, 1); // ✅ NEU: Aufruf anpassen
+  // 🚀 Buttons wieder auf Standard-Blau zurücksetzen
+  window.updateFilterButtonsUI(false);
+
+  currentlyFilteredFlights = null;
+  renderFlights(null, null, 1);
 };
 
 /**
@@ -7391,7 +7402,7 @@ window.selectFoundFlight = async function(flightNum, encodedData, airlineNameStr
             showMessage(
                 getTranslation("toast.errorTitle") || "Fehler",
                 getTranslation("toast.flightErrorMsg") || "Flugdaten konnten nicht übernommen werden!",
-                "success"
+                "error"
             );
         }
     } finally {

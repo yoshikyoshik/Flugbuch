@@ -511,6 +511,22 @@ window.showTab = function (tabId) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
+// Merkt sich die gewählte Ansicht (Standard: false = große Karten)
+window.isTimelineCompactView = localStorage.getItem('aviosphere_timeline_compact') === 'true';
+
+window.toggleTimelineCompactView = function () {
+  window.isTimelineCompactView = !window.isTimelineCompactView;
+  localStorage.setItem('aviosphere_timeline_compact', window.isTimelineCompactView);
+  
+  const icon = document.getElementById('timeline-compact-icon');
+  if (icon) {
+      icon.textContent = window.isTimelineCompactView ? 'view_agenda' : 'view_list';
+  }
+  if (typeof renderFlights === 'function') {
+      renderFlights(null, null, window.currentPage || 1);
+  }
+};
+
 // RENDERING
 window.renderFlights = async function (flightsToRender, flightIdToFocus, requestedPage) {
   if (typeof stopAnimation === 'function') stopAnimation();
@@ -521,11 +537,15 @@ window.renderFlights = async function (flightsToRender, flightIdToFocus, request
   const mapBtn = document.getElementById("toggle-map-view-btn");
   if (mapBtn) {
       if (window.isAllRoutesViewActive) {
-          mapBtn.innerHTML = `<span class="material-symbols-outlined text-3xl text-primary dark:text-indigo-400 group-hover:scale-110 transition-transform">location_on</span><span class="text-sm font-bold text-on-surface dark:text-white" data-i18n="singleView">${typeof getTranslation === 'function' ? getTranslation("singleView") : "Einzelansicht"}</span>`;
-          mapBtn.classList.add('bg-primary/10', 'dark:bg-indigo-900/40');
+          mapBtn.innerHTML = `<span class="material-symbols-outlined text-[18px]">location_on</span>`;
+          mapBtn.classList.add('bg-primary', 'text-white', 'border-primary');
+          mapBtn.classList.remove('bg-surface-container-high', 'text-on-surface/80', 'dark:text-slate-200');
+          mapBtn.title = typeof getTranslation === 'function' ? getTranslation("singleView") : "Einzelansicht";
       } else {
-          mapBtn.innerHTML = `<span class="material-symbols-outlined text-3xl text-primary dark:text-indigo-400 group-hover:scale-110 transition-transform">map</span><span class="text-sm font-bold text-on-surface dark:text-white" data-i18n="allRoutes">${typeof getTranslation === 'function' ? getTranslation("allRoutes") : "Alle Routen"}</span>`;
-          mapBtn.classList.remove('bg-primary/10', 'dark:bg-indigo-900/40');
+          mapBtn.innerHTML = `<span class="material-symbols-outlined text-[18px]">map</span>`;
+          mapBtn.classList.remove('bg-primary', 'text-white', 'border-primary');
+          mapBtn.classList.add('bg-surface-container-high', 'text-on-surface/80', 'dark:text-slate-200');
+          mapBtn.title = typeof getTranslation === 'function' ? getTranslation("allRoutes") : "Alle Routen";
       }
   }
 
@@ -616,8 +636,13 @@ window.renderFlights = async function (flightsToRender, flightIdToFocus, request
   if (paginatedFlights.length === 0 && currentPage === 1) {
     flightList.innerHTML = `<p id="no-flights-message" class="log-placeholder text-gray-500 italic text-center py-4">${typeof getTranslation === 'function' ? getTranslation("flights.noFlights") : "Keine Flüge"}</p>`;
   } else {
+    // Icon des Toggle-Buttons beim Rendern synchronisieren
+    const compactIcon = document.getElementById('timeline-compact-icon');
+    if (compactIcon) {
+        compactIcon.textContent = window.isTimelineCompactView ? 'view_agenda' : 'view_list';
+    }
+
     paginatedFlights.forEach((flight) => {
-      // 🚀 BUGHUNT FIX: Greift zuerst auf die in Supabase gespeicherten echten Namen zu!
       const depName = flight.depName || ((typeof window.airportData !== 'undefined' && window.airportData[flight.departure]) ? window.airportData[flight.departure].name : flight.departure);
       const arrName = flight.arrName || ((typeof window.airportData !== 'undefined' && window.airportData[flight.arrival]) ? window.airportData[flight.arrival].name : flight.arrival);
       const rawMilestoneColor = typeof getMilestoneColor === 'function' ? getMilestoneColor(flight.flightLogNumber) : "";
@@ -625,8 +650,7 @@ window.renderFlights = async function (flightsToRender, flightIdToFocus, request
 
       const flightElement = document.createElement("div");
       const fId = flight.id || flight.flight_id || flight.flightLogNumber;
-      flightElement.id = `flight-card-${fId}`; // 👈 WICHTIG: Die HTML-ID
-      flightElement.className = "w-full max-w-3xl mx-auto relative group cursor-pointer mb-6";
+      flightElement.id = `flight-card-${fId}`;
       flightElement.setAttribute("onclick", `viewFlightDetails('${fId}')`);
 
       const planeBg = flight.planespotters_url ? `style="background-image: url('${flight.planespotters_url}');"` : '';
@@ -653,32 +677,85 @@ window.renderFlights = async function (flightsToRender, flightIdToFocus, request
       const isMapActive = (flight.id || flight.flight_id) === activeMapFlightId;
       const activeBorderClass = isMapActive ? "border-[2px] border-primary dark:border-indigo-400 shadow-[0_0_20px_rgba(79,91,155,0.25)] dark:shadow-[0_0_20px_rgba(129,140,248,0.25)]" : "border border-outline-variant/20 dark:border-slate-700";
 
-      flightElement.innerHTML = `
-        <div class="bg-surface-container-lowest dark:bg-slate-800 rounded-[2rem] p-5 md:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none relative overflow-hidden ${activeBorderClass} transition-all duration-300 group-hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] group-hover:-translate-y-1">
-            <div class="absolute right-0 top-0 w-3/4 h-full ${planeOpacity} transition-opacity duration-500 bg-cover bg-center pointer-events-none" ${planeBg}></div>
-            <div class="absolute inset-0 bg-gradient-to-r from-surface-container-lowest via-surface-container-lowest/90 to-transparent dark:from-slate-800 dark:via-slate-800/90 z-0 pointer-events-none"></div>
-            <div class="relative z-10">
-                <div class="flex flex-wrap justify-between items-start mb-6 gap-3">
-                    <div class="flex flex-wrap items-center gap-2">
-                        <div class="bg-surface-container-low dark:bg-slate-700 px-3 py-1 rounded-full shadow-inner flex items-center gap-1.5"><span class="w-2 h-2 rounded-full ${dotColor}"></span><span class="font-display text-[10px] font-bold text-on-surface/70 dark:text-slate-300 uppercase tracking-wider">#${flight.flightLogNumber || "-"} • ${formattedDate}</span></div>
-                        ${tripBadge}
-                    </div>
-                    <div class="flex items-center gap-3 ml-auto">${logoHtml}<h3 class="font-display text-xl md:text-2xl font-bold tracking-tight text-on-surface dark:text-white truncate">${flight.flightNumber || '-'}</h3></div>
-                </div>
-                <div class="flex items-center justify-between mb-8">
-                    <div class="flex flex-col"><p class="font-display text-4xl md:text-5xl font-extrabold text-primary dark:text-indigo-400 tracking-tighter leading-none">${flight.departure || 'N/A'}</p><p class="text-[10px] md:text-xs font-medium text-on-surface/60 dark:text-slate-400 mt-1 max-w-[120px] md:max-w-[150px] line-clamp-2 leading-tight">${depName}</p></div>
-                    <div class="flex-1 px-2 md:px-8 relative flex items-center justify-center"><div class="h-[2px] w-full bg-gradient-to-r from-transparent via-outline-variant/50 dark:via-slate-500 to-transparent relative"><span class="material-symbols-outlined absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-outline-variant dark:text-slate-400 bg-surface-container-lowest dark:bg-slate-800 px-2 text-xl" style="font-variation-settings: 'FILL' 1;">flight</span></div></div>
-                    <div class="flex flex-col items-end"><p class="font-display text-4xl md:text-5xl font-extrabold text-primary dark:text-indigo-400 tracking-tighter leading-none">${flight.arrival || 'N/A'}</p><p class="text-[10px] md:text-xs font-medium text-on-surface/60 dark:text-slate-400 mt-1 max-w-[120px] md:max-w-[150px] line-clamp-2 text-right leading-tight">${arrName}</p></div>
-                </div>
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-5 border-t border-outline-variant/20 dark:border-slate-700">
-                    <div class="flex flex-col"><span class="text-[9px] font-bold uppercase tracking-widest text-on-surface/50 dark:text-slate-500 mb-1 flex items-center gap-1"><span class="material-symbols-outlined text-[12px]">schedule</span> ${typeof getTranslation === 'function' ? getTranslation('boardingPass.flightTime') : 'Flugzeit'}</span><span class="text-xs font-bold text-on-surface/90 dark:text-slate-200">${formattedTime}</span></div>
-                    <div class="flex flex-col"><span class="text-[9px] font-bold uppercase tracking-widest text-on-surface/50 dark:text-slate-500 mb-1 flex items-center gap-1"><span class="material-symbols-outlined text-[12px]">straighten</span> ${typeof getTranslation === 'function' ? getTranslation('boardingPass.distance') : 'Distanz'}</span><span class="text-xs font-bold text-on-surface/90 dark:text-slate-200">${flight.distance ? flight.distance.toLocaleString("de-DE") : '--'} ${typeof getTranslation === 'function' ? getTranslation("achievements.unitKm") : "km"}</span></div>
-                    ${flight.aircraftType ? `<div class="flex flex-col"><span class="text-[9px] font-bold uppercase tracking-widest text-on-surface/50 dark:text-slate-500 mb-1 flex items-center gap-1"><span class="material-symbols-outlined text-[12px]">airlines</span> ${typeof getTranslation === 'function' ? getTranslation('boardingPass.aircraft') : 'Flugzeug'}</span><span class="text-xs font-bold text-on-surface/90 dark:text-slate-200 truncate" title="${flight.aircraftType}">${flight.aircraftType}</span></div>` : ''}
-                    ${flight.seatNumber ? `<div class="flex flex-col"><span class="text-[9px] font-bold uppercase tracking-widest text-on-surface/50 dark:text-slate-500 mb-1 flex items-center gap-1"><span class="material-symbols-outlined text-[12px]">event_seat</span> ${typeof getTranslation === 'function' ? getTranslation('boardingPass.seat') : 'Sitzplatz'}</span><span class="text-xs font-bold text-on-surface/90 dark:text-slate-200">${flight.seatNumber}</span></div>` : ''}
-                </div>
-            </div>
-        </div>
-      `;
+      // 🚀 WEICHE: KOMPAKTE LISTENANSICHT VS. GROSSE KACHELANSICHT
+      if (window.isTimelineCompactView) {
+        flightElement.className = "w-full max-w-3xl mx-auto relative group cursor-pointer mb-1.5";
+        const compactLogo = flight.airline_logo ? `<img src="${flight.airline_logo}" class="w-3.5 h-3.5 object-contain shrink-0 opacity-90" alt="">` : '';
+        const unitKm = typeof getTranslation === 'function' ? getTranslation("achievements.unitKm") || "km" : "km";
+        const distStr = flight.distance ? `${flight.distance.toLocaleString("de-DE")} ${unitKm}` : '--';
+
+        // Bausteine für die dezente 2. Zeile sammeln (Distanz • Flugzeit • Flugzeugtyp • ggf. Reise)
+        const subItems = [distStr];
+        if (formattedTime && formattedTime !== "-") subItems.push(formattedTime);
+        if (flight.aircraftType) subItems.push(flight.aircraftType);
+        const subLineHtml = subItems.join(' <span class="opacity-40 mx-1">•</span> ');
+        const compactTrip = (flight.trips && flight.trips.name) 
+            ? `<span class="text-[9px] font-bold text-on-tertiary-container dark:text-purple-300 bg-tertiary-fixed/70 dark:bg-purple-900/30 px-1.5 py-0.5 rounded truncate max-w-[110px]">🏝️ ${flight.trips.name}</span>` 
+            : '';
+
+        flightElement.innerHTML = `
+          <div class="bg-surface-container-lowest dark:bg-slate-800 rounded-xl px-3.5 py-2.5 flex flex-col gap-1 ${activeBorderClass} transition-all duration-200 hover:bg-surface-container-low dark:hover:bg-slate-700/70">
+              
+              <!-- 1. ZEILE: #Nr + Datum | Route | Logo + Flugnummer -->
+              <div class="flex items-center justify-between gap-2">
+                  <div class="flex items-center gap-1.5 min-w-[95px] sm:min-w-[115px] shrink-0">
+                      <span class="w-1.5 h-1.5 rounded-full shrink-0 ${dotColor}"></span>
+                      <span class="font-display text-[11px] font-bold text-on-surface/60 dark:text-slate-400">#${flight.flightLogNumber || "-"}</span>
+                      <span class="text-[11px] font-medium text-on-surface/70 dark:text-slate-300">${formattedDate}</span>
+                  </div>
+
+                  <div class="flex items-center justify-center gap-1.5 flex-1">
+                      <span class="font-display text-sm font-black text-primary dark:text-indigo-400 tracking-tight">${flight.departure || 'N/A'}</span>
+                      <span class="material-symbols-outlined text-[13px] text-on-surface/30 dark:text-slate-500">arrow_forward</span>
+                      <span class="font-display text-sm font-black text-primary dark:text-indigo-400 tracking-tight">${flight.arrival || 'N/A'}</span>
+                  </div>
+
+                  <div class="flex items-center justify-end gap-1.5 min-w-[70px] sm:min-w-[90px] text-right shrink-0">
+                      ${compactLogo}
+                      <span class="text-[11px] font-bold text-on-surface/80 dark:text-slate-200">${flight.flightNumber || '-'}</span>
+                      <span class="material-symbols-outlined text-[16px] text-on-surface/30 group-hover:text-primary group-hover:translate-x-0.5 transition-all">chevron_right</span>
+                  </div>
+              </div>
+
+              <!-- 2. ZEILE: Distanz • Flugzeit • Flugzeugtyp (& optionales Trip-Badge) -->
+              <div class="flex items-center justify-between gap-2 pl-3 pt-0.5 border-t border-outline-variant/10 dark:border-slate-700/40">
+                  <div class="text-[10px] font-medium text-on-surface/50 dark:text-slate-400 truncate">
+                      ${subLineHtml}
+                  </div>
+                  ${compactTrip}
+              </div>
+
+          </div>
+        `;
+      } else {
+        flightElement.className = "w-full max-w-3xl mx-auto relative group cursor-pointer mb-6";
+        flightElement.innerHTML = `
+          <div class="bg-surface-container-lowest dark:bg-slate-800 rounded-[2rem] p-5 md:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none relative overflow-hidden ${activeBorderClass} transition-all duration-300 group-hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] group-hover:-translate-y-1">
+              <div class="absolute right-0 top-0 w-3/4 h-full ${planeOpacity} transition-opacity duration-500 bg-cover bg-center pointer-events-none" ${planeBg}></div>
+              <div class="absolute inset-0 bg-gradient-to-r from-surface-container-lowest via-surface-container-lowest/90 to-transparent dark:from-slate-800 dark:via-slate-800/90 z-0 pointer-events-none"></div>
+              <div class="relative z-10">
+                  <div class="flex flex-wrap justify-between items-start mb-6 gap-3">
+                      <div class="flex flex-wrap items-center gap-2">
+                          <div class="bg-surface-container-low dark:bg-slate-700 px-3 py-1 rounded-full shadow-inner flex items-center gap-1.5"><span class="w-2 h-2 rounded-full ${dotColor}"></span><span class="font-display text-[10px] font-bold text-on-surface/70 dark:text-slate-300 uppercase tracking-wider">#${flight.flightLogNumber || "-"} • ${formattedDate}</span></div>
+                          ${tripBadge}
+                      </div>
+                      <div class="flex items-center gap-3 ml-auto">${logoHtml}<h3 class="font-display text-xl md:text-2xl font-bold tracking-tight text-on-surface dark:text-white truncate">${flight.flightNumber || '-'}</h3></div>
+                  </div>
+                  <div class="flex items-center justify-between mb-8">
+                      <div class="flex flex-col"><p class="font-display text-4xl md:text-5xl font-extrabold text-primary dark:text-indigo-400 tracking-tighter leading-none">${flight.departure || 'N/A'}</p><p class="text-[10px] md:text-xs font-medium text-on-surface/60 dark:text-slate-400 mt-1 max-w-[120px] md:max-w-[150px] line-clamp-2 leading-tight">${depName}</p></div>
+                      <div class="flex-1 px-2 md:px-8 relative flex items-center justify-center"><div class="h-[2px] w-full bg-gradient-to-r from-transparent via-outline-variant/50 dark:via-slate-500 to-transparent relative"><span class="material-symbols-outlined absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-outline-variant dark:text-slate-400 bg-surface-container-lowest dark:bg-slate-800 px-2 text-xl" style="font-variation-settings: 'FILL' 1;">flight</span></div></div>
+                      <div class="flex flex-col items-end"><p class="font-display text-4xl md:text-5xl font-extrabold text-primary dark:text-indigo-400 tracking-tighter leading-none">${flight.arrival || 'N/A'}</p><p class="text-[10px] md:text-xs font-medium text-on-surface/60 dark:text-slate-400 mt-1 max-w-[120px] md:max-w-[150px] line-clamp-2 text-right leading-tight">${arrName}</p></div>
+                  </div>
+                  <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-5 border-t border-outline-variant/20 dark:border-slate-700">
+                      <div class="flex flex-col"><span class="text-[9px] font-bold uppercase tracking-widest text-on-surface/50 dark:text-slate-500 mb-1 flex items-center gap-1"><span class="material-symbols-outlined text-[12px]">schedule</span> ${typeof getTranslation === 'function' ? getTranslation('boardingPass.flightTime') : 'Flugzeit'}</span><span class="text-xs font-bold text-on-surface/90 dark:text-slate-200">${formattedTime}</span></div>
+                      <div class="flex flex-col"><span class="text-[9px] font-bold uppercase tracking-widest text-on-surface/50 dark:text-slate-500 mb-1 flex items-center gap-1"><span class="material-symbols-outlined text-[12px]">straighten</span> ${typeof getTranslation === 'function' ? getTranslation('boardingPass.distance') : 'Distanz'}</span><span class="text-xs font-bold text-on-surface/90 dark:text-slate-200">${flight.distance ? flight.distance.toLocaleString("de-DE") : '--'} ${typeof getTranslation === 'function' ? getTranslation("achievements.unitKm") : "km"}</span></div>
+                      ${flight.aircraftType ? `<div class="flex flex-col"><span class="text-[9px] font-bold uppercase tracking-widest text-on-surface/50 dark:text-slate-500 mb-1 flex items-center gap-1"><span class="material-symbols-outlined text-[12px]">airlines</span> ${typeof getTranslation === 'function' ? getTranslation('boardingPass.aircraft') : 'Flugzeug'}</span><span class="text-xs font-bold text-on-surface/90 dark:text-slate-200 truncate" title="${flight.aircraftType}">${flight.aircraftType}</span></div>` : ''}
+                      ${flight.seatNumber ? `<div class="flex flex-col"><span class="text-[9px] font-bold uppercase tracking-widest text-on-surface/50 dark:text-slate-500 mb-1 flex items-center gap-1"><span class="material-symbols-outlined text-[12px]">event_seat</span> ${typeof getTranslation === 'function' ? getTranslation('boardingPass.seat') : 'Sitzplatz'}</span><span class="text-xs font-bold text-on-surface/90 dark:text-slate-200">${flight.seatNumber}</span></div>` : ''}
+                  </div>
+              </div>
+          </div>
+        `;
+      }
       flightList.appendChild(flightElement);
     });
   }
@@ -723,7 +800,10 @@ async function renderLogbookView(groupBy) {
     "logbook.loading"
   )}</p>`;
 
-  const allFlights = await getFlights();
+  let allFlights = await getFlights();
+  if (typeof resequenceAndAssignNumbers === 'function') {
+    allFlights = resequenceAndAssignNumbers(allFlights);
+  }
   const grouped = {};
 
   const unknownKey = getTranslation("logbook.unknown"); // Hole "Unbekannt" einmal
@@ -887,21 +967,34 @@ async function renderLogbookView(groupBy) {
       .replace("{distance}", group.totalDistance.toLocaleString("de-DE"));
     flightListDiv.appendChild(listTitle);
 
-    group.flights
-      .sort((a, b) => new Date(a.date) - new Date(b.date))
-      .forEach((flight) => {
-        const flightText = getTranslation("logbook.flightEntry")
-          .replace("{date}", flight.date)
-          .replace("{departure}", flight.departure)
-          .replace("{arrival}", flight.arrival)
-          .replace("{distance}", flight.distance.toLocaleString("de-DE"));
+    const sortedGroupFlights = [...group.flights].sort((a, b) => new Date(a.date) - new Date(b.date));
 
-        const flightEntryDiv = document.createElement("div");
-        flightEntryDiv.className = "text-sm font-medium text-on-surface/80 dark:text-slate-300 bg-surface-container-low dark:bg-slate-900/50 p-4 rounded-xl border border-outline-variant/10 dark:border-slate-700/50 flex items-center gap-3";
-        flightEntryDiv.innerHTML = `<span class="material-symbols-outlined text-primary/50 text-[18px]">flight</span> <span>${flightText}</span>`;
+    sortedGroupFlights.forEach((flight) => {
+      const flightText = getTranslation("logbook.flightEntry")
+        .replace("{date}", flight.date)
+        .replace("{departure}", flight.departure)
+        .replace("{arrival}", flight.arrival)
+        .replace("{distance}", flight.distance.toLocaleString("de-DE"));
 
-        flightListDiv.appendChild(flightEntryDiv); 
+      const flightEntryDiv = document.createElement("div");
+      flightEntryDiv.className = "text-sm font-medium text-on-surface/80 dark:text-slate-300 bg-surface-container-low dark:bg-slate-900/50 hover:bg-primary/10 dark:hover:bg-slate-700/70 p-4 rounded-xl border border-outline-variant/10 dark:border-slate-700/50 flex items-center justify-between gap-3 cursor-pointer transition-all group/entry";
+      flightEntryDiv.innerHTML = `
+        <div class="flex items-center gap-3">
+          <span class="material-symbols-outlined text-primary/50 group-hover/entry:text-primary text-[18px] transition-colors">flight</span>
+          <span class="group-hover/entry:text-primary dark:group-hover/entry:text-indigo-400 transition-colors">${flightText}</span>
+        </div>
+        <span class="material-symbols-outlined text-on-surface/30 group-hover/entry:text-primary group-hover/entry:translate-x-0.5 text-[18px] transition-all">chevron_right</span>
+      `;
+
+      // 🚀 Öffnet beim Klick die digitale Bordkarte (inkl. Swipe-Scope für genau diese Kategorie!)
+      flightEntryDiv.addEventListener("click", () => {
+        if (typeof viewFlightDetails === "function") {
+          viewFlightDetails(flight.id || flight.flight_id, false, sortedGroupFlights);
+        }
       });
+
+      flightListDiv.appendChild(flightEntryDiv); 
+    });
 
     detailsElement.appendChild(summaryElement);
     detailsElement.appendChild(flightListDiv);
@@ -2334,20 +2427,15 @@ window.toggleAllRoutesView = async function() {
     const btn = document.getElementById("toggle-map-view-btn");
     if (btn) {
         if (window.isAllRoutesViewActive) {
-            // Wir zeigen gerade alle Routen -> Button bietet Rückkehr zur Einzelansicht an
-            btn.innerHTML = `
-                <span class="material-symbols-outlined text-3xl text-primary dark:text-indigo-400 group-hover:scale-110 transition-transform">location_on</span>
-                <span class="text-sm font-bold text-on-surface dark:text-white" data-i18n="singleView">${getTranslation("singleView") || "Einzelansicht"}</span>
-            `;
-            // Optional: Button-Hintergrund leicht einfärben, um "Aktiven Modus" zu zeigen
-            btn.classList.add('bg-primary/10', 'dark:bg-indigo-900/40');
+            btn.innerHTML = `<span class="material-symbols-outlined text-[18px]">location_on</span>`;
+            btn.classList.add('bg-primary', 'text-white', 'border-primary');
+            btn.classList.remove('bg-surface-container-high', 'text-on-surface/80', 'dark:text-slate-200');
+            btn.title = typeof getTranslation === 'function' ? getTranslation("singleView") : "Einzelansicht";
         } else {
-            // Wir zeigen die Einzelansicht -> Button bietet "Alle Routen" an
-            btn.innerHTML = `
-                <span class="material-symbols-outlined text-3xl text-primary dark:text-indigo-400 group-hover:scale-110 transition-transform">map</span>
-                <span class="text-sm font-bold text-on-surface dark:text-white" data-i18n="allRoutes">${getTranslation("allRoutes") || "Alle Routen"}</span>
-            `;
-            btn.classList.remove('bg-primary/10', 'dark:bg-indigo-900/40');
+            btn.innerHTML = `<span class="material-symbols-outlined text-[18px]">map</span>`;
+            btn.classList.remove('bg-primary', 'text-white', 'border-primary');
+            btn.classList.add('bg-surface-container-high', 'text-on-surface/80', 'dark:text-slate-200');
+            btn.title = typeof getTranslation === 'function' ? getTranslation("allRoutes") : "Alle Routen";
         }
     }
 
@@ -2567,8 +2655,10 @@ window.focusFlightOnMap = function(flightId) {
         window.isAllRoutesViewActive = false;
         const mapBtn = document.getElementById("toggle-map-view-btn");
         if (mapBtn) {
-            mapBtn.innerHTML = `<span class="material-symbols-outlined text-3xl text-primary dark:text-indigo-400 group-hover:scale-110 transition-transform">map</span><span class="text-sm font-bold text-on-surface dark:text-white" data-i18n="allRoutes">${typeof getTranslation === 'function' ? getTranslation("allRoutes") : "Alle Routen"}</span>`;
-            mapBtn.classList.remove('bg-primary/10', 'dark:bg-indigo-900/40');
+            mapBtn.innerHTML = `<span class="material-symbols-outlined text-[18px]">map</span>`;
+            mapBtn.classList.remove('bg-primary', 'text-white', 'border-primary');
+            mapBtn.classList.add('bg-surface-container-high', 'text-on-surface/80', 'dark:text-slate-200');
+            mapBtn.title = typeof getTranslation === 'function' ? getTranslation("allRoutes") : "Alle Routen";
         }
     }
 
