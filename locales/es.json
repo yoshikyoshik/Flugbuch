@@ -958,6 +958,7 @@
     "language": "Idioma",
     "changePassword": "Cambiar contraseña",
     "logout": "Cerrar sesión",
+    "dangerZone": "Zona de peligro",
     "appTour": "Tour de la App y Funciones",
     "deleteAllFlights": "Eliminar todos los vuelos (Restablecer)",
     "deleteAccount": "Eliminar cuenta definitivamente",

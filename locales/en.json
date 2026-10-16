@@ -963,6 +963,7 @@
     "changePassword": "Change Password",
     "logout": "Logout",
     "appTour": "App Tour & Features",
+    "dangerZone": "Danger Zone",
     "deleteAllFlights": "Delete all flights (Reset)",
     "deleteAccount": "Permanently delete account",
     "confirmDeleteAllFlights": "Are you sure you want to permanently delete ALL your saved flights and trips?",
