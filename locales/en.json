@@ -1307,13 +1307,29 @@
   },
 
   "passport": {
+    "tabBtn": "Passport",
+    "docType": "OFFICIAL AVIATION PASSPORT",
     "title": "AvioSphere Passport",
     "subtitle": "Visited Countries & Stamps",
+    "shareBtn": "Share",
     "printBtn": "Passport (PDF)",
+    "pilotLabel": "Passport Holder / Pilot",
+    "rankLabel": "Rank",
+    "activeSince": "Active Since",
     "countries": "Countries",
     "worldShare": "of the World",
     "continents": "Continents",
-    "countrySubtitle": "Visited Country"
+    "continentsTitle": "Visited Continents",
+    "stampsTitle": "Collected Country Stamps",
+    "flightsCount": "{count} Flights",
+    "countrySubtitle": "Visited Country",
+    "contEurope": "Europe",
+    "contAsia": "Asia",
+    "contNorthAmerica": "North America",
+    "contSouthAmerica": "South America",
+    "contAfrica": "Africa",
+    "contOceania": "Oceania",
+    "contAntarctica": "Antarctica"
   }
 
 }

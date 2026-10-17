@@ -1304,13 +1304,29 @@
   },
 
   "passport": {
+    "tabBtn": "护照",
+    "docType": "官方航空旅行护照",
     "title": "AvioSphere 护照",
     "subtitle": "到访国家与印章",
+    "shareBtn": "分享",
     "printBtn": "护照 (PDF)",
+    "pilotLabel": "持照人 / 飞行员",
+    "rankLabel": "级别",
+    "activeSince": "启用于",
     "countries": "国家/地区",
     "worldShare": "世界探索度",
     "continents": "大洲",
-    "countrySubtitle": "到访国家"
+    "continentsTitle": "已到访大洲",
+    "stampsTitle": "已收集国家印章",
+    "flightsCount": "{count} 次航班",
+    "countrySubtitle": "到访国家",
+    "contEurope": "欧洲",
+    "contAsia": "亚洲",
+    "contNorthAmerica": "北美洲",
+    "contSouthAmerica": "南美洲",
+    "contAfrica": "非洲",
+    "contOceania": "大洋洲",
+    "contAntarctica": "南极洲"
   }
 
 }

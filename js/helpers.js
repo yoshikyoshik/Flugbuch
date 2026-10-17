@@ -1269,12 +1269,28 @@ window.getAirportCountryCode = function (iataCode) {
   return null;
 };
 
-// Berechnet alle Passport-Kennzahlen
+// Berechnet alle Passport-Kennzahlen inkl. Kontinente-Aufschlüsselung & Startjahr
 window.calculatePassportData = function (flights) {
   const countriesMap = {};
   const continentsSet = new Set();
+  const continentCountries = {
+    Europa: new Set(),
+    Asien: new Set(),
+    Nordamerika: new Set(),
+    Südamerika: new Set(),
+    Afrika: new Set(),
+    Ozeanien: new Set(),
+    Antarktis: new Set(),
+  };
+
+  let minYear = null;
 
   (flights || []).forEach((f) => {
+    if (f.date && f.date.length >= 4) {
+      const y = parseInt(f.date.substring(0, 4), 10);
+      if (!isNaN(y) && (!minYear || y < minYear)) minYear = y;
+    }
+
     const depCountry = window.getAirportCountryCode(f.departure);
     const arrCountry = window.getAirportCountryCode(f.arrival);
     const touchedCountries = new Set([depCountry, arrCountry].filter(Boolean));
@@ -1285,7 +1301,7 @@ window.calculatePassportData = function (flights) {
           code: cc,
           name: window.getCountryName(cc),
           flag: window.getCountryFlag(cc),
-          flagHtml: window.getCountryFlagHtml(cc),
+          flagHtml: window.getCountryFlagHtml(cc, "w-6 h-4 rounded-[3px] object-cover shadow-sm shrink-0"),
           flights: [],
           airports: new Set(),
           totalDistance: 0,
@@ -1297,7 +1313,9 @@ window.calculatePassportData = function (flights) {
       if (arrCountry === cc && f.arrival) countriesMap[cc].airports.add(f.arrival);
 
       if (typeof countryToContinent !== "undefined" && countryToContinent[cc]) {
-        continentsSet.add(countryToContinent[cc]);
+        const cont = countryToContinent[cc];
+        continentsSet.add(cont);
+        if (continentCountries[cont]) continentCountries[cont].add(cc);
       }
     });
   });
@@ -1312,6 +1330,9 @@ window.calculatePassportData = function (flights) {
     count,
     worldPercent,
     continentsCount: continentsSet.size,
+    continentCountries,
+    firstYear: minYear || new Date().getFullYear(),
+    totalFlightsCount: (flights || []).length,
     countries: sortedCountries,
     countriesMap,
   };

@@ -700,6 +700,9 @@ async function updateAchievements() {
   // Rekorde & Firsts berechnen und anzeigen
   const sortedFlights = resequenceAndAssignNumbers([...allFlights]);
   displayPersonalRecords(allFlights, sortedFlights);
+  if (typeof window.renderPassportView === "function") {
+    window.renderPassportView(allFlights);
+  }
 }
 
 /**

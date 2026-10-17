@@ -1386,39 +1386,129 @@ var updateStatisticsDisplay = function (flights) {
   }
 
 // 🛂 AVIOSPHERE PASSPORT UPDATEN
-  if (typeof window.calculatePassportData === "function") {
+  if (typeof window.renderPassportView === "function") {
+    window.renderPassportView(flights);
+  }
+};
+
+/**
+ * 🛂 Zeichnet die komplette AvioSphere Passport Seite (Ausweis, MRZ, Kontinente & Stempel-Karten)
+ */
+window.renderPassportView = function (flightsInput) {
+  if (typeof window.calculatePassportData !== "function") return;
+
+  const processRender = (flights) => {
     const passport = window.calculatePassportData(flights);
+
+    // 1. Ausweis-Kopfdaten
     const countEl = document.getElementById("passport-country-count");
     const percentEl = document.getElementById("passport-world-percent");
     const contEl = document.getElementById("passport-continent-count");
     const barEl = document.getElementById("passport-world-bar");
-    const gridEl = document.getElementById("passport-countries-grid");
+    const sinceEl = document.getElementById("passport-since-year");
+    const nameEl = document.getElementById("passport-pilot-name");
+    const avatarEl = document.getElementById("passport-pilot-avatar");
+    const rankEl = document.getElementById("passport-pilot-rank");
+    const mrzEl = document.getElementById("passport-mrz");
 
     if (countEl) countEl.textContent = passport.count;
     if (percentEl) percentEl.textContent = `${passport.worldPercent.replace(".", ",")}%`;
     if (contEl) contEl.textContent = `${passport.continentsCount} / 7`;
     if (barEl) barEl.style.width = `${Math.max(2, parseFloat(passport.worldPercent))}%`;
+    if (sinceEl) sinceEl.textContent = passport.firstYear;
 
+    const nickInput = document.getElementById("profile-username")?.value?.trim();
+    const avatarInput = document.getElementById("profile-avatar")?.value;
+    const rankHeader = document.getElementById("profile-header-status")?.textContent?.trim();
+
+    const pilotName = nickInput || (getTranslation("wrapped.defaultPilot") || "AvioSphere Pilot");
+    if (nameEl) nameEl.textContent = pilotName;
+    if (avatarEl && avatarInput) avatarEl.textContent = avatarInput;
+    if (rankEl && rankHeader) rankEl.textContent = rankHeader;
+
+    // 2. Authentische MRZ (Machine Readable Zone) generieren
+    if (mrzEl) {
+      const cleanPilot = pilotName.toUpperCase().replace(/[^A-Z0-9]/g, "<") || "PILOT";
+      const line1 = `P<AVIOSPHERE<<${cleanPilot}${"<".repeat(44)}`.substring(0, 42);
+      const line2 = `PASS<${String(passport.count).padStart(3, "0")}CTRY<<${String(passport.totalFlightsCount).padStart(4, "0")}FLTS<<${passport.continentsCount}CONT<<${passport.firstYear}${"<".repeat(44)}`.substring(0, 42);
+      mrzEl.innerHTML = `${line1}<br>${line2}`;
+    }
+
+    // 3. Kontinente-Grid rendern
+    const contGrid = document.getElementById("passport-continents-grid");
+    if (contGrid) {
+      const contDefs = [
+        { key: "Europa", i18n: "passport.contEurope", icon: "🌍" },
+        { key: "Asien", i18n: "passport.contAsia", icon: "🌏" },
+        { key: "Nordamerika", i18n: "passport.contNorthAmerica", icon: "🌎" },
+        { key: "Südamerika", i18n: "passport.contSouthAmerica", icon: "🌎" },
+        { key: "Afrika", i18n: "passport.contAfrica", icon: "🌍" },
+        { key: "Ozeanien", i18n: "passport.contOceania", icon: "🌏" },
+        { key: "Antarktis", i18n: "passport.contAntarctica", icon: "❄️" },
+      ];
+
+      contGrid.innerHTML = contDefs
+        .map((c) => {
+          const cCount = passport.continentCountries[c.key] ? passport.continentCountries[c.key].size : 0;
+          const visited = cCount > 0;
+          const label = getTranslation(c.i18n) || c.key;
+          return `
+            <div class="flex items-center justify-between px-3 py-2.5 rounded-xl border ${
+              visited
+                ? "bg-emerald-500/10 border-emerald-400/30 text-white"
+                : "bg-white/5 border-white/5 text-white/35 opacity-60"
+            }">
+              <div class="flex items-center gap-2 min-w-0">
+                <span class="text-sm">${visited ? "✅" : "🔒"}</span>
+                <span class="text-xs font-bold truncate">${label}</span>
+              </div>
+              <span class="text-[10px] font-black px-1.5 py-0.5 rounded bg-black/30 ${
+                visited ? "text-emerald-300" : "text-white/40"
+              }">${cCount}</span>
+            </div>
+          `;
+        })
+        .join("");
+    }
+
+    // 4. Länder-Stempel-Karten rendern
+    const gridEl = document.getElementById("passport-countries-grid");
     if (gridEl) {
       if (passport.countries.length === 0) {
-        gridEl.innerHTML = `<span class="text-xs text-indigo-200/60 italic">${getTranslation("stats.noData") || "-"}</span>`;
+        gridEl.innerHTML = `<span class="col-span-full text-xs text-indigo-200/60 italic">${getTranslation("stats.noData") || "-"}</span>`;
       } else {
+        const flightsLabelTpl = getTranslation("passport.flightsCount") || "{count} Flüge";
         gridEl.innerHTML = passport.countries
-          .map(
-            (c) => `
-            <button onclick="viewLogbookDetails('country', '${c.code}')" 
-                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 hover:border-amber-400/50 transition-all text-xs font-bold text-white shadow-sm group">
-              <span class="text-base leading-none">${c.flagHtml}</span>
-              <span class="group-hover:text-amber-300 transition-colors">${c.name}</span>
-              <span class="text-[10px] font-black px-1.5 py-0.5 rounded-md bg-black/30 text-indigo-200">${c.flights.length}</span>
-            </button>
-          `
-          )
+          .map((c) => {
+            const airportsList = Array.from(c.airports).slice(0, 4).join(", ");
+            const flightsLabel = flightsLabelTpl.replace("{count}", c.flights.length);
+            return `
+              <button onclick="viewLogbookDetails('country', '${c.code}')" 
+                      class="flex flex-col justify-between p-3.5 rounded-2xl bg-white/5 hover:bg-white/15 border border-white/10 hover:border-amber-400/50 transition-all text-left group shadow-sm hover:-translate-y-0.5 relative overflow-hidden">
+                <div class="flex items-center justify-between w-full mb-2">
+                  ${c.flagHtml}
+                  <span class="font-mono text-[10px] font-black px-1.5 py-0.5 rounded border border-amber-400/40 text-amber-300/90 bg-amber-500/10 tracking-widest">${c.code}</span>
+                </div>
+                <div class="w-full">
+                  <p class="font-display font-extrabold text-xs sm:text-sm text-white group-hover:text-amber-300 transition-colors truncate">${c.name}</p>
+                  <div class="flex items-center justify-between gap-1 mt-1.5 pt-1.5 border-t border-white/10">
+                    <span class="text-[10px] font-bold text-indigo-200/80">${flightsLabel}</span>
+                    <span class="text-[9px] font-mono text-indigo-300/50 truncate max-w-[70px]">${airportsList}</span>
+                  </div>
+                </div>
+              </button>
+            `;
+          })
           .join("");
       }
     }
-  }
+  };
 
+  if (Array.isArray(flightsInput)) {
+    processRender(flightsInput);
+  } else if (typeof getFlights === "function") {
+    getFlights().then((f) => processRender(f || []));
+  }
 };
 
 /**
@@ -2639,25 +2729,64 @@ window.switchTimelineView = function(view) {
     }
 };
 
-window.switchAchievementsView = function(view) {
-    const btnBadges = document.getElementById('toggle-achievements-badges');
-    const btnRecords = document.getElementById('toggle-achievements-records');
-    
-    // Klassen zurücksetzen
-    [btnBadges, btnRecords].forEach(btn => {
-        btn.className = 'px-5 py-1.5 rounded-lg text-on-surface/60 hover:text-on-surface dark:text-slate-400 dark:hover:text-white transition-all';
-    });
+window.switchAchievementsView = function (view) {
+  const btnBadges = document.getElementById("toggle-achievements-badges");
+  const btnRecords = document.getElementById("toggle-achievements-records");
+  const btnPassport = document.getElementById("toggle-achievements-passport");
 
-    // Aktiven Button stylen und Container umschalten
-    if (view === 'badges') {
-        btnBadges.className = 'px-5 py-1.5 rounded-lg bg-surface-container-lowest dark:bg-slate-600 shadow-sm text-primary dark:text-indigo-300 transition-all';
-        document.getElementById('achievements-grid-container').classList.remove('hidden');
-        document.getElementById('records-grid-container').classList.add('hidden');
-    } else {
-        btnRecords.className = 'px-5 py-1.5 rounded-lg bg-surface-container-lowest dark:bg-slate-600 shadow-sm text-primary dark:text-indigo-300 transition-all';
-        document.getElementById('achievements-grid-container').classList.add('hidden');
-        document.getElementById('records-grid-container').classList.remove('hidden');
+  const contBadges = document.getElementById("achievements-grid-container");
+  const contRecords = document.getElementById("records-grid-container");
+  const contPassport = document.getElementById("passport-grid-container");
+
+  const inactiveStandard =
+    "px-4 sm:px-5 py-2 rounded-xl text-on-surface/60 hover:text-on-surface dark:text-slate-400 dark:hover:text-white transition-all";
+  const activeStandard =
+    "px-4 sm:px-5 py-2 rounded-xl bg-surface-container-lowest dark:bg-slate-600 shadow-sm text-primary dark:text-indigo-300 transition-all";
+
+  // Passport-Button behält auch inaktiv seinen besonderen Gold-Look!
+  const inactivePassport =
+    "px-4 sm:px-5 py-2 rounded-xl text-amber-600 dark:text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 transition-all flex items-center gap-1.5 font-extrabold shadow-sm";
+  const activePassport =
+    "px-4 sm:px-5 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 shadow-md shadow-amber-500/20 transition-all flex items-center gap-1.5 font-black";
+
+  if (btnBadges) btnBadges.className = view === "badges" ? activeStandard : inactiveStandard;
+  if (btnRecords) btnRecords.className = view === "records" ? activeStandard : inactiveStandard;
+  if (btnPassport) btnPassport.className = view === "passport" ? activePassport : inactivePassport;
+
+  if (contBadges) contBadges.classList.toggle("hidden", view !== "badges");
+  if (contRecords) contRecords.classList.toggle("hidden", view !== "records");
+  if (contPassport) contPassport.classList.toggle("hidden", view !== "passport");
+
+  if (view === "passport" && typeof window.renderPassportView === "function") {
+    window.renderPassportView();
+  }
+};
+
+// 📸 Teilt den AvioSphere Passport als hochauflösendes Bild
+window.sharePassportScreenshot = async function () {
+  const passportPanel = document.getElementById("passport-panel");
+  if (!passportPanel) return;
+
+  try {
+    if (typeof showMessage === "function") {
+      showMessage(
+        getTranslation("share.prepTitle") || "Moment...",
+        getTranslation("share.prepDesc") || "Bild wird aufbereitet 📸",
+        "info"
+      );
     }
+    const canvas = await html2canvas(passportPanel, {
+      useCORS: true,
+      allowTaint: false,
+      backgroundColor: "#0f172a",
+      scale: 2,
+    });
+    const isNative = typeof Capacitor !== "undefined" && Capacitor.isNativePlatform();
+    const dataURL = isNative ? canvas.toDataURL("image/jpeg", 0.9) : canvas.toDataURL("image/png");
+    await shareImageBase64(dataURL, "aviosphere_passport");
+  } catch (e) {
+    console.error("Passport Screenshot Fehler:", e);
+  }
 };
 
 // ==========================================

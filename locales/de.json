@@ -1308,13 +1308,29 @@
   },
 
   "passport": {
+    "tabBtn": "Passport",
+    "docType": "OFFIZIELLER LUFTFAHRT-REISEPASS",
     "title": "AvioSphere Passport",
     "subtitle": "Besuchte Länder & Stempel",
+    "shareBtn": "Teilen",
     "printBtn": "Passport (PDF)",
+    "pilotLabel": "Passinhaber / Pilot",
+    "rankLabel": "Rang",
+    "activeSince": "Aktiv seit",
     "countries": "Länder",
     "worldShare": "der Welt",
     "continents": "Kontinente",
-    "countrySubtitle": "Besuchtes Land"
+    "continentsTitle": "Bereiste Kontinente",
+    "stampsTitle": "Gesammelte Länder-Stempel",
+    "flightsCount": "{count} Flüge",
+    "countrySubtitle": "Besuchtes Land",
+    "contEurope": "Europa",
+    "contAsia": "Asien",
+    "contNorthAmerica": "Nordamerika",
+    "contSouthAmerica": "Südamerika",
+    "contAfrica": "Afrika",
+    "contOceania": "Ozeanien",
+    "contAntarctica": "Antarktis"
   }
 
 }

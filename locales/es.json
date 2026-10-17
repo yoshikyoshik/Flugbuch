@@ -1303,13 +1303,29 @@
   },
 
   "passport": {
+    "tabBtn": "Pasaporte",
+    "docType": "PASAPORTE OFICIAL DE AVIACIÓN",
     "title": "Pasaporte AvioSphere",
     "subtitle": "Países Visitados y Sellos",
+    "shareBtn": "Compartir",
     "printBtn": "Pasaporte (PDF)",
+    "pilotLabel": "Titular / Piloto",
+    "rankLabel": "Rango",
+    "activeSince": "Activo desde",
     "countries": "Países",
     "worldShare": "del Mundo",
     "continents": "Continentes",
-    "countrySubtitle": "País Visitado"
+    "continentsTitle": "Continentes Visitados",
+    "stampsTitle": "Sellos de Países Coleccionados",
+    "flightsCount": "{count} Vuelos",
+    "countrySubtitle": "País Visitado",
+    "contEurope": "Europa",
+    "contAsia": "Asia",
+    "contNorthAmerica": "Norteamérica",
+    "contSouthAmerica": "Sudamérica",
+    "contAfrica": "África",
+    "contOceania": "Oceanía",
+    "contAntarctica": "Antártida"
   }
 
 }

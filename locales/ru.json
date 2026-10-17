@@ -1303,13 +1303,29 @@
   },
 
   "passport": {
+    "tabBtn": "Паспорт",
+    "docType": "ОФИЦИАЛЬНЫЙ АВИАЦИОННЫЙ ПАСПОРТ",
     "title": "Паспорт AvioSphere",
     "subtitle": "Посещенные страны и штампы",
+    "shareBtn": "Поделиться",
     "printBtn": "Паспорт (PDF)",
+    "pilotLabel": "Владелец / Пилот",
+    "rankLabel": "Звание",
+    "activeSince": "Активен с",
     "countries": "Страны",
     "worldShare": "мира",
     "continents": "Континенты",
-    "countrySubtitle": "Посещенная страна"
+    "continentsTitle": "Посещенные континенты",
+    "stampsTitle": "Собранные штампы стран",
+    "flightsCount": "Рейсов: {count}",
+    "countrySubtitle": "Посещенная страна",
+    "contEurope": "Европа",
+    "contAsia": "Азия",
+    "contNorthAmerica": "Сев. Америка",
+    "contSouthAmerica": "Юж. Америка",
+    "contAfrica": "Африка",
+    "contOceania": "Океания",
+    "contAntarctica": "Антарктида"
   }
 
 }
