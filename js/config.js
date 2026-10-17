@@ -707,7 +707,7 @@ async function updateAchievements() {
  */
 function formatRecordEntry(title, value, description, flight = null) {
   const flightId = flight ? (flight.id || flight.flight_id) : null;
-  const clickAttr = flightId ? `onclick="viewFlightDetails('${flightId}')"` : "";
+  const clickAttr = flightId ? `onclick="viewFlightDetails('${flightId}', false, 'single')"` : "";
   const interactiveClasses = flightId
     ? "cursor-pointer hover:border-primary/50 dark:hover:border-indigo-400/50 hover:-translate-y-0.5 transition-all group"
     : "";

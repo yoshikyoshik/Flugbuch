@@ -980,10 +980,19 @@ window.buildWeatherWidgetHtml = function(weatherData, title) {
 };
 
 // ==========================================
-// 🛂 AVIOSPHERE PASSPORT & COUNTRY ENGINE
+// 🛂 AVIOSPHERE PASSPORT, FLAGGEN & WAHRZEICHEN ENGINE
 // ==========================================
 
-// Wandelt 2-stelligen ISO-Ländercode (z.B. "DE", "JP") in Flaggen-Emoji (🇩🇪, 🇯🇵) um
+// 1. Echte Flaggen-Grafik (funktioniert auch auf Windows-PCs, wo Emojis nur als "DE" erscheinen!)
+window.getCountryFlagHtml = function (countryCode, className = "w-5 h-3.5 rounded-[3px] object-cover shadow-sm inline-block shrink-0") {
+  if (!countryCode || countryCode.length !== 2 || countryCode === "XX") {
+    return `<span class="inline-block leading-none">🌍</span>`;
+  }
+  const lower = countryCode.toLowerCase();
+  return `<img src="https://flagcdn.com/w80/${lower}.png" alt="${countryCode}" class="${className}" onerror="this.outerHTML='🌍'">`;
+};
+
+// Emoji-Fallback für reine Text-Stellen (z.B. PDF-Titel)
 window.getCountryFlag = function (countryCode) {
   if (!countryCode || countryCode.length !== 2 || countryCode === "XX") return "🌍";
   return countryCode
@@ -1005,7 +1014,80 @@ window.getCountryName = function (countryCode) {
   }
 };
 
-// Ermittelt zuverlässig den 2-stelligen Ländercode eines Flughafens
+// 🏛️ Kuratierte Wahrzeichen-Fotos (High-Res) für den Länder-Header
+const COUNTRY_LANDMARK_IMAGES = {
+  DE: "https://images.unsplash.com/photo-1560969184-10fe8719e047?q=80&w=1000&auto=format&fit=crop", // Berlin Brandenburger Tor / Skyline
+  AT: "https://images.unsplash.com/photo-1516550893923-42d28e5677af?q=80&w=1000&auto=format&fit=crop", // Wien / Hallstatt
+  CH: "https://images.unsplash.com/photo-1530122037265-a5f1f91d3b99?q=80&w=1000&auto=format&fit=crop", // Schweizer Alpen / Matterhorn
+  FR: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?q=80&w=1000&auto=format&fit=crop", // Paris Eiffelturm
+  IT: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?q=80&w=1000&auto=format&fit=crop", // Rom Kolosseum
+  ES: "https://images.unsplash.com/photo-1583422409516-2895a77efded?q=80&w=1000&auto=format&fit=crop", // Barcelona Sagrada Familia
+  PT: "https://images.unsplash.com/photo-1555881400-74d7acaacd8b?q=80&w=1000&auto=format&fit=crop", // Lissabon
+  GB: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?q=80&w=1000&auto=format&fit=crop", // London Big Ben / Tower Bridge
+  IE: "https://images.unsplash.com/photo-1590089415225-401ed6f9db8e?q=80&w=1000&auto=format&fit=crop", // Irland Cliffs of Moher
+  NL: "https://images.unsplash.com/photo-1534351590666-13e3e96b5017?q=80&w=1000&auto=format&fit=crop", // Amsterdam Grachten
+  BE: "https://images.unsplash.com/photo-1559113202-c916b8e44373?q=80&w=1000&auto=format&fit=crop", // Brüssel Grand Place
+  GR: "https://images.unsplash.com/photo-1533105079780-92b9be482077?q=80&w=1000&auto=format&fit=crop", // Santorini / Akropolis
+  TR: "https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?q=80&w=1000&auto=format&fit=crop", // Istanbul Hagia Sophia
+  RU: "https://images.unsplash.com/photo-1513326738677-b964603b136d?q=80&w=1000&auto=format&fit=crop", // Moskau Basilius-Kathedrale
+  PL: "https://images.unsplash.com/photo-1519197924294-4ba991a11128?q=80&w=1000&auto=format&fit=crop", // Warschau / Krakau
+  CZ: "https://images.unsplash.com/photo-1541849546-216549ae216d?q=80&w=1000&auto=format&fit=crop", // Prag Karlsbrücke
+  HU: "https://images.unsplash.com/photo-1549877452-9c387954fbc2?q=80&w=1000&auto=format&fit=crop", // Budapest Parlament
+  HR: "https://images.unsplash.com/photo-1555990538-1e6c0c12db88?q=80&w=1000&auto=format&fit=crop", // Dubrovnik
+  DK: "https://images.unsplash.com/photo-1513622470522-26c3c8a854bc?q=80&w=1000&auto=format&fit=crop", // Kopenhagen Nyhavn
+  SE: "https://images.unsplash.com/photo-1509356843151-3e7d96241e11?q=80&w=1000&auto=format&fit=crop", // Stockholm
+  NO: "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?q=80&w=1000&auto=format&fit=crop", // Norwegen Fjorde
+  FI: "https://images.unsplash.com/photo-1538332576228-eb5b4c4de6f5?q=80&w=1000&auto=format&fit=crop", // Helsinki Dom
+  IS: "https://images.unsplash.com/photo-1504893524553-b855bce32c67?q=80&w=1000&auto=format&fit=crop", // Island
+  AL: "https://images.unsplash.com/photo-1592488831719-396a2a0b284f?q=80&w=1000&auto=format&fit=crop", // Albanien
+  RO: "https://images.unsplash.com/photo-1584646098378-0874589d76b1?q=80&w=1000&auto=format&fit=crop", // Rumänien Schloss Bran
+  US: "https://images.unsplash.com/photo-1485738422979-f5c462d49f74?q=80&w=1000&auto=format&fit=crop", // New York Freiheitsstatue
+  CA: "https://images.unsplash.com/photo-1503614472-8c93d56e92ce?q=80&w=1000&auto=format&fit=crop", // Kanada Moraine Lake
+  MX: "https://images.unsplash.com/photo-1518638150340-f706e86654de?q=80&w=1000&auto=format&fit=crop", // Mexiko Chichén Itzá
+  BR: "https://images.unsplash.com/photo-1483729558449-99ef09a8c325?q=80&w=1000&auto=format&fit=crop", // Rio de Janeiro
+  AR: "https://images.unsplash.com/photo-1589909202802-8f4aadce1849?q=80&w=1000&auto=format&fit=crop", // Buenos Aires
+  JP: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=1000&auto=format&fit=crop", // Japan Mount Fuji & Pagode
+  CN: "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?q=80&w=1000&auto=format&fit=crop", // Chinesische Mauer
+  HK: "https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?q=80&w=1000&auto=format&fit=crop", // Hongkong Skyline
+  TW: "https://images.unsplash.com/photo-1470004914212-05527e49370b?q=80&w=1000&auto=format&fit=crop", // Taipei 101
+  KR: "https://images.unsplash.com/photo-1517154421773-0529f29ea451?q=80&w=1000&auto=format&fit=crop", // Seoul
+  SG: "https://images.unsplash.com/photo-1525625293386-3f8f99389edd?q=80&w=1000&auto=format&fit=crop", // Singapur Marina Bay Sands
+  TH: "https://images.unsplash.com/photo-1508009603885-50cf7c579365?q=80&w=1000&auto=format&fit=crop", // Bangkok Tempel
+  MY: "https://images.unsplash.com/photo-1596422846543-75c6fc197f07?q=80&w=1000&auto=format&fit=crop", // Kuala Lumpur Petronas Towers
+  ID: "https://images.unsplash.com/photo-1537996194471-e657df975ab4?q=80&w=1000&auto=format&fit=crop", // Bali Tempel
+  IN: "https://images.unsplash.com/photo-1564507592333-c60657eea523?q=80&w=1000&auto=format&fit=crop", // Taj Mahal
+  AE: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?q=80&w=1000&auto=format&fit=crop", // Dubai Burj Khalifa
+  QA: "https://images.unsplash.com/photo-1578895101408-1a36b834405b?q=80&w=1000&auto=format&fit=crop", // Doha Skyline
+  KW: "https://images.unsplash.com/photo-1578894381163-e72c17f2d45f?q=80&w=1000&auto=format&fit=crop", // Kuwait Towers
+  ZA: "https://images.unsplash.com/photo-1580060839134-75a5edca2e99?q=80&w=1000&auto=format&fit=crop", // Kapstadt Tafelberg
+  EG: "https://images.unsplash.com/photo-1539650116574-8efeb43e2750?q=80&w=1000&auto=format&fit=crop", // Pyramiden von Gizeh
+  MA: "https://images.unsplash.com/photo-1539020140153-e479b8c22e70?q=80&w=1000&auto=format&fit=crop", // Marrakesch
+  AU: "https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?q=80&w=1000&auto=format&fit=crop", // Sydney Opera House
+  NZ: "https://images.unsplash.com/photo-1507699622108-4be3abd695ad?q=80&w=1000&auto=format&fit=crop"  // Neuseeland Milford Sound
+};
+
+// Holt das Wahrzeichen-Bild (entweder aus unserer Liste oder live über die Wikipedia-API)
+window.getCountryLandmarkImage = async function (countryCode) {
+  if (!countryCode || countryCode === "XX") return null;
+  const code = countryCode.toUpperCase();
+  if (COUNTRY_LANDMARK_IMAGES[code]) return COUNTRY_LANDMARK_IMAGES[code];
+
+  try {
+    const enNames = new Intl.DisplayNames(["en"], { type: "region" });
+    const countryNameEn = enNames.of(code);
+    if (countryNameEn) {
+      const res = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(countryNameEn)}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.originalimage && data.originalimage.source) return data.originalimage.source;
+        if (data.thumbnail && data.thumbnail.source) return data.thumbnail.source;
+      }
+    }
+  } catch (e) {}
+  return "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1000&auto=format&fit=crop";
+};
+
+// Ermittelt zuverlässig den 2-stelligen Ländercode eines Flughafens (inkl. SVO & Historien-Fallback)
 window.getAirportCountryCode = function (iataCode) {
   if (!iataCode) return null;
   const code = iataCode.trim().toUpperCase();
@@ -1019,36 +1101,68 @@ window.getAirportCountryCode = function (iataCode) {
     return window.airportData[code].country_code.toUpperCase();
   }
 
-  // Schnelles Fallback-Lexikon für häufige Airports
+  // Großes Fallback-Lexikon (inkl. SVO, DME, VKO, LED und weltweiten Hubs)
   const quickCountryMap = {
-    FRA: "DE", MUC: "DE", BER: "DE", DUS: "DE", HAM: "DE", STR: "DE", CGN: "DE", HAJ: "DE", BRE: "DE", DRS: "DE", LEJ: "DE", NUE: "DE", FMO: "DE", PAD: "DE",
-    ZRH: "CH", GVA: "CH", BSL: "CH", VIE: "AT", SZG: "AT", INN: "AT",
-    LHR: "GB", LGW: "GB", LTN: "GB", STN: "GB", MAN: "GB", EDI: "GB", DUB: "IE",
-    AMS: "NL", BRU: "BE", LUX: "LU", CDG: "FR", ORY: "FR", NCE: "FR", LYS: "FR",
-    MAD: "ES", BCN: "ES", PMI: "ES", IBZ: "ES", AGP: "ES", LPA: "ES", TFS: "ES", FUE: "ES", ACE: "ES",
-    LIS: "PT", OPO: "PT", FAO: "PT", FNC: "PT",
-    FCO: "IT", MXP: "IT", LIN: "IT", VCE: "IT", BGY: "IT", NAP: "IT", BLQ: "IT", CTA: "IT",
-    ATH: "GR", HER: "GR", RHO: "GR", KGS: "GR", CFU: "GR", SKG: "GR",
-    IST: "TR", SAW: "TR", AYT: "TR", ADB: "TR", DLM: "TR",
-    CPH: "DK", OSL: "NO", ARN: "SE", HEL: "FI", KEF: "IS",
-    WAW: "PL", KRK: "PL", PRG: "CZ", BUD: "HU", OTP: "RO", SOF: "BG", BEG: "RS", ZAG: "HR", SPU: "HR", DBV: "HR", TIA: "AL", TZL: "BA",
-    JFK: "US", EWR: "US", LGA: "US", LAX: "US", SFO: "US", ORD: "US", ATL: "US", MIA: "US", MCO: "US", BOS: "US", DFW: "US", DEN: "US", SEA: "US", LAS: "US", PHX: "US", IAH: "US", IAD: "US",
-    YYZ: "CA", YVR: "CA", YUL: "CA", YYC: "CA", MEX: "MX", CUN: "MX",
-    GRU: "BR", GIG: "BR", BSB: "BR", EZE: "AR", AEP: "AR", SCL: "CL", BOG: "CO", LIM: "PE", PTY: "PA", PUJ: "DO", SDQ: "DO", HAV: "CU",
-    HND: "JP", NRT: "JP", KIX: "JP", ITM: "JP", MSJ: "JP", CTS: "JP", FUK: "JP", OKA: "JP",
-    ICN: "KR", GMP: "KR", PEK: "CN", PKX: "CN", PVG: "CN", SHA: "CN", CAN: "CN", HKG: "HK", MFM: "MO", TPE: "TW",
-    SIN: "SG", KUL: "MY", BKK: "TH", DMK: "TH", HKT: "TH", CGK: "ID", DPS: "ID", MNL: "PH", SGN: "VN", HAN: "VN",
-    DEL: "IN", BOM: "IN", BLR: "IN", MAA: "IN", MLE: "MV", CMB: "LK",
-    DXB: "AE", AUH: "AE", SHJ: "AE", DOH: "QA", KWI: "KW", MCT: "OM", BAH: "BH", JED: "SA", RUH: "SA", TLV: "IL", AMM: "JO", BEY: "LB",
-    JNB: "ZA", CPT: "ZA", DUR: "ZA", NLP: "ZA", MQP: "ZA", PTG: "ZA",
-    CAI: "EG", HRG: "EG", SSH: "EG", CMN: "MA", RAK: "MA", TUN: "TN", NBO: "KE", ADD: "ET", LOS: "NG", MRU: "MU", SEZ: "SC",
-    SYD: "AU", MEL: "AU", BNE: "AU", PER: "AU", AKL: "NZ", CHC: "NZ", NAN: "FJ"
+    // Deutschland, Österreich, Schweiz
+    FRA: "DE", MUC: "DE", BER: "DE", TXL: "DE", SXF: "DE", DUS: "DE", HAM: "DE", STR: "DE", CGN: "DE", HAJ: "DE", BRE: "DE", DRS: "DE", LEJ: "DE", NUE: "DE", FMO: "DE", PAD: "DE", DTM: "DE", FKB: "DE", FMM: "DE", HHN: "DE", NRN: "DE", ERF: "DE", RLG: "DE", GWT: "DE",FDH: "DE",
+    ZRH: "CH", GVA: "CH", BSL: "CH", BRN: "CH", ACH: "CH", LUG: "CH",
+    VIE: "AT", SZG: "AT", INN: "AT", GRZ: "AT", LNZ: "AT", KLU: "AT",
+    // Russland & GUS (inkl. SVO Sheremetyevo!)
+    SVO: "RU", DME: "RU", VKO: "RU", ZIA: "RU", LED: "RU", AER: "RU", SVX: "RU", OVB: "RU", KZN: "RU", ROV: "RU", UFA: "RU", KGD: "RU", VVO: "RU", IKT: "RU", KJA: "RU", MRV: "RU",
+    MSQ: "BY", KBP: "UA", IEV: "UA", LWO: "UA", ODS: "UA", ALA: "KZ", NQZ: "KZ", TSE: "KZ", TAS: "UZ", GYD: "AZ", EVN: "AM", TBS: "GE",
+    // Restliches Europa
+    LHR: "GB", LGW: "GB", LTN: "GB", STN: "GB", LCY: "GB", SEN: "GB", MAN: "GB", BHX: "GB", EDI: "GB", GLA: "GB", BRS: "GB", NCL: "GB", LPL: "GB", BFS: "GB",
+    DUB: "IE", SNN: "IE", ORK: "IE",
+    AMS: "NL", EIN: "NL", RTM: "NL", BRU: "BE", CRL: "BE", ANR: "BE", LUX: "LU",
+    CDG: "FR", ORY: "FR", BVA: "FR", NCE: "FR", LYS: "FR", MRS: "FR", TLS: "FR", BOD: "FR", NTE: "FR", SXB: "FR", BIQ: "FR",
+    MAD: "ES", BCN: "ES", PMI: "ES", IBZ: "ES", MAH: "ES", AGP: "ES", ALC: "ES", VLC: "ES", SVQ: "ES", BIO: "ES", LPA: "ES", TFS: "ES", TFN: "ES", FUE: "ES", ACE: "ES", SPC: "ES", SCQ: "ES", GRO: "ES", REU: "ES",
+    LIS: "PT", OPO: "PT", FAO: "PT", FNC: "PT", PDL: "PT", TER: "PT",
+    FCO: "IT", CIA: "IT", MXP: "IT", LIN: "IT", BGY: "IT", VCE: "IT", TSF: "IT", NAP: "IT", BLQ: "IT", PSA: "IT", FLR: "IT", CTA: "IT", PMO: "IT", OLB: "IT", CAG: "IT", BRI: "IT", VRN: "IT", TRN: "IT", GOA: "IT", SUF: "IT", BDS: "IT",
+    ATH: "GR", SKG: "GR", HER: "GR", CHQ: "GR", RHO: "GR", KGS: "GR", CFU: "GR", ZTH: "GR", JTR: "GR", JMK: "GR", KVA: "GR", EFL: "GR", PVK: "GR", JSI: "GR", SMI: "GR",
+    IST: "TR", ISL: "TR", SAW: "TR", AYT: "TR", ADB: "TR", DLM: "TR", BJV: "TR", ESB: "TR", TZX: "TR", GZP: "TR", ASR: "TR",
+    CPH: "DK", BLL: "DK", AAL: "DK", OSL: "NO", TRF: "NO", BGO: "NO", SVG: "NO", TOS: "NO", TRD: "NO", BOO: "NO", ARN: "SE", NYO: "SE", GOT: "SE", MMX: "SE", HEL: "FI", TMP: "FI", OUL: "FI", RVN: "FI", KEF: "IS", RKV: "IS",
+    WAW: "PL", WMI: "PL", KRK: "PL", GDN: "PL", KTW: "PL", WRO: "PL", POZ: "PL",
+    PRG: "CZ", BRQ: "CZ", BTS: "SK", KSC: "SK", BUD: "HU", DEB: "HU",
+    OTP: "RO", CLJ: "RO", TSR: "RO", IAS: "RO", SBZ: "RO", SOF: "BG", VAR: "BG", BOJ: "BG", PDV: "BG",
+    BEG: "RS", INI: "RS", ZAG: "HR", SPU: "HR", DBV: "HR", ZAD: "HR", PUY: "HR", RJK: "HR", LJU: "SI", SJJ: "BA", TZL: "BA", TIA: "AL", PRN: "XK", SKP: "MK", TGD: "ME", TIV: "ME",
+    TLL: "EE", RIX: "LV", VNO: "LT", KUN: "LT", MLA: "MT", LCA: "CY", PFO: "CY",
+    // Amerika
+    JFK: "US", EWR: "US", LGA: "US", LAX: "US", SFO: "US", SAN: "US", SJC: "US", ORD: "US", MDW: "US", ATL: "US", MIA: "US", FLL: "US", MCO: "US", TPA: "US", RSW: "US", BOS: "US", DFW: "US", DAL: "US", IAH: "US", HOU: "US", AUS: "US", DEN: "US", SEA: "US", LAS: "US", PHX: "US", IAD: "US", DCA: "US", BWI: "US", PHL: "US", DTW: "US", MSP: "US", CLT: "US", SLC: "US", PDX: "US", HNL: "US", OGG: "US", ANC: "US", MSY: "US", BNA: "US", STL: "US",
+    YYZ: "CA", YVR: "CA", YUL: "CA", YYC: "CA", YEG: "CA", YOW: "CA", YHZ: "CA",
+    MEX: "MX", CUN: "MX", GDL: "MX", MTY: "MX", SJD: "MX", PVR: "MX",
+    GRU: "BR", CGH: "BR", GIG: "BR", SDU: "BR", BSB: "BR", FOR: "BR", REC: "BR", SSA: "BR",
+    EZE: "AR", AEP: "AR", COR: "AR", MDZ: "AR", USH: "AR", SCL: "CL", BOG: "CO", MDE: "CO", CTG: "CO", LIM: "PE", CUZ: "PE", UIO: "EC", GYE: "EC", PTY: "PA", SJO: "CR", PUJ: "DO", SDQ: "DO", POP: "DO", HAV: "CU", VRA: "CU", MBJ: "JM", NAS: "BS", SJU: "PR", AUA: "AW", CUR: "CW", SXM: "SX",
+    // Asien, Nahost, Afrika, Ozeanien
+    HND: "JP", NRT: "JP", KIX: "JP", ITM: "JP", NGO: "JP", FUK: "JP", CTS: "JP", OKA: "JP", MSJ: "JP", HIJ: "JP", SDJ: "JP", KOJ: "JP",
+    ICN: "KR", GMP: "KR", PUS: "KR", CJU: "KR", PEK: "CN", PKX: "CN", PVG: "CN", SHA: "CN", CAN: "CN", SZX: "CN", CTU: "CN", TFU: "CN", XIY: "CN", HGH: "CN", KMG: "CN", WUH: "CN", HKG: "HK", MFM: "MO", TPE: "TW", TSA: "TW", KHH: "TW",
+    SIN: "SG", KUL: "MY",SZB: "MY", PEN: "MY", LGK: "MY", BKI: "MY", KCH: "MY", BKK: "TH", DMK: "TH", HKT: "TH", CNX: "TH", USM: "TH", KBV: "TH", CGK: "ID", DPS: "ID", SUB: "ID", MNL: "PH", CEB: "PH", CRK: "PH", SGN: "VN", HAN: "VN", DAD: "VN", CXR: "VN", PNH: "KH", REP: "KH", RGN: "MM", VTE: "LA",
+    DEL: "IN", BOM: "IN", BLR: "IN", MAA: "IN", HYD: "IN", CCU: "IN", COK: "IN", GOI: "IN", AMD: "IN", CMB: "LK", MLE: "MV", KTM: "NP", DAC: "BD", KHI: "PK", LHE: "PK", ISB: "PK",
+    DXB: "AE", DWC: "AE", AUH: "AE", SHJ: "AE", RKT: "AE", DOH: "QA", KWI: "KW", MCT: "OM", SLL: "OM", BAH: "BH", JED: "SA", RUH: "SA", DMM: "SA", MED: "SA", TLV: "IL", ETM: "IL", AMM: "JO", AQJ: "JO", BEY: "LB", BGW: "IQ", IKA: "IR", THR: "IR",
+    JNB: "ZA", CPT: "ZA", DUR: "ZA", NLP: "ZA", MQP: "ZA", PTG: "ZA", PLZ: "ZA", GRJ: "ZA", HDS: "ZA", SZK: "ZA",
+    CAI: "EG", SPX: "EG", HRG: "EG", SSH: "EG", RMF: "EG", LXR: "EG", ASW: "EG", HBE: "EG",
+    CMN: "MA", RAK: "MA", AGA: "MA", TNG: "MA", FEZ: "MA", TUN: "TN", DJE: "TN", MIR: "TN", NBE: "TN", ALG: "DZ",
+    NBO: "KE", MBA: "KE", ZNZ: "TZ", DAR: "TZ", JRO: "TZ", EBB: "UG", KGL: "RW", ADD: "ET", LOS: "NG", ABV: "NG", ACC: "GH", DSS: "SN", ABJ: "CI", WDH: "NA", GBE: "BW", VFA: "ZW", HRE: "ZW", LUN: "ZM", LLW: "MW", MPM: "MZ", TNR: "MG", MRU: "MU", RUN: "RE", SEZ: "SC", SID: "CV", VXE: "CV",
+    SYD: "AU", MEL: "AU", BNE: "AU", PER: "AU", ADL: "AU", OOL: "AU", CNS: "AU", CBR: "AU", DRW: "AU", HBA: "AU",
+    AKL: "NZ", CHC: "NZ", WLG: "NZ", ZQN: "NZ", NAN: "FJ", PPT: "PF", NOU: "NC"
   };
 
-  return quickCountryMap[code] || null;
+  if (quickCountryMap[code]) {
+    if (typeof window.airportData !== "undefined" && window.airportData[code]) {
+      window.airportData[code].country_code = quickCountryMap[code];
+    }
+    return quickCountryMap[code];
+  }
+
+  // Prüfe das historische Open-Source-Archiv (falls bereits geladen)
+  if (Array.isArray(window.historicalAirportsCache)) {
+    const hit = window.historicalAirportsCache.find((a) => a.iata_code === code);
+    if (hit && hit.country) return hit.country.toUpperCase();
+  }
+
+  return null;
 };
 
-// Berechnet alle Passport-Kennzahlen (Länder, Kontinente, Welt-Prozentsatz & Flüge pro Land)
+// Berechnet alle Passport-Kennzahlen
 window.calculatePassportData = function (flights) {
   const countriesMap = {};
   const continentsSet = new Set();
@@ -1056,8 +1170,6 @@ window.calculatePassportData = function (flights) {
   (flights || []).forEach((f) => {
     const depCountry = window.getAirportCountryCode(f.departure);
     const arrCountry = window.getAirportCountryCode(f.arrival);
-
-    // Falls Abflug und Ankunft im selben Land liegen, den Flug für dieses Land nur 1x zählen
     const touchedCountries = new Set([depCountry, arrCountry].filter(Boolean));
 
     touchedCountries.forEach((cc) => {
@@ -1066,6 +1178,7 @@ window.calculatePassportData = function (flights) {
           code: cc,
           name: window.getCountryName(cc),
           flag: window.getCountryFlag(cc),
+          flagHtml: window.getCountryFlagHtml(cc),
           flights: [],
           airports: new Set(),
           totalDistance: 0,

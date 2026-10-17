@@ -677,14 +677,12 @@ async function startDemoMode() {
                  drawAllRoutesOnMap(demoData);
                  window.isAllRoutesViewActive = true;
                  
-                 // Button Text direkt auf "Einzelansicht" stellen
                  const btn = document.getElementById("toggle-map-view-btn");
-                 if(btn) {
-                     btn.innerHTML = `
-                         <span class="material-symbols-outlined text-3xl text-primary dark:text-indigo-400 group-hover:scale-110 transition-transform">location_on</span>
-                         <span class="text-sm font-bold text-on-surface dark:text-white" data-i18n="singleView">${getTranslation("singleView") || "Einzelansicht"}</span>
-                     `;
-                     btn.classList.add('bg-primary/10', 'dark:bg-indigo-900/40');
+                 if (btn) {
+                     btn.innerHTML = `<span class="material-symbols-outlined text-[18px]">location_on</span>`;
+                     btn.classList.add('bg-primary', 'text-white', 'border-primary');
+                     btn.classList.remove('bg-surface-container-high', 'text-on-surface/80', 'dark:text-slate-200');
+                     btn.title = getTranslation("singleView") || "Einzelansicht";
                  }
                  
                  // 🚀 BUGHUNT FIX: Chronik-Controls sofort einblenden!
@@ -4442,9 +4440,16 @@ window.switchFlightCard = function(flightId, direction) {
 window.viewFlightDetails = async function(id, isSwitching = false, customScope = null) {
     let allFlights = [];
     
-    // 1. Datenquelle wählen (Trip-Scope oder Alle Flüge)
-    if (customScope) {
-        allFlights = customScope; // Wir nutzen NUR die Flüge dieser Reise!
+    // 1. Datenquelle wählen ('single' = Einzelner Rekordflug OHNE Swipen, Array = Trip/Logbuch-Scope, null = Alle Flüge)
+    if (customScope === 'single') {
+        const sourceFlights = (typeof isDemoMode !== 'undefined' && isDemoMode && typeof flights !== 'undefined')
+            ? [...flights]
+            : await getFlights();
+        const numbered = resequenceAndAssignNumbers(sourceFlights);
+        const singleHit = numbered.find(f => f.id == id || f.flight_id == id || f.flightLogNumber == id);
+        allFlights = singleHit ? [singleHit] : [];
+    } else if (Array.isArray(customScope)) {
+        allFlights = customScope;
         allFlights.sort((a, b) => a.flightLogNumber - b.flightLogNumber);
     } else {
         if (typeof isDemoMode !== 'undefined' && isDemoMode && typeof flights !== 'undefined') {
@@ -4461,9 +4466,14 @@ window.viewFlightDetails = async function(id, isSwitching = false, customScope =
     const flight = allFlights[currentIndex]; 
     if (!flight) return;
 
-    // Swipe-Daten für später speichern
     window.currentSwipeIndex = currentIndex;
     window.currentSwipeFlights = allFlights;
+
+    // Mobilen "Wischen zum Blättern"-Hinweis ausblenden, wenn es nur 1 Flug ist!
+    const swipeHintEl = document.querySelector('#flight-details-modal [data-i18n="swipeToScroll"]');
+    if (swipeHintEl) {
+        swipeHintEl.style.display = allFlights.length <= 1 ? 'none' : '';
+    }
 
     // 3. Textdaten einfügen
     document.getElementById('fd-date').textContent = new Date(flight.date).toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' });
@@ -5131,13 +5141,23 @@ window.viewLogbookDetails = async function(type, key) {
         filteredFlights = allFlights.filter(f => {
             const depC = typeof window.getAirportCountryCode === 'function' ? window.getAirportCountryCode(f.departure) : null;
             const arrC = typeof window.getAirportCountryCode === 'function' ? window.getAirportCountryCode(f.arrival) : null;
+            if (key === (getTranslation("logbook.unknown") || "Unbekannt")) return !depC && !arrC;
             return depC === key || arrC === key;
         });
-        const flag = typeof window.getCountryFlag === 'function' ? window.getCountryFlag(key) : "🌍";
-        const cName = typeof window.getCountryName === 'function' ? window.getCountryName(key) : key;
-        title = `${flag} ${cName}`;
-        subtitle = getTranslation("passport.countrySubtitle") || `Land (${key})`;
-        icon = flag;
+        const isKnownCountry = key && key.length === 2 && key !== "XX";
+        const cName = isKnownCountry && typeof window.getCountryName === 'function' ? window.getCountryName(key) : key;
+        title = cName; // Kein doppeltes "DE" mehr vor dem Ländernamen!
+        subtitle = getTranslation("passport.countrySubtitle") || "Besuchtes Land";
+        icon = "🌍";
+
+        if (isKnownCountry) {
+            // 1. Echte Flagge im weißen Badge über dem Titel anzeigen
+            logoUrl = `https://flagcdn.com/w160/${key.toLowerCase()}.png`;
+            // 2. Wahrzeichen-Hintergrundbild für dieses Land laden
+            if (typeof window.getCountryLandmarkImage === 'function') {
+                heroImgUrl = await window.getCountryLandmarkImage(key);
+            }
+        }
     }
 
     if (filteredFlights.length === 0) return;

@@ -162,6 +162,8 @@ function closePremiumModal() {
               currentView = "airport";
           } else if (document.getElementById("logbook-view-registration")?.classList.contains("active")) {
               currentView = "registration";
+          } else if (document.getElementById("logbook-view-country")?.classList.contains("active")) {
+              currentView = "country";
           }
           
           // Zeichnet die Liste mit den echten Info-Buttons statt der Schlösser neu!
@@ -320,6 +322,43 @@ async function showAircraftDetails(modelCode) {
             }
         } catch (err) {
             console.warn("Cloud Aircraft Lookup übersprungen:", err);
+        }
+    }
+
+    // 🚀 STUFE 3: Falls auch in Supabase noch unbekannt -> Live per Gemini abrufen & für alle User in Supabase speichern!
+    if (!aircraft && navigator.onLine) {
+        try {
+            const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : '';
+            const aiRes = await fetch(`${baseUrl}/.netlify/functions/fetch-aircraft-facts?code=${encodeURIComponent(cleanCode)}`);
+            if (aiRes.ok) {
+                const aiData = await aiRes.json();
+                if (aiData && aiData.found && aiData.name) {
+                    const newEntry = {
+                        code: cleanCode,
+                        name: aiData.name,
+                        manufacturer: aiData.manufacturer || "-",
+                        engine: aiData.engine || "-",
+                        speed: aiData.speed || "-",
+                        range: aiData.range || "-",
+                        length: aiData.length || "-",
+                        wingspan: aiData.wingspan || "-",
+                        alt: aiData.alt || "-",
+                        weight: aiData.weight || "-",
+                        seats: aiData.seats || null,
+                        wiki: aiData.wiki || null
+                    };
+                    aircraft = newEntry;
+                    if (typeof LOCAL_AIRCRAFT_DB !== 'undefined') {
+                        LOCAL_AIRCRAFT_DB[cleanCode] = newEntry;
+                    }
+                    // Dauerhaft für alle Nutzer in Supabase speichern!
+                    if (typeof supabaseClient !== 'undefined') {
+                        supabaseClient.from('aircraft_types').upsert(newEntry).then();
+                    }
+                }
+            }
+        } catch (aiErr) {
+            console.warn("Gemini Aircraft Fallback fehlgeschlagen:", aiErr);
         }
     }
 
@@ -979,9 +1018,11 @@ async function renderLogbookView(groupBy) {
         titleHtml = `<span class="flex-1">${key}</span> <button onclick="event.stopPropagation(); openPremiumModal('default')" class="ml-4 p-2 rounded-xl bg-surface-container-low dark:bg-slate-900 text-on-surface/40 dark:text-slate-500 shadow-inner border border-outline-variant/10 dark:border-slate-700"><span class="text-xs">🔒</span></button>`;
       }
     } else if (isCountryView && key !== unknownKey) {
-        const flag = typeof window.getCountryFlag === "function" ? window.getCountryFlag(key) : "🌍";
+        const flagHtml = typeof window.getCountryFlagHtml === "function"
+            ? window.getCountryFlagHtml(key, "w-6 h-4 rounded-[3px] object-cover shadow-sm inline-block mr-2 align-middle")
+            : "🌍";
         const countryName = typeof window.getCountryName === "function" ? window.getCountryName(key) : key;
-        const displayCountry = `${flag} ${countryName} <span class="text-sm text-on-surface/50 font-medium ml-2">(${key})</span>`;
+        const displayCountry = `<span class="inline-flex items-center">${flagHtml}<span>${countryName}</span><span class="text-sm text-on-surface/50 font-medium ml-2">(${key})</span></span>`;
 
         if (currentUserSubscription === "pro") {
             titleHtml = `
@@ -994,7 +1035,6 @@ async function renderLogbookView(groupBy) {
             titleHtml = `<span class="flex-1">${displayCountry}</span> <button onclick="event.stopPropagation(); openPremiumModal('default')" class="ml-4 p-2 rounded-xl bg-surface-container-low dark:bg-slate-900 text-on-surface/40 dark:text-slate-500 shadow-inner border border-outline-variant/10 dark:border-slate-700"><span class="text-xs">🔒</span></button>`;
         }
     }
-
 
     // Pfeil-Icon hinzufügen für den Accordion-Effekt
     summaryElement.innerHTML = `
@@ -1011,8 +1051,13 @@ async function renderLogbookView(groupBy) {
       const printButton = document.createElement("button");
       printButton.className = "text-xs font-bold text-primary hover:text-white p-3 rounded-xl bg-surface-container-low dark:bg-slate-900 hover:bg-primary dark:hover:bg-primary/90 transition shadow-sm w-full sm:w-auto flex items-center justify-center gap-2 mb-6 border border-outline-variant/10 dark:border-white/5";
 
-      const buttonTitle = (getTranslation("print.logbookTitle") || "Logbuch: {groupName}").replace("{groupName}", key);
-      printButton.innerHTML = `<span class="material-symbols-outlined text-[18px]">menu_book</span> ` + (getTranslation("print.createBookForGroup") || "Buch für {groupName} erstellen").replace("{groupName}", key);
+      // 🚀 Für Länder den echten Ländernamen ("Deutschland") statt "DE" auf dem PDF-Button nutzen
+      const displayGroupName = (isCountryView && key !== unknownKey && typeof window.getCountryName === "function")
+        ? window.getCountryName(key)
+        : key;
+
+      const buttonTitle = (getTranslation("print.logbookTitle") || "Logbuch: {groupName}").replace("{groupName}", displayGroupName);
+      printButton.innerHTML = `<span class="material-symbols-outlined text-[18px]">menu_book</span> ` + (getTranslation("print.createBookForGroup") || "Buch für {groupName} erstellen").replace("{groupName}", displayGroupName);
 
       printButton.onclick = async (event) => {
         event.stopPropagation();
@@ -1063,25 +1108,41 @@ async function renderLogbookView(groupBy) {
     contentContainer.appendChild(detailsElement);
   });
 
-  // UI für die Buttons aktualisieren
-  document
-    .querySelectorAll(".logbook-view-btn")
-    .forEach((btn) => btn.classList.remove("active"));
-  let buttonIdFragment = groupBy;
-  if (groupBy === "aircraftType") {
-    buttonIdFragment = "aircraft";
-  }
-  if (groupBy === "airline") {
-    buttonIdFragment = "airline";
-  }
-  if (groupBy === "registration") {
-    buttonIdFragment = "registration";
-  }
-  const activeButton = document.getElementById(
-    `logbook-view-${buttonIdFragment}`
-  );
+  // UI für die 5 Logbuch-Buttons aktualisieren
+  const logbookBtnIds = [
+    "logbook-view-aircraft",
+    "logbook-view-airline",
+    "logbook-view-airport",
+    "logbook-view-registration",
+    "logbook-view-country",
+  ];
+  logbookBtnIds.forEach((id) => {
+    const btn = document.getElementById(id);
+    if (btn) {
+      btn.classList.remove(
+        "active",
+        "bg-surface-container-lowest",
+        "dark:bg-slate-700",
+        "text-on-surface",
+        "dark:text-white",
+        "shadow-sm"
+      );
+      btn.classList.add("text-on-surface/60", "dark:text-slate-400");
+    }
+  });
+
+  const buttonIdFragment = groupBy === "aircraftType" ? "aircraft" : groupBy;
+  const activeButton = document.getElementById(`logbook-view-${buttonIdFragment}`);
   if (activeButton) {
-    activeButton.classList.add("active");
+    activeButton.classList.remove("text-on-surface/60", "dark:text-slate-400");
+    activeButton.classList.add(
+      "active",
+      "bg-surface-container-lowest",
+      "dark:bg-slate-700",
+      "text-on-surface",
+      "dark:text-white",
+      "shadow-sm"
+    );
   }
 }
 
@@ -1225,7 +1286,7 @@ var updateStatisticsDisplay = function (flights) {
       .replace("{arrival}", stats.longestFlight.arrival)
       .replace("{distance}", stats.longestFlight.distance.toLocaleString("de-DE"));
     makeCardInteractive("stat-longest-flight", () =>
-      viewFlightDetails(stats.longestFlight.id || stats.longestFlight.flight_id)
+      viewFlightDetails(stats.longestFlight.id || stats.longestFlight.flight_id, false, 'single')
     );
   } else {
     document.getElementById("stat-longest-flight").textContent = getTranslation("stats.noData");
@@ -1239,7 +1300,7 @@ var updateStatisticsDisplay = function (flights) {
       .replace("{arrival}", stats.shortestFlight.arrival)
       .replace("{distance}", stats.shortestFlight.distance.toLocaleString("de-DE"));
     makeCardInteractive("stat-shortest-flight", () =>
-      viewFlightDetails(stats.shortestFlight.id || stats.shortestFlight.flight_id)
+      viewFlightDetails(stats.shortestFlight.id || stats.shortestFlight.flight_id, false, 'single')
     );
   } else {
     document.getElementById("stat-shortest-flight").textContent = getTranslation("stats.noData");
@@ -1268,7 +1329,7 @@ var updateStatisticsDisplay = function (flights) {
       .replace("{price}", stats.mostExpensiveFlight.price.toLocaleString("de-DE"))
       .replace("{currency}", stats.mostExpensiveFlight.currency);
     makeCardInteractive("stat-most-expensive", () =>
-      viewFlightDetails(stats.mostExpensiveFlight.id || stats.mostExpensiveFlight.flight_id)
+      viewFlightDetails(stats.mostExpensiveFlight.id || stats.mostExpensiveFlight.flight_id, false, 'single')
     );
   } else {
     document.getElementById("stat-most-expensive").textContent = getTranslation("stats.noData");
@@ -1283,7 +1344,7 @@ var updateStatisticsDisplay = function (flights) {
       .replace("{price}", stats.leastExpensiveFlight.price.toLocaleString("de-DE"))
       .replace("{currency}", stats.leastExpensiveFlight.currency);
     makeCardInteractive("stat-least-expensive", () =>
-      viewFlightDetails(stats.leastExpensiveFlight.id || stats.leastExpensiveFlight.flight_id)
+      viewFlightDetails(stats.leastExpensiveFlight.id || stats.leastExpensiveFlight.flight_id, false, 'single')
     );
   } else {
     document.getElementById("stat-least-expensive").textContent = getTranslation("stats.noData");
@@ -1347,7 +1408,7 @@ var updateStatisticsDisplay = function (flights) {
             (c) => `
             <button onclick="viewLogbookDetails('country', '${c.code}')" 
                     class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 hover:border-amber-400/50 transition-all text-xs font-bold text-white shadow-sm group">
-              <span class="text-base leading-none">${c.flag}</span>
+              <span class="text-base leading-none">${c.flagHtml}</span>
               <span class="group-hover:text-amber-300 transition-colors">${c.name}</span>
               <span class="text-[10px] font-black px-1.5 py-0.5 rounded-md bg-black/30 text-indigo-200">${c.flights.length}</span>
             </button>
@@ -2918,75 +2979,17 @@ window.addEventListener('scroll', () => {
 });
 
 // ==========================================
-// 🚀 UX FEATURE: REKORDE AUTOMATISCH KLICKBAR MACHEN
+// 🏆 NEUE BADGE-KATEGORIE: BESUCHTE LÄNDER (uniqueCountries)
 // ==========================================
-window.makeRecordsInteractive = async function () {
-  const container = document.getElementById("records-container");
-  if (!container || container.children.length === 0) return;
-
-  const allFlights =
-    typeof isDemoMode !== "undefined" && isDemoMode && typeof flights !== "undefined"
-      ? [...flights]
-      : await getFlights();
-  if (!allFlights || allFlights.length === 0) return;
-
-  // Chronologisch aufsteigend (für alle "First..."-Rekorde)
-  const chronological = [...allFlights].sort((a, b) => new Date(a.date) - new Date(b.date));
-
-  Array.from(container.children).forEach((card) => {
-    const text = card.innerText || "";
-    // Suche nach einem Routen-Muster wie "CUN → IST" oder "DRS ➔ MUC" auf der Karte
-    const routeMatch = text.match(/\b([A-Z0-9]{3,4})\s*(?:→|➔|->)\s*([A-Z0-9]{3,4})\b/);
-    if (!routeMatch) return;
-
-    const dep = routeMatch[1];
-    const arr = routeMatch[2];
-    const dateMatch = text.match(/\b(\d{4}-\d{2}-\d{2})\b/);
-
-    let candidates = chronological.filter((f) => f.departure === dep && f.arrival === arr);
-    if (candidates.length === 0) return;
-
-    let targetFlight = candidates[0];
-
-    // Falls ein exaktes Datum auf der Kachel steht (z.B. bei "First Flight")
-    if (dateMatch) {
-      targetFlight = candidates.find((f) => f.date === dateMatch[1]) || candidates[0];
-    } else if (candidates.length > 1) {
-      // Falls mehrere Flüge auf derselben Route existieren, prüfe auf Distanz/CO2/Preis-Maximum
-      const numMatch = text.match(/([\d.]+)\s*(?:km|kg)/i);
-      if (numMatch) {
-        const val = parseInt(numMatch[1].replace(/\./g, ""), 10);
-        const exact = candidates.find((f) => f.distance === val || f.co2_kg === val);
-        if (exact) targetFlight = exact;
-      }
-    }
-
-    const fId = targetFlight.id || targetFlight.flight_id;
-    if (!fId) return;
-
-    card.onclick = () => {
-      if (typeof viewFlightDetails === "function") {
-        viewFlightDetails(fId);
-      }
-    };
-    card.classList.add(
-      "cursor-pointer",
-      "hover:border-primary/50",
-      "dark:hover:border-indigo-400/50",
-      "hover:-translate-y-0.5",
-      "transition-all",
-      "group"
-    );
-  });
-};
-
-// Beobachtet den #records-container und aktiviert die Klicks automatisch nach jedem Rendern
 document.addEventListener("DOMContentLoaded", () => {
-  const recContainer = document.getElementById("records-container");
-  if (recContainer) {
-    const observer = new MutationObserver(() => {
-      window.makeRecordsInteractive();
-    });
-    observer.observe(recContainer, { childList: true });
+  if (typeof achievements !== "undefined" && !achievements.uniqueCountries) {
+    achievements.uniqueCountries = [
+      { milestone: 1, key: "1", emoji: "🛂" },
+      { milestone: 5, key: "5", emoji: "🌍" },
+      { milestone: 10, key: "10", emoji: "🗺️" },
+      { milestone: 25, key: "25", emoji: "🧭" },
+      { milestone: 50, key: "50", emoji: "🌐" },
+      { milestone: 100, key: "100", emoji: "👑" },
+    ];
   }
 });
