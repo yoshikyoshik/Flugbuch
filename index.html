@@ -941,18 +941,39 @@
                           </button>
                       </div>
 
-                      <div class="flex items-center justify-between p-4 border-b border-outline-variant/10 dark:border-slate-700/50">
+                      <div class="flex items-center justify-between p-4 border-b border-outline-variant/10 dark:border-slate-700/50 relative">
                           <div class="flex items-center gap-3">
                               <span class="material-symbols-outlined text-on-surface/60 dark:text-slate-400">language</span>
                               <span class="font-bold text-sm text-on-surface dark:text-white" data-i18n="profile.language">Sprache</span>
                           </div>
-                          <select onchange="setLanguage(this.value)" id="language-select" class="bg-surface-container dark:bg-slate-900 border-none rounded-xl text-xs font-bold py-2 pl-3 pr-8 focus:ring-2 focus:ring-primary/50 dark:text-white cursor-pointer appearance-none text-right">
-                              <option value="de">🇩🇪 Deutsch</option>
-                              <option value="en">🇬🇧 English</option>
-                              <option value="es">🇪🇸 Español</option>
-                              <option value="ru">🇷🇺 Русский</option>
-                              <option value="zh">🇨🇳 中文</option>
-                          </select>
+                          
+                          <!-- ECHTES FLAGGEN-DROPDOWN -->
+                          <div class="relative" id="language-dropdown-wrapper">
+                              <button type="button" onclick="toggleLanguageDropdown(event)" class="flex items-center gap-2 bg-surface-container dark:bg-slate-900 px-3.5 py-2 rounded-xl text-xs font-bold text-on-surface dark:text-white border border-outline-variant/10 dark:border-slate-700 shadow-sm hover:border-primary/40 transition-all">
+                                  <img id="current-lang-flag" src="https://flagcdn.com/w80/de.png" alt="DE" class="w-5 h-3.5 rounded-[3px] object-cover shadow-sm">
+                                  <span id="current-lang-text">Deutsch</span>
+                                  <span class="material-symbols-outlined text-sm opacity-60">expand_more</span>
+                              </button>
+
+                              <!-- Dropdown Liste -->
+                              <div id="language-options-list" class="hidden absolute right-0 top-full mt-2 w-44 bg-surface-container-lowest dark:bg-slate-900 rounded-2xl shadow-xl border border-outline-variant/20 dark:border-slate-700 py-1.5 z-50 overflow-hidden">
+                                  <button onclick="selectLanguage('de', 'Deutsch', 'de')" class="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-on-surface dark:text-slate-200 hover:bg-primary/10 dark:hover:bg-indigo-900/40 transition-colors text-left">
+                                      <img src="https://flagcdn.com/w80/de.png" alt="DE" class="w-5 h-3.5 rounded-[3px] object-cover shadow-sm"> Deutsch
+                                  </button>
+                                  <button onclick="selectLanguage('en', 'English', 'gb')" class="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-on-surface dark:text-slate-200 hover:bg-primary/10 dark:hover:bg-indigo-900/40 transition-colors text-left">
+                                      <img src="https://flagcdn.com/w80/gb.png" alt="EN" class="w-5 h-3.5 rounded-[3px] object-cover shadow-sm"> English
+                                  </button>
+                                  <button onclick="selectLanguage('es', 'Español', 'es')" class="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-on-surface dark:text-slate-200 hover:bg-primary/10 dark:hover:bg-indigo-900/40 transition-colors text-left">
+                                      <img src="https://flagcdn.com/w80/es.png" alt="ES" class="w-5 h-3.5 rounded-[3px] object-cover shadow-sm"> Español
+                                  </button>
+                                  <button onclick="selectLanguage('ru', 'Русский', 'ru')" class="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-on-surface dark:text-slate-200 hover:bg-primary/10 dark:hover:bg-indigo-900/40 transition-colors text-left">
+                                      <img src="https://flagcdn.com/w80/ru.png" alt="RU" class="w-5 h-3.5 rounded-[3px] object-cover shadow-sm"> Русский
+                                  </button>
+                                  <button onclick="selectLanguage('zh', '中文', 'cn')" class="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-on-surface dark:text-slate-200 hover:bg-primary/10 dark:hover:bg-indigo-900/40 transition-colors text-left">
+                                      <img src="https://flagcdn.com/w80/cn.png" alt="ZH" class="w-5 h-3.5 rounded-[3px] object-cover shadow-sm"> 中文
+                                  </button>
+                              </div>
+                          </div>
                       </div>
 
                       <button onclick="showPasswordChangeModal()" class="w-full flex items-center justify-between p-4 border-b border-outline-variant/10 dark:border-slate-700/50 hover:bg-surface-container-low dark:hover:bg-slate-700/50 transition-colors text-left">

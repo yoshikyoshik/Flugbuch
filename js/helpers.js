@@ -421,6 +421,16 @@ async function setLanguage(lang) {
     currentLanguage = lang;
     localStorage.setItem("preferredLanguage", lang);
 
+    // 🚀 HIER EINBAUEN: Aktualisiert die Flagge & den Namen im neuen Profil-Dropdown
+    const flagImg = document.getElementById("current-lang-flag");
+    const textSpan = document.getElementById("current-lang-text");
+    const langMap = { de: ['Deutsch', 'de'], en: ['English', 'gb'], es: ['Español', 'es'], ru: ['Русский', 'ru'], zh: ['中文', 'cn'] };
+    if (flagImg && textSpan && langMap[lang]) {
+        flagImg.src = `https://flagcdn.com/w80/${langMap[lang][1]}.png`;
+        textSpan.textContent = langMap[lang][0];
+    }
+    // -------------------------------------------------------------------------
+
     // ================================================================
     // 🚀 NEU: Sprache an Supabase melden, damit der Push-Server sie kennt!
     // ================================================================
@@ -552,6 +562,24 @@ async function setLanguage(lang) {
           getFlights().then(flights => {
               if(flights) updateUserRank(flights.length);
           });
+      }
+  }
+
+  // 🚀 NEU: Sofortiges Neuladen der aktiven Logbuch-Ansicht (inkl. Länder) beim Sprachwechsel!
+  if (typeof renderLogbookView === 'function') {
+      const analyticsTab = document.getElementById("tab-content-analytics");
+      if (analyticsTab && !analyticsTab.classList.contains("hidden")) {
+          if (document.getElementById("logbook-view-country")?.classList.contains("active")) {
+              renderLogbookView("country");
+          } else if (document.getElementById("logbook-view-aircraft")?.classList.contains("active")) {
+              renderLogbookView("aircraftType");
+          } else if (document.getElementById("logbook-view-airline")?.classList.contains("active")) {
+              renderLogbookView("airline");
+          } else if (document.getElementById("logbook-view-airport")?.classList.contains("active")) {
+              renderLogbookView("airport");
+          } else if (document.getElementById("logbook-view-registration")?.classList.contains("active")) {
+              renderLogbookView("registration");
+          }
       }
   }
 
@@ -1063,28 +1091,18 @@ const COUNTRY_LANDMARK_IMAGES = {
   EG: "https://images.unsplash.com/photo-1539650116574-8efeb43e2750?q=80&w=1000&auto=format&fit=crop", // Pyramiden von Gizeh
   MA: "https://images.unsplash.com/photo-1539020140153-e479b8c22e70?q=80&w=1000&auto=format&fit=crop", // Marrakesch
   AU: "https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?q=80&w=1000&auto=format&fit=crop", // Sydney Opera House
-  NZ: "https://images.unsplash.com/photo-1507699622108-4be3abd695ad?q=80&w=1000&auto=format&fit=crop"  // Neuseeland Milford Sound
+  NZ: "https://images.unsplash.com/photo-1507699622108-4be3abd695ad?q=80&w=1000&auto=format&fit=crop",  // Neuseeland Milford Sound
+  DEFAULT: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1000&auto=format&fit=crop"
 };
 
-// Holt das Wahrzeichen-Bild (entweder aus unserer Liste oder live über die Wikipedia-API)
+// Holt das Wahrzeichen-Bild (mit sicherem Default für Unknown & XX)
 window.getCountryLandmarkImage = async function (countryCode) {
-  if (!countryCode || countryCode === "XX") return null;
+  if (!countryCode || countryCode === "XX" || countryCode === "Unknown") {
+    return COUNTRY_LANDMARK_IMAGES.DEFAULT;
+  }
   const code = countryCode.toUpperCase();
   if (COUNTRY_LANDMARK_IMAGES[code]) return COUNTRY_LANDMARK_IMAGES[code];
-
-  try {
-    const enNames = new Intl.DisplayNames(["en"], { type: "region" });
-    const countryNameEn = enNames.of(code);
-    if (countryNameEn) {
-      const res = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(countryNameEn)}`);
-      if (res.ok) {
-        const data = await res.json();
-        if (data.originalimage && data.originalimage.source) return data.originalimage.source;
-        if (data.thumbnail && data.thumbnail.source) return data.thumbnail.source;
-      }
-    }
-  } catch (e) {}
-  return "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1000&auto=format&fit=crop";
+  return COUNTRY_LANDMARK_IMAGES.DEFAULT;
 };
 
 // Ermittelt zuverlässig den 2-stelligen Ländercode eines Flughafens (inkl. SVO & Historien-Fallback)

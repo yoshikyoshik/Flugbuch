@@ -2993,3 +2993,35 @@ document.addEventListener("DOMContentLoaded", () => {
     ];
   }
 });
+
+// ==========================================
+// 🌍 PLATTFORMUNABHÄNGIGES SPRACH-DROPDOWN
+// ==========================================
+window.toggleLanguageDropdown = function(event) {
+    if (event) event.stopPropagation();
+    const list = document.getElementById("language-options-list");
+    if (list) list.classList.toggle("hidden");
+};
+
+window.selectLanguage = function(langCode, langName, flagCode) {
+    const flagImg = document.getElementById("current-lang-flag");
+    const textSpan = document.getElementById("current-lang-text");
+
+    if (flagImg) flagImg.src = `https://flagcdn.com/w80/${flagCode}.png`;
+    if (textSpan) textSpan.textContent = langName;
+
+    const list = document.getElementById("language-options-list");
+    if (list) list.classList.add("hidden");
+
+    if (typeof setLanguage === "function") {
+        setLanguage(langCode);
+    }
+};
+
+// Schließt das Dropdown, wenn man außerhalb hinklickt
+document.addEventListener("click", () => {
+    const list = document.getElementById("language-options-list");
+    if (list && !list.classList.contains("hidden")) {
+        list.classList.add("hidden");
+    }
+});
