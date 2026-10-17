@@ -225,7 +225,7 @@ window.fetchExternalAirport = async function (input) {
               city: histHit.city || "",
               lat: histHit._geoloc.lat,
               lon: histHit._geoloc.lng,
-              country_code: histHit.country || null,
+              country_code: (typeof window.normalizeCountryCode === "function" ? window.normalizeCountryCode(histHit.country) : histHit.country) || null,
             }];
           }
         }

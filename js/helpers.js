@@ -533,15 +533,20 @@ async function setLanguage(lang) {
       renderTripManager();
   }
 
-  // 3. Logbuch-Tab aktualisieren (Sicherheits-Check mit ?.)
-  if (typeof renderLogbookView === 'function') {
-      const analyticsTab = document.getElementById("tab-content-analytics");
-      if (analyticsTab && !analyticsTab.classList.contains("hidden")) {
-          if (document.getElementById("logbook-view-aircraft")?.classList.contains("bg-white")) renderLogbookView("aircraftType");
-          else if (document.getElementById("logbook-view-airline")?.classList.contains("bg-white")) renderLogbookView("airline");
-          else if (document.getElementById("logbook-view-airport")?.classList.contains("bg-white")) renderLogbookView("airport");
-          else if (document.getElementById("logbook-view-registration")?.classList.contains("bg-white")) renderLogbookView("registration");
-      }
+  // 3. Logbuch-Ansicht (inkl. Länder) sofort im Hintergrund neu übersetzen,
+  // AUCH wenn der Analytics-Tab während der Sprachwahl im Profil gerade ausgeblendet ist!
+  if (typeof renderLogbookView === "function") {
+    if (document.getElementById("logbook-view-country")?.classList.contains("active")) {
+      renderLogbookView("country");
+    } else if (document.getElementById("logbook-view-airline")?.classList.contains("active")) {
+      renderLogbookView("airline");
+    } else if (document.getElementById("logbook-view-airport")?.classList.contains("active")) {
+      renderLogbookView("airport");
+    } else if (document.getElementById("logbook-view-registration")?.classList.contains("active")) {
+      renderLogbookView("registration");
+    } else if (document.getElementById("logbook-view-aircraft")?.classList.contains("active")) {
+      renderLogbookView("aircraftType");
+    }
   }
 
   // 🚀 NEU: 4. Upcoming-Widget aktualisieren
@@ -562,24 +567,6 @@ async function setLanguage(lang) {
           getFlights().then(flights => {
               if(flights) updateUserRank(flights.length);
           });
-      }
-  }
-
-  // 🚀 NEU: Sofortiges Neuladen der aktiven Logbuch-Ansicht (inkl. Länder) beim Sprachwechsel!
-  if (typeof renderLogbookView === 'function') {
-      const analyticsTab = document.getElementById("tab-content-analytics");
-      if (analyticsTab && !analyticsTab.classList.contains("hidden")) {
-          if (document.getElementById("logbook-view-country")?.classList.contains("active")) {
-              renderLogbookView("country");
-          } else if (document.getElementById("logbook-view-aircraft")?.classList.contains("active")) {
-              renderLogbookView("aircraftType");
-          } else if (document.getElementById("logbook-view-airline")?.classList.contains("active")) {
-              renderLogbookView("airline");
-          } else if (document.getElementById("logbook-view-airport")?.classList.contains("active")) {
-              renderLogbookView("airport");
-          } else if (document.getElementById("logbook-view-registration")?.classList.contains("active")) {
-              renderLogbookView("registration");
-          }
       }
   }
 
@@ -1106,29 +1093,131 @@ window.getCountryLandmarkImage = async function (countryCode) {
 };
 
 // Ermittelt zuverlässig den 2-stelligen Ländercode eines Flughafens (inkl. SVO & Historien-Fallback)
+// Wandelt ausgeschriebene Ländernamen (z.B. "Russia", "United States", "Deutschland")
+// zuverlässig in den 2-stelligen ISO-Code ("RU", "US", "DE") um!
+window.normalizeCountryCode = function (rawCountry) {
+  if (!rawCountry || typeof rawCountry !== "string") return null;
+  const clean = rawCountry.trim();
+  if (!clean || clean.toUpperCase() === "XX" || clean.toLowerCase() === "unknown" || clean.toLowerCase() === "unbekannt") {
+    return null;
+  }
+
+  // Schon ein sauberer 2-stelliger ISO-Code?
+  if (clean.length === 2 && /^[A-Za-z]{2}$/.test(clean)) {
+    return clean.toUpperCase();
+  }
+
+  const lower = clean.toLowerCase();
+
+  // 1. Schnelles Lexikon für häufige englische/deutsche Abweichungen
+  const nameToIso = {
+    "russia": "RU", "russian federation": "RU", "russland": "RU",
+    "united states": "US", "united states of america": "US", "usa": "US", "vereinigte staaten": "US",
+    "united kingdom": "GB", "great britain": "GB", "england": "GB", "scotland": "GB", "uk": "GB", "großbritannien": "GB",
+    "germany": "DE", "deutschland": "DE",
+    "switzerland": "CH", "schweiz": "CH",
+    "austria": "AT", "österreich": "AT",
+    "france": "FR", "frankreich": "FR",
+    "italy": "IT", "italien": "IT",
+    "spain": "ES", "spanien": "ES",
+    "netherlands": "NL", "the netherlands": "NL", "niederlande": "NL",
+    "belgium": "BE", "belgien": "BE",
+    "greece": "GR", "griechenland": "GR",
+    "turkey": "TR", "türkiye": "TR", "türkei": "TR",
+    "egypt": "EG", "ägypten": "EG",
+    "south africa": "ZA", "südafrika": "ZA",
+    "united arab emirates": "AE", "uae": "AE", "vereinigte arabische emirate": "AE",
+    "china": "CN", "people's republic of china": "CN",
+    "japan": "JP",
+    "south korea": "KR", "republic of korea": "KR", "korea": "KR", "südkorea": "KR",
+    "india": "IN", "indien": "IN",
+    "indonesia": "ID", "indonesien": "ID",
+    "thailand": "TH",
+    "singapore": "SG", "singapur": "SG",
+    "malaysia": "MY",
+    "vietnam": "VN", "viet nam": "VN",
+    "philippines": "PH", "philippinen": "PH",
+    "qatar": "QA", "katar": "QA",
+    "kuwait": "KW",
+    "saudi arabia": "SA", "saudi-arabien": "SA",
+    "canada": "CA", "kanada": "CA",
+    "mexico": "MX", "mexiko": "MX",
+    "brazil": "BR", "brasilien": "BR",
+    "argentina": "AR", "argentinien": "AR",
+    "australia": "AU", "australien": "AU",
+    "new zealand": "NZ", "neuseeland": "NZ",
+    "ireland": "IE", "irland": "IE",
+    "portugal": "PT",
+    "poland": "PL", "polen": "PL",
+    "czechia": "CZ", "czech republic": "CZ", "tschechien": "CZ",
+    "hungary": "HU", "ungarn": "HU",
+    "croatia": "HR", "kroatien": "HR",
+    "albania": "AL", "albanien": "AL",
+    "romania": "RO", "rumänien": "RO",
+    "bulgaria": "BG", "bulgarien": "BG",
+    "denmark": "DK", "dänemark": "DK",
+    "sweden": "SE", "schweden": "SE",
+    "norway": "NO", "norwegen": "NO",
+    "finland": "FI", "finnland": "FI",
+    "iceland": "IS", "island": "IS",
+    "hong kong": "HK", "hongkong": "HK",
+    "taiwan": "TW",
+    "macau": "MO", "macao": "MO"
+  };
+
+  if (nameToIso[lower]) return nameToIso[lower];
+
+  // 2. Dynamischer Reverse-Lookup für ALLE 195+ Länder über Intl.DisplayNames (EN & DE)
+  if (!window._reverseCountryLookup) {
+    window._reverseCountryLookup = {};
+    if (typeof countryToContinent !== "undefined") {
+      try {
+        const enNames = new Intl.DisplayNames(["en"], { type: "region" });
+        const deNames = new Intl.DisplayNames(["de"], { type: "region" });
+        Object.keys(countryToContinent).forEach((iso) => {
+          const en = enNames.of(iso);
+          const de = deNames.of(iso);
+          if (en) window._reverseCountryLookup[en.toLowerCase()] = iso;
+          if (de) window._reverseCountryLookup[de.toLowerCase()] = iso;
+        });
+      } catch (e) {}
+    }
+  }
+
+  return window._reverseCountryLookup[lower] || null;
+};
+
+// Ermittelt zuverlässig den 2-stelligen Ländercode eines Flughafens (inkl. Auto-Normalisierung)
 window.getAirportCountryCode = function (iataCode) {
   if (!iataCode) return null;
   const code = iataCode.trim().toUpperCase();
 
+  // 1. Prüfe airportData-Cache (und normalisiere Einträge wie "Russia" -> "RU" sofort!)
   if (
     typeof window.airportData !== "undefined" &&
     window.airportData[code] &&
-    window.airportData[code].country_code &&
-    window.airportData[code].country_code !== "XX"
+    window.airportData[code].country_code
   ) {
-    return window.airportData[code].country_code.toUpperCase();
+    const normalized = window.normalizeCountryCode(window.airportData[code].country_code);
+    if (normalized) {
+      // Selbstheilung im RAM & in Supabase, falls dort noch "Russia" statt "RU" stand!
+      if (window.airportData[code].country_code !== normalized) {
+        window.airportData[code].country_code = normalized;
+        if (typeof supabaseClient !== "undefined") {
+          supabaseClient.from("airports").update({ country_code: normalized }).eq("iata", code).then();
+        }
+      }
+      return normalized;
+    }
   }
 
-  // Großes Fallback-Lexikon (inkl. SVO, DME, VKO, LED und weltweiten Hubs)
+  // 2. Großes Fallback-Lexikon (inkl. SVO, DME, VKO, LED und weltweiten Hubs)
   const quickCountryMap = {
-    // Deutschland, Österreich, Schweiz
-    FRA: "DE", MUC: "DE", BER: "DE", TXL: "DE", SXF: "DE", DUS: "DE", HAM: "DE", STR: "DE", CGN: "DE", HAJ: "DE", BRE: "DE", DRS: "DE", LEJ: "DE", NUE: "DE", FMO: "DE", PAD: "DE", DTM: "DE", FKB: "DE", FMM: "DE", HHN: "DE", NRN: "DE", ERF: "DE", RLG: "DE", GWT: "DE",FDH: "DE",
+    FRA: "DE", MUC: "DE", BER: "DE", TXL: "DE", SXF: "DE", DUS: "DE", HAM: "DE", STR: "DE", CGN: "DE", HAJ: "DE", BRE: "DE", DRS: "DE", LEJ: "DE", NUE: "DE", FMO: "DE", PAD: "DE", DTM: "DE", FKB: "DE", FMM: "DE", HHN: "DE", NRN: "DE", ERF: "DE", RLG: "DE", GWT: "DE", FDH: "DE",
     ZRH: "CH", GVA: "CH", BSL: "CH", BRN: "CH", ACH: "CH", LUG: "CH",
     VIE: "AT", SZG: "AT", INN: "AT", GRZ: "AT", LNZ: "AT", KLU: "AT",
-    // Russland & GUS (inkl. SVO Sheremetyevo!)
     SVO: "RU", DME: "RU", VKO: "RU", ZIA: "RU", LED: "RU", AER: "RU", SVX: "RU", OVB: "RU", KZN: "RU", ROV: "RU", UFA: "RU", KGD: "RU", VVO: "RU", IKT: "RU", KJA: "RU", MRV: "RU",
     MSQ: "BY", KBP: "UA", IEV: "UA", LWO: "UA", ODS: "UA", ALA: "KZ", NQZ: "KZ", TSE: "KZ", TAS: "UZ", GYD: "AZ", EVN: "AM", TBS: "GE",
-    // Restliches Europa
     LHR: "GB", LGW: "GB", LTN: "GB", STN: "GB", LCY: "GB", SEN: "GB", MAN: "GB", BHX: "GB", EDI: "GB", GLA: "GB", BRS: "GB", NCL: "GB", LPL: "GB", BFS: "GB",
     DUB: "IE", SNN: "IE", ORK: "IE",
     AMS: "NL", EIN: "NL", RTM: "NL", BRU: "BE", CRL: "BE", ANR: "BE", LUX: "LU",
@@ -1144,16 +1233,14 @@ window.getAirportCountryCode = function (iataCode) {
     OTP: "RO", CLJ: "RO", TSR: "RO", IAS: "RO", SBZ: "RO", SOF: "BG", VAR: "BG", BOJ: "BG", PDV: "BG",
     BEG: "RS", INI: "RS", ZAG: "HR", SPU: "HR", DBV: "HR", ZAD: "HR", PUY: "HR", RJK: "HR", LJU: "SI", SJJ: "BA", TZL: "BA", TIA: "AL", PRN: "XK", SKP: "MK", TGD: "ME", TIV: "ME",
     TLL: "EE", RIX: "LV", VNO: "LT", KUN: "LT", MLA: "MT", LCA: "CY", PFO: "CY",
-    // Amerika
     JFK: "US", EWR: "US", LGA: "US", LAX: "US", SFO: "US", SAN: "US", SJC: "US", ORD: "US", MDW: "US", ATL: "US", MIA: "US", FLL: "US", MCO: "US", TPA: "US", RSW: "US", BOS: "US", DFW: "US", DAL: "US", IAH: "US", HOU: "US", AUS: "US", DEN: "US", SEA: "US", LAS: "US", PHX: "US", IAD: "US", DCA: "US", BWI: "US", PHL: "US", DTW: "US", MSP: "US", CLT: "US", SLC: "US", PDX: "US", HNL: "US", OGG: "US", ANC: "US", MSY: "US", BNA: "US", STL: "US",
     YYZ: "CA", YVR: "CA", YUL: "CA", YYC: "CA", YEG: "CA", YOW: "CA", YHZ: "CA",
     MEX: "MX", CUN: "MX", GDL: "MX", MTY: "MX", SJD: "MX", PVR: "MX",
     GRU: "BR", CGH: "BR", GIG: "BR", SDU: "BR", BSB: "BR", FOR: "BR", REC: "BR", SSA: "BR",
     EZE: "AR", AEP: "AR", COR: "AR", MDZ: "AR", USH: "AR", SCL: "CL", BOG: "CO", MDE: "CO", CTG: "CO", LIM: "PE", CUZ: "PE", UIO: "EC", GYE: "EC", PTY: "PA", SJO: "CR", PUJ: "DO", SDQ: "DO", POP: "DO", HAV: "CU", VRA: "CU", MBJ: "JM", NAS: "BS", SJU: "PR", AUA: "AW", CUR: "CW", SXM: "SX",
-    // Asien, Nahost, Afrika, Ozeanien
     HND: "JP", NRT: "JP", KIX: "JP", ITM: "JP", NGO: "JP", FUK: "JP", CTS: "JP", OKA: "JP", MSJ: "JP", HIJ: "JP", SDJ: "JP", KOJ: "JP",
     ICN: "KR", GMP: "KR", PUS: "KR", CJU: "KR", PEK: "CN", PKX: "CN", PVG: "CN", SHA: "CN", CAN: "CN", SZX: "CN", CTU: "CN", TFU: "CN", XIY: "CN", HGH: "CN", KMG: "CN", WUH: "CN", HKG: "HK", MFM: "MO", TPE: "TW", TSA: "TW", KHH: "TW",
-    SIN: "SG", KUL: "MY",SZB: "MY", PEN: "MY", LGK: "MY", BKI: "MY", KCH: "MY", BKK: "TH", DMK: "TH", HKT: "TH", CNX: "TH", USM: "TH", KBV: "TH", CGK: "ID", DPS: "ID", SUB: "ID", MNL: "PH", CEB: "PH", CRK: "PH", SGN: "VN", HAN: "VN", DAD: "VN", CXR: "VN", PNH: "KH", REP: "KH", RGN: "MM", VTE: "LA",
+    SIN: "SG", KUL: "MY", SZB: "MY", PEN: "MY", LGK: "MY", BKI: "MY", KCH: "MY", BKK: "TH", DMK: "TH", HKT: "TH", CNX: "TH", USM: "TH", KBV: "TH", CGK: "ID", DPS: "ID", SUB: "ID", MNL: "PH", CEB: "PH", CRK: "PH", SGN: "VN", HAN: "VN", DAD: "VN", CXR: "VN", PNH: "KH", REP: "KH", RGN: "MM", VTE: "LA",
     DEL: "IN", BOM: "IN", BLR: "IN", MAA: "IN", HYD: "IN", CCU: "IN", COK: "IN", GOI: "IN", AMD: "IN", CMB: "LK", MLE: "MV", KTM: "NP", DAC: "BD", KHI: "PK", LHE: "PK", ISB: "PK",
     DXB: "AE", DWC: "AE", AUH: "AE", SHJ: "AE", RKT: "AE", DOH: "QA", KWI: "KW", MCT: "OM", SLL: "OM", BAH: "BH", JED: "SA", RUH: "SA", DMM: "SA", MED: "SA", TLV: "IL", ETM: "IL", AMM: "JO", AQJ: "JO", BEY: "LB", BGW: "IQ", IKA: "IR", THR: "IR",
     JNB: "ZA", CPT: "ZA", DUR: "ZA", NLP: "ZA", MQP: "ZA", PTG: "ZA", PLZ: "ZA", GRJ: "ZA", HDS: "ZA", SZK: "ZA",
@@ -1171,10 +1258,12 @@ window.getAirportCountryCode = function (iataCode) {
     return quickCountryMap[code];
   }
 
-  // Prüfe das historische Open-Source-Archiv (falls bereits geladen)
+  // 3. Prüfe das historische Open-Source-Archiv (und normalisiere auch dort den Ländernamen!)
   if (Array.isArray(window.historicalAirportsCache)) {
     const hit = window.historicalAirportsCache.find((a) => a.iata_code === code);
-    if (hit && hit.country) return hit.country.toUpperCase();
+    if (hit && hit.country) {
+      return window.normalizeCountryCode(hit.country);
+    }
   }
 
   return null;
