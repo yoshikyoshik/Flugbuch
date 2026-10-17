@@ -659,6 +659,53 @@
                     <p id="stat-yearly-summary" class="text-lg md:text-xl font-medium text-on-surface/80 dark:text-slate-300 leading-relaxed">-</p>
                   </div>
                   
+                  <!-- 🛂 NEU: AVIOSPHERE PASSPORT (BESUCHTE LÄNDER & WELT-FORTSCHRITT) -->
+                  <div id="passport-panel" class="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white p-6 md:p-7 rounded-3xl border border-indigo-500/30 shadow-lg text-left relative overflow-hidden">
+                    <div class="absolute -right-12 -top-12 w-40 h-40 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none"></div>
+                    
+                    <div class="flex flex-wrap items-center justify-between gap-3 mb-5 relative z-10">
+                      <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-2xl bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center text-xl shadow-inner">
+                          🛂
+                        </div>
+                        <div>
+                          <h3 class="font-display font-black text-base md:text-lg text-white tracking-tight leading-none" data-i18n="passport.title">AvioSphere Passport</h3>
+                          <p class="text-[10px] font-bold uppercase tracking-widest text-indigo-300/80 mt-1" data-i18n="passport.subtitle">Besuchte Länder & Stempel</p>
+                        </div>
+                      </div>
+
+                      <!-- PDF Druck-Button für den gesamten Passport -->
+                      <button onclick="printPassportPDF()" class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold border border-white/15 transition-all shadow-sm">
+                        <span class="material-symbols-outlined text-[16px]">menu_book</span>
+                        <span data-i18n="passport.printBtn">Passport (PDF)</span>
+                      </button>
+                    </div>
+
+                    <!-- 3 Kennzahlen: Länder | % der Welt | Kontinente -->
+                    <div class="grid grid-cols-3 gap-3 mb-4 relative z-10 text-center">
+                      <div class="bg-white/5 border border-white/10 rounded-2xl p-3">
+                        <p id="passport-country-count" class="text-xl md:text-2xl font-display font-black text-amber-400">0</p>
+                        <p class="text-[9px] font-bold uppercase tracking-widest text-indigo-200/70 mt-0.5" data-i18n="passport.countries">Länder</p>
+                      </div>
+                      <div class="bg-white/5 border border-white/10 rounded-2xl p-3">
+                        <p id="passport-world-percent" class="text-xl md:text-2xl font-display font-black text-cyan-300">0%</p>
+                        <p class="text-[9px] font-bold uppercase tracking-widest text-indigo-200/70 mt-0.5" data-i18n="passport.worldShare">der Welt</p>
+                      </div>
+                      <div class="bg-white/5 border border-white/10 rounded-2xl p-3">
+                        <p id="passport-continent-count" class="text-xl md:text-2xl font-display font-black text-emerald-400">0 / 7</p>
+                        <p class="text-[9px] font-bold uppercase tracking-widest text-indigo-200/70 mt-0.5" data-i18n="passport.continents">Kontinente</p>
+                      </div>
+                    </div>
+
+                    <!-- Fortschrittsbalken Weltentdeckung -->
+                    <div class="w-full h-2 bg-white/10 rounded-full overflow-hidden mb-5 relative z-10">
+                      <div id="passport-world-bar" class="h-full bg-gradient-to-r from-amber-400 via-cyan-400 to-indigo-400 transition-all duration-700" style="width: 0%"></div>
+                    </div>
+
+                    <!-- Klickbare Länder-Flaggen-Stempel -->
+                    <div id="passport-countries-grid" class="flex flex-wrap gap-2 relative z-10"></div>
+                  </div>
+
                 </div>
               </div>
 
@@ -699,6 +746,9 @@
                   </button>
                   <button id="logbook-view-registration" class="flex-1 md:flex-none px-4 py-2 text-xs md:text-sm font-bold rounded-xl transition-all text-on-surface/60 hover:text-on-surface dark:text-slate-400 dark:hover:text-white hover:bg-surface-container-lowest dark:hover:bg-slate-700 flex items-center justify-center gap-1.5">
                     <span class="material-symbols-outlined text-[18px]">tag</span> <span data-i18n="logbook.tabRegistration">Regs</span>
+                  </button>
+                  <button id="logbook-view-country" onclick="renderLogbookView('country')" class="flex-1 md:flex-none px-4 py-2 text-xs md:text-sm font-bold rounded-xl transition-all text-on-surface/60 hover:text-on-surface dark:text-slate-400 dark:hover:text-white hover:bg-surface-container-lowest dark:hover:bg-slate-700 flex items-center justify-center gap-1.5">
+                    <span class="material-symbols-outlined text-[18px]">public</span> <span data-i18n="logbook.tabCountry">Länder</span>
                   </button>
                 </div>
                 <div id="logbook-content" class="grid grid-cols-1 md:grid-cols-2 gap-5"></div>

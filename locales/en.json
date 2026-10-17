@@ -64,6 +64,15 @@
   "achievements": {
     "progress": "Progress",
     "tabLeaderboard": "Community",
+    "unitCountries": "Countries",
+    "uniqueCountries": {
+      "1": { "title": "First Stamp", "description": "Recorded your first country in the passport!" },
+      "5": { "title": "Border Crosser", "description": "Traveled to 5 different countries." },
+      "10": { "title": "Cosmopolitan", "description": "Collected 10 countries in your AvioSphere Passport." },
+      "25": { "title": "World Citizen", "description": "Discovered 25 different countries!" },
+      "50": { "title": "Diplomat", "description": "Visited 50 countries – over a quarter of the world!" },
+      "100": { "title": "Global Nomad", "description": "Traveled to 100 countries! Seen more than half the world." }
+    },
     "co2_total": {
       "1000": {
         "description": "You have recorded your first ton (1,000 kg) of CO₂.",
@@ -605,6 +614,7 @@
     "summary": "({count} flights / {distance} km)",
     "title": "Logbook Views",
     "unknown": "Unknown",
+    "tabCountry": "Countries",
     "relatedFlights": "Related Flights"
   },
   "logbookStats": {
@@ -1142,7 +1152,7 @@
     "noDataDesc": "We don't have any facts stored in the database for this aircraft type ({model}).",
     "searchWiki": "🔍 Search on Wikipedia",
     "moreWiki": "📚 Read more on Wikipedia",  
-  "model": "Model",
+    "model": "Model",
     "manufacturer": "Manufacturer",
     "engine": "Engine",
     "maxSpeed": "Max. Speed",
@@ -1153,6 +1163,7 @@
     "length": "Length",
     "height": "Height",
     "otherVariants": "Other variants found:",
+    "seats": "Capacity & Seat Layout",
     "notAvailable": "N/A"
   },
 
@@ -1293,6 +1304,16 @@
     "departure": "Departure",
     "arrival": "Arrival",
     "noWeather": "🌦️ Historical weather data is not available for old flights."
+  },
+
+  "passport": {
+    "title": "AvioSphere Passport",
+    "subtitle": "Visited Countries & Stamps",
+    "printBtn": "Passport (PDF)",
+    "countries": "Countries",
+    "worldShare": "of the World",
+    "continents": "Continents",
+    "countrySubtitle": "Visited Country"
   }
 
 }

@@ -64,6 +64,15 @@
   "achievements": {
     "progress": "Fortschritt",
     "tabLeaderboard": "Community",
+    "unitCountries": "Länder",
+    "uniqueCountries": {
+      "1": { "title": "Erster Stempel", "description": "Dein erstes Land im Reisepass erfasst!" },
+      "5": { "title": "Grenzgänger", "description": "5 verschiedene Länder bereist." },
+      "10": { "title": "Kosmopolit", "description": "10 Länder im AvioSphere Passport gesammelt." },
+      "25": { "title": "Weltbürger", "description": "25 verschiedene Länder auf der Weltkarte entdeckt!" },
+      "50": { "title": "Diplomat", "description": "50 Länder besucht – über ein Viertel der Welt!" },
+      "100": { "title": "Global Nomad", "description": "100 Länder bereist! Mehr als die halbe Welt gesehen." }
+    },
     "co2_total": {
       "1000": {
         "description": "Du hast deine erste Tonne (1.000 kg) CO₂ erfasst.",
@@ -606,6 +615,7 @@
     "summary": "({count} Flüge / {distance} km)",
     "title": "Logbuch-Ansichten",
     "unknown": "Unbekannt",
+    "tabCountry": "Länder",
     "relatedFlights": "Zugehörige Flüge"
   },
   "logbookStats": {
@@ -1154,6 +1164,7 @@
     "length": "Länge",
     "height": "Höhe",
     "otherVariants": "Weitere gefundene Varianten:",
+    "seats": "Kapazität & Sitzlayout",
     "notAvailable": "N/A"
   },
 
@@ -1294,6 +1305,16 @@
     "departure": "Abflug",
     "arrival": "Ankunft",
     "noWeather": "🌦️ Historische Wetterdaten sind für alte Flüge nicht verfügbar."
+  },
+
+  "passport": {
+    "title": "AvioSphere Passport",
+    "subtitle": "Besuchte Länder & Stempel",
+    "printBtn": "Passport (PDF)",
+    "countries": "Länder",
+    "worldShare": "der Welt",
+    "continents": "Kontinente",
+    "countrySubtitle": "Besuchtes Land"
   }
 
 }

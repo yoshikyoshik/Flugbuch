@@ -64,6 +64,15 @@
   "achievements": {
     "progress": "进度",
     "tabLeaderboard": "社区",
+    "unitCountries": "个国家",
+    "uniqueCountries": {
+      "1": { "title": "第一枚印章", "description": "在护照中记录了您的第一个国家！" },
+      "5": { "title": "跨境旅行者", "description": "到访过 5 个不同的国家。" },
+      "10": { "title": "世界主义者", "description": "在 AvioSphere 护照中收集了 10 个国家。" },
+      "25": { "title": "世界公民", "description": "探索了 25 个不同的国家！" },
+      "50": { "title": "外交官", "description": "到访 50 个国家——超过世界的四分之一！" },
+      "100": { "title": "全球游牧者", "description": "到访 100 个国家！看过了大半个世界。" }
+    },
     "co2_total": {
       "1000": {
         "description": "您记录了第一吨（1,000公斤）CO₂排放。",
@@ -602,6 +611,7 @@
     "summary": "({count} 航班 / {distance} 公里)",
     "title": "日志视图",
     "unknown": "未知",
+    "tabCountry": "国家/地区",
     "relatedFlights": "相关航班"
   },
   "logbookStats": {
@@ -1139,7 +1149,7 @@
     "noDataDesc": "我们的数据库中还没有关于此机型 ({model}) 的信息。",
     "searchWiki": "🔍 在维基百科上搜索",
     "moreWiki": "📚 在维基百科上阅读更多",  
-  "model": "机型",
+    "model": "机型",
     "manufacturer": "制造商",
     "engine": "引擎类型",
     "maxSpeed": "最大速度",
@@ -1150,6 +1160,7 @@
     "length": "长度",
     "height": "高度",
     "otherVariants": "找到的其他变体:",
+    "seats": "载客量与座位布局",
     "notAvailable": "暂无"
   },
 
@@ -1290,6 +1301,16 @@
     "departure": "出发",
     "arrival": "到达",
     "noWeather": "🌦️ 历史天气数据不可用于旧航班。"
+  },
+
+  "passport": {
+    "title": "AvioSphere 护照",
+    "subtitle": "到访国家与印章",
+    "printBtn": "护照 (PDF)",
+    "countries": "国家/地区",
+    "worldShare": "世界探索度",
+    "continents": "大洲",
+    "countrySubtitle": "到访国家"
   }
 
 }

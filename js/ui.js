@@ -293,60 +293,99 @@ async function showAircraftDetails(modelCode) {
     document.getElementById("info-modal-title").textContent = getTranslation("logbook.detailsTitleAircraft").replace("{key}", modelCode);
     const contentContainer = document.getElementById("info-modal-content");
 
-    // 🚀 Zuerst direkt mit dem Code (z.B. B738, A21N, A359) in LOCAL_AIRCRAFT_DB suchen,
-    // und erst als Fallback den normalisierten Code nutzen!
     const cleanCode = (modelCode || "").trim().toUpperCase();
     const mappedModel = typeof window.normalizeAircraftCode === 'function' ? window.normalizeAircraftCode(cleanCode) : cleanCode;
 
-    const aircraft = typeof LOCAL_AIRCRAFT_DB !== 'undefined' 
-        ? (LOCAL_AIRCRAFT_DB[cleanCode] || LOCAL_AIRCRAFT_DB[mappedModel]) 
-        : null;
+    // 🚀 STUFE 1: Lokale High-Speed Datenbank + Alias-Resolver prüfen
+    let aircraft = typeof window.resolveAircraftFromLocalDB === 'function'
+        ? (window.resolveAircraftFromLocalDB(cleanCode) || window.resolveAircraftFromLocalDB(mappedModel))
+        : (typeof LOCAL_AIRCRAFT_DB !== 'undefined' ? (LOCAL_AIRCRAFT_DB[cleanCode] || LOCAL_AIRCRAFT_DB[mappedModel]) : null);
+
+    // 🚀 STUFE 2: Falls lokal unbekannt, in Supabase 'aircraft_types' nachschlagen
+    if (!aircraft && typeof supabaseClient !== 'undefined' && navigator.onLine) {
+        contentContainer.innerHTML = `<p class="text-center py-6 animate-pulse">${getTranslation("modalDetails.loading") || "Lade Details..."}</p>`;
+        try {
+            const { data: cloudAircraft } = await supabaseClient
+                .from('aircraft_types')
+                .select('*')
+                .in('code', [cleanCode, mappedModel])
+                .limit(1)
+                .maybeSingle();
+
+            if (cloudAircraft) {
+                aircraft = cloudAircraft;
+                if (typeof LOCAL_AIRCRAFT_DB !== 'undefined') {
+                    LOCAL_AIRCRAFT_DB[cleanCode] = cloudAircraft; // Sofort lokal im RAM cachen
+                }
+            }
+        } catch (err) {
+            console.warn("Cloud Aircraft Lookup übersprungen:", err);
+        }
+    }
 
     if (aircraft) {
         contentContainer.innerHTML = `
-            <div class="space-y-4">
+            <div class="space-y-3">
                 <div class="grid grid-cols-2 gap-3">
                     <div class="bg-surface-container-low dark:bg-slate-800 p-3 rounded-2xl">
                         <p class="text-[10px] uppercase tracking-wider text-on-surface/50 dark:text-slate-400 font-bold mb-1">${getTranslation("aircraftFacts.model") || "Modell"}</p>
-                        <p class="font-bold text-sm text-on-surface dark:text-slate-100">${aircraft.name}</p>
+                        <p class="font-bold text-sm text-on-surface dark:text-slate-100">${aircraft.name || "-"}</p>
                     </div>
                     <div class="bg-surface-container-low dark:bg-slate-800 p-3 rounded-2xl">
                         <p class="text-[10px] uppercase tracking-wider text-on-surface/50 dark:text-slate-400 font-bold mb-1">${getTranslation("aircraftFacts.manufacturer") || "Hersteller"}</p>
-                        <p class="font-bold text-sm text-on-surface dark:text-slate-100">${aircraft.manufacturer}</p>
+                        <p class="font-bold text-sm text-on-surface dark:text-slate-100">${aircraft.manufacturer || "-"}</p>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
                     <div class="bg-surface-container-low dark:bg-slate-800 p-3 rounded-2xl">
                         <p class="text-[10px] uppercase tracking-wider text-on-surface/50 dark:text-slate-400 font-bold mb-1">${getTranslation("aircraftFacts.engine") || "Triebwerke"}</p>
-                        <p class="font-bold text-sm text-on-surface dark:text-slate-100">${aircraft.engine}</p>
+                        <p class="font-bold text-sm text-on-surface dark:text-slate-100">${aircraft.engine || "-"}</p>
                     </div>
                     <div class="bg-surface-container-low dark:bg-slate-800 p-3 rounded-2xl">
-                        <p class="text-[10px] uppercase tracking-wider text-on-surface/50 dark:text-slate-400 font-bold mb-1">${getTranslation("aircraftFacts.maxSpeed") || "Max. Geschw."}</p>
-                        <p class="font-bold text-sm text-on-surface dark:text-slate-100">${aircraft.speed}</p>
+                        <p class="text-[10px] uppercase tracking-wider text-on-surface/50 dark:text-slate-400 font-bold mb-1">${getTranslation("aircraftFacts.maxSpeed") || "Reisegeschw."}</p>
+                        <p class="font-bold text-sm text-on-surface dark:text-slate-100">${aircraft.speed || "-"}</p>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
                     <div class="bg-surface-container-low dark:bg-slate-800 p-3 rounded-2xl">
-                        <p class="text-[10px] uppercase tracking-wider text-on-surface/50 dark:text-slate-400 font-bold mb-1">${getTranslation("aircraftFacts.wingspan") || "Spannweite"}</p>
-                        <p class="font-bold text-sm text-on-surface dark:text-slate-100">${aircraft.wingspan}</p>
+                        <p class="text-[10px] uppercase tracking-wider text-on-surface/50 dark:text-slate-400 font-bold mb-1">${getTranslation("aircraftFacts.range") || "Reichweite"}</p>
+                        <p class="font-bold text-sm text-on-surface dark:text-slate-100">${aircraft.range || "-"}</p>
                     </div>
                     <div class="bg-surface-container-low dark:bg-slate-800 p-3 rounded-2xl">
-                        <p class="text-[10px] uppercase tracking-wider text-on-surface/50 dark:text-slate-400 font-bold mb-1">${getTranslation("aircraftFacts.range") || "Reichweite"}</p>
-                        <p class="font-bold text-sm text-on-surface dark:text-slate-100">${aircraft.range}</p>
+                        <p class="text-[10px] uppercase tracking-wider text-on-surface/50 dark:text-slate-400 font-bold mb-1">${getTranslation("aircraftFacts.maxAltitude") || "Max. Flughöhe"}</p>
+                        <p class="font-bold text-sm text-on-surface dark:text-slate-100">${aircraft.alt || "-"}</p>
                     </div>
                 </div>
 
-                <div class="mt-6 pt-4 border-t border-outline-variant/20 dark:border-slate-700 text-center">
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-surface-container-low dark:bg-slate-800 p-3 rounded-2xl">
+                        <p class="text-[10px] uppercase tracking-wider text-on-surface/50 dark:text-slate-400 font-bold mb-1">${getTranslation("aircraftFacts.length") || "Länge"} / ${getTranslation("aircraftFacts.wingspan") || "Spannweite"}</p>
+                        <p class="font-bold text-sm text-on-surface dark:text-slate-100">${aircraft.length || "-"} / ${aircraft.wingspan || "-"}</p>
+                    </div>
+                    <div class="bg-surface-container-low dark:bg-slate-800 p-3 rounded-2xl">
+                        <p class="text-[10px] uppercase tracking-wider text-on-surface/50 dark:text-slate-400 font-bold mb-1">${getTranslation("aircraftFacts.maxWeight") || "Max. Abfluggewicht"}</p>
+                        <p class="font-bold text-sm text-on-surface dark:text-slate-100">${aircraft.weight || "-"}</p>
+                    </div>
+                </div>
+
+                ${aircraft.seats ? `
+                <div class="bg-surface-container-low dark:bg-slate-800 p-3 rounded-2xl">
+                    <p class="text-[10px] uppercase tracking-wider text-on-surface/50 dark:text-slate-400 font-bold mb-1">${getTranslation("aircraftFacts.seats") || "Kapazität & Sitzanordnung"}</p>
+                    <p class="font-bold text-sm text-primary dark:text-indigo-400">💺 ${aircraft.seats}</p>
+                </div>` : ''}
+
+                ${aircraft.wiki ? `
+                <div class="mt-4 pt-3 border-t border-outline-variant/20 dark:border-slate-700 text-center">
                     <a href="${aircraft.wiki}" target="_blank" class="inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-primary hover:bg-primary/90 text-white rounded-full text-sm font-bold transition shadow-md w-full sm:w-auto">
                         ${getTranslation("aircraftFacts.moreWiki") || "📚 Mehr auf Wikipedia lesen"}
                     </a>
-                </div>
+                </div>` : ''}
             </div>
         `;
     } else {
-        const searchQuery = encodeURIComponent(`${mappedModel} aircraft`);
+        const searchQuery = encodeURIComponent(`ICAO ${cleanCode} aircraft`);
         contentContainer.innerHTML = `
             <div class="text-center py-8">
                 <div class="text-5xl mb-4 opacity-50">🤷‍♂️</div>
@@ -812,6 +851,7 @@ async function renderLogbookView(groupBy) {
   let isAircraftTypeView = groupBy === "aircraftType";
   let isAirlineView = groupBy === "airline";
   let isRegistrationView = groupBy === "registration";
+  let isCountryView = groupBy === "country";
 
   allFlights.forEach((flight) => {
     let keys = [];
@@ -841,6 +881,12 @@ async function renderLogbookView(groupBy) {
       let reg = (flight.registration || unknownKey).trim().toUpperCase();
       if (reg === "") reg = unknownKey;
       keys.push(reg);
+    } else if (isCountryView) {
+        const depC = typeof window.getAirportCountryCode === "function" ? window.getAirportCountryCode(flight.departure) : null;
+        const arrC = typeof window.getAirportCountryCode === "function" ? window.getAirportCountryCode(flight.arrival) : null;
+        const uniqueC = new Set([depC, arrC].filter(Boolean));
+        if (uniqueC.size === 0) keys.push(unknownKey);
+        else uniqueC.forEach((c) => keys.push(c));
     }
 
     keys.forEach((key) => {
@@ -932,7 +978,23 @@ async function renderLogbookView(groupBy) {
       } else {
         titleHtml = `<span class="flex-1">${key}</span> <button onclick="event.stopPropagation(); openPremiumModal('default')" class="ml-4 p-2 rounded-xl bg-surface-container-low dark:bg-slate-900 text-on-surface/40 dark:text-slate-500 shadow-inner border border-outline-variant/10 dark:border-slate-700"><span class="text-xs">🔒</span></button>`;
       }
+    } else if (isCountryView && key !== unknownKey) {
+        const flag = typeof window.getCountryFlag === "function" ? window.getCountryFlag(key) : "🌍";
+        const countryName = typeof window.getCountryName === "function" ? window.getCountryName(key) : key;
+        const displayCountry = `${flag} ${countryName} <span class="text-sm text-on-surface/50 font-medium ml-2">(${key})</span>`;
+
+        if (currentUserSubscription === "pro") {
+            titleHtml = `
+                <span class="flex-1">${displayCountry}</span>
+                <button onclick="event.stopPropagation(); viewLogbookDetails('country', '${key}')" class="${iconBtnClass}" title="${countryName}">
+                    <span class="material-symbols-outlined text-[18px]">info</span>
+                </button>
+            `;
+        } else {
+            titleHtml = `<span class="flex-1">${displayCountry}</span> <button onclick="event.stopPropagation(); openPremiumModal('default')" class="ml-4 p-2 rounded-xl bg-surface-container-low dark:bg-slate-900 text-on-surface/40 dark:text-slate-500 shadow-inner border border-outline-variant/10 dark:border-slate-700"><span class="text-xs">🔒</span></button>`;
+        }
     }
+
 
     // Pfeil-Icon hinzufügen für den Accordion-Effekt
     summaryElement.innerHTML = `
@@ -1079,6 +1141,32 @@ window.prevPage = function() {
 var updateStatisticsDisplay = function (flights) {
   var stats = calculateStatistics(flights);
 
+  // Hilfsfunktion: Macht eine Statistik-Kachel klickbar (oder setzt sie zurück)
+  const makeCardInteractive = (elementId, onClickFn) => {
+    const el = document.getElementById(elementId);
+    const card = el ? el.parentElement : null;
+    if (!card) return;
+
+    if (onClickFn) {
+      card.onclick = onClickFn;
+      card.classList.add(
+        "cursor-pointer",
+        "hover:border-primary/40",
+        "dark:hover:border-indigo-400/40",
+        "hover:-translate-y-0.5",
+        "transition-all"
+      );
+    } else {
+      card.onclick = null;
+      card.classList.remove(
+        "cursor-pointer",
+        "hover:border-primary/40",
+        "dark:hover:border-indigo-400/40",
+        "hover:-translate-y-0.5"
+      );
+    }
+  };
+
   // Standard-Werte
   document.getElementById("stat-count").textContent =
     stats.totalCount.toLocaleString("de-DE");
@@ -1094,35 +1182,68 @@ var updateStatisticsDisplay = function (flights) {
   document.getElementById("stat-avg-co2").textContent =
     `${stats.averageCO2.toLocaleString("de-DE")} kg`;
 
-  // Längster Flug
-  if (stats.longestFlight) {
-    document.getElementById("stat-longest-flight").textContent = getTranslation(
-      "stats.flightRouteKm"
-    )
-      .replace("{departure}", stats.longestFlight.departure)
-      .replace("{arrival}", stats.longestFlight.arrival)
-      .replace(
-        "{distance}",
-        stats.longestFlight.distance.toLocaleString("de-DE")
-      );
+  // 🚀 1. Top Airport klickbar machen -> Öffnet Logbuch-Karte des Flughafens
+  const airportMatch =
+    stats.frequentAirport && stats.frequentAirport !== "-"
+      ? stats.frequentAirport.match(/\(([A-Z0-9]{3,4})\)/) ||
+        stats.frequentAirport.match(/^([A-Z0-9]{3,4})\b/)
+      : null;
+  if (airportMatch && airportMatch[1]) {
+    const iataCode = airportMatch[1];
+    makeCardInteractive("stat-frequent", () => {
+      if (currentUserSubscription === "pro") {
+        viewLogbookDetails("airport", iataCode);
+      } else {
+        openPremiumModal("default");
+      }
+    });
   } else {
-    document.getElementById("stat-longest-flight").textContent =
-      getTranslation("stats.noData");
+    makeCardInteractive("stat-frequent", null);
   }
 
-  // Kürzester Flug
-  if (stats.shortestFlight) {
-    document.getElementById("stat-shortest-flight").textContent =
-      getTranslation("stats.flightRouteKm")
-        .replace("{departure}", stats.shortestFlight.departure)
-        .replace("{arrival}", stats.shortestFlight.arrival)
-        .replace(
-          "{distance}",
-          stats.shortestFlight.distance.toLocaleString("de-DE")
-        );
+  // 🚀 2. Top Aircraft klickbar machen -> Öffnet Logbuch-Karte des Flugzeugtyps
+  const rawAircraft =
+    stats.frequentAircraft && stats.frequentAircraft !== "-"
+      ? stats.frequentAircraft.replace(/\s*\(\d+x\)$/, "").trim()
+      : null;
+  if (rawAircraft) {
+    makeCardInteractive("stat-frequent-aircraft", () => {
+      if (currentUserSubscription === "pro") {
+        viewLogbookDetails("aircraft", rawAircraft);
+      } else {
+        openPremiumModal("default");
+      }
+    });
   } else {
-    document.getElementById("stat-shortest-flight").textContent =
-      getTranslation("stats.noData");
+    makeCardInteractive("stat-frequent-aircraft", null);
+  }
+
+  // 🚀 3. Längster Flug -> Öffnet digitale Bordkarte
+  if (stats.longestFlight) {
+    document.getElementById("stat-longest-flight").textContent = getTranslation("stats.flightRouteKm")
+      .replace("{departure}", stats.longestFlight.departure)
+      .replace("{arrival}", stats.longestFlight.arrival)
+      .replace("{distance}", stats.longestFlight.distance.toLocaleString("de-DE"));
+    makeCardInteractive("stat-longest-flight", () =>
+      viewFlightDetails(stats.longestFlight.id || stats.longestFlight.flight_id)
+    );
+  } else {
+    document.getElementById("stat-longest-flight").textContent = getTranslation("stats.noData");
+    makeCardInteractive("stat-longest-flight", null);
+  }
+
+  // 🚀 4. Kürzester Flug -> Öffnet digitale Bordkarte
+  if (stats.shortestFlight) {
+    document.getElementById("stat-shortest-flight").textContent = getTranslation("stats.flightRouteKm")
+      .replace("{departure}", stats.shortestFlight.departure)
+      .replace("{arrival}", stats.shortestFlight.arrival)
+      .replace("{distance}", stats.shortestFlight.distance.toLocaleString("de-DE"));
+    makeCardInteractive("stat-shortest-flight", () =>
+      viewFlightDetails(stats.shortestFlight.id || stats.shortestFlight.flight_id)
+    );
+  } else {
+    document.getElementById("stat-shortest-flight").textContent = getTranslation("stats.noData");
+    makeCardInteractive("stat-shortest-flight", null);
   }
 
   // Kosten-Statistiken
@@ -1139,35 +1260,34 @@ var updateStatisticsDisplay = function (flights) {
       .join(" | ") || getTranslation("stats.noData");
   document.getElementById("stat-total-spending").textContent = spendingText;
 
+  // 🚀 5. Teuerster Flug -> Öffnet digitale Bordkarte
   if (stats.mostExpensiveFlight) {
-    document.getElementById("stat-most-expensive").textContent = getTranslation(
-      "stats.flightRoutePrice"
-    )
+    document.getElementById("stat-most-expensive").textContent = getTranslation("stats.flightRoutePrice")
       .replace("{departure}", stats.mostExpensiveFlight.departure)
       .replace("{arrival}", stats.mostExpensiveFlight.arrival)
-      .replace(
-        "{price}",
-        stats.mostExpensiveFlight.price.toLocaleString("de-DE")
-      )
+      .replace("{price}", stats.mostExpensiveFlight.price.toLocaleString("de-DE"))
       .replace("{currency}", stats.mostExpensiveFlight.currency);
+    makeCardInteractive("stat-most-expensive", () =>
+      viewFlightDetails(stats.mostExpensiveFlight.id || stats.mostExpensiveFlight.flight_id)
+    );
   } else {
-    document.getElementById("stat-most-expensive").textContent =
-      getTranslation("stats.noData");
+    document.getElementById("stat-most-expensive").textContent = getTranslation("stats.noData");
+    makeCardInteractive("stat-most-expensive", null);
   }
 
+  // 🚀 6. Günstigster Flug -> Öffnet digitale Bordkarte
   if (stats.leastExpensiveFlight) {
-    document.getElementById("stat-least-expensive").textContent =
-      getTranslation("stats.flightRoutePrice")
-        .replace("{departure}", stats.leastExpensiveFlight.departure)
-        .replace("{arrival}", stats.leastExpensiveFlight.arrival)
-        .replace(
-          "{price}",
-          stats.leastExpensiveFlight.price.toLocaleString("de-DE")
-        )
-        .replace("{currency}", stats.leastExpensiveFlight.currency);
+    document.getElementById("stat-least-expensive").textContent = getTranslation("stats.flightRoutePrice")
+      .replace("{departure}", stats.leastExpensiveFlight.departure)
+      .replace("{arrival}", stats.leastExpensiveFlight.arrival)
+      .replace("{price}", stats.leastExpensiveFlight.price.toLocaleString("de-DE"))
+      .replace("{currency}", stats.leastExpensiveFlight.currency);
+    makeCardInteractive("stat-least-expensive", () =>
+      viewFlightDetails(stats.leastExpensiveFlight.id || stats.leastExpensiveFlight.flight_id)
+    );
   } else {
-    document.getElementById("stat-least-expensive").textContent =
-      getTranslation("stats.noData");
+    document.getElementById("stat-least-expensive").textContent = getTranslation("stats.noData");
+    makeCardInteractive("stat-least-expensive", null);
   }
 
   // Jahreszusammenfassung
@@ -1187,7 +1307,6 @@ var updateStatisticsDisplay = function (flights) {
 
     const updateYearlyDisplay = (year) => {
       const data = stats.yearlyData[year];
-      // Wir nutzen innerHTML und verpacken die übersetzbaren Wörter in Spans!
       yearlySummary.innerHTML = `
         ${data.count} <span data-i18n="stats.flights">${getTranslation("stats.flights") || "Flüge"}</span> | 
         ${data.distance.toLocaleString("de-DE")} <span data-i18n="achievements.unitKm">${getTranslation("achievements.unitKm") || "km"}</span>
@@ -1204,6 +1323,41 @@ var updateStatisticsDisplay = function (flights) {
     yearlySummary.textContent = getTranslation("stats.noYearlyData");
     yearSelect.style.display = "none";
   }
+
+// 🛂 AVIOSPHERE PASSPORT UPDATEN
+  if (typeof window.calculatePassportData === "function") {
+    const passport = window.calculatePassportData(flights);
+    const countEl = document.getElementById("passport-country-count");
+    const percentEl = document.getElementById("passport-world-percent");
+    const contEl = document.getElementById("passport-continent-count");
+    const barEl = document.getElementById("passport-world-bar");
+    const gridEl = document.getElementById("passport-countries-grid");
+
+    if (countEl) countEl.textContent = passport.count;
+    if (percentEl) percentEl.textContent = `${passport.worldPercent.replace(".", ",")}%`;
+    if (contEl) contEl.textContent = `${passport.continentsCount} / 7`;
+    if (barEl) barEl.style.width = `${Math.max(2, parseFloat(passport.worldPercent))}%`;
+
+    if (gridEl) {
+      if (passport.countries.length === 0) {
+        gridEl.innerHTML = `<span class="text-xs text-indigo-200/60 italic">${getTranslation("stats.noData") || "-"}</span>`;
+      } else {
+        gridEl.innerHTML = passport.countries
+          .map(
+            (c) => `
+            <button onclick="viewLogbookDetails('country', '${c.code}')" 
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 hover:border-amber-400/50 transition-all text-xs font-bold text-white shadow-sm group">
+              <span class="text-base leading-none">${c.flag}</span>
+              <span class="group-hover:text-amber-300 transition-colors">${c.name}</span>
+              <span class="text-[10px] font-black px-1.5 py-0.5 rounded-md bg-black/30 text-indigo-200">${c.flights.length}</span>
+            </button>
+          `
+          )
+          .join("");
+      }
+    }
+  }
+
 };
 
 /**
@@ -1618,6 +1772,35 @@ window.printTripPDF = async function(tripId, tripName) {
 
     // Drucken auslösen
     await buildAndPrintHtml(tripFlights, title);
+};
+
+/**
+ * 🛂 Erstellt ein druckfertiges PDF für den AvioSphere Passport (Besuchte Länder)
+ */
+window.printPassportPDF = async function () {
+  if (currentUserSubscription === "free") {
+    openPremiumModal("print");
+    return;
+  }
+
+  const allFlights =
+    typeof isDemoMode !== "undefined" && isDemoMode && typeof flights !== "undefined"
+      ? flights
+      : await getFlights();
+
+  if (!allFlights || allFlights.length === 0) {
+    showMessage(
+      getTranslation("toast.infoTitle") || "Info",
+      getTranslation("print.noFlights") || "Keine Flüge für das Buch vorhanden.",
+      "info"
+    );
+    return;
+  }
+
+  const passport = window.calculatePassportData(allFlights);
+  const title = `${getTranslation("passport.title") || "AvioSphere Passport"} (${passport.count} ${getTranslation("passport.countries") || "Länder"} • ${passport.continentsCount}/7 ${getTranslation("passport.continents") || "Kontinente"})`;
+
+  await buildAndPrintHtml([...allFlights], title);
 };
 
 /**
@@ -2732,4 +2915,78 @@ window.addEventListener('scroll', () => {
     } else {
         elevatorBtn.classList.add('hidden');
     }
+});
+
+// ==========================================
+// 🚀 UX FEATURE: REKORDE AUTOMATISCH KLICKBAR MACHEN
+// ==========================================
+window.makeRecordsInteractive = async function () {
+  const container = document.getElementById("records-container");
+  if (!container || container.children.length === 0) return;
+
+  const allFlights =
+    typeof isDemoMode !== "undefined" && isDemoMode && typeof flights !== "undefined"
+      ? [...flights]
+      : await getFlights();
+  if (!allFlights || allFlights.length === 0) return;
+
+  // Chronologisch aufsteigend (für alle "First..."-Rekorde)
+  const chronological = [...allFlights].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+  Array.from(container.children).forEach((card) => {
+    const text = card.innerText || "";
+    // Suche nach einem Routen-Muster wie "CUN → IST" oder "DRS ➔ MUC" auf der Karte
+    const routeMatch = text.match(/\b([A-Z0-9]{3,4})\s*(?:→|➔|->)\s*([A-Z0-9]{3,4})\b/);
+    if (!routeMatch) return;
+
+    const dep = routeMatch[1];
+    const arr = routeMatch[2];
+    const dateMatch = text.match(/\b(\d{4}-\d{2}-\d{2})\b/);
+
+    let candidates = chronological.filter((f) => f.departure === dep && f.arrival === arr);
+    if (candidates.length === 0) return;
+
+    let targetFlight = candidates[0];
+
+    // Falls ein exaktes Datum auf der Kachel steht (z.B. bei "First Flight")
+    if (dateMatch) {
+      targetFlight = candidates.find((f) => f.date === dateMatch[1]) || candidates[0];
+    } else if (candidates.length > 1) {
+      // Falls mehrere Flüge auf derselben Route existieren, prüfe auf Distanz/CO2/Preis-Maximum
+      const numMatch = text.match(/([\d.]+)\s*(?:km|kg)/i);
+      if (numMatch) {
+        const val = parseInt(numMatch[1].replace(/\./g, ""), 10);
+        const exact = candidates.find((f) => f.distance === val || f.co2_kg === val);
+        if (exact) targetFlight = exact;
+      }
+    }
+
+    const fId = targetFlight.id || targetFlight.flight_id;
+    if (!fId) return;
+
+    card.onclick = () => {
+      if (typeof viewFlightDetails === "function") {
+        viewFlightDetails(fId);
+      }
+    };
+    card.classList.add(
+      "cursor-pointer",
+      "hover:border-primary/50",
+      "dark:hover:border-indigo-400/50",
+      "hover:-translate-y-0.5",
+      "transition-all",
+      "group"
+    );
+  });
+};
+
+// Beobachtet den #records-container und aktiviert die Klicks automatisch nach jedem Rendern
+document.addEventListener("DOMContentLoaded", () => {
+  const recContainer = document.getElementById("records-container");
+  if (recContainer) {
+    const observer = new MutationObserver(() => {
+      window.makeRecordsInteractive();
+    });
+    observer.observe(recContainer, { childList: true });
+  }
 });

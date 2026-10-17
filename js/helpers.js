@@ -978,3 +978,121 @@ window.buildWeatherWidgetHtml = function(weatherData, title) {
       </div>
     `;
 };
+
+// ==========================================
+// 🛂 AVIOSPHERE PASSPORT & COUNTRY ENGINE
+// ==========================================
+
+// Wandelt 2-stelligen ISO-Ländercode (z.B. "DE", "JP") in Flaggen-Emoji (🇩🇪, 🇯🇵) um
+window.getCountryFlag = function (countryCode) {
+  if (!countryCode || countryCode.length !== 2 || countryCode === "XX") return "🌍";
+  return countryCode
+    .toUpperCase()
+    .replace(/./g, (char) => String.fromCodePoint(127397 + char.charCodeAt(0)));
+};
+
+// Liefert den lokalisierten Ländernamen automatisch in DE, EN, ES, RU, ZH
+window.getCountryName = function (countryCode) {
+  if (!countryCode || countryCode.length !== 2 || countryCode === "XX") {
+    return typeof getTranslation === "function" ? getTranslation("logbook.unknown") || "Unbekannt" : "Unbekannt";
+  }
+  try {
+    const lang = typeof currentLanguage !== "undefined" && currentLanguage ? currentLanguage : "de";
+    const displayNames = new Intl.DisplayNames([lang], { type: "region" });
+    return displayNames.of(countryCode.toUpperCase()) || countryCode.toUpperCase();
+  } catch (e) {
+    return countryCode.toUpperCase();
+  }
+};
+
+// Ermittelt zuverlässig den 2-stelligen Ländercode eines Flughafens
+window.getAirportCountryCode = function (iataCode) {
+  if (!iataCode) return null;
+  const code = iataCode.trim().toUpperCase();
+
+  if (
+    typeof window.airportData !== "undefined" &&
+    window.airportData[code] &&
+    window.airportData[code].country_code &&
+    window.airportData[code].country_code !== "XX"
+  ) {
+    return window.airportData[code].country_code.toUpperCase();
+  }
+
+  // Schnelles Fallback-Lexikon für häufige Airports
+  const quickCountryMap = {
+    FRA: "DE", MUC: "DE", BER: "DE", DUS: "DE", HAM: "DE", STR: "DE", CGN: "DE", HAJ: "DE", BRE: "DE", DRS: "DE", LEJ: "DE", NUE: "DE", FMO: "DE", PAD: "DE",
+    ZRH: "CH", GVA: "CH", BSL: "CH", VIE: "AT", SZG: "AT", INN: "AT",
+    LHR: "GB", LGW: "GB", LTN: "GB", STN: "GB", MAN: "GB", EDI: "GB", DUB: "IE",
+    AMS: "NL", BRU: "BE", LUX: "LU", CDG: "FR", ORY: "FR", NCE: "FR", LYS: "FR",
+    MAD: "ES", BCN: "ES", PMI: "ES", IBZ: "ES", AGP: "ES", LPA: "ES", TFS: "ES", FUE: "ES", ACE: "ES",
+    LIS: "PT", OPO: "PT", FAO: "PT", FNC: "PT",
+    FCO: "IT", MXP: "IT", LIN: "IT", VCE: "IT", BGY: "IT", NAP: "IT", BLQ: "IT", CTA: "IT",
+    ATH: "GR", HER: "GR", RHO: "GR", KGS: "GR", CFU: "GR", SKG: "GR",
+    IST: "TR", SAW: "TR", AYT: "TR", ADB: "TR", DLM: "TR",
+    CPH: "DK", OSL: "NO", ARN: "SE", HEL: "FI", KEF: "IS",
+    WAW: "PL", KRK: "PL", PRG: "CZ", BUD: "HU", OTP: "RO", SOF: "BG", BEG: "RS", ZAG: "HR", SPU: "HR", DBV: "HR", TIA: "AL", TZL: "BA",
+    JFK: "US", EWR: "US", LGA: "US", LAX: "US", SFO: "US", ORD: "US", ATL: "US", MIA: "US", MCO: "US", BOS: "US", DFW: "US", DEN: "US", SEA: "US", LAS: "US", PHX: "US", IAH: "US", IAD: "US",
+    YYZ: "CA", YVR: "CA", YUL: "CA", YYC: "CA", MEX: "MX", CUN: "MX",
+    GRU: "BR", GIG: "BR", BSB: "BR", EZE: "AR", AEP: "AR", SCL: "CL", BOG: "CO", LIM: "PE", PTY: "PA", PUJ: "DO", SDQ: "DO", HAV: "CU",
+    HND: "JP", NRT: "JP", KIX: "JP", ITM: "JP", MSJ: "JP", CTS: "JP", FUK: "JP", OKA: "JP",
+    ICN: "KR", GMP: "KR", PEK: "CN", PKX: "CN", PVG: "CN", SHA: "CN", CAN: "CN", HKG: "HK", MFM: "MO", TPE: "TW",
+    SIN: "SG", KUL: "MY", BKK: "TH", DMK: "TH", HKT: "TH", CGK: "ID", DPS: "ID", MNL: "PH", SGN: "VN", HAN: "VN",
+    DEL: "IN", BOM: "IN", BLR: "IN", MAA: "IN", MLE: "MV", CMB: "LK",
+    DXB: "AE", AUH: "AE", SHJ: "AE", DOH: "QA", KWI: "KW", MCT: "OM", BAH: "BH", JED: "SA", RUH: "SA", TLV: "IL", AMM: "JO", BEY: "LB",
+    JNB: "ZA", CPT: "ZA", DUR: "ZA", NLP: "ZA", MQP: "ZA", PTG: "ZA",
+    CAI: "EG", HRG: "EG", SSH: "EG", CMN: "MA", RAK: "MA", TUN: "TN", NBO: "KE", ADD: "ET", LOS: "NG", MRU: "MU", SEZ: "SC",
+    SYD: "AU", MEL: "AU", BNE: "AU", PER: "AU", AKL: "NZ", CHC: "NZ", NAN: "FJ"
+  };
+
+  return quickCountryMap[code] || null;
+};
+
+// Berechnet alle Passport-Kennzahlen (Länder, Kontinente, Welt-Prozentsatz & Flüge pro Land)
+window.calculatePassportData = function (flights) {
+  const countriesMap = {};
+  const continentsSet = new Set();
+
+  (flights || []).forEach((f) => {
+    const depCountry = window.getAirportCountryCode(f.departure);
+    const arrCountry = window.getAirportCountryCode(f.arrival);
+
+    // Falls Abflug und Ankunft im selben Land liegen, den Flug für dieses Land nur 1x zählen
+    const touchedCountries = new Set([depCountry, arrCountry].filter(Boolean));
+
+    touchedCountries.forEach((cc) => {
+      if (!countriesMap[cc]) {
+        countriesMap[cc] = {
+          code: cc,
+          name: window.getCountryName(cc),
+          flag: window.getCountryFlag(cc),
+          flights: [],
+          airports: new Set(),
+          totalDistance: 0,
+        };
+      }
+      countriesMap[cc].flights.push(f);
+      countriesMap[cc].totalDistance += f.distance || 0;
+      if (depCountry === cc && f.departure) countriesMap[cc].airports.add(f.departure);
+      if (arrCountry === cc && f.arrival) countriesMap[cc].airports.add(f.arrival);
+
+      if (typeof countryToContinent !== "undefined" && countryToContinent[cc]) {
+        continentsSet.add(countryToContinent[cc]);
+      }
+    });
+  });
+
+  const sortedCountries = Object.values(countriesMap).sort(
+    (a, b) => b.flights.length - a.flights.length || a.name.localeCompare(b.name)
+  );
+  const count = sortedCountries.length;
+  const worldPercent = Math.min(100, (count / 195) * 100).toFixed(1);
+
+  return {
+    count,
+    worldPercent,
+    continentsCount: continentsSet.size,
+    countries: sortedCountries,
+    countriesMap,
+  };
+};

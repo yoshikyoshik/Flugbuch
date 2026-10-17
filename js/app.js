@@ -5127,6 +5127,17 @@ window.viewLogbookDetails = async function(type, key) {
             const flightWithOwnPhoto = filteredFlights.find(f => f.photo_url && f.photo_url.length > 0);
             if (flightWithOwnPhoto) heroImgUrl = flightWithOwnPhoto.photo_url[0];
         }
+    } else if (type === 'country') {
+        filteredFlights = allFlights.filter(f => {
+            const depC = typeof window.getAirportCountryCode === 'function' ? window.getAirportCountryCode(f.departure) : null;
+            const arrC = typeof window.getAirportCountryCode === 'function' ? window.getAirportCountryCode(f.arrival) : null;
+            return depC === key || arrC === key;
+        });
+        const flag = typeof window.getCountryFlag === 'function' ? window.getCountryFlag(key) : "🌍";
+        const cName = typeof window.getCountryName === 'function' ? window.getCountryName(key) : key;
+        title = `${flag} ${cName}`;
+        subtitle = getTranslation("passport.countrySubtitle") || `Land (${key})`;
+        icon = flag;
     }
 
     if (filteredFlights.length === 0) return;
@@ -5328,12 +5339,14 @@ window.viewAchievementDetails = async function(category, key, isSwitching = fals
         const compensatedFlights = allFlights.filter(f => f.co2_compensated);
         const totalCompensatedFlights = compensatedFlights.length;
         const totalCompensatedCO2 = compensatedFlights.reduce((sum, f) => sum + (f.co2_kg || 0), 0);
+        const passportData = typeof window.calculatePassportData === 'function' ? window.calculatePassportData(allFlights) : { count: 0 };
 
         const values = {
             flights: totalFlights,
             distance: totalDistance,
             time: totalHours,
             uniqueAirports: uniqueAirports.size,
+            uniqueCountries: passportData.count,
             longestFlight: longestFlightDistance,
             co2_total: totalCO2,
             // 🚀 NEU: Die fehlenden Kategorien hinzugefügt!
@@ -5346,6 +5359,7 @@ window.viewAchievementDetails = async function(category, key, isSwitching = fals
             distance: getTranslation("achievements.unitKm"),
             time: getTranslation("achievements.unitHours"),
             uniqueAirports: getTranslation("achievements.unitAirports"),
+            uniqueCountries: getTranslation("achievements.unitCountries") || "Länder",
             longestFlight: getTranslation("achievements.unitKm"),
             co2_total: getTranslation("achievements.unitCo2"),
             // 🚀 NEU: Die Einheiten für das Modal registrieren!

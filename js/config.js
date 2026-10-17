@@ -501,6 +501,14 @@ const achievements = {
     { milestone: 50, emoji: "🏛️", key: "50" },
     { milestone: 100, emoji: "🗽", key: "100" },
   ],
+    uniqueCountries: [
+    { milestone: 1, emoji: "🛂", key: "1" },
+    { milestone: 5, emoji: "🌍", key: "5" },
+    { milestone: 10, emoji: "🗺️", key: "10" },
+    { milestone: 25, emoji: "🧭", key: "25" },
+    { milestone: 50, emoji: "🌐", key: "50" },
+    { milestone: 100, emoji: "👑", key: "100" },
+  ],
   longestFlight: [
     { milestone: 3000, emoji: "✈️", key: "3000" },
     { milestone: 5000, emoji: "🛫", key: "5000" },
@@ -589,7 +597,6 @@ async function updateAchievements() {
   const container = document.getElementById("achievements-container");
 
   // 🚀 BUGHUNT-FIX: Alte Layout-Klassen des Containers restlos entfernen!
-  // (Verhindert, dass unser neues Grid in ein altes Grid eingesperrt und zerquetscht wird)
   container.className = "w-full block";
 
   container.innerHTML = `<p class="text-gray-500">${getTranslation("achievements.loading") || "Lade..."}</p>`;
@@ -610,10 +617,16 @@ async function updateAchievements() {
   const uniqueAirports = new Set(allFlights.flatMap((f) => [f.departure, f.arrival]));
   const longestFlightDistance = allFlights.length > 0 ? Math.max(...allFlights.map((f) => f.distance || 0)) : 0;
   const totalCO2 = allFlights.reduce((sum, flight) => sum + (flight.co2_kg || 0), 0);
-  // 🌱 NEU: Kompensierte Flüge und CO2 berechnen
+
+  // 🌱 Kompensierte Flüge und CO2 berechnen
   const compensatedFlights = allFlights.filter(f => f.co2_compensated);
   const totalCompensatedFlights = compensatedFlights.length;
   const totalCompensatedCO2 = compensatedFlights.reduce((sum, f) => sum + (f.co2_kg || 0), 0);
+
+  // 🛂 NEU: Besuchte Länder über unsere Passport-Engine berechnen
+  const passportData = typeof window.calculatePassportData === 'function'
+    ? window.calculatePassportData(allFlights)
+    : { count: 0 };
 
   // 2. Das Array DEFINIEREN
   const allAchievementTypes = [
@@ -621,17 +634,18 @@ async function updateAchievements() {
     { category: "distance", value: totalDistance, unit: getTranslation("achievements.unitKm") },
     { category: "time", value: totalHours, unit: getTranslation("achievements.unitHours") },
     { category: "uniqueAirports", value: uniqueAirports.size, unit: getTranslation("achievements.unitAirports") },
+    { category: "uniqueCountries", value: passportData.count, unit: getTranslation("achievements.unitCountries") || "Länder" },
     { category: "longestFlight", value: longestFlightDistance, unit: getTranslation("achievements.unitKm") },
     { category: "co2_total", value: totalCO2, unit: getTranslation("achievements.unitCo2") },
-    // 🚀 NEU: Die neuen Kategorien in die Schleife aufnehmen!
     { category: "co2_offset_flights", value: totalCompensatedFlights, unit: getTranslation("achievements.unitOffsetFlights") || "Flüge" },
     { category: "co2_offset_kg", value: totalCompensatedCO2, unit: getTranslation("achievements.unitOffsetKg") || "kg CO₂" },
   ];
 
-  // 3. Das HTML Grid für die Kacheln aufbauen (mit w-full, damit es sich ausbreitet)
+  // 3. Das HTML Grid für die Kacheln aufbauen
   let html = `<div class="w-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">`;
 
   allAchievementTypes.forEach((type) => {
+    if (!achievements[type.category]) return;
     achievements[type.category].forEach((achievement) => {
       const isUnlocked = type.value >= achievement.milestone;
       const progressPercent = Math.min((type.value / achievement.milestone) * 100, 100);
@@ -640,26 +654,26 @@ async function updateAchievements() {
       const title = getTranslation(`achievements.${type.category}.${achievement.key}.title`);
       const description = getTranslation(`achievements.${type.category}.${achievement.key}.description`);
 
-      // Bildpfad
       const imagePath = `pictures/achievements/${type.category}_${achievement.key}.png`;
 
-      // Styling für die Kacheln
       const clickableClasses = isUnlocked 
             ? "hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer shadow-sm hover:shadow-lg transition-all transform hover:-translate-y-1" 
             : "cursor-pointer transition-all hover:bg-gray-50 dark:hover:bg-gray-700 opacity-80 hover:opacity-100";
 
-      // 🚀 BUGHUNT-FIX: Bild-Größen leicht optimiert (w-16/w-20), damit es auf schmalen Handys nicht platzt
       const imageCss = isUnlocked 
             ? "w-16 h-16 sm:w-20 sm:h-20 object-contain drop-shadow-md mx-auto mb-2 transition-transform duration-300 group-hover:scale-110" 
             : "w-16 h-16 sm:w-20 sm:h-20 object-contain grayscale brightness-50 opacity-60 mx-auto mb-2 transition-transform duration-300 group-hover:scale-105";
 
-      // HTML Zusammenbau (Mit intelligentem Fehler-Fallback für fehlende Bilder)
+      const fallbackEmojiClass = isUnlocked
+            ? "text-5xl drop-shadow-md mb-2 transition-transform duration-300 group-hover:scale-110"
+            : "text-5xl grayscale opacity-30 mb-2";
+
       html += `
             <div onclick="viewAchievementDetails('${type.category}', '${achievement.key}')" class="bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-xl border border-gray-200 dark:border-gray-700 flex flex-col justify-between text-center group ${clickableClasses}">
                 
                 <div class="flex-grow flex flex-col items-center justify-start">
                     <div class="h-16 sm:h-20 mb-2 flex-shrink-0 flex items-center justify-center">
-                        <img src="${imagePath}" class="${imageCss}" alt="${title}" onerror="this.outerHTML='<div class=\\'text-4xl opacity-30 mb-2\\'>🏆</div>'">
+                        <img src="${imagePath}" class="${imageCss}" alt="${title}" onerror="this.outerHTML='<div class=\\'${fallbackEmojiClass}\\'>${achievement.emoji || '🏆'}</div>'">
                     </div>
                     
                     <h3 class="font-black text-gray-900 dark:text-white text-xs sm:text-sm leading-tight mb-1 break-words">${title}</h3>
@@ -680,7 +694,7 @@ async function updateAchievements() {
     });
   });
 
-  html += `</div>`; // Grid schließen
+  html += `</div>`;
   container.innerHTML = html;
 
   // Rekorde & Firsts berechnen und anzeigen
@@ -689,16 +703,25 @@ async function updateAchievements() {
 }
 
 /**
- * Erstellt den HTML-Code für einen einzelnen Rekord-Eintrag.
+ * Erstellt den HTML-Code für einen einzelnen Rekord-Eintrag (jetzt direkt klickbar!).
  */
-function formatRecordEntry(title, value, description) {
+function formatRecordEntry(title, value, description, flight = null) {
+  const flightId = flight ? (flight.id || flight.flight_id) : null;
+  const clickAttr = flightId ? `onclick="viewFlightDetails('${flightId}')"` : "";
+  const interactiveClasses = flightId
+    ? "cursor-pointer hover:border-primary/50 dark:hover:border-indigo-400/50 hover:-translate-y-0.5 transition-all group"
+    : "";
+
   return `
-                <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg">
-                    <p class="text-xs font-medium text-gray-500 dark:text-gray-400">${title}</p>
-                    <p class="text-lg font-bold text-indigo-700 dark:text-indigo-400">${value}</p>
-                    <p class="text-sm text-gray-600 dark:text-gray-300">${description}</p>
-                </div>
-            `;
+    <div ${clickAttr} class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg flex items-center justify-between gap-3 ${interactiveClasses}">
+        <div>
+            <p class="text-xs font-medium text-gray-500 dark:text-gray-400">${title}</p>
+            <p class="text-lg font-bold text-indigo-700 dark:text-indigo-400 group-hover:text-primary dark:group-hover:text-indigo-300 transition-colors">${value}</p>
+            <p class="text-sm text-gray-600 dark:text-gray-300">${description}</p>
+        </div>
+        ${flightId ? `<span class="material-symbols-outlined text-gray-400 group-hover:text-indigo-500 group-hover:translate-x-0.5 transition-all text-[20px] shrink-0">chevron_right</span>` : ""}
+    </div>
+  `;
 }
 
 /**
@@ -706,12 +729,12 @@ function formatRecordEntry(title, value, description) {
  */
 function formatLockedEntry(title, description) {
   return `
-                <div class="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg opacity-40">
-                    <p class="text-xs font-medium text-gray-500 dark:text-gray-400">${title}</p>
-                    <p class="text-lg font-bold text-gray-400 dark:text-gray-500">???</p>
-                    <p class="text-sm text-gray-600 dark:text-gray-300">${description}</p>
-                </div>
-            `;
+    <div class="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg opacity-40">
+        <p class="text-xs font-medium text-gray-500 dark:text-gray-400">${title}</p>
+        <p class="text-lg font-bold text-gray-400 dark:text-gray-500">???</p>
+        <p class="text-sm text-gray-600 dark:text-gray-300">${description}</p>
+    </div>
+  `;
 }
 
 /**
@@ -756,7 +779,7 @@ function displayPersonalRecords(allFlights, sortedFlights) {
     (f) => f.class === "Business" || f.class === "First"
   );
   const firstA380 = sortedFlights.find(
-    (f) => f.aircraftType && f.aircraftType.toUpperCase().includes("A380")
+    (f) => f.aircraftType && (f.aircraftType.toUpperCase().includes("A380") || f.aircraftType.toUpperCase().includes("A388"))
   );
 
   const firstEquator = sortedFlights.find(
@@ -772,7 +795,7 @@ function displayPersonalRecords(allFlights, sortedFlights) {
     (f) => (f.depLon > 0 && f.arrLon < 0) || (f.depLon < 0 && f.arrLon > 0)
   );
 
-  // KONTINENT-LOGIK
+  // KONTINENT-LOGIK (nutzt jetzt auch unsere erweiterte Ländercode-Erkennung)
   const firstContinents = {};
   const continents = [
     "Asien",
@@ -784,62 +807,64 @@ function displayPersonalRecords(allFlights, sortedFlights) {
     "Antarktis",
   ];
 
-  // Initialisiere alle Kontinente als "gesperrt" (null)
   continents.forEach((c) => (firstContinents[c] = null));
 
-  // Gehe durch alle Flüge und finde den ERSTEN Besuch
   for (const flight of sortedFlights) {
-    const continent = getContinentForAirport(flight.arrival);
+    const cCode = typeof window.getAirportCountryCode === "function"
+      ? window.getAirportCountryCode(flight.arrival)
+      : (airportData[flight.arrival] ? airportData[flight.arrival].country_code : null);
+    const continent = cCode ? countryToContinent[cCode] : getContinentForAirport(flight.arrival);
     if (continent && !firstContinents[continent]) {
-      // Dies ist der erste Flug zu diesem Kontinent, den wir gefunden haben
       firstContinents[continent] = flight;
     }
   }
 
-  // --- 3. HTML ERSTELLEN ---
+  // --- 3. HTML ERSTELLEN (Alle mit Flug-Objekt für Klickbarkeit!) ---
   let html = "";
 
-  // Rekorde (immer sichtbar)
   html += formatRecordEntry(
     getTranslation("records.longestFlight"),
     `${longestFlight.distance.toLocaleString("de-DE")} km`,
-    `${longestFlight.departure} → ${longestFlight.arrival}`
+    `${longestFlight.departure} → ${longestFlight.arrival}`,
+    longestFlight
   );
   html += formatRecordEntry(
     getTranslation("records.shortestFlight"),
     `${shortestFlight.distance.toLocaleString("de-DE")} km`,
-    `${shortestFlight.departure} → ${shortestFlight.arrival}`
+    `${shortestFlight.departure} → ${shortestFlight.arrival}`,
+    shortestFlight
   );
 
   if (mostExpensiveFlight) {
     html += formatRecordEntry(
       getTranslation("records.mostExpensive"),
-      `${mostExpensiveFlight.price.toLocaleString("de-DE")} ${
-        mostExpensiveFlight.currency
-      }`,
-      `${mostExpensiveFlight.departure} → ${mostExpensiveFlight.arrival}`
+      `${mostExpensiveFlight.price.toLocaleString("de-DE")} ${mostExpensiveFlight.currency}`,
+      `${mostExpensiveFlight.departure} → ${mostExpensiveFlight.arrival}`,
+      mostExpensiveFlight
     );
   }
   if (highestCo2Flight) {
     html += formatRecordEntry(
       getTranslation("records.highestCO2"),
       `${highestCo2Flight.co2_kg.toLocaleString("de-DE")} kg`,
-      `${highestCo2Flight.departure} → ${highestCo2Flight.arrival}`
+      `${highestCo2Flight.departure} → ${highestCo2Flight.arrival}`,
+      highestCo2Flight
     );
   }
 
-  // "Firsts" (jetzt mit "Gesperrt"-Zustand)
   html += formatRecordEntry(
     getTranslation("records.firstFlight"),
     `${firstFlight.date}`,
-    `${firstFlight.departure} → ${firstFlight.arrival}`
+    `${firstFlight.departure} → ${firstFlight.arrival}`,
+    firstFlight
   );
 
   if (firstLongHaul) {
     html += formatRecordEntry(
       getTranslation("records.firstLongHaul"),
       `${firstLongHaul.date}`,
-      `${firstLongHaul.departure} → ${firstLongHaul.arrival}`
+      `${firstLongHaul.departure} → ${firstLongHaul.arrival}`,
+      firstLongHaul
     );
   } else {
     html += formatLockedEntry(
@@ -856,7 +881,8 @@ function displayPersonalRecords(allFlights, sortedFlights) {
     html += formatRecordEntry(
       title,
       `${firstBusinessOrFirst.date}`,
-      `${firstBusinessOrFirst.departure} → ${firstBusinessOrFirst.arrival}`
+      `${firstBusinessOrFirst.departure} → ${firstBusinessOrFirst.arrival}`,
+      firstBusinessOrFirst
     );
   } else {
     const title = getTranslation("records.firstPremiumFlight").replace(
@@ -873,7 +899,8 @@ function displayPersonalRecords(allFlights, sortedFlights) {
     html += formatRecordEntry(
       getTranslation("records.firstA380"),
       `${firstA380.date}`,
-      `${firstA380.departure} → ${firstA380.arrival}`
+      `${firstA380.departure} → ${firstA380.arrival}`,
+      firstA380
     );
   } else {
     html += formatLockedEntry(
@@ -886,7 +913,8 @@ function displayPersonalRecords(allFlights, sortedFlights) {
     html += formatRecordEntry(
       getTranslation("records.firstEquator"),
       `${firstEquator.date}`,
-      `${firstEquator.departure} → ${firstEquator.arrival}`
+      `${firstEquator.departure} → ${firstEquator.arrival}`,
+      firstEquator
     );
   } else {
     html += formatLockedEntry(
@@ -899,7 +927,8 @@ function displayPersonalRecords(allFlights, sortedFlights) {
     html += formatRecordEntry(
       getTranslation("records.firstArctic"),
       `${firstArctic.date}`,
-      `${firstArctic.departure} → ${firstArctic.arrival}`
+      `${firstArctic.departure} → ${firstArctic.arrival}`,
+      firstArctic
     );
   } else {
     html += formatLockedEntry(
@@ -912,7 +941,8 @@ function displayPersonalRecords(allFlights, sortedFlights) {
     html += formatRecordEntry(
       getTranslation("records.firstAntarctic"),
       `${firstAntarctic.date}`,
-      `${firstAntarctic.departure} → ${firstAntarctic.arrival}`
+      `${firstAntarctic.departure} → ${firstAntarctic.arrival}`,
+      firstAntarctic
     );
   } else {
     html += formatLockedEntry(
@@ -925,7 +955,8 @@ function displayPersonalRecords(allFlights, sortedFlights) {
     html += formatRecordEntry(
       getTranslation("records.firstMeridian"),
       `${firstMeridian.date}`,
-      `${firstMeridian.departure} → ${firstMeridian.arrival}`
+      `${firstMeridian.departure} → ${firstMeridian.arrival}`,
+      firstMeridian
     );
   } else {
     html += formatLockedEntry(
@@ -934,7 +965,6 @@ function displayPersonalRecords(allFlights, sortedFlights) {
     );
   }
 
-  // Kontinent-Meilensteine anzeigen
   const continentToKeyMap = {
     Asien: "Asia",
     Europa: "Europe",
@@ -945,25 +975,23 @@ function displayPersonalRecords(allFlights, sortedFlights) {
     Antarktis: "Antarctica",
   };
 
-  // Iteriere über die deutschen Kontinentnamen aus der Logik
   continents.forEach((continent) => {
     const flight = firstContinents[continent];
-
-    // Baue den Schlüssel über das Mapping-Objekt
     const keySuffix = continentToKeyMap[continent];
     const titleKey = `records.firstVisit${keySuffix}`;
     const descKey = `records.firstVisit${keySuffix}Desc`;
 
     if (flight) {
       html += formatRecordEntry(
-        getTranslation(titleKey), // <-- KORREKTER SCHLÜSSEL
+        getTranslation(titleKey),
         `${flight.date}`,
-        `${flight.departure} → ${flight.arrival}`
+        `${flight.departure} → ${flight.arrival}`,
+        flight
       );
     } else {
       html += formatLockedEntry(
-        getTranslation(titleKey), // <-- KORREKTER SCHLÜSSEL
-        getTranslation(descKey) // <-- KORREKTER SCHLÜSSEL
+        getTranslation(titleKey),
+        getTranslation(descKey)
       );
     }
   });
@@ -1250,6 +1278,7 @@ function selectAutocompleteItem(input, list, selectedAirport) {
     lat: selectedAirport.lat,
     lon: selectedAirport.lon,
     city: selectedAirport.city, // Stadtinformation hinzufügen
+    country_code: selectedAirport.country_code,
   });
 
   input.value = selectedAirport.code;

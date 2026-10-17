@@ -64,6 +64,15 @@
   "achievements": {
     "progress": "Progreso",
     "tabLeaderboard": "Comunidad",
+    "unitCountries": "Países",
+    "uniqueCountries": {
+      "1": { "title": "Primer Sello", "description": "¡Tu primer país registrado en el pasaporte!" },
+      "5": { "title": "Cruzador de Fronteras", "description": "Viajado a 5 países diferentes." },
+      "10": { "title": "Cosmopolita", "description": "10 países coleccionados en tu Pasaporte AvioSphere." },
+      "25": { "title": "Ciudadano del Mundo", "description": "¡25 países diferentes descubiertos!" },
+      "50": { "title": "Diplomático", "description": "¡50 países visitados – más de un cuarto del mundo!" },
+      "100": { "title": "Nómada Global", "description": "¡100 países visitados! Has visto más de la mitad del mundo." }
+    },
     "co2_total": {
       "1000": {
         "description": "Has registrado tu primera tonelada (1.000 kg) de CO₂.",
@@ -601,6 +610,7 @@
     "summary": "({count} vuelos / {distance} km)",
     "title": "Vistas de Bitácora",
     "unknown": "Desconocido",
+    "tabCountry": "Países",
     "relatedFlights": "Vuelos relacionados"
   },
   "logbookStats": {
@@ -1138,7 +1148,7 @@
     "noDataDesc": "No tenemos datos almacenados en la base de datos para este tipo de avión ({model}).",
     "searchWiki": "🔍 Buscar en Wikipedia",
     "moreWiki": "📚 Leer más en Wikipedia",  
-  "model": "Modelo",
+    "model": "Modelo",
     "manufacturer": "Fabricante",
     "engine": "Motor",
     "maxSpeed": "Velocidad Máx.",
@@ -1149,6 +1159,7 @@
     "length": "Longitud",
     "height": "Altura",
     "otherVariants": "Otras variantes encontradas:",
+    "seats": "Capacidad y Disposición",
     "notAvailable": "N/D"
   },
 
@@ -1289,6 +1300,16 @@
     "departure": "Salida",
     "arrival": "Llegada",
     "noWeather": "🌦️ Los datos meteorológicos históricos no están disponibles para vuelos antiguos."
+  },
+
+  "passport": {
+    "title": "Pasaporte AvioSphere",
+    "subtitle": "Países Visitados y Sellos",
+    "printBtn": "Pasaporte (PDF)",
+    "countries": "Países",
+    "worldShare": "del Mundo",
+    "continents": "Continentes",
+    "countrySubtitle": "País Visitado"
   }
 
 }
