@@ -1391,27 +1391,74 @@ var updateStatisticsDisplay = function (flights) {
   }
 };
 
+// Merkt sich den aktuell gewählten Kontinent-Filter im Passport (null = Alle Länder)
+window.currentPassportContinentFilter = null;
+
 /**
- * 🛂 Zeichnet die komplette AvioSphere Passport Seite (Ausweis, MRZ, Kontinente & Stempel-Karten)
+ * 🛂 Filtert die Länder-Stempel nach Kontinent (oder zeigt bei null alle Länder)
+ */
+window.filterPassportByContinent = function (continentKey, scrollToStamps = false) {
+  if (continentKey && window.currentPassportContinentFilter === continentKey) {
+    // Erneuter Klick auf denselben Kontinent -> Filter aufheben (Alle zeigen)
+    window.currentPassportContinentFilter = null;
+  } else {
+    window.currentPassportContinentFilter = continentKey || null;
+  }
+
+  if (typeof window.renderPassportView === "function") {
+    window.renderPassportView();
+  }
+
+  if (scrollToStamps) {
+    const stampsEl = document.querySelector("#passport-grid-container #passport-countries-grid");
+    if (stampsEl) {
+      stampsEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }
+};
+
+/**
+ * 🛂 Zeichnet die komplette AvioSphere Passport Seite (Ausweis, MRZ, klickbare Kontinente & Stempel-Karten)
  */
 window.renderPassportView = function (flightsInput) {
   if (typeof window.calculatePassportData !== "function") return;
 
+  // Falls im Analytics-Tab (#statistics-panel) noch das alte #passport-panel liegt -> automatisch entfernen,
+  // damit es niemals zu doppelten IDs im HTML kommt!
+  const legacyPanel = document.querySelector("#statistics-panel #passport-panel");
+  if (legacyPanel) legacyPanel.remove();
+
+  const root = document.getElementById("passport-grid-container") || document;
+  const q = (sel) => root.querySelector(sel);
+
   const processRender = (flights) => {
     const passport = window.calculatePassportData(flights);
 
-    // 1. Ausweis-Kopfdaten
-    const countEl = document.getElementById("passport-country-count");
-    const percentEl = document.getElementById("passport-world-percent");
-    const contEl = document.getElementById("passport-continent-count");
-    const barEl = document.getElementById("passport-world-bar");
-    const sinceEl = document.getElementById("passport-since-year");
-    const nameEl = document.getElementById("passport-pilot-name");
-    const avatarEl = document.getElementById("passport-pilot-avatar");
-    const rankEl = document.getElementById("passport-pilot-rank");
-    const mrzEl = document.getElementById("passport-mrz");
+    // 1. Ausweis-Kopfdaten (jetzt 100% eindeutig im Profil-Passport adressiert!)
+    const countEl = q("#passport-country-count");
+    const percentEl = q("#passport-world-percent");
+    const contEl = q("#passport-continent-count");
+    const barEl = q("#passport-world-bar");
+    const sinceEl = q("#passport-since-year");
+    const nameEl = q("#passport-pilot-name");
+    const avatarEl = q("#passport-pilot-avatar");
+    const rankEl = q("#passport-pilot-rank");
+    const mrzEl = q("#passport-mrz");
 
-    if (countEl) countEl.textContent = passport.count;
+    if (countEl) {
+      countEl.textContent = passport.count;
+      // 🚀 Kachel "Countries" klickbar machen -> Zeigt alle Länder & scrollt zu den Stempeln
+      const countCard = countEl.parentElement;
+      if (countCard) {
+        countCard.onclick = () => window.filterPassportByContinent(null, true);
+        countCard.className = `rounded-2xl p-3.5 cursor-pointer transition-all hover:-translate-y-0.5 ${
+          window.currentPassportContinentFilter === null
+            ? "bg-amber-500/15 border-2 border-amber-400/60 shadow-md shadow-amber-500/10"
+            : "bg-white/5 hover:bg-white/10 border border-amber-500/20"
+        }`;
+      }
+    }
+
     if (percentEl) percentEl.textContent = `${passport.worldPercent.replace(".", ",")}%`;
     if (contEl) contEl.textContent = `${passport.continentsCount} / 7`;
     if (barEl) barEl.style.width = `${Math.max(2, parseFloat(passport.worldPercent))}%`;
@@ -1426,59 +1473,116 @@ window.renderPassportView = function (flightsInput) {
     if (avatarEl && avatarInput) avatarEl.textContent = avatarInput;
     if (rankEl && rankHeader) rankEl.textContent = rankHeader;
 
-    // 2. Authentische MRZ (Machine Readable Zone) generieren
+    // 2. Authentische 2-zeilige MRZ (ohne < im JS-String, verhindert jeden Parser-Konflikt)
     if (mrzEl) {
-      const cleanPilot = pilotName.toUpperCase().replace(/[^A-Z0-9]/g, "<") || "PILOT";
-      const line1 = `P<AVIOSPHERE<<${cleanPilot}${"<".repeat(44)}`.substring(0, 42);
-      const line2 = `PASS<${String(passport.count).padStart(3, "0")}CTRY<<${String(passport.totalFlightsCount).padStart(4, "0")}FLTS<<${passport.continentsCount}CONT<<${passport.firstYear}${"<".repeat(44)}`.substring(0, 42);
-      mrzEl.innerHTML = `${line1}<br>${line2}`;
+      const cleanPilot = pilotName.toUpperCase().replace(/[^A-Z0-9]/g, "_") || "PILOT";
+      const ctryStr = String(passport.count).padStart(3, "0");
+      const fltsStr = String(passport.totalFlightsCount).padStart(4, "0");
+
+      const rawLine1 = ("P_AVIOSPHERE__" + cleanPilot + "_".repeat(44)).substring(0, 42);
+      const rawLine2 = (
+        "PASS_" + ctryStr + "CTRY__" + fltsStr + "FLTS__" + passport.continentsCount + "CONT__" + passport.firstYear + "_".repeat(44)
+      ).substring(0, 42);
+
+      mrzEl.innerHTML = rawLine1.replace(/_/g, "&lt;") + "<br>" + rawLine2.replace(/_/g, "&lt;");
     }
 
-    // 3. Kontinente-Grid rendern
-    const contGrid = document.getElementById("passport-continents-grid");
-    if (contGrid) {
-      const contDefs = [
-        { key: "Europa", i18n: "passport.contEurope", icon: "🌍" },
-        { key: "Asien", i18n: "passport.contAsia", icon: "🌏" },
-        { key: "Nordamerika", i18n: "passport.contNorthAmerica", icon: "🌎" },
-        { key: "Südamerika", i18n: "passport.contSouthAmerica", icon: "🌎" },
-        { key: "Afrika", i18n: "passport.contAfrica", icon: "🌍" },
-        { key: "Ozeanien", i18n: "passport.contOceania", icon: "🌏" },
-        { key: "Antarktis", i18n: "passport.contAntarctica", icon: "❄️" },
-      ];
+    // 3. Klickbare Kontinente-Kacheln rendern
+    const contDefs = [
+      { key: "Europa", i18n: "passport.contEurope" },
+      { key: "Asien", i18n: "passport.contAsia" },
+      { key: "Nordamerika", i18n: "passport.contNorthAmerica" },
+      { key: "Südamerika", i18n: "passport.contSouthAmerica" },
+      { key: "Afrika", i18n: "passport.contAfrica" },
+      { key: "Ozeanien", i18n: "passport.contOceania" },
+      { key: "Antarktis", i18n: "passport.contAntarctica" },
+    ];
 
+    const contGrid = q("#passport-continents-grid");
+    if (contGrid) {
       contGrid.innerHTML = contDefs
         .map((c) => {
           const cCount = passport.continentCountries[c.key] ? passport.continentCountries[c.key].size : 0;
           const visited = cCount > 0;
+          const isSelected = window.currentPassportContinentFilter === c.key;
           const label = getTranslation(c.i18n) || c.key;
+
+          if (!visited) {
+            return `
+              <div class="flex items-center justify-between px-3 py-2.5 rounded-xl border bg-white/5 border-white/5 text-white/35 opacity-50 cursor-not-allowed">
+                <div class="flex items-center gap-2 min-w-0">
+                  <span class="text-sm">🔒</span>
+                  <span class="text-xs font-bold truncate">${label}</span>
+                </div>
+                <span class="text-[10px] font-black px-1.5 py-0.5 rounded bg-black/30 text-white/40">0</span>
+              </div>
+            `;
+          }
+
           return `
-            <div class="flex items-center justify-between px-3 py-2.5 rounded-xl border ${
-              visited
-                ? "bg-emerald-500/10 border-emerald-400/30 text-white"
-                : "bg-white/5 border-white/5 text-white/35 opacity-60"
-            }">
+            <button type="button" onclick="window.filterPassportByContinent('${c.key}', true)"
+                    class="flex items-center justify-between px-3 py-2.5 rounded-xl border transition-all cursor-pointer hover:-translate-y-0.5 text-left ${
+                      isSelected
+                        ? "bg-amber-500/20 border-2 border-amber-400 text-white shadow-md shadow-amber-500/15"
+                        : "bg-emerald-500/10 hover:bg-emerald-500/20 border-emerald-400/30 text-white"
+                    }">
               <div class="flex items-center gap-2 min-w-0">
-                <span class="text-sm">${visited ? "✅" : "🔒"}</span>
-                <span class="text-xs font-bold truncate">${label}</span>
+                <span class="text-sm">${isSelected ? "🎯" : "✅"}</span>
+                <span class="text-xs font-bold truncate ${isSelected ? "text-amber-300" : ""}">${label}</span>
               </div>
               <span class="text-[10px] font-black px-1.5 py-0.5 rounded bg-black/30 ${
-                visited ? "text-emerald-300" : "text-white/40"
+                isSelected ? "text-amber-300" : "text-emerald-300"
               }">${cCount}</span>
-            </div>
+            </button>
           `;
         })
         .join("");
     }
 
-    // 4. Länder-Stempel-Karten rendern
-    const gridEl = document.getElementById("passport-countries-grid");
+    // 4. Länder-Stempel-Karten rendern (gefiltert nach Kontinent oder Alle)
+    const gridEl = q("#passport-countries-grid");
     if (gridEl) {
-      if (passport.countries.length === 0) {
+      let countriesToShow = passport.countries;
+      let activeFilterLabel = "";
+
+      if (window.currentPassportContinentFilter) {
+        countriesToShow = passport.countries.filter(
+          (c) => typeof countryToContinent !== "undefined" && countryToContinent[c.code] === window.currentPassportContinentFilter
+        );
+        const foundDef = contDefs.find((d) => d.key === window.currentPassportContinentFilter);
+        activeFilterLabel = foundDef ? getTranslation(foundDef.i18n) || foundDef.key : window.currentPassportContinentFilter;
+      }
+
+      // Überschrift über den Stempeln dynamisch aktualisieren (inkl. "Alle anzeigen"-Reset-Button)
+      const stampsHeaderEl = gridEl.previousElementSibling;
+      if (stampsHeaderEl) {
+        const baseTitle = getTranslation("passport.stampsTitle") || "Gesammelte Länder-Stempel";
+        const showAllTxt = getTranslation("passport.showAll") || "Alle ({count})";
+        if (window.currentPassportContinentFilter) {
+          stampsHeaderEl.innerHTML = `
+            <div class="flex items-center justify-between w-full">
+              <span class="flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[14px] text-amber-400">approval</span>
+                <span>${baseTitle} • <strong class="text-amber-300">${activeFilterLabel} (${countriesToShow.length})</strong></span>
+              </span>
+              <button type="button" onclick="window.filterPassportByContinent(null, false)" class="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-[10px] font-extrabold text-amber-300 border border-amber-400/30 transition-all">
+                ${showAllTxt.replace("{count}", passport.count)} ✕
+              </button>
+            </div>
+          `;
+        } else {
+          stampsHeaderEl.innerHTML = `
+            <span class="material-symbols-outlined text-[14px] text-amber-400">approval</span>
+            <span>${baseTitle} (${passport.count})</span>
+          `;
+        }
+      }
+
+      if (countriesToShow.length === 0) {
         gridEl.innerHTML = `<span class="col-span-full text-xs text-indigo-200/60 italic">${getTranslation("stats.noData") || "-"}</span>`;
       } else {
         const flightsLabelTpl = getTranslation("passport.flightsCount") || "{count} Flüge";
-        gridEl.innerHTML = passport.countries
+        gridEl.innerHTML = countriesToShow
           .map((c) => {
             const airportsList = Array.from(c.airports).slice(0, 4).join(", ");
             const flightsLabel = flightsLabelTpl.replace("{count}", c.flights.length);
@@ -1493,7 +1597,7 @@ window.renderPassportView = function (flightsInput) {
                   <p class="font-display font-extrabold text-xs sm:text-sm text-white group-hover:text-amber-300 transition-colors truncate">${c.name}</p>
                   <div class="flex items-center justify-between gap-1 mt-1.5 pt-1.5 border-t border-white/10">
                     <span class="text-[10px] font-bold text-indigo-200/80">${flightsLabel}</span>
-                    <span class="text-[9px] font-mono text-indigo-300/50 truncate max-w-[70px]">${airportsList}</span>
+                    <span class="text-[9px] font-mono text-indigo-300/50 truncate max-w-[75px]">${airportsList}</span>
                   </div>
                 </div>
               </button>

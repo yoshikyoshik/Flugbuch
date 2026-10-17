@@ -1330,7 +1330,8 @@
     "contSouthAmerica": "Südamerika",
     "contAfrica": "Afrika",
     "contOceania": "Ozeanien",
-    "contAntarctica": "Antarktis"
+    "contAntarctica": "Antarktis",
+    "showAll": "Alle ({count})"
   }
 
 }

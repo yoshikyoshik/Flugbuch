@@ -1325,7 +1325,8 @@
     "contSouthAmerica": "Sudamérica",
     "contAfrica": "África",
     "contOceania": "Oceanía",
-    "contAntarctica": "Antártida"
+    "contAntarctica": "Antártida",
+    "showAll": "Todos ({count})"
   }
 
 }

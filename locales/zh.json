@@ -1326,7 +1326,8 @@
     "contSouthAmerica": "南美洲",
     "contAfrica": "非洲",
     "contOceania": "大洋洲",
-    "contAntarctica": "南极洲"
+    "contAntarctica": "南极洲",
+    "showAll": "全部 ({count})"
   }
 
 }

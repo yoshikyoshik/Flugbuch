@@ -1325,7 +1325,8 @@
     "contSouthAmerica": "Юж. Америка",
     "contAfrica": "Африка",
     "contOceania": "Океания",
-    "contAntarctica": "Антарктида"
+    "contAntarctica": "Антарктида",
+    "showAll": "Все ({count})"
   }
 
 }

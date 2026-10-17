@@ -1329,7 +1329,8 @@
     "contSouthAmerica": "South America",
     "contAfrica": "Africa",
     "contOceania": "Oceania",
-    "contAntarctica": "Antarctica"
+    "contAntarctica": "Antarctica",
+    "showAll": "All ({count})"
   }
 
 }
