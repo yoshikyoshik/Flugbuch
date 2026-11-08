@@ -3330,6 +3330,12 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     }
 
+    // 📱 Play-Store-Banner auf dem Startscreen ausblenden, wenn wir BEREITS in der nativen App sind!
+    if (typeof isNativeApp === 'function' && isNativeApp()) {
+        const playBadge = document.getElementById('web-playstore-badge');
+        if (playBadge) playBadge.classList.add('hidden');
+    }
+
   const preferredLanguage = localStorage.getItem("preferredLanguage") || "de";
   await setLanguage(preferredLanguage);
 
